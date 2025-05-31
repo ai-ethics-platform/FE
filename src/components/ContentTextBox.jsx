@@ -4,6 +4,7 @@ import pagnationLeft from '../assets/paginationleft.svg';
 import pagnationRight from '../assets/paginationright.svg';
 import pagnationBoth from '../assets/paginationboth.svg';
 import continueBtn from '../assets/readydefault.svg';
+import { Colors, FontStyles } from './styleConstants';
 
 export default function StoryInputBox({ paginationType = 'both' }) {
   const [text, setText] = useState('');
@@ -51,11 +52,11 @@ export default function StoryInputBox({ paginationType = 'both' }) {
           flexDirection: 'column',
           justifyContent: 'space-between',
           zIndex: 1,
-          fontFamily: 'Pretendard, sans-serif',
+          ...FontStyles.caption,
         }}
       >
         {/* 설명 텍스트 */}
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#1F2937' }}>
+        <div style={{ ...FontStyles.caption, fontWeight: 600, color: Colors.grey07 }}>
           메인 스토리 내용을 입력해 주세요. 최대 3줄까지 입력이 가능합니다. 3줄 입력 시에 서브 텍스트 삽입은 불가능해요
         </div>
 
@@ -70,10 +71,9 @@ export default function StoryInputBox({ paginationType = 'both' }) {
             border: 'none',
             backgroundColor: 'transparent',
             resize: 'none',
-            color: '#6B7280',
-            fontSize: 14,
+            color: Colors.grey05,
+            ...FontStyles.caption,
             outline: 'none',
-            fontFamily: 'Pretendard, sans-serif',
           }}
         />
 

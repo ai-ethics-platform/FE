@@ -1,6 +1,7 @@
 import React from 'react';
 import closeIcon from '../assets/close.svg';
-import SecondaryButton from './SecondaryButton'; // ← SecondaryButton 컴포넌트 import
+import SecondaryButton from './SecondaryButton';
+import { Colors, FontStyles } from './styleConstants';
 
 export default function LogoutPopup({ onClose, onLogout }) {
   return (
@@ -8,11 +9,11 @@ export default function LogoutPopup({ onClose, onLogout }) {
       style={{
         width: 552,
         height: 360,
-        backgroundColor: '#F1F5F9',
+        backgroundColor: Colors.grey01,
         borderRadius: 12,
         padding: 32,
         position: 'relative',
-        fontFamily: 'Pretendard, sans-serif',
+        ...FontStyles.body,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -38,18 +39,21 @@ export default function LogoutPopup({ onClose, onLogout }) {
       {/* Title */}
       <div
         style={{
-          fontSize: 20,
-          fontWeight: 600,
-          color: '#1F2937',
+          ...FontStyles.title,
+          color: Colors.brandPrimary,
           marginBottom: 40,
+          textAlign: 'center',
         }}
       >
         게임을 종료하고 로그아웃할까요?
       </div>
 
-      {/* SecondaryButton (168 x 72) */}
+      {/* Secondary Button */}
       <SecondaryButton
-        onClick={onLogout}
+        onClick={() => {
+          console.log('logout button clicked');
+          onLogout();
+        }}
         style={{
           width: 168,
           height: 72,

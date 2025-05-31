@@ -15,6 +15,7 @@ import statusReadyCancel from '../assets/readycancell.svg';
 import statusReadyDefault from '../assets/readydefault.svg';
 
 import crownIcon from '../assets/crown.svg';
+import { CardSizes } from './stylecardsize';
 
 const statusList = [
   'waiting',
@@ -58,7 +59,11 @@ export default function StatusCard({ player = '1P', isOwner = false }) {
 
   return (
     <div
-      style={{ position: 'relative', width: 360, height: 480 }}
+      style={{
+        position: 'relative',
+        width: CardSizes.width,
+        height: CardSizes.height,
+      }}
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => {
         setIsHover(false);
@@ -68,7 +73,6 @@ export default function StatusCard({ player = '1P', isOwner = false }) {
       onMouseUp={() => setIsActive(false)}
       onContextMenu={(e) => e.preventDefault()}
     >
-      {/* 카드 프레임 */}
       <img
         src={frameSrc}
         alt="frame"
@@ -81,53 +85,50 @@ export default function StatusCard({ player = '1P', isOwner = false }) {
         }}
       />
 
-      {/* 플레이어 아이콘 */}
       <img
         src={playerMap[player] || player1}
         alt="player"
         style={{
           position: 'absolute',
-          top: 120,
+          top: CardSizes.playerTop,
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 168,
-          height: 216,
+          width: CardSizes.icon.width,
+          height: CardSizes.icon.height,
           zIndex: 1,
         }}
       />
 
-      {/* 크라운 아이콘 (방장) */}
       {isOwner && (
         <img
           src={crownIcon}
           alt="owner crown"
           style={{
             position: 'absolute',
-            top: 90,
+            top: CardSizes.crownTop,
             left: '50%',
             transform: 'translateX(-50%)',
-            width: 40,
-            height: 40,
+            width: CardSizes.icon.crown,
+            height: CardSizes.icon.crown,
             zIndex: 2,
           }}
         />
       )}
 
-      {/* 상태 아이콘 (클릭 시 상태 변경) */}
       <img
         src={statusMap[status]}
         alt={status}
         onClick={(e) => {
-          e.stopPropagation(); // 부모 div 클릭 막기
+          e.stopPropagation();
           cycleStatus();
         }}
         style={{
           position: 'absolute',
-          bottom: 40,
+          bottom: CardSizes.statusBottom,
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 264,
-          height: 72,
+          width: CardSizes.icon.status.width,
+          height: CardSizes.icon.status.height,
           zIndex: 1,
           cursor: 'pointer',
         }}

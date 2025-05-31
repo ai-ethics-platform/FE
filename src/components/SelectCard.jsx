@@ -1,5 +1,6 @@
 import React from 'react';
 import checkboxIcon from '../assets/checkbox.svg';
+import { Colors, FontStyles } from './styleConstants';
 
 export default function SelectCard({
   label = '개인정보 수집 및 연구 활용에 동의합니다.',
@@ -14,11 +15,12 @@ export default function SelectCard({
     height: '72px',
     padding: '0 16px',
     borderRadius: 8,
-    backgroundColor: '#F8FAFC',
-    border: selected ? '1px solid #0F172A' : '1px solid #CBD5E1',
-    fontFamily: 'Pretendard, sans-serif',
-    fontSize: 16,
-    color: '#1E293B',
+    backgroundColor: Colors.componentBackground, // #F8FAFC
+    border: selected
+      ? `1px solid ${Colors.grey07}` // #1E293B
+      : `1px solid ${Colors.grey04}`, // #CBD5E1
+    ...FontStyles.body,
+    color: Colors.grey07,
     cursor: 'pointer',
   };
 
@@ -31,8 +33,8 @@ export default function SelectCard({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: selected ? '#354750' : 'transparent',
-    border: selected ? 'none' : '1.5px solid #94A3B8',
+    backgroundColor: selected ? Colors.brandPrimary : 'transparent',
+    border: selected ? 'none' : `1.5px solid ${Colors.grey05}`,
   };
 
   const iconStyle = {

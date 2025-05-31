@@ -18,7 +18,7 @@ export default function Signup() {
   const navigate = useNavigate();
 
   return (
-    <Background bgIndex={1}>
+    <Background bgIndex={2}>
       <div
         style={{
           maxWidth: 552,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Colors, FontStyles } from './styleConstants';
 
 export default function InputBoxLarge({
   placeholder = '플레이스 홀더 텍스트를 입력해 주세요.',
@@ -8,7 +9,6 @@ export default function InputBoxLarge({
   rightIconHidden = null,
   isPassword = false,
   value = '',
-   bgColor = '#F8FAFC',
   onChange = () => {},
 }) {
   const [isFocused, setIsFocused] = useState(false);
@@ -20,27 +20,27 @@ export default function InputBoxLarge({
   const isError = errorMessage !== '';
 
   const getBorderStyle = () => {
-    if (isError) return '1px solid #9E2D2F';
-    if (isFocused) return '1px solid #354750';
-    if (isHovered) return '1px solid #788A93';
+    if (isError) return `1px solid ${Colors.systemRed}`;
+    if (isFocused) return `1px solid ${Colors.brandPrimary}`;
+    if (isHovered) return `1px solid ${Colors.grey05}`;
     if (isCompleted) return 'none';
     return 'none';
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'Pretendard, sans-serif' }}>
-    <div
+      <div
         style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        width: '552px',
-        height: '72px',
-        padding: '0 16px',
-        borderRadius: 8,
-        backgroundColor: bgColor,
-        border: getBorderStyle(),
-        transition: 'border 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          width: '552px',
+          height: '72px',
+          padding: '0 16px',
+          borderRadius: 8,
+          backgroundColor: Colors.componentBackground,
+          border: getBorderStyle(),
+          transition: 'border 0.2s ease',
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -60,10 +60,8 @@ export default function InputBoxLarge({
             border: 'none',
             outline: 'none',
             background: 'transparent',
-            fontSize: 16,
-            fontWeight: 400,
-            color: '#1E293B',
-            fontFamily: 'inherit',
+            ...FontStyles.body,
+            color: Colors.grey07,
           }}
         />
 
@@ -78,7 +76,7 @@ export default function InputBoxLarge({
       </div>
 
       {isError && (
-        <span style={{ fontSize: 14, color: '#EF4444', marginLeft: 4 }}>
+        <span style={{ ...FontStyles.caption, color: Colors.systemRed, marginLeft: 4 }}>
           {errorMessage}
         </span>
       )}

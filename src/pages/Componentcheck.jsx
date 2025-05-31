@@ -40,6 +40,7 @@ import BackButton from '../components/BackButton';
 import CloseButton from '../components/CloseButton';
 import nocheckbutton from '../assets/nocheckbutton.svg';
 import checkbutton from '../assets/checkbutton.svg';
+import JoinRoom from '../components/JoinRoom';
 
 export default function Componentcheck() {
     return (
@@ -127,6 +128,9 @@ export default function Componentcheck() {
     <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
     <UserProfile player="3P" characterDesc="요양보호사 K" />
     </div>
+     <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
+    <UserProfile player="3P" />
+    </div>
 
     <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
     <ContentTextBox paginationType="both" />
@@ -140,7 +144,9 @@ export default function Componentcheck() {
     <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
     <CloseButton />
     </div>
-
+   <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
+    <JoinRoom />
+    </div>
     </Background>
     );
   }

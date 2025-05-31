@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import close from '../assets/closewhite.svg';
+import {Colors,FontStyles} from './styleConstants';
 
 export default function ArrowButton({ disabled = false }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
 
   const getBackground = () => {
-    if (disabled) return '#BAC1C5';
-    if (isActive) return '#192D3A';
-    if (isHovered) return '#354750';
-    return 'linear-gradient(180deg, #6E7C7D 0%, #192D3A 100%)';
+    if (disabled) return Colors.grey03; // '#BAC1C5'
+    if (isActive) return Colors.brandGradientEnd; // '#192D3A'
+    if (isHovered) return Colors.brandPrimary; // '#354750'
+    return `linear-gradient(180deg, ${Colors.brandGradientStart} 0%, ${Colors.brandGradientEnd} 100%)`;
   };
 
   return (

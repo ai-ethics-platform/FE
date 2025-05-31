@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Colors, FontStyles } from './styleConstants';
 
 export default function InputBoxSimple({
   placeholder = '플레이스 홀더 텍스트를 입력해 주세요.',
@@ -13,9 +14,9 @@ export default function InputBoxSimple({
   const isError = errorMessage !== '';
 
   const getBorderStyle = () => {
-    if (isError) return '1px solid #EF4444';
-    if (isFocused) return '1px solid #0F172A';
-    if (isHovered) return '1px solid #CBD5E1';
+    if (isError) return `1px solid ${Colors.systemRed}`;
+    if (isFocused) return `1px solid ${Colors.brandPrimary}`;
+    if (isHovered) return `1px solid ${Colors.grey04}`;
     if (isCompleted) return 'none';
     return 'none';
   };
@@ -30,7 +31,7 @@ export default function InputBoxSimple({
           height: '72px',
           padding: '0 16px',
           borderRadius: 8,
-          backgroundColor: '#F8FAFC',
+          backgroundColor: Colors.componentBackground, // ex. rgba(255,255,255,0.1) or 지정값
           border: getBorderStyle(),
           transition: 'border 0.2s ease',
         }}
@@ -50,16 +51,14 @@ export default function InputBoxSimple({
             border: 'none',
             outline: 'none',
             background: 'transparent',
-            fontSize: 16,
-            fontWeight: 400,
-            color: '#1E293B',
-            fontFamily: 'inherit',
+            ...FontStyles.body,
+            color: Colors.grey07,
           }}
         />
       </div>
 
       {isError && (
-        <span style={{ fontSize: 14, color: '#EF4444', marginLeft: 4 }}>
+        <span style={{ ...FontStyles.caption, color: Colors.systemRed, marginLeft: 4 }}>
           {errorMessage}
         </span>
       )}

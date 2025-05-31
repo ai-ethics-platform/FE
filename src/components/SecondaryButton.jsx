@@ -1,43 +1,43 @@
 import React, { useState } from 'react';
+import { Colors, FontStyles } from './styleConstants';
 
-export default function GrayButton({ disabled = false, children, style: externalStyle = {} }) {
+export default function GrayButton({ onClick, disabled = false, children, style: externalStyle = {} }) {
   const [isHover, setIsHover] = useState(false);
   const [isActive, setIsActive] = useState(false);
 
   const baseStyle = {
     borderRadius: '8px',
     padding: '16px 24px',
-    fontSize: '18px',
-    fontWeight: '400',
+    ...FontStyles.button,
     textAlign: 'center',
-    letterSpacing: '0.5px',
     lineHeight: '1.6',
+    letterSpacing: '0.5px',
     transition: 'all 0.2s ease',
     outline: 'none',
-    fontFamily: 'Pretendard, sans-serif',
     cursor: disabled ? 'not-allowed' : 'pointer',
-    backgroundColor: '#E3E8EF', // default
-    color: '#334155',
-    border: '1px solid #475569',
+    backgroundColor: Colors.grey02, // default
+    color: Colors.grey06,
+    border: `1px solid ${Colors.grey06}`,
   };
 
   if (disabled) {
-    baseStyle.backgroundColor = '#F1F5F9';
-    baseStyle.color = '#94A3B8';
-    baseStyle.border = '1px solid #CBD5E1';
+    baseStyle.backgroundColor = Colors.grey02;
+    baseStyle.color = Colors.grey04;
+    baseStyle.border = `1px solid ${Colors.grey03}`;
   } else if (isActive) {
-    baseStyle.backgroundColor = '#CBD5E1';
-    baseStyle.color = '#1E293B';
-    baseStyle.border = '2px solid #1E293B';
+    baseStyle.backgroundColor = Colors.grey03;
+    baseStyle.color = Colors.grey07;
+    baseStyle.border = `2px solid ${Colors.grey07}`;
   } else if (isHover) {
-    baseStyle.backgroundColor = '#E0E7EF';
+    baseStyle.backgroundColor = '#E0E7EF'; // 이 색상은 디자인 시스템에 없어서 임시 유지
     baseStyle.boxShadow = '0px 4px 12px rgba(0, 0, 0, 0.1)';
-    baseStyle.border = '1px solid #334155';
+    baseStyle.border = `1px solid ${Colors.grey06}`;
   }
 
   return (
     <button
-      style={{ ...baseStyle, ...externalStyle }} // 병합
+      onClick={onClick}
+      style={{ ...baseStyle, ...externalStyle }}
       disabled={disabled}
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => {

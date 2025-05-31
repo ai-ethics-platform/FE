@@ -1,29 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import arrowUp from '../assets/arrowUp.svg';
 import arrowDown from '../assets/arrowDown.svg';
+import { Colors, FontStyles } from './styleConstants';
 
-export default function SelectDrop({ options = [],  bgColor = '#F8FAFC', value = '', onSelect = () => {} }) {
+export default function SelectDrop({
+  options = [],
+  bgColor = Colors.componentBackground,
+  value = '',
+  onSelect = () => {},
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [selected, setSelected] = useState(value);
 
-  // 외부 value가 바뀌면 내부에도 반영
   useEffect(() => {
     setSelected(value);
   }, [value]);
 
-  const toggleDropdown = () => setIsOpen(prev => !prev);
+  const toggleDropdown = () => setIsOpen((prev) => !prev);
 
   const handleSelect = (option) => {
     setSelected(option);
     setIsOpen(false);
-    onSelect(option); // 외부로 값 전달!!
+    onSelect(option);
   };
 
   const wrapperStyle = {
     position: 'relative',
     width: '552px',
-    fontFamily: 'Pretendard, sans-serif',
+    ...FontStyles.body,
     userSelect: 'none',
   };
 
@@ -34,9 +39,9 @@ export default function SelectDrop({ options = [],  bgColor = '#F8FAFC', value =
     borderRadius: 8,
     backgroundColor: bgColor,
     border: isOpen
-      ? '1px solid #0F172A'
+      ? `1px solid ${Colors.grey07}`
       : isHovered
-      ? '1px solid #CBD5E1'
+      ? `1px solid ${Colors.grey04}`
       : 'none',
     display: 'flex',
     alignItems: 'center',
@@ -59,8 +64,8 @@ export default function SelectDrop({ options = [],  bgColor = '#F8FAFC', value =
 
   const optionStyle = {
     padding: '20px 16px',
-    fontSize: 16,
-    color: '#1E293B',
+    ...FontStyles.body,
+    color: Colors.grey07,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
   };
@@ -73,7 +78,7 @@ export default function SelectDrop({ options = [],  bgColor = '#F8FAFC', value =
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <span style={{ color: selected ? '#1E293B' : '#788388' }}>
+        <span style={{ color: selected ? Colors.grey07 : Colors.grey05 }}>
           {selected || '선택...'}
         </span>
         <img

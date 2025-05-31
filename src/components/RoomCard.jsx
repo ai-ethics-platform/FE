@@ -3,20 +3,12 @@ import frame from '../assets/cardframe.svg';
 import frameHover from '../assets/cardframehover.svg';
 import frameActive from '../assets/cardframeactive.svg';
 import lockIcon from '../assets/lock.svg';
-import createroom from '../assets/roomcreate.svg';
+import { Colors, FontStyles } from './styleConstants';
+import { CardSizes } from './stylecardsize';
 
-export default function RoomCard({ disabled = false }) {
+export default function RoomCard({ icon, title, description, disabled = false, onClick }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
-
-  const containerStyle = {
-    position: 'relative',
-    width: 360,
-    height: 480,
-    opacity: disabled ? 0.4 : 1,
-    pointerEvents: disabled ? 'none' : 'auto',
-    cursor: disabled ? 'default' : 'pointer',
-  };
 
   const getFrameImage = () => {
     if (isActive) return frameActive;
@@ -26,7 +18,15 @@ export default function RoomCard({ disabled = false }) {
 
   return (
     <div
-      style={containerStyle}
+      onClick={!disabled ? onClick : undefined} // ✅ onClick 처리
+      style={{
+        position: 'relative',
+        width: CardSizes.width,
+        height: CardSizes.height,
+        opacity: disabled ? 0.4 : 1,
+        pointerEvents: disabled ? 'none' : 'auto',
+        cursor: disabled ? 'default' : 'pointer',
+      }}
       onMouseEnter={() => !disabled && setIsHovered(true)}
       onMouseLeave={() => {
         setIsHovered(false);
@@ -35,7 +35,7 @@ export default function RoomCard({ disabled = false }) {
       onMouseDown={() => !disabled && setIsActive(true)}
       onMouseUp={() => setIsActive(false)}
     >
-      {/* 상태별 프레임 이미지 */}
+      {/* 카드 프레임 */}
       <img
         src={getFrameImage()}
         alt="프레임"
@@ -66,7 +66,7 @@ export default function RoomCard({ disabled = false }) {
         />
       )}
 
-      {/* 콘텐츠 영역 */}
+      {/* 콘텐츠 */}
       <div
         style={{
           position: 'relative',
@@ -77,40 +77,40 @@ export default function RoomCard({ disabled = false }) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          paddingTop: 100,
-          fontFamily: 'Pretendard, sans-serif',
-          color: '#1F2937',
+          paddingTop: CardSizes.playerTop,
+          color: Colors.grey07,
           textAlign: 'center',
         }}
       >
         <img
-          src={createroom}
-          alt="방 만들기"
-          style={{ width: 168, height: 168, marginBottom: 20 }}
+          src={icon}
+          alt="카드 아이콘"
+          style={{
+            width: CardSizes.icon.width,
+            height: CardSizes.icon.width,
+            marginBottom: 15,
+          }}
         />
-        <div style={{ fontWeight: 600, fontSize: 20, marginBottom: 16 }}>TEXT</div>
+        <div style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary, marginBottom: 15 }}>
+          {title}
+        </div>
         <div
           style={{
             width: '60%',
             height: 1,
-            backgroundColor: '#E5E7EB',
+            backgroundColor: Colors.grey01,
             marginBottom: 16,
           }}
         />
-        <input
-          type="text"
-          disabled={disabled}
-          placeholder="설명 텍스트를 입력해 주세요."
+        <div
           style={{
-            border: 'none',
-            backgroundColor: 'transparent',
-            fontSize: 14,
-            color: '#6B7280',
-            outline: 'none',
-            textAlign: 'center',
+            ...FontStyles.body,
+            color: Colors.grey06,
             width: '80%',
           }}
-        />
+        >
+          {description}
+        </div>
       </div>
     </div>
   );

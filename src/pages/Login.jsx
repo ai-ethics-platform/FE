@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -12,10 +13,11 @@ import lockIcon from '../assets/password.svg';
 import eyeOnIcon from '../assets/eyeon.svg';
 import eyeOffIcon from '../assets/eyeoff.svg';
 
+import { Colors, FontStyles } from '../components/styleConstants';
+
 export default function Login() {
   const navigate = useNavigate();
 
-  // 스크롤 제거
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -28,40 +30,50 @@ export default function Login() {
     <Background bgIndex={1}>
       <div
         style={{
-          minHeight: '100vh', // 정확한 높이 유지
+          minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          fontFamily: 'Pretendard, sans-serif',
-          padding: '0 24px', // 모바일 대응
+          padding: '0 24px',
           boxSizing: 'border-box',
           gap: 24,
+          fontFamily: FontStyles.body.fontFamily,
         }}
       >
-        <p style={{ fontSize: 20, fontWeight: 600 }}>
+        {/* 제목 */}
+         <p style={{ fontSize: 20, marginBottom: 0,fontWeight: 600 }}>
           AI 윤리 시뮬레이션 게임
         </p>
 
-        <Frame1 />
 
+
+        {/* 로고 프레임 */}
+        <Frame1 style={{ marginTop: 0 }} />
+
+        {/* 아이디 입력 */}
         <InputBoxLarge
           placeholder="아이디(이메일)을 입력해 주세요."
           leftIcon={profileIcon}
+          bgColor={Colors.componentBackgroundFloat}
         />
 
+        {/* 비밀번호 입력 */}
         <InputBoxLarge
           placeholder="비밀번호를 입력해 주세요."
           leftIcon={lockIcon}
           rightIconVisible={eyeOnIcon}
           rightIconHidden={eyeOffIcon}
           isPassword={true}
+          bgColor={Colors.componentBackgroundFloat}
         />
 
-        <PrimaryButton style={{ width: 552, height: 72 }}>
+        {/* 로그인 버튼 */}
+        <PrimaryButton style={{ width: 580, height: 72 }}>
           로그인
         </PrimaryButton>
 
+        {/* 링크 버튼들 */}
         <div
           style={{
             display: 'flex',
@@ -73,7 +85,8 @@ export default function Login() {
           <TextButton>비밀번호 찾기</TextButton>
         </div>
 
-        <SecondaryButton style={{ width: 552, height: 72 }}>
+        {/* 게스트 로그인 */}
+        <SecondaryButton style={{ width: 580, height: 72 }}>
           Guest로 로그인
         </SecondaryButton>
       </div>

@@ -11,6 +11,7 @@ import profileIcon from '../assets/login.svg';
 import lockIcon from '../assets/password.svg';
 import eyeOnIcon from '../assets/eyeon.svg';
 import eyeOffIcon from '../assets/eyeoff.svg';
+import { Colors } from '../components/styleConstants';
 
 export default function Signup02() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function Signup02() {
   const [birthDay, setBirthDay] = useState('');
   const [gender, setGender] = useState('');
   const [education, setEducation] = useState('');
+  const [grade, setGrade] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
@@ -48,6 +50,15 @@ export default function Signup02() {
     setter(onlyNums);
   };
 
+  const getGradeOptions = () => {
+    if (education === '중학생' || education === '고등학생') {
+      return ['1학년', '2학년', '3학년'];
+    } else if (education === '대학생') {
+      return ['1학년', '2학년', '3학년', '4학년'];
+    }
+    return [];
+  };
+
   const isFormValid = (() => {
     const emailValue = emailRef.current?.querySelector('input')?.value || '';
     return (
@@ -60,20 +71,21 @@ export default function Signup02() {
       Boolean(birthMonth.trim()) &&
       Boolean(birthDay.trim()) &&
       (gender === '남자' || gender === '여자') &&
-      Boolean(education)
+      Boolean(education) &&
+      Boolean(grade)
     );
   })();
 
   const inputStyle = {
     flex: 1,
     height: 62,
-    border: '1px solid #CBD5E1',
+    border: `1px solid ${Colors.grey02}`,
     borderRadius: 8,
     paddingLeft: 12,
     fontSize: 16,
-    width:190,
+    width: 190,
     outline: 'none',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: Colors.componentBackground,
     boxSizing: 'border-box',
     display: 'flex',
     alignItems: 'center'
@@ -83,41 +95,42 @@ export default function Signup02() {
     flex: 1,
     height: 48,
     borderRadius: 6,
-    border: '1.5px solid #334155',
-    backgroundColor: '#E2E8F0',
+    border: `1px solid ${Colors.grey06}`,
+    backgroundColor: Colors.grey02,
     textAlign: 'center',
     lineHeight: '48px',
     cursor: 'pointer',
     fontWeight: 600,
-    color: '#1E293B'
+    color: Colors.grey07
   };
 
   const unselectedGenderStyle = {
     flex: 1,
     height: 48,
     borderRadius: 6,
-    border: '1px solid #CBD5E1',
-    backgroundColor: '#F1F5F9',
+    border: `0.5px solid ${Colors.grey02}`,
+    backgroundColor: Colors.componentBackground,
     textAlign: 'center',
     lineHeight: '48px',
     cursor: 'pointer',
     fontWeight: 400,
-    color: '#1E293B'
+    color: Colors.grey07
   };
 
-  const grayBackground = '#F1F5F9';
+  const grayBackground = Colors.grey01;
 
   return (
-    <Background bgIndex={1}>
+    <Background bgIndex={2}>
       <div
         style={{
           maxWidth: 552,
           margin: '0 auto',
           padding: '40px 24px',
           fontFamily: 'Pretendard, sans-serif',
-          color: '#1E293B',
+          color: Colors.grey07,
         }}
       >
+        {/* 헤더 */}
         <div style={{ position: 'relative', marginBottom: 40 }}>
           <img
             src={backIcon}
@@ -143,7 +156,7 @@ export default function Signup02() {
           <div style={{ marginBottom: 16 }} ref={emailRef}>
             <InputBoxLarge placeholder="아이디(이메일)" leftIcon={profileIcon} bgColor={grayBackground} />
           </div>
-          {emailError && <div style={{ color: '#EF4444', fontSize: 12, marginBottom: 16 }}>{emailError}</div>}
+          {emailError && <div style={{ color: Colors.systemRed, fontSize: 12, marginBottom: 16 }}>{emailError}</div>}
 
           <div style={{ marginBottom: 16 }}>
             <PasswordCheck
@@ -169,7 +182,7 @@ export default function Signup02() {
               isPassword
               bgColor={grayBackground}
             />
-            {passwordError && <div style={{ color: '#EF4444', fontSize: 12, marginTop: 4 }}>{passwordError}</div>}
+            {passwordError && <div style={{ color: Colors.systemRed, fontSize: 12, marginTop: 4 }}>{passwordError}</div>}
           </div>
         </div>
 
@@ -197,14 +210,29 @@ export default function Signup02() {
 
         {/* 학업 상태 */}
         <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>현재 학업 상태</div>
-        <div style={{ marginBottom: 40 }}>
+        <div style={{ marginBottom: 16 }}>
           <SelectDrop
             options={['중학생', '고등학생', '대학생']}
             value={education}
-            onSelect={(option) => setEducation(option)}
+            onSelect={(option) => {
+              setEducation(option);
+              setGrade('');
+            }}
             bgColor={grayBackground}
           />
         </div>
+
+        {/* 학년 드롭다운 */}
+        {education && (
+          <div style={{ marginBottom: 40 }}>
+            <SelectDrop
+              options={getGradeOptions()}
+              value={grade}
+              onSelect={(option) => setGrade(option)}
+              bgColor={grayBackground}
+            />
+          </div>
+        )}
 
         {/* 다음 버튼 */}
         <div style={{ textAlign: 'center' }}>

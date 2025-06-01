@@ -58,7 +58,7 @@ export default function ContentTextBox2({
             </React.Fragment>
         ))}
           </div>
-          <div style={{ ...FontStyles.subtitle, color: Colors.grey04 }}>{typedSub}</div>
+          <div style={{ ...FontStyles.subtitle, color: Colors.grey06 }}>{typedSub}</div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

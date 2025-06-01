@@ -35,35 +35,36 @@ export default function UserProfile({
   characterDesc = '',
   isLeader = false,
   isMe = false,
+  ...rest              // onClick, className, style 등
 }) {
   const isDetailed = characterDesc?.trim() !== '';
   const color = colorMap[player] || Colors.player1P;
-  const icon = isDetailed ? profileMap[player] : iconMap[player];
+  const icon  = isDetailed ? profileMap[player] : iconMap[player];
+
+  // ① rest에서 style만 분리
+  const { style: externalStyle, ...divProps } = rest;
+
+  // ② 기본 스타일
+  const baseStyle = {
+    position: 'relative',
+    width: 200,
+    height: 96,
+    backgroundColor: Colors.grey01,
+    padding: '12px 12px 12px 20px',
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+  };
 
   return (
-    <div
-      style={{
-        position: 'relative', 
-        width: 200,
-        height: 96,
-        backgroundColor: Colors.grey01,
-        padding: '12px 12px 12px 20px', 
-        boxSizing: 'border-box',
-        display: 'flex',
-        alignItems: 'center',
-      }}
-    >
+    // ③ style은 한 번만!
+    <div {...divProps} style={{ ...baseStyle, ...externalStyle }}>
       {isMe && (
         <img
           src={speakingIcon}
-          alt="말하는 중"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: 8,
-            height: '100%',
-          }}
+          alt="내 차례 표시"
+          style={{ position: 'absolute', top: 0, left: 0, width: 8, height: '100%' }}
         />
       )}
 
@@ -82,41 +83,19 @@ export default function UserProfile({
       >
         <img
           src={icon}
-          alt="player"
-          style={{
-            width: 70,
-            height: 70,
-            objectFit: 'cover',
-            borderRadius: '50%',
-          }}
+          alt={`${player} 아이콘`}
+          style={{ width: 70, height: 70, objectFit: 'cover', borderRadius: '50%' }}
         />
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          marginLeft: 12,
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            lineHeight: 1,
-          }}
-        >
+      <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', lineHeight: 1 }}>
           <span style={{ ...FontStyles.bodyBold, color }}>{player}</span>
           {isLeader && (
             <img
               src={crownIcon}
-              alt="리더"
-              style={{
-                width: 20,
-                height: 20,
-                marginLeft: 6,
-              }}
+              alt="방장"
+              style={{ width: 20, height: 20, marginLeft: 6 }}
             />
           )}
         </div>
@@ -141,4 +120,3 @@ export default function UserProfile({
     </div>
   );
 }
-

@@ -15,17 +15,14 @@ import profile3 from '../assets/3playerprofile.svg';
 
 import { Colors, FontStyles } from '../components/styleConstants';
 
-/* 예시 집계 데이터 (서버/컨텍스트에서 가져오는 영역) */
 const agreed    = ['1P', '2P'];
 const disagreed = ['3P'];
 
-/* 아바타 매핑 */
 const avatarOf = { '1P': profile1, '2P': profile2, '3P': profile3 };
 
 export default function Game04() {
-  /* 🔑 여기만 변경: agreement 키로 받기 */
   const { state } = useLocation();
-  const myVote = state?.agreement ?? null;     // 'agree' | 'disagree' | null
+  const myVote = state?.agreement ?? null;     
 
   const navigate = useNavigate();
   const handleContinue = () => navigate('/game05');

@@ -5,18 +5,19 @@ import Background from '../components/Background';
 import UserProfile from '../components/Userprofile';
 import ContentTextBox from '../components/ContentTextBox';
 import GameFrame from '../components/GameFrame';
-
+import closeIcon from "../assets/close.svg";
+// --- 4컷 만화 원본 ---
 import img1 from '../assets/images/Android_dilemma1_1.jpg';
 import img2 from '../assets/images/Android_dilemma1_2.jpg';
 import img3 from '../assets/images/Android_dilemma1_3.jpg';
 import img4 from '../assets/images/Android_dilemma1_4.jpg';
-
 const images = [img1, img2, img3, img4];
 
-//주제, 소주제에 따라 다른 페이지가 나와야하는데 이 페이지를 이미지만 다른걸 보여주는걸로 할지 페이지 자체를 아예 다 만들지는 고민해봐야할 듯 
-//현재는 UI 적으로 완성만해둔 상태이다 
-// 또한 3명의 서버가 연결될때 수정해야하는 부분이 마이크 키고, 유저에 따라 달라 보여야하는 화면, 다음 버튼 넘기는 부분 ! 
-// 중간중간 UI적으로만 임시로 해둔게 꽤 많음 
+// --- 팝업용 프로필 사진 ---
+import profile1Img from '../assets/images/CharacterPopUp1.png';
+import profile2Img from '../assets/images/CharacterPopUp2.png';
+import profile3Img from '../assets/images/CharacterPopUp3.png';
+const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
 export default function Game02() {
   const navigate = useNavigate();
@@ -39,13 +40,60 @@ export default function Game02() {
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [openProfile, setOpenProfile] = useState(null); // null | "1P" | "2P" | "3P"
 
-  const handleContinue = () => {
-    navigate('/game03');
-  };
+  const handleContinue = () => navigate('/game03');
 
   return (
     <Background bgIndex={3}>
+      {/* ===== 팝업 레이어 ===== */}
+      {openProfile && (
+        <div
+          onClick={() => setOpenProfile(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 2000,
+          }}
+        >
+          {/* 모달 본체 (클릭 전파 차단) */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              background: '#fff',
+              padding: 32,
+              borderRadius: 12,
+              boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
+            }}
+          >
+            <img
+              src={profileImages[openProfile]}
+              alt={`${openProfile} profile`}
+              style={{ width: 360, height: 'auto' }}
+            />
+            <img
+   src={closeIcon}
+   alt="close"
+   onClick={() => setOpenProfile(null)}   // 모달 닫기
+   style={{
+     position: 'absolute',
+     top: 24,
+     right: 24,
+     width: 40,
+     height: 40,
+     cursor: 'pointer',
+   }}
+ />
+          </div>
+        </div>
+      )}
+
+      {/* ===== 본문 ===== */}
       <div
         style={{
           position: 'fixed',
@@ -60,9 +108,26 @@ export default function Game02() {
         {/* 유저 프로필 */}
         <div style={{ position: 'absolute', top: 60, left: 0 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <UserProfile player="1P" characterDesc="요양보호사" isLeader />
-            <UserProfile player="2P" characterDesc="노모 L" />
-            <UserProfile player="3P" characterDesc="자녀J" isMe />
+            <UserProfile
+              player="1P"
+              characterDesc="요양보호사"
+              isLeader
+              style={{ cursor: 'pointer' }}
+              onClick={() => setOpenProfile('1P')}
+            />
+            <UserProfile
+              player="2P"
+              characterDesc="노모 L"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setOpenProfile('2P')}
+            />
+            <UserProfile
+              player="3P"
+              characterDesc="자녀J"
+              isMe
+              style={{ cursor: 'pointer' }}
+              onClick={() => setOpenProfile('3P')}
+            />
           </div>
         </div>
 
@@ -78,7 +143,7 @@ export default function Game02() {
           <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
         </div>
 
-        {/* 이미지 + 텍스트 */}
+        {/* 만화 + 텍스트 박스 */}
         <div
           style={{
             position: 'absolute',

@@ -5,9 +5,11 @@ import ContentBox2 from '../components/ContentBox2';
 import Continue from '../components/Continue';
 import { useNavigate } from 'react-router-dom';
 import { FontStyles } from '../components/styleConstants';
-
+import GameFrame from '../components/GameFrame';
 export default function GameIntro() {
   const navigate = useNavigate();
+  const subtopic = '가정 1';
+
   const fullText =
    '  우리 가족은 최종적으로  감정 업데이트에 동의하였고, \n' +
 '   HomeMate와 더욱 친밀한 교류를 이어나가게 되었습니다. \n\n' +
@@ -41,13 +43,17 @@ export default function GameIntro() {
     <UserProfile player="2P" characterDesc="노모 L" />
     <UserProfile player="3P" characterDesc="자녀J" isMe />
   </div>
-</div>
+     </div>
 
+         {/* GameFrame */}
+        <div style={{ position: 'absolute', top: 120, left: '50%', transform: 'translateX(-50%)' }}>
+        <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
+        </div>
         <div style={{
         ...FontStyles.title,
         position: 'absolute',
-        top: 238,
-        left: 432,
+        top: 236,
+        left: 390,
         width: 936,
         height: 467,
         display: 'flex',

@@ -1,0 +1,35 @@
+import { useState, useEffect, useRef } from 'react';
+
+export default function useTypingEffect(text = '', speed = 50, onComplete) {
+  const [displayedText, setDisplayedText] = useState('');
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (!text) return;
+
+    setDisplayedText('');
+    let i = 0;
+
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = setInterval(() => {
+      if (i < text.length) {
+        setDisplayedText((prev) => prev + text.charAt(i));
+        i++;
+      } else {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+        onComplete?.();
+      }
+    }, speed);
+
+    return () => {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    };
+  }, [text]);
+
+  return displayedText;
+}

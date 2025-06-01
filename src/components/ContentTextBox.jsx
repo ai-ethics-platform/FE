@@ -1,94 +1,125 @@
 import React, { useState } from 'react';
-import contentbox from '../assets/contentbox.svg';
+import contentbox from '../assets/contentBox1.svg';
 import pagnationLeft from '../assets/paginationleft.svg';
 import pagnationRight from '../assets/paginationright.svg';
-import pagnationBoth from '../assets/paginationboth.svg';
-import continueBtn from '../assets/readydefault.svg';
+import pagnationBothL from '../assets/pagnationbothL.svg';
+import pagnationBothR from '../assets/pagnationbothR.svg';
 import { Colors, FontStyles } from './styleConstants';
+import Continue from './Continue';
+import useTypingEffect from '../hooks/useTypingEffect';
 
-export default function StoryInputBox({ paginationType = 'both' }) {
-  const [text, setText] = useState('');
-  const maxLines = 3;
+export default function ContentTextBox({
+  paragraphs = [],
+  currentIndex = 0,
+  setCurrentIndex = () => {},
+  onContinue = () => {},
+}) {
+  const [typingDone, setTypingDone] = useState(false);
 
-  const handleChange = (e) => {
-    const lines = e.target.value.split('\n');
-    if (lines.length <= maxLines) {
-      setText(e.target.value);
+  const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };
+  const typedMain = useTypingEffect(currentParagraph.main, 70, () => {
+    setTypingDone(true);
+  });
+  const typedSub = typingDone ? currentParagraph.sub : '';
+
+  const handlePrev = () => {
+    if (!typingDone) return;
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+      setTypingDone(false);
     }
   };
 
-  const paginationIcons = {
-    left: pagnationLeft,
-    right: pagnationRight,
-    both: pagnationBoth,
+  const handleNext = () => {
+    if (!typingDone) return;
+    if (currentIndex < paragraphs.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      setTypingDone(false);
+    } else {
+      onContinue();
+    }
   };
 
+  const showLeft = currentIndex > 0;
+  const showRight = currentIndex < paragraphs.length - 1;
+
   return (
-    <div style={{ position: 'relative', width: 740, height: 180 }}>
-      {/* 프레임 이미지 */}
+    <div style={{ position: 'relative', width: 960, height: 200 }}>
       <img
         src={contentbox}
         alt="frame"
         style={{
           position: 'absolute',
-          top: 0,
-          left: 0,
+          inset: 0,
           width: '100%',
           height: '100%',
-          objectFit: 'cover',
+          objectFit: 'contain',
           zIndex: 0,
         }}
       />
 
-      {/* 콘텐츠 영역 */}
       <div
         style={{
           position: 'absolute',
-          top: 24,
-          left: 24,
-          right: 24,
+          top: 50,
+          left: 32,
+          right: 32,
           bottom: 24,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           zIndex: 1,
-          ...FontStyles.caption,
         }}
       >
-        {/* 설명 텍스트 */}
-        <div style={{ ...FontStyles.caption, fontWeight: 600, color: Colors.grey07 }}>
-          메인 스토리 내용을 입력해 주세요. 최대 3줄까지 입력이 가능합니다. 3줄 입력 시에 서브 텍스트 삽입은 불가능해요
+        {/* 텍스트 */}
+        <div>
+          <div style={{ ...FontStyles.title, color: Colors.brandPrimary, marginBottom: 3 }}>
+            {typedMain.split('\n').map((line, idx) => (
+              <React.Fragment key={idx}>
+                {line}
+                <br />
+              </React.Fragment>
+            ))}
+          </div>
+          <div style={{ ...FontStyles.subtitle, color: Colors.grey04 }}>{typedSub}</div>
         </div>
 
-        {/* 입력 필드 */}
-        <textarea
-          placeholder="(서브 텍스트를 입력해 주세요.)"
-          value={text}
-          onChange={handleChange}
-          rows={3}
-          style={{
-            width: '100%',
-            border: 'none',
-            backgroundColor: 'transparent',
-            resize: 'none',
-            color: Colors.grey05,
-            ...FontStyles.caption,
-            outline: 'none',
-          }}
-        />
-
-        {/* 하단 버튼 및 페이지네이션 */}
+        {/* 네비 + 버튼 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <img
-            src={paginationIcons[paginationType]}
-            alt="pagination"
-            style={{ height: 24 }}
-          />
-          <img
-            src={continueBtn}
-            alt="Continue"
-            style={{ height: 48, cursor: 'pointer' }}
-          />
+          <div style={{ display: 'flex', gap: 16 }}>
+            {showLeft && (
+              <img
+                src={showRight ? pagnationBothL : pagnationLeft}
+                alt="prev"
+                style={{
+                  marginBottom: 20,
+                  height: 24,
+                  cursor: typingDone ? 'pointer' : 'default',
+                  opacity: typingDone ? 1 : 0.3,
+                }}
+                onClick={handlePrev}
+              />
+            )}
+            {showRight && (
+              <img
+                src={showLeft ? pagnationBothR : pagnationRight}
+                alt="next"
+                style={{
+                  marginBottom: 20,
+                  height: 24,
+                  cursor: typingDone ? 'pointer' : 'default',
+                  opacity: typingDone ? 1 : 0.3,
+                }}
+                onClick={handleNext}
+              />
+            )}
+          </div>
+
+          {typingDone && currentIndex === paragraphs.length - 1 && (
+            <div style={{ marginBottom: 20 }}>
+              <Continue width={264} height={72} step={paragraphs.length} onClick={onContinue} />
+            </div>
+          )}
         </div>
       </div>
     </div>

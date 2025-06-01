@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Colors, FontStyles } from './styleConstants';
-
-export default function InputBoxSimple({
+export default function InputBoxSmall({
   placeholder = '플레이스 홀더 텍스트를 입력해 주세요.',
   errorMessage = '',
+  width = 480,
+  height = 56,
+  value = '',
+  onChange = () => {},
 }) {
-  const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -22,16 +24,22 @@ export default function InputBoxSimple({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'Pretendard, sans-serif' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        fontFamily: 'Pretendard, sans-serif',
+      }}
+    >
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          width: '360px',
-          height: '72px',
+          width: typeof width === 'number' ? `${width}px` : width,
+          height: typeof height === 'number' ? `${height}px` : height,
           padding: '0 16px',
-          borderRadius: 8,
-          backgroundColor: Colors.componentBackground, // ex. rgba(255,255,255,0.1) or 지정값
+          backgroundColor: Colors.componentBackground,
           border: getBorderStyle(),
           transition: 'border 0.2s ease',
         }}
@@ -41,9 +49,9 @@ export default function InputBoxSimple({
         <input
           type="text"
           value={value}
+          onChange={onChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          onChange={(e) => setValue(e.target.value)}
           placeholder={isTyping || isCompleted ? '' : placeholder}
           style={{
             flex: 1,
@@ -58,7 +66,13 @@ export default function InputBoxSimple({
       </div>
 
       {isError && (
-        <span style={{ ...FontStyles.caption, color: Colors.systemRed, marginLeft: 4 }}>
+        <span
+          style={{
+            ...FontStyles.caption,
+            color: Colors.systemRed,
+            marginLeft: 4,
+          }}
+        >
           {errorMessage}
         </span>
       )}

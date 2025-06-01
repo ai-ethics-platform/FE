@@ -9,6 +9,9 @@ import profile1 from '../assets/1playerprofile.svg';
 import profile2 from '../assets/2playerprofile.svg';
 import profile3 from '../assets/3playerprofile.svg';
 
+import crownIcon from '../assets/crown.svg';
+import speakingIcon from '../assets/speaking.svg'; 
+
 const colorMap = {
   '1P': Colors.player1P,
   '2P': Colors.player2P,
@@ -27,7 +30,12 @@ const profileMap = {
   '3P': profile3,
 };
 
-export default function UserProfile({ player = '1P', characterDesc = '' }) {
+export default function UserProfile({
+  player = '1P',
+  characterDesc = '',
+  isLeader = false,
+  isMe = false,
+}) {
   const isDetailed = characterDesc?.trim() !== '';
   const color = colorMap[player] || Colors.player1P;
   const icon = isDetailed ? profileMap[player] : iconMap[player];
@@ -35,21 +43,34 @@ export default function UserProfile({ player = '1P', characterDesc = '' }) {
   return (
     <div
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
+        position: 'relative', 
         width: 200,
         height: 96,
         backgroundColor: Colors.grey01,
-        padding: 12,
-        borderRadius: 8,
+        padding: '12px 12px 12px 20px', 
         boxSizing: 'border-box',
+        display: 'flex',
+        alignItems: 'center',
       }}
     >
+      {isMe && (
+        <img
+          src={speakingIcon}
+          alt="말하는 중"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: 8,
+            height: '100%',
+          }}
+        />
+      )}
+
       <div
         style={{
-          width: 48,
-          height: 48,
+          width: 64,
+          height: 64,
           borderRadius: '50%',
           backgroundColor: !isDetailed ? color : 'transparent',
           display: 'flex',
@@ -63,8 +84,8 @@ export default function UserProfile({ player = '1P', characterDesc = '' }) {
           src={icon}
           alt="player"
           style={{
-            width: 48,
-            height: 48,
+            width: 70,
+            height: 70,
             objectFit: 'cover',
             borderRadius: '50%',
           }}
@@ -75,10 +96,31 @@ export default function UserProfile({ player = '1P', characterDesc = '' }) {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: isDetailed ? 'center' : 'flex-start',
+          justifyContent: 'center',
+          marginLeft: 12,
         }}
       >
-        <div style={{ ...FontStyles.bodyBold, color }}>{player}</div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            lineHeight: 1,
+          }}
+        >
+          <span style={{ ...FontStyles.bodyBold, color }}>{player}</span>
+          {isLeader && (
+            <img
+              src={crownIcon}
+              alt="리더"
+              style={{
+                width: 20,
+                height: 20,
+                marginLeft: 6,
+              }}
+            />
+          )}
+        </div>
+
         {isDetailed && (
           <div
             style={{
@@ -89,6 +131,7 @@ export default function UserProfile({ player = '1P', characterDesc = '' }) {
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              lineHeight: 1.2,
             }}
           >
             {characterDesc}
@@ -98,3 +141,4 @@ export default function UserProfile({ player = '1P', characterDesc = '' }) {
     </div>
   );
 }
+

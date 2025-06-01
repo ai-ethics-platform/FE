@@ -3,7 +3,7 @@ export const Colors = {
     brandPrimary: '#354750',
     brandGradientStart: '#6E7C7D',
     brandGradientEnd: '#192D3A',
-
+    brandDark:'192D3A',
     componentBackground: 'rgba(255, 255, 255, 0.1)',
     componentBackgroundActive: 'rgba(53, 71, 80, 0.05)',
     componentBackgroundFloat: 'rgba(230, 236, 239, 0.7)',

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Colors, FontStyles } from './styleConstants';
 
-export default function GrayButton({ onClick, disabled = false, children, style: externalStyle = {} }) {
+export default function SecondaryButton({ onClick, disabled = false, children, style: externalStyle = {} }) {
   const [isHover, setIsHover] = useState(false);
   const [isActive, setIsActive] = useState(false);
 

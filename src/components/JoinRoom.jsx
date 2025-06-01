@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
 
-export default function JoinRoom({ onClose, onJoin }) {
+export default function JoinRoom({ onClose }) {
   const [roomCode, setRoomCode] = useState('');
+  const navigate = useNavigate(); 
 
   const isValidCode = roomCode.length === 6;
 
@@ -12,6 +14,12 @@ export default function JoinRoom({ onClose, onJoin }) {
     const value = e.target.value;
     if (/^\d*$/.test(value)) {
       setRoomCode(value.slice(0, 6));
+    }
+  };
+
+  const handleJoin = () => {
+    if (isValidCode) {
+      navigate('/waitingroom'); 
     }
   };
 
@@ -75,7 +83,7 @@ export default function JoinRoom({ onClose, onJoin }) {
       {/* 입장 버튼 */}
       <PrimaryButton
         disabled={!isValidCode}
-        onClick={() => onJoin(roomCode)}
+        onClick={handleJoin} 
         style={{
           width: 168,
           height: 72,

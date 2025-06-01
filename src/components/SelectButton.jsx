@@ -1,25 +1,38 @@
 import React, { useState } from 'react';
 import { Colors, FontStyles } from './styleConstants';
 
-export default function SelectCardToggle({ label = '버튼 텍스트' }) {
-  const [selected, setSelected] = useState(false);
+export default function SelectButton({
+  label = '버튼 텍스트',
+  selected: controlledSelected,
+  onClick,
+  width = 200,
+  height = 56,
+}) {
+  const [internalSelected, setInternalSelected] = useState(false);
+  const isControlled = controlledSelected !== undefined;
+  const selected = isControlled ? controlledSelected : internalSelected;
   const [isHovered, setIsHovered] = useState(false);
 
-  const toggle = () => setSelected(prev => !prev);
+  const handleClick = () => {
+    if (isControlled) {
+      onClick?.();
+    } else {
+      setInternalSelected((prev) => !prev);
+    }
+  };
 
   const getBorderColor = () => {
-    if (selected) return Colors.grey07;      // #1E293B
-    if (isHovered) return Colors.grey04;     // #CBD5E1
+    if (selected) return Colors.grey07; // #1E293B
+    if (isHovered) return Colors.grey04; // #CBD5E1
     return 'transparent';
   };
 
   const getBackgroundColor = () => {
-    if (selected) return '#E2E8F0'; // 지정되지 않은 색상이므로 그대로 유지하거나 별도 상수화 가능
-    return Colors.componentBackground; // '#F8FAFC'
+    if (selected) return '#E2E8F0'; // 
+    return Colors.componentBackground; // 
   };
 
   const style = {
-    borderRadius: 8,
     backgroundColor: getBackgroundColor(),
     border: `1.5px solid ${getBorderColor()}`,
     ...FontStyles.body,
@@ -29,13 +42,15 @@ export default function SelectCardToggle({ label = '버튼 텍스트' }) {
     justifyContent: 'center',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    padding: '16px 24px',
+    width,
+    height,
+    userSelect: 'none',
   };
 
   return (
     <div
       style={style}
-      onClick={toggle}
+      onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

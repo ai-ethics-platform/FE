@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import back from '../assets/back.svg';
 import { Colors, FontStyles } from './styleConstants';
 
-export default function ArrowButton({ disabled = false }) {
+export default function BackButton({ disabled = false }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
 

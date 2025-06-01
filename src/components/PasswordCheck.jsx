@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Colors, FontStyles } from './styleConstants';
 
-export default function InputBoxLarge({
+export default function PasswordCheck({
   placeholder = '플레이스 홀더 텍스트를 입력해 주세요.',
   errorMessage = '',
   leftIcon = null,

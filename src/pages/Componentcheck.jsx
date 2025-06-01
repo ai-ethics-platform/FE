@@ -41,7 +41,13 @@ import CloseButton from '../components/CloseButton';
 import nocheckbutton from '../assets/nocheckbutton.svg';
 import checkbutton from '../assets/checkbutton.svg';
 import JoinRoom from '../components/JoinRoom';
+import ContentBox2 from '../components/ContentBox2';
+import GameFrame from '../components/GameFrame';
 
+const fullText = `지금은 20XX년,\n국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
+  `이 로봇의 기능은 아래와 같습니다.\n` +
+  `• 가족의 감정, 건강 상태, 생활 습관 등을 입력하면 맞춤형 알림, 식단 제안 등의 서비스를 제공\n` +
+  `• 기타 업데이트 시 정교화된 서비스 추가 가능`; 
 export default function Componentcheck() {
     return (
       <Background bgIndex={2}>
@@ -80,12 +86,15 @@ export default function Componentcheck() {
       <img src = {cardframe}/>
       <img src={nocheckbutton}/>
       <img src={checkbutton}/> 
+
+
       </div>
      {/* CreateRoom 컴포넌트와 버튼 사이에 여백 추가 */}
      <div style={{ marginTop: 32, position: 'relative', zIndex: 10 }}>
         <CreateRoom />
       </div>
-
+<UserProfile player="1P" characterDesc="" isLeader={true} />
+<UserProfile player="2P" characterDesc="디테일 있음" />
       {/* 버튼 클릭 불가 문제 해결을 위해 zIndex 부여 */}
       <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
         <PrimaryButton disabled={false}>버튼 텍스트</PrimaryButton>
@@ -147,6 +156,22 @@ export default function Componentcheck() {
    <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
     <JoinRoom />
     </div>
+    <ContentBox2 text={fullText} typingSpeed={50} />
+
+<ContentTextBox
+  paragraphs={[
+    { main: ' AI가 인간처럼 말할 수 있을까요?', sub: '(AI가 말하는 능력에 대한 의문)' },
+    { main: '말할 수 있다는 것은 단순한 언어 모방을 넘어서요.', sub: '(의미 이해와 감정을 담는 능력)' },
+    { main: ' 우리가 이를 윤리적으로 어떻게 받아들여야 할까요?', sub: '(AI와 윤리의 접점)' },
+  ]}
+  onContinue={() => console.log('모든 단락 끝!')}
+/>
+
+<div style={{ position: 'absolute', top: 120, left: 584 }}>
+  <GameFrame
+    topic='안드로이드'
+  />
+</div>
     </Background>
     );
   }

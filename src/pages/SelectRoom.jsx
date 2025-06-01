@@ -9,8 +9,9 @@ import CreateRoom from '../components/CreateRoom';
 import createIcon from '../assets/roomcreate.svg';
 import joinIcon from '../assets/joinviacode.svg';
 import randomIcon from '../assets/joinrandom.svg';
+import { FontStyles,Colors } from '../components/styleConstants';
 
-export default function SelectRoom() {
+export default function SelectRoom() { 
   const navigate = useNavigate();
   const [isLogoutPopupOpen, setIsLogoutPopupOpen] = useState(false); // 팝업 상태
 const [isJoinRoomOpen, setIsJoinRoomOpen] = useState(false);
@@ -130,14 +131,14 @@ const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
       left: 0,
       width: '100vw',
       height: '100vh',
-      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      backgroundColor: 'rgba(103, 103, 103, 0.4)',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 100,
     }}
   >
-    <CreateRoom onClose={() => setIsCreateRoomOpen(false)} />
+    <CreateRoom disabled={true} onClose={() => setIsCreateRoomOpen(false)} />
   </div>
 )}
     </Background>

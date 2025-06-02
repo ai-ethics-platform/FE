@@ -10,7 +10,6 @@ import character3 from '../assets/images/Char3.jpg';
 
 export default function Game01() {
   const navigate = useNavigate();
-
   const images = [character1, character2, character3];
   const subtopic = '가정 1';
 
@@ -35,58 +34,125 @@ export default function Game01() {
   return (
     <Background bgIndex={3}>
       <style>{`
-        html,body,#root{height:100%;margin:0;}
-        /* viewport left-align horizontally, center vertically */
-        .g01-viewport{position:fixed;inset:0;display:flex;justify-content:flex-start;align-items:center;overflow:hidden;}
-        .g01-root{width:1280px;height:720px;transform-origin:top left;}
-        .g01-wrapper{display:grid;grid-template-columns:220px 1fr;width:100%;height:100%;}
-        .g01-sidebar{padding:20px 0;display:flex;flex-direction:column;gap:24px;align-items:flex-start;}
-        .g01-stage{display:flex;flex-direction:column;align-items:center;padding:40px 24px 32px;}
-        .g01-gameframe{width:100%;max-width:500px;margin-bottom:32px;}
-        .g01-gallery{display:flex;gap:24px;margin-bottom:32px;}
-        .g01-gallery img{width:264px;height:360px;object-fit:cover;border-radius:4px;}
-        .g01-textbox{width:100%;max-width:900px;}
-        /* mobile */
-        @media(max-width:1024px){
-          .g01-viewport{position:static;display:block;overflow:auto;}
-          .g01-root{width:100%;height:auto;transform:none!important;}
-          .g01-wrapper{grid-template-columns:1fr;}
-          .g01-sidebar{flex-direction:row;justify-content:center;padding:12px 0;}
-          .g01-gallery{flex-direction:column;align-items:center;}
-          .g01-gallery img{width:clamp(200px,80vw,264px);height:auto;}
+        html, body, #root {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden;
+        }
+
+        .g01-viewport {
+          width: 100vw;
+          height: 100vh;
+          position: relative;
+        }
+
+        .g01-sidebar {
+          position: fixed;
+          top: 31.5%;
+          left: 0;
+          transform: translateY(-50%);
+          width: 220px;
+          padding: 20px 0;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          align-items: flex-start;
+        }
+
+        .g01-content {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scale(${zoom});
+          transform-origin: top center;
+          width: 1060px; /* 1280 - 220 (sidebar) */
+        }
+
+        .g01-inner {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 32px;
+        }
+
+        .g01-gameframe {
+          width: 100%;
+          max-width: 500px;
+        }
+
+        .g01-gallery {
+          display: flex;
+          gap: 24px;
+        }
+
+        .g01-gallery img {
+          width: 264px;
+          height: 360px;
+          object-fit: cover;
+          border-radius: 4px;
+        }
+
+        .g01-textbox {
+          width: 100%;
+          max-width: 900px;
+        }
+
+        @media (max-width: 1024px) {
+          .g01-sidebar {
+            position: static;
+            flex-direction: row;
+            justify-content: center;
+            width: 100%;
+            transform: none;
+          }
+
+          .g01-content {
+            position: static;
+            transform: none !important;
+            width: 100%;
+            padding: 16px;
+          }
+
+          .g01-gallery {
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .g01-gallery img {
+            width: clamp(200px, 80vw, 264px);
+            height: auto;
+          }
         }
       `}</style>
 
       <div className="g01-viewport">
-        <div
-          className="g01-root"
-          style={{ position:'absolute', top:'50%', left:0, transform:`translateY(-50%) scale(${zoom})` }}
-        >
-          <div className="g01-wrapper">
-           
-            <aside className="g01-sidebar">
-              <UserProfile player="1P" isLeader />
-              <UserProfile player="2P" isSpeaking />
-              <UserProfile player="3P" />
-            </aside>
+        {/* 왼쪽 고정 사이드바 */}
+        <aside className="g01-sidebar">
+          <UserProfile player="1P" isLeader />
+          <UserProfile player="2P" isSpeaking />
+          <UserProfile player="3P" />
+        </aside>
 
-            
-            <section className="g01-stage">
-              <div className="g01-gameframe">
-                <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
-              </div>
+        {/* 브라우저 정중앙 콘텐츠 */}
+        <div className="g01-content">
+          <div className="g01-inner">
+            <div className="g01-gameframe">
+              <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
+            </div>
 
-              
-              <div className="g01-gallery">
-                {images.map((src, idx) => (
-                  <img key={idx} src={src} alt={`Character ${idx + 1}`} />
-                ))}
-              </div>
+            <div className="g01-gallery">
+              {images.map((src, idx) => (
+                <img key={idx} src={src} alt={`Character ${idx + 1}`} />
+              ))}
+            </div>
 
-              <div className="g01-textbox">
-                <ContentTextBox paragraphs={paragraphs} onContinue={() => navigate('/character_description1')} />
-              </div>
-            </section>
+            <div className="g01-textbox">
+              <ContentTextBox
+                paragraphs={paragraphs}
+                onContinue={() => navigate('/character_description1')}
+              />
+            </div>
           </div>
         </div>
       </div>

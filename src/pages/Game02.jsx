@@ -57,34 +57,120 @@ export default function Game02() {
   return (
     <Background bgIndex={3}>
       <style>{`
-        html,body,#root{height:100%;margin:0;}
-        /* viewport identical to Game01 */
-        .g02-viewport{position:fixed;inset:0;display:flex;justify-content:flex-start;align-items:center;overflow:hidden;}
-        .g02-root{width:1280px;height:720px;transform-origin:top left;}
-        .g02-wrapper{display:grid;grid-template-columns:220px 1fr;width:100%;height:100%;}
-        .g02-sidebar{padding:20px 0;display:flex;flex-direction:column;gap:24px;align-items:flex-start;}
-        .g02-stage{display:flex;flex-direction:column;align-items:center;padding:40px 24px 32px;}
-        .g02-gameframe{width:100%;max-width:500px;margin-bottom:32px;}
-        /* comic fixed height so text box fits */
-        .g02-comic{width:760px;height:auto;margin-bottom:0px;flex-shrink:0;}
-        .g02-textbox{width:100%;max-width:900px;}
+        html, body, #root {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden;
+        }
 
-        /* Modal popup */
-        .g02-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:2000;}
-        .g02-modal-body{position:relative;background:#fff;padding:32px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.25);}        
-        .g02-modal-body img.profile{width:360px;height:auto;}
-        .g02-close{position:absolute;top:24px;right:24px;width:40px;height:40px;cursor:pointer;}
+        .g02-viewport {
+          width: 100vw;
+          height: 100vh;
+          position: relative;
+        }
 
-        /* mobile same rules as Game01 */
-        @media(max-width:1024px){
-          .g02-viewport{position:static;display:block;overflow:auto;}
-          .g02-root{width:100%;height:auto;transform:none!important;}
-          .g02-wrapper{grid-template-columns:1fr;}
-          .g02-sidebar{flex-direction:row;justify-content:center;padding:12px 0;}
-          .g02-comic{width:clamp(240px,90vw,760px);}        }
+        .g02-sidebar {
+         position: fixed;
+          top: 31.5%;
+          left: 0;
+          transform: translateY(-50%);
+          width: 220px;
+          padding: 20px 0;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          align-items: flex-start;
+        }
+
+        .g02-content {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scale(${zoom});
+          transform-origin: top center;
+          width: 1060px;
+        }
+
+        .g02-inner {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 32px;
+        }
+
+        .g02-gameframe {
+          width: 100%;
+          max-width: 500px;
+        }
+
+        .g02-comic {
+          width: 760px;
+          height: auto;
+        }
+
+        .g02-textbox {
+          width: 100%;
+          max-width: 900px;
+        }
+
+        .g02-modal {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.6);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 2000;
+        }
+
+        .g02-modal-body {
+          position: relative;
+          background: #fff;
+          padding: 32px;
+          border-radius: 12px;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+        }
+
+        .g02-modal-body img.profile {
+          width: 360px;
+          height: auto;
+        }
+
+        .g02-close {
+          position: absolute;
+          top: 24px;
+          right: 24px;
+          width: 40px;
+          height: 40px;
+          cursor: pointer;
+        }
+
+        @media (max-width: 1024px) {
+          .g02-sidebar {
+            position: static;
+            flex-direction: row;
+            justify-content: center;
+            width: 100%;
+          }
+
+          .g02-content {
+            position: static;
+            transform: none !important;
+            width: 100%;
+            padding: 16px;
+          }
+
+          .g02-comic {
+            width: clamp(240px, 90vw, 760px);
+          }
+
+          .g02-inner {
+            gap: 24px;
+          }
+        }
       `}</style>
 
-      
       {openProfile && (
         <div className="g02-modal" onClick={() => setOpenProfile(null)}>
           <div className="g02-modal-body" onClick={(e) => e.stopPropagation()}>
@@ -94,37 +180,29 @@ export default function Game02() {
         </div>
       )}
 
-      
       <div className="g02-viewport">
-        <div
-          className="g02-root"
-          style={{ position:'absolute', top:'50%', left:0, transform:`translateY(-50%) scale(${zoom})` }}
-        >
-          <div className="g02-wrapper">
-            
-            <aside className="g02-sidebar">
-              <UserProfile player="1P" characterDesc="요양보호사" isLeader style={{cursor:'pointer'}} onClick={() => setOpenProfile('1P')} />
-              <UserProfile player="2P" characterDesc="노모 L" style={{cursor:'pointer'}} onClick={() => setOpenProfile('2P')} />
-              <UserProfile player="3P" characterDesc="자녀J" isMe style={{cursor:'pointer'}} onClick={() => setOpenProfile('3P')} />
-            </aside>
+        <aside className="g02-sidebar">
+          <UserProfile player="1P" characterDesc="요양보호사" isLeader style={{cursor:'pointer'}} onClick={() => setOpenProfile('1P')} />
+          <UserProfile player="2P" characterDesc="노모 L" style={{cursor:'pointer'}} onClick={() => setOpenProfile('2P')} />
+          <UserProfile player="3P" characterDesc="자녀J" isMe style={{cursor:'pointer'}} onClick={() => setOpenProfile('3P')} />
+        </aside>
 
-            
-            <section className="g02-stage">
-              <div className="g02-gameframe">
-                <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
-              </div>
+        <div className="g02-content">
+          <div className="g02-inner">
+            <div className="g02-gameframe">
+              <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
+            </div>
 
-              <img className="g02-comic" src={images[currentIndex]} alt={`comic ${currentIndex+1}`} />
+            <img className="g02-comic" src={images[currentIndex]} alt={`comic ${currentIndex + 1}`} />
 
-              <div className="g02-textbox">
-                <ContentTextBox
-                  paragraphs={paragraphs}
-                  currentIndex={currentIndex}
-                  setCurrentIndex={setCurrentIndex}
-                  onContinue={handleContinue}
-                />
-              </div>
-            </section>
+            <div className="g02-textbox">
+              <ContentTextBox
+                paragraphs={paragraphs}
+                currentIndex={currentIndex}
+                setCurrentIndex={setCurrentIndex}
+                onContinue={handleContinue}
+              />
+            </div>
           </div>
         </div>
       </div>

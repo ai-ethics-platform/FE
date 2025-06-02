@@ -172,7 +172,6 @@ function Card({
         alt=""
         style={{ width: '100%', height: '100%', objectFit: 'fill' }}
       />
-
       {/* 내용 레이어 */}
       <div
         style={{

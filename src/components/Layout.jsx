@@ -94,7 +94,6 @@ export default function Layout({ subtopic = '가정 1', me = '1P', children }) {
               <div className="layout-gameframe">
                 <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
               </div>
-
               {/* 페이지별 콘텐츠 주입 */}
               {children}
             </section>

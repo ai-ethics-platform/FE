@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import UserProfile from '../components/Userprofile';
@@ -12,8 +12,7 @@ export default function Game01() {
   const navigate = useNavigate();
 
   const images = [character1, character2, character3];
-  
-  const subtopic = '가정 1'; // 나중에 API 연동시 좀 더 수정해야하는 부분 
+  const subtopic = '가정 1';
 
   const paragraphs = [
     {
@@ -23,62 +22,71 @@ export default function Game01() {
     },
   ];
 
+  const [zoom, setZoom] = useState(1);
+  useEffect(() => {
+    const updateZoom = () => {
+      setZoom(Math.min(window.innerWidth / 1280, window.innerHeight / 720, 1));
+    };
+    updateZoom();
+    window.addEventListener('resize', updateZoom);
+    return () => window.removeEventListener('resize', updateZoom);
+  }, []);
+
   return (
     <Background bgIndex={3}>
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          overflow: 'hidden',
-          zIndex: 0,
-        }}
-      >
-        {/* 이부분은 고정시키기  */}
-        <div style={{ position: 'absolute', top: 60, left: 0 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <UserProfile player="1P" isLeader />
-            <UserProfile player="2P" isSpeaking />
-            <UserProfile player="3P" />
-          </div>
-        </div>
+      <style>{`
+        html,body,#root{height:100%;margin:0;}
+        /* viewport left-align horizontally, center vertically */
+        .g01-viewport{position:fixed;inset:0;display:flex;justify-content:flex-start;align-items:center;overflow:hidden;}
+        .g01-root{width:1280px;height:720px;transform-origin:top left;}
+        .g01-wrapper{display:grid;grid-template-columns:220px 1fr;width:100%;height:100%;}
+        .g01-sidebar{padding:20px 0;display:flex;flex-direction:column;gap:24px;align-items:flex-start;}
+        .g01-stage{display:flex;flex-direction:column;align-items:center;padding:40px 24px 32px;}
+        .g01-gameframe{width:100%;max-width:500px;margin-bottom:32px;}
+        .g01-gallery{display:flex;gap:24px;margin-bottom:32px;}
+        .g01-gallery img{width:264px;height:360px;object-fit:cover;border-radius:4px;}
+        .g01-textbox{width:100%;max-width:900px;}
+        /* mobile */
+        @media(max-width:1024px){
+          .g01-viewport{position:static;display:block;overflow:auto;}
+          .g01-root{width:100%;height:auto;transform:none!important;}
+          .g01-wrapper{grid-template-columns:1fr;}
+          .g01-sidebar{flex-direction:row;justify-content:center;padding:12px 0;}
+          .g01-gallery{flex-direction:column;align-items:center;}
+          .g01-gallery img{width:clamp(200px,80vw,264px);height:auto;}
+        }
+      `}</style>
 
-        {/* GameFrame  */}
-        <div style={{ position: 'absolute', top: 120, left: '50%', transform: 'translateX(-50%)' }}>
-          <GameFrame
-            topic={`Round 01 : ${subtopic}`}
-            hideArrows={true}
-          />
-        </div>
+      <div className="g01-viewport">
+        <div
+          className="g01-root"
+          style={{ position:'absolute', top:'50%', left:0, transform:`translateY(-50%) scale(${zoom})` }}
+        >
+          <div className="g01-wrapper">
+           
+            <aside className="g01-sidebar">
+              <UserProfile player="1P" isLeader />
+              <UserProfile player="2P" isSpeaking />
+              <UserProfile player="3P" />
+            </aside>
 
-        <div style={{ marginTop: 250, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        
-          <div style={{ display: 'flex', gap: 24 }}>
-            {images.map((src, idx) => (
-              <img
-                key={idx}
-                src={src}
-                alt={`Character ${idx + 1}`}
-                style={{
-                  width: 264,
-                  height: 360,
-                  objectFit: 'cover',
-                  borderRadius: 4,
-                }}
-              />
-            ))}
-          </div>
+            
+            <section className="g01-stage">
+              <div className="g01-gameframe">
+                <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
+              </div>
 
-          {/* 설명 , 다음 버튼 */}
-          <div style={{ marginTop: 24, width: 936 }}>
-            <ContentTextBox
-              paragraphs={paragraphs}
-              onContinue={() => {
-                navigate('/character_description1');
-              }}
-            />
+              
+              <div className="g01-gallery">
+                {images.map((src, idx) => (
+                  <img key={idx} src={src} alt={`Character ${idx + 1}`} />
+                ))}
+              </div>
+
+              <div className="g01-textbox">
+                <ContentTextBox paragraphs={paragraphs} onContinue={() => navigate('/character_description1')} />
+              </div>
+            </section>
           </div>
         </div>
       </div>

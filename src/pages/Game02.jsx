@@ -1,19 +1,19 @@
-// Game02.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import UserProfile from '../components/Userprofile';
 import ContentTextBox from '../components/ContentTextBox';
 import GameFrame from '../components/GameFrame';
-import closeIcon from "../assets/close.svg";
-// --- 4컷 만화 원본 ---
+import closeIcon from '../assets/close.svg';
+
+// 4-컷 이미지
 import img1 from '../assets/images/Android_dilemma1_1.jpg';
 import img2 from '../assets/images/Android_dilemma1_2.jpg';
 import img3 from '../assets/images/Android_dilemma1_3.jpg';
 import img4 from '../assets/images/Android_dilemma1_4.jpg';
 const images = [img1, img2, img3, img4];
 
-// --- 팝업용 프로필 사진 ---
+// 팝업 프로필
 import profile1Img from '../assets/images/CharacterPopUp1.png';
 import profile2Img from '../assets/images/CharacterPopUp2.png';
 import profile3Img from '../assets/images/CharacterPopUp3.png';
@@ -40,133 +40,92 @@ export default function Game02() {
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [openProfile, setOpenProfile] = useState(null); // null | "1P" | "2P" | "3P"
+  const [openProfile, setOpenProfile] = useState(null);
+  const [zoom, setZoom] = useState(1);
+
+  useEffect(() => {
+    const updateZoom = () => {
+      setZoom(Math.min(window.innerWidth / 1280, window.innerHeight / 720, 1));
+    };
+    updateZoom();
+    window.addEventListener('resize', updateZoom);
+    return () => window.removeEventListener('resize', updateZoom);
+  }, []);
 
   const handleContinue = () => navigate('/game03');
 
   return (
     <Background bgIndex={3}>
-      {/* ===== 팝업 레이어 ===== */}
+      <style>{`
+        html,body,#root{height:100%;margin:0;}
+        /* viewport identical to Game01 */
+        .g02-viewport{position:fixed;inset:0;display:flex;justify-content:flex-start;align-items:center;overflow:hidden;}
+        .g02-root{width:1280px;height:720px;transform-origin:top left;}
+        .g02-wrapper{display:grid;grid-template-columns:220px 1fr;width:100%;height:100%;}
+        .g02-sidebar{padding:20px 0;display:flex;flex-direction:column;gap:24px;align-items:flex-start;}
+        .g02-stage{display:flex;flex-direction:column;align-items:center;padding:40px 24px 32px;}
+        .g02-gameframe{width:100%;max-width:500px;margin-bottom:32px;}
+        /* comic fixed height so text box fits */
+        .g02-comic{width:760px;height:auto;margin-bottom:0px;flex-shrink:0;}
+        .g02-textbox{width:100%;max-width:900px;}
+
+        /* Modal popup */
+        .g02-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:2000;}
+        .g02-modal-body{position:relative;background:#fff;padding:32px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.25);}        
+        .g02-modal-body img.profile{width:360px;height:auto;}
+        .g02-close{position:absolute;top:24px;right:24px;width:40px;height:40px;cursor:pointer;}
+
+        /* mobile same rules as Game01 */
+        @media(max-width:1024px){
+          .g02-viewport{position:static;display:block;overflow:auto;}
+          .g02-root{width:100%;height:auto;transform:none!important;}
+          .g02-wrapper{grid-template-columns:1fr;}
+          .g02-sidebar{flex-direction:row;justify-content:center;padding:12px 0;}
+          .g02-comic{width:clamp(240px,90vw,760px);}        }
+      `}</style>
+
+      
       {openProfile && (
-        <div
-          onClick={() => setOpenProfile(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 2000,
-          }}
-        >
-          {/* 모달 본체 (클릭 전파 차단) */}
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'relative',
-              background: '#fff',
-              padding: 32,
-              borderRadius: 12,
-              boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
-            }}
-          >
-            <img
-              src={profileImages[openProfile]}
-              alt={`${openProfile} profile`}
-              style={{ width: 360, height: 'auto' }}
-            />
-            <img
-   src={closeIcon}
-   alt="close"
-   onClick={() => setOpenProfile(null)}   // 모달 닫기
-   style={{
-     position: 'absolute',
-     top: 24,
-     right: 24,
-     width: 40,
-     height: 40,
-     cursor: 'pointer',
-   }}
- />
+        <div className="g02-modal" onClick={() => setOpenProfile(null)}>
+          <div className="g02-modal-body" onClick={(e) => e.stopPropagation()}>
+            <img className="profile" src={profileImages[openProfile]} alt={openProfile} />
+            <img className="g02-close" src={closeIcon} alt="close" onClick={() => setOpenProfile(null)} />
           </div>
         </div>
       )}
 
-      {/* ===== 본문 ===== */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          overflow: 'hidden',
-          zIndex: 0,
-        }}
-      >
-        {/* 유저 프로필 */}
-        <div style={{ position: 'absolute', top: 60, left: 0 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <UserProfile
-              player="1P"
-              characterDesc="요양보호사"
-              isLeader
-              style={{ cursor: 'pointer' }}
-              onClick={() => setOpenProfile('1P')}
-            />
-            <UserProfile
-              player="2P"
-              characterDesc="노모 L"
-              style={{ cursor: 'pointer' }}
-              onClick={() => setOpenProfile('2P')}
-            />
-            <UserProfile
-              player="3P"
-              characterDesc="자녀J"
-              isMe
-              style={{ cursor: 'pointer' }}
-              onClick={() => setOpenProfile('3P')}
-            />
+      
+      <div className="g02-viewport">
+        <div
+          className="g02-root"
+          style={{ position:'absolute', top:'50%', left:0, transform:`translateY(-50%) scale(${zoom})` }}
+        >
+          <div className="g02-wrapper">
+            
+            <aside className="g02-sidebar">
+              <UserProfile player="1P" characterDesc="요양보호사" isLeader style={{cursor:'pointer'}} onClick={() => setOpenProfile('1P')} />
+              <UserProfile player="2P" characterDesc="노모 L" style={{cursor:'pointer'}} onClick={() => setOpenProfile('2P')} />
+              <UserProfile player="3P" characterDesc="자녀J" isMe style={{cursor:'pointer'}} onClick={() => setOpenProfile('3P')} />
+            </aside>
+
+            
+            <section className="g02-stage">
+              <div className="g02-gameframe">
+                <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
+              </div>
+
+              <img className="g02-comic" src={images[currentIndex]} alt={`comic ${currentIndex+1}`} />
+
+              <div className="g02-textbox">
+                <ContentTextBox
+                  paragraphs={paragraphs}
+                  currentIndex={currentIndex}
+                  setCurrentIndex={setCurrentIndex}
+                  onContinue={handleContinue}
+                />
+              </div>
+            </section>
           </div>
-        </div>
-
-        {/* GameFrame */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 120,
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}
-        >
-          <GameFrame topic={`Round 01 : ${subtopic}`} hideArrows />
-        </div>
-
-        {/* 만화 + 텍스트 박스 */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 240,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 24,
-          }}
-        >
-          <img
-            src={images[currentIndex]}
-            alt={`page ${currentIndex + 1}`}
-            style={{ width: 760, height: 'auto' }}
-          />
-          <ContentTextBox
-            paragraphs={paragraphs}
-            currentIndex={currentIndex}
-            setCurrentIndex={setCurrentIndex}
-            onContinue={handleContinue}
-          />
         </div>
       </div>
     </Background>

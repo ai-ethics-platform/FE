@@ -17,52 +17,59 @@ export default function GameIntro() {
     <Background bgIndex={3}>
       <div
         style={{
-        position: 'fixed',         
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',        
-        zIndex: 0,  
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          overflow: 'hidden',
+          zIndex: 0,
         }}
       >
-       <div style={{ position: 'absolute', top: 60, left: 0 }}>
-         <div style={{
-         display: 'flex',
-          flexDirection: 'column',
-         gap: 24,
-         alignItems: 'flex-start',     
-         width: 'fit-content',       
-          margin: 0,                    
-             padding: 0,
-  }}>
-    <UserProfile player="1P" characterDesc="" isLeader={true} />
-    <UserProfile player="2P" characterDesc="" isSpeaking={true}/>
-    <UserProfile player="3P" characterDesc="" />
-  </div>
-</div>
-       
-        <div style={{
-          position: 'absolute',
-          top: 238,
-          left: 432,
-          width: 936,
-          height: 467,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}>
+        {/* ─── 좌측 사이드바 ─── */}
+        <div style={{ position: 'absolute', top: 60, left: 0 }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 24,
+              alignItems: 'flex-start',
+              width: 'fit-content',
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            <UserProfile player="1P" characterDesc="" isLeader />
+            <UserProfile player="2P" characterDesc="" isSpeaking />
+            <UserProfile player="3P" characterDesc="" />
+          </div>
+        </div>
+
+        {/* ─── 중앙 정렬된 ContentBox2 + Continue ─── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80vw',
+            maxWidth: 936,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '0 16px',
+          }}
+        >
           <ContentBox2 text={fullText} />
           <div style={{ marginTop: 20 }}>
-            <Continue 
-            width={264} 
-            height={72} 
-            step={1} 
-           onClick={() => {
-           console.log('클릭됨');
-           navigate('/selecthomemate');
-  }} 
-           />
+            <Continue
+              width={264}
+              height={72}
+              step={1}
+              onClick={() => {
+                navigate('/selecthomemate');
+              }}
+            />
           </div>
         </div>
       </div>

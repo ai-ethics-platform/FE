@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import UserProfile from '../components/Userprofile';
-import ContentTextBox from '../components/ContentTextBox2';
+import ContentTextBox from '../components/ContentTextBox';
 import character1 from '../assets/images/character1.png';
 import character2 from '../assets/images/character2.png';
 import character3 from '../assets/images/character3.png';
@@ -18,7 +18,6 @@ export default function SelectHomeMate() {
     },
   ];
 
-  //여기서 이미지는 나중에 바뀔 예정 ! 
   const images = [character1, character2, character3];
 
   return (
@@ -26,25 +25,40 @@ export default function SelectHomeMate() {
       <div
         style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
+          inset: 0,
           overflow: 'hidden',
           zIndex: 0,
         }}
       >
-        <div style={{ position: 'absolute', top: 60, left: 0 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <UserProfile player="1P" isLeader />
-            <UserProfile player="2P" isSpeaking />
-            <UserProfile player="3P" />
-          </div>
-        </div>
-
+        {/* ─── 사이드바 (Layout과 동일하게 상단 32.5% 기준 세로 중앙) ─── */}
         <div
           style={{
-            marginTop: 150,
+            position: 'fixed',
+            top: '32.5%',
+            left: 0,
+            transform: 'translateY(-50%)',
+            width: 220,
+            padding: '20px 0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
+            alignItems: 'flex-start',
+          }}
+        >
+          <UserProfile player="1P" isLeader />
+          <UserProfile player="2P" isSpeaking />
+          <UserProfile player="3P" />
+        </div>
+
+        {/* ─── 중앙 정렬된 캐릭터 이미지 + ContentTextBox ─── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80vw',
+            maxWidth: 936,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -81,7 +95,7 @@ export default function SelectHomeMate() {
             ))}
           </div>
 
-          <div style={{ marginTop: 14, width: 936 }}>
+          <div style={{ marginTop: 14, width: '100%' }}>
             <ContentTextBox
               paragraphs={paragraphs}
               onContinue={() => {

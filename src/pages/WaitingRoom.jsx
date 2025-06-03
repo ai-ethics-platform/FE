@@ -52,7 +52,16 @@ export default function WaitingRoom() {
       )}
 
       {/*  topic 배열에서 현재 인덱스에 해당하는 주제만 보여줌 */}
-      <div style={{ position: 'absolute', top: 120, left: 584 }}>
+      
+       <div
+             style={{
+                position: 'absolute',
+                top: '6%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+              }}
+            >
+      
         <GameFrame
           topic={allTopics[currentIndex]}
           onLeftClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))}

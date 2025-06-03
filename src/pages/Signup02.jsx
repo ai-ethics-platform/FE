@@ -5,7 +5,7 @@ import InputBoxLarge from '../components/InputBoxLarge';
 import PasswordCheck from '../components/PasswordCheck';
 import SelectDrop from '../components/SelectDrop';
 import PrimaryButton from '../components/PrimaryButton';
-import backIcon from '../assets/arrowLdefault.svg';
+import backIcon from '../assets/arrow-left.svg';
 import logo from '../assets/logo.svg';
 import profileIcon from '../assets/login.svg';
 import lockIcon from '../assets/password.svg';

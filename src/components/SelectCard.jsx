@@ -41,6 +41,7 @@ export default function SelectCard({
     width: 20,
     height: 20,
     objectFit: 'contain',
+    backgroundColor:Colors.grey01
   };
 
   return (

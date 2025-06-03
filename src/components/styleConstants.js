@@ -1,12 +1,13 @@
 // styleConstants.js
 export const Colors = {
-    brandPrimary: '#354750',
+    brandPrimary: '#0D575C',
     brandGradientStart: '#6E7C7D',
     brandGradientEnd: '#192D3A',
-    brandDark:'192D3A',
-    componentBackground: 'rgba(255, 255, 255, 0.1)',
+    brandDark:'#054347',
+    brandLight:'#99BCBE',
+    componentBackground: 'rgba(255, 255, 255, 0.7)',
     componentBackgroundActive: 'rgba(53, 71, 80, 0.05)',
-    componentBackgroundFloat: 'rgba(230, 236, 239, 0.7)',
+    componentBackgroundFloat: 'rgba(255, 255, 255, 0.7)',
     dim: 'rgba(0, 0, 0, 0.25)',
     systemRed: '#9E2D2F',
 

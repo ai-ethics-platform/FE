@@ -22,14 +22,14 @@ export default function PrimaryButton({
   };
 
   let stateStyle = {
-    backgroundImage: `linear-gradient(to bottom, ${Colors.brandGradientStart}, ${Colors.brandGradientEnd})`,
+    backgroundColor:Colors.brandPrimary,
     color: '#FFFFFF',
   };
 
   if (disabled) {
     stateStyle = {
-      backgroundColor: '#CCCCCC',
-      color: '#999999',
+      backgroundColor: Colors.grey05,
+      color: Colors.grey04,
     };
   } else if (isActive) {
     stateStyle = {

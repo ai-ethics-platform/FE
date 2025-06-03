@@ -1,12 +1,14 @@
+// src/pages/MateName.jsx
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Background from '../components/Background';
-import UserProfile from '../components/Userprofile';
-import InputBoxSmall from '../components/InputBoxSmall'; // or InputBoxSimple
+
+import Layout          from '../components/Layout';       // 변경된 Layout 사용
+import InputBoxSmall   from '../components/InputBoxSmall';
+import ContentTextBox2 from '../components/ContentTextBox';
+
 import character1 from '../assets/images/character1.png';
 import character2 from '../assets/images/character2.png';
 import character3 from '../assets/images/character3.png';
-import ContentTextBox2 from '../components/ContentTextBox2';
 
 export default function MateName() {
   const location = useLocation();
@@ -24,72 +26,57 @@ export default function MateName() {
     },
   ];
 
+  const handleContinue = () => {
+    if (!name.trim()) {
+      alert('이름을 입력해주세요!');
+      return;
+    }
+    navigate('/game01', {
+      state: { selectedIndex, name },
+    });
+  };
+
   return (
-    <Background bgIndex={3}>
+    <Layout subtopic="가정 1" me="1P">
+      {/* Stage 내부 : 중앙 정렬 */}
       <div
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          overflow: 'hidden',
-          zIndex: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 4,
         }}
       >
-        <div style={{ position: 'absolute', top: 60, left: 0 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <UserProfile player="1P" isLeader />
-            <UserProfile player="2P" isSpeaking />
-            <UserProfile player="3P" />
-          </div>
-        </div>
-
-        <div
+        {/* ① 선택된 캐릭터 이미지 */}
+        <img
+          src={images[selectedIndex]}
+          alt="Selected Character"
           style={{
-            marginTop: 150,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            width: 264,
+            height: 360,
+            objectFit: 'cover',
+            borderRadius: 4,
+            border: '2px solid #354750',
           }}
-        >
-          <img
-            src={images[selectedIndex]}
-            alt="Selected Character"
-            style={{
-              width: 264,
-              height: 360,
-              objectFit: 'cover',
-              borderRadius: 4,
-              border: '2px solid #354750',
-              marginBottom: 32,
-            }}
-          />
+        />
 
-          <InputBoxSmall
-            placeholder="여러분의 HomeMate 이름을 입력하세요"
-            width={520}
-            height={64}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+        {/* ② 작은 입력창 */}
+        <InputBoxSmall
+          placeholder="여러분의 HomeMate 이름을 입력하세요"
+          width={520}
+          height={64}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
-          <div style={{ marginTop: 24, width: 936 }}>
-            <ContentTextBox2
-              paragraphs={paragraphs}
-              onContinue={() => {
-                if (!name.trim()) {
-                  alert('이름을 입력해주세요!');
-                  return;
-                }
-                navigate('/matename', {
-                  state: { selectedIndex, name },
-                });
-              }}
-            />
-          </div>
+        {/* ③ 텍스트 박스 + 다음 버튼 */}
+        <div style={{ width: '100%', maxWidth: 936 }}>
+          <ContentTextBox2
+            paragraphs={paragraphs}
+            onContinue={handleContinue}
+          />
         </div>
       </div>
-    </Background>
+    </Layout>
   );
 }

@@ -73,7 +73,7 @@ export default function ContentTextBox({
       >
         {/* 텍스트 */}
         <div>
-          <div style={{ ...FontStyles.title, color: Colors.brandPrimary, marginBottom: 3 }}>
+          <div style={{ ...FontStyles.bodyBold, marginBottom: 3 }}>
             {typedMain.split('\n').map((line, idx) => (
               <React.Fragment key={idx}>
                 {line}
@@ -81,7 +81,7 @@ export default function ContentTextBox({
               </React.Fragment>
             ))}
           </div>
-          <div style={{ ...FontStyles.subtitle, color: Colors.grey04 }}>{typedSub}</div>
+          <div style={{ ...FontStyles.caption, color: Colors.grey04 }}>{typedSub}</div>
         </div>
 
         {/* 네비 + 버튼 */}

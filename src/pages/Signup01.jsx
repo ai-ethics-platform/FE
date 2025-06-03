@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
-import arrow from '../assets/arrowLdefault.svg';
+import arrow from '../assets/arrow-left.svg';
 import arrowUp from '../assets/arrowUp.svg';
 import SelectCard from '../components/SelectCard';
 import PrimaryButton from '../components/PrimaryButton';

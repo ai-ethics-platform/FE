@@ -29,20 +29,35 @@ export default function GameIntro2() {
           zIndex: 0,
         }}
       >
-        <div style={{ position: 'absolute', top: 60, left: 0 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <UserProfile player="1P" isLeader />
-            <UserProfile player="2P" isSpeaking />
-            <UserProfile player="3P" />
-          </div>
+        {/* ─── 사이드바 (Layout과 동일하게 상단 32.5%를 기준으로 세로 중앙) ─── */}
+        <div
+          style={{
+            position: 'fixed',
+            top: '32.5%',
+            left: 0,
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
+            alignItems: 'flex-start',
+            padding: '20px 0',
+            width: 220,
+          }}
+        >
+          <UserProfile player="1P" isLeader />
+          <UserProfile player="2P" isSpeaking />
+          <UserProfile player="3P" />
         </div>
 
+        {/* ─── 중앙 정렬된 이미지 + ContentTextBox (Layout의 stage와 동일하게 중앙) ─── */}
         <div
           style={{
             position: 'absolute',
-            top: 150,
-            left: 432,
-            width: 936,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80vw',
+            maxWidth: 936,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -52,8 +67,8 @@ export default function GameIntro2() {
             src={gameIntro}
             alt="Intro Scene"
             style={{
-              width: 900,
-              height: 467,
+              width: '100%',
+              height: 'auto',
               objectFit: 'cover',
               borderRadius: 4,
             }}

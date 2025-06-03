@@ -49,7 +49,7 @@ export default function UserProfile({
     position: 'relative',
     width: 200,
     height: 96,
-    backgroundColor: Colors.grey01,
+    backgroundColor: Colors.componentBackgroundFloat,
     padding: '12px 12px 12px 20px',
     boxSizing: 'border-box',
     display: 'flex',

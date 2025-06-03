@@ -60,7 +60,7 @@ export default function InputBoxSmall({
             outline: 'none',
             background: 'transparent',
             ...FontStyles.body,
-            color: Colors.grey07,
+            color: Colors.componentBackground,
           }}
         />
       </div>

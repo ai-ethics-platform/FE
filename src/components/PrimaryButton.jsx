@@ -28,8 +28,8 @@ export default function PrimaryButton({
 
   if (disabled) {
     stateStyle = {
-      backgroundColor: Colors.grey05,
-      color: Colors.grey04,
+      backgroundColor: Colors.grey04,
+      color: Colors.grey03,
     };
   } else if (isActive) {
     stateStyle = {

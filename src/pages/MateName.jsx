@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import Layout          from '../components/Layout';       // 변경된 Layout 사용
 import InputBoxSmall   from '../components/InputBoxSmall';
-import ContentTextBox2 from '../components/ContentTextBox';
+import ContentTextBox2 from '../components/ContentTextBox2';
 
 import character1 from '../assets/images/character1.png';
 import character2 from '../assets/images/character2.png';

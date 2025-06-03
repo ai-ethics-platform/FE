@@ -3,11 +3,13 @@ import arrowUp from '../assets/arrowUp.svg';
 import arrowDown from '../assets/arrowDown.svg';
 import { Colors, FontStyles } from './styleConstants';
 
+
 export default function SelectDrop({
   options = [],
   bgColor = Colors.componentBackground,
   value = '',
   onSelect = () => {},
+  style = {},               
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -27,16 +29,18 @@ export default function SelectDrop({
 
   const wrapperStyle = {
     position: 'relative',
-    width: '552px',
+    width: style.width ?? '100%',      // 기본 width: 부모가 주면 그것을 따르고, 아니면 100%
     ...FontStyles.body,
+    fontSize: style.fontSize ?? FontStyles.body.fontSize,
     userSelect: 'none',
   };
 
   const controlStyle = {
     width: '100%',
-    height: '72px',
-    padding: '0 16px',
-    borderRadius: 8,
+    height: style.height ?? '8vh',     
+    minHeight: style.minHeight ?? 48,     // 최소 48px부터 
+    padding: `0 ${style.paddingX ?? '1.5vw'}`, // 좌우 패딩: 부모 지정 or 1.5vw
+    
     backgroundColor: bgColor,
     border: isOpen
       ? `1px solid ${Colors.grey07}`
@@ -48,23 +52,31 @@ export default function SelectDrop({
     justifyContent: 'space-between',
     cursor: 'pointer',
     transition: 'border 0.2s ease',
+    boxSizing: 'border-box',
   };
 
+  // 드롭다운 목록이 열릴 때 보이는 박스 스타일
   const dropdownStyle = {
     position: 'absolute',
-    top: '76px',
+    top: `calc(${style.height ?? '6.5vh'} + 0.2vh)`, // control 높이 바로 아래
     left: 0,
     width: '100%',
     backgroundColor: bgColor,
     boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.05)',
-    borderRadius: 8,
+   
     zIndex: 9999,
-    padding: '8px 0',
+    paddingTop: '0.5vh',
+    paddingBottom: '0.5vh',
+    boxSizing: 'border-box',
   };
 
   const optionStyle = {
-    padding: '20px 16px',
+    paddingTop: style.optionPaddingY ?? '1.5vh',
+    paddingBottom: style.optionPaddingY ?? '1.5vh',
+    paddingLeft: style.optionPaddingX ?? '1.5vw',
+    paddingRight: style.optionPaddingX ?? '1.5vw',
     ...FontStyles.body,
+    fontSize: style.fontSize ?? FontStyles.body.fontSize,
     color: Colors.grey07,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
@@ -84,8 +96,11 @@ export default function SelectDrop({
         <img
           src={isOpen ? arrowUp : arrowDown}
           alt="arrow"
-          width={20}
-          height={20}
+          style={{
+            width: style.iconSize ?? 20,
+            height: style.iconSize ?? 20,
+            flexShrink: 0,
+          }}
         />
       </div>
 

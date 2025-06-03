@@ -1,3 +1,4 @@
+// src/pages/Signup02.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -11,7 +12,7 @@ import profileIcon from '../assets/login.svg';
 import lockIcon from '../assets/password.svg';
 import eyeOnIcon from '../assets/eyeon.svg';
 import eyeOffIcon from '../assets/eyeoff.svg';
-import { Colors } from '../components/styleConstants';
+import { Colors, FontStyles } from '../components/styleConstants';
 
 export default function Signup02() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export default function Signup02() {
   const [grade, setGrade] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // 비밀번호 확인 일치 여부
   useEffect(() => {
     if (password && confirmPassword && password !== confirmPassword) {
       setPasswordError('비밀번호가 일치하지 않습니다.');
@@ -36,8 +38,10 @@ export default function Signup02() {
     }
   }, [password, confirmPassword]);
 
+  // 이메일 유효성 검사
   useEffect(() => {
-    const emailValue = emailRef.current?.querySelector('input')?.value || '';
+    const inputEl = emailRef.current?.querySelector('input');
+    const emailValue = inputEl ? inputEl.value : '';
     if (emailValue && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(emailValue)) {
       setEmailError('유효한 이메일 주소를 입력하세요.');
     } else {
@@ -45,11 +49,13 @@ export default function Signup02() {
     }
   });
 
+  // 숫자만 입력받도록
   const handleNumericInput = (setter) => (e) => {
     const onlyNums = e.target.value.replace(/\D/g, '');
     setter(onlyNums);
   };
 
+  // 학년 옵션
   const getGradeOptions = () => {
     if (education === '중학생' || education === '고등학생') {
       return ['1학년', '2학년', '3학년'];
@@ -59,8 +65,10 @@ export default function Signup02() {
     return [];
   };
 
+  // 폼이 모두 유효해야만 버튼 활성화
   const isFormValid = (() => {
-    const emailValue = emailRef.current?.querySelector('input')?.value || '';
+    const inputEl = emailRef.current?.querySelector('input');
+    const emailValue = inputEl ? inputEl.value : '';
     return (
       Boolean(emailValue.trim()) &&
       !emailError &&
@@ -78,43 +86,42 @@ export default function Signup02() {
 
   const inputStyle = {
     flex: 1,
-    height: 62,
+    height: '8vh',                 
+    minHeight: 48,                 
     border: `1px solid ${Colors.grey02}`,
-    borderRadius: 8,
     paddingLeft: 12,
-    fontSize: 16,
-    width: 190,
+    ...FontStyles.body,
+    width: '100%',                 
     outline: 'none',
     backgroundColor: Colors.componentBackground,
     boxSizing: 'border-box',
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
   };
 
+  // 성별 선택 시 
   const selectedGenderStyle = {
     flex: 1,
-    height: 48,
-    borderRadius: 6,
-    border: `1px solid ${Colors.grey06}`,
-    backgroundColor: Colors.grey02,
+    height: '7vh',              
+    minHeight: 40,
+    border: `1px solid ${Colors.brandPrimary}`,
+    backgroundColor: Colors.componentBackgroundActive,
     textAlign: 'center',
-    lineHeight: '48px',
+    lineHeight: '5.5vh',
     cursor: 'pointer',
-    fontWeight: 600,
-    color: Colors.grey07
+    color: Colors.grey07,
   };
-
   const unselectedGenderStyle = {
     flex: 1,
-    height: 48,
+    height: '7vh',
+    minHeight: 40,
     borderRadius: 6,
-    border: `0.5px solid ${Colors.grey02}`,
+    border: `0.5px solid ${Colors.grey04}`,
     backgroundColor: Colors.componentBackground,
     textAlign: 'center',
-    lineHeight: '48px',
+    lineHeight: '5.5vh',
     cursor: 'pointer',
-    fontWeight: 400,
-    color: Colors.grey07
+    color: Colors.grey07,
   };
 
   const grayBackground = Colors.grey01;
@@ -123,126 +130,275 @@ export default function Signup02() {
     <Background bgIndex={2}>
       <div
         style={{
-          maxWidth: 552,
-          margin: '0 auto',
-          padding: '40px 24px',
-          fontFamily: 'Pretendard, sans-serif',
-          color: Colors.grey07,
+          position: 'absolute',
+          inset: 0,
+          overflowY: 'auto',        // 세로 스크롤 허용
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start', // 상단부터 렌더링
+          padding: '2vh 0',
+          boxSizing: 'border-box',
         }}
       >
-        {/* 헤더 */}
-        <div style={{ position: 'relative', marginBottom: 40 }}>
-          <img
-            src={backIcon}
-            alt="뒤로가기"
+        <div
+          style={{
+            width: '50vw',           
+            maxWidth: 552,           
+            padding: '1vh 24px',     
+            boxSizing: 'border-box',
+            ...FontStyles.body,
+          }}
+        >
+          <div
             style={{
-              position: 'absolute',
-              left: 0,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              cursor: 'pointer',
+              position: 'relative',
+              height: '6vh',
+              maxHeight: 60,
+              marginBottom: '3vh',
             }}
-            onClick={() => navigate('/signup01')}
-          />
-          <div style={{ textAlign: 'center' }}>
-            <img src={logo} alt="로고" style={{ height: 48 }} />
-          </div>
-        </div>
-
-        {/* 아이디 및 비밀번호 */}
-        <div style={{ marginBottom: 40 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>아이디(이메일) 및 비밀번호</div>
-
-          <div style={{ marginBottom: 16 }} ref={emailRef}>
-            <InputBoxLarge placeholder="아이디(이메일)" leftIcon={profileIcon} bgColor={grayBackground} />
-          </div>
-          {emailError && <div style={{ color: Colors.systemRed, fontSize: 12, marginBottom: 16 }}>{emailError}</div>}
-
-          <div style={{ marginBottom: 16 }}>
-            <PasswordCheck
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              leftIcon={lockIcon}
-              rightIconVisible={eyeOnIcon}
-              rightIconHidden={eyeOffIcon}
-              isPassword
-              bgColor={grayBackground}
-            />
-          </div>
-
-          <div>
-            <PasswordCheck
-              placeholder="비밀번호 확인"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              leftIcon={lockIcon}
-              rightIconVisible={eyeOnIcon}
-              rightIconHidden={eyeOffIcon}
-              isPassword
-              bgColor={grayBackground}
-            />
-            {passwordError && <div style={{ color: Colors.systemRed, fontSize: 12, marginTop: 4 }}>{passwordError}</div>}
-          </div>
-        </div>
-
-        {/* 생년월일 */}
-        <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>생년월일*</div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 32, alignItems: 'center' }}>
-          <input style={inputStyle} placeholder="년도" value={birthYear} onChange={handleNumericInput(setBirthYear)} />
-          <input style={inputStyle} placeholder="월" value={birthMonth} onChange={handleNumericInput(setBirthMonth)} />
-          <input style={inputStyle} placeholder="일" value={birthDay} onChange={handleNumericInput(setBirthDay)} />
-        </div>
-
-        {/* 성별 */}
-        <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>성별*</div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
-          {['남자', '여자'].map((g) => (
-            <div
-              key={g}
-              onClick={() => setGender(g)}
-              style={gender === g ? selectedGenderStyle : unselectedGenderStyle}
-            >
-              {g}
-            </div>
-          ))}
-        </div>
-
-        {/* 학업 상태 */}
-        <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>현재 학업 상태</div>
-        <div style={{ marginBottom: 16 }}>
-          <SelectDrop
-            options={['중학생', '고등학생', '대학생']}
-            value={education}
-            onSelect={(option) => {
-              setEducation(option);
-              setGrade('');
-            }}
-            bgColor={grayBackground}
-          />
-        </div>
-
-        {/* 학년 드롭다운 */}
-        {education && (
-          <div style={{ marginBottom: 40 }}>
-            <SelectDrop
-              options={getGradeOptions()}
-              value={grade}
-              onSelect={(option) => setGrade(option)}
-              bgColor={grayBackground}
-            />
-          </div>
-        )}
-
-        {/* 다음 버튼 */}
-        <div style={{ textAlign: 'center' }}>
-          <PrimaryButton
-            disabled={!isFormValid}
-            style={{ width: 552, height: 72 }}
-            onClick={() => navigate('/')}
           >
-            다음
-          </PrimaryButton>
+            <img
+              src={backIcon}
+              alt="뒤로가기"
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '4vh',
+                maxWidth: 40,
+                cursor: 'pointer',
+              }}
+              onClick={() => navigate('/signup01')}
+            />
+            <div
+              style={{
+                textAlign: 'center',
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              <img
+                src={logo}
+                alt="로고"
+                style={{
+                  height: '5vh',
+                  maxHeight: 48,
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '2.5vh' }}>
+            <div
+              style={{
+              ...FontStyles.title,
+                marginBottom: '1vh',
+                color: Colors.grey07,
+              }}
+            >
+              아이디(이메일) 및 비밀번호
+            </div>
+
+            <div style={{ marginBottom: '2vh' }} ref={emailRef}>
+              <InputBoxLarge
+                placeholder="아이디(이메일)"
+                leftIcon={profileIcon}
+                style={{
+                  width: '100%',
+                  height: '8vh',
+                  minHeight: 48,
+                  fontSize: 'clamp(0.875rem, 1vw, 1rem)',
+                }}
+              />
+            </div>
+            {emailError && (
+              <div
+                style={{
+                  color: Colors.systemRed,
+                  fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                  marginBottom: '2vh',
+                }}
+              >
+                {emailError}
+              </div>
+            )}
+
+            <div style={{ marginBottom: '2vh' }}>
+              <PasswordCheck
+                placeholder="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                leftIcon={lockIcon}
+                rightIconVisible={eyeOnIcon}
+                rightIconHidden={eyeOffIcon}
+                isPassword
+                style={{
+                  width: '100%',
+                  height: '8vh',
+                  minHeight: 48,
+                  fontSize: 'clamp(0.875rem, 1vw, 1rem)',
+                }}
+              />
+            </div>
+            <div>
+              <PasswordCheck
+                placeholder="비밀번호 확인"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                leftIcon={lockIcon}
+                rightIconVisible={eyeOnIcon}
+                rightIconHidden={eyeOffIcon}
+                isPassword
+                style={{
+                  width: '100%',
+                  height: '8vh',
+                  minHeight: 48,
+                  fontSize: 'clamp(0.875rem, 1vw, 1rem)',
+                }}
+              />
+              {passwordError && (
+                <div
+                  style={{
+                    color: Colors.systemRed,
+                    fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                    marginTop: '1vh',
+                  }}
+                >
+                  {passwordError}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ─── “생년월일” 섹션 ─── */}
+          <div style={{ marginBottom: '2vh' }}>
+            <div
+              style={{
+                ...FontStyles.title,
+                marginBottom: '0.5vh',
+                color: Colors.grey07,
+              }}
+            >
+              생년월일 *
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '1vw',
+                marginBottom: '4vh',
+                alignItems: 'center',
+              }}
+            >
+              <input
+                style={inputStyle}
+                placeholder="년도"
+                value={birthYear}
+                onChange={handleNumericInput(setBirthYear)}
+              />
+              <input
+                style={inputStyle}
+                placeholder="월"
+                value={birthMonth}
+                onChange={handleNumericInput(setBirthMonth)}
+              />
+              <input
+                style={inputStyle}
+                placeholder="일"
+                value={birthDay}
+                onChange={handleNumericInput(setBirthDay)}
+              />
+            </div>
+          </div>
+
+          {/* ─── “성별” 섹션 ─── */}
+          <div style={{ marginBottom: '2vh' }}>
+            <div
+              style={{
+                ...FontStyles.title,
+                marginBottom: '0.5vh',
+                color: Colors.grey07,
+              }}
+            >
+              성별 *
+            </div>
+            <div style={{ display: 'flex', gap: '1vw', marginBottom: '2vh' }}>
+              {['남자', '여자'].map((g) => (
+                <div
+                  key={g}
+                  onClick={() => setGender(g)}
+                  style={gender === g ? selectedGenderStyle : unselectedGenderStyle}
+                >
+                  {g}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ─── “학업 상태” 섹션 ─── */}
+          <div style={{ marginBottom: '0vh' }}>
+            <div
+              style={{
+                
+                ...FontStyles.title,
+                marginBottom: '1vh',
+                color: Colors.grey07,
+              }}
+            >
+              현재 학업 상태
+            </div>
+            <div style={{ marginBottom: '2vh' }}>
+              <SelectDrop
+                options={['중학생', '고등학생', '대학생']}
+                value={education}
+                onSelect={(option) => {
+                  setEducation(option);
+                  setGrade('');
+                }}
+                style={{
+                  width: '100%',
+                  height: '8vh',
+                  fontSize: 'clamp(0.875rem, 1vw, 1rem)',
+                  backgroundColor: grayBackground,
+                }}
+              />
+            </div>
+
+            {education && (
+              <div style={{ marginBottom: '4vh' }}>
+                <SelectDrop
+                  options={getGradeOptions()}
+                  value={grade}
+                  onSelect={(option) => setGrade(option)}
+                  style={{
+                    width: '100%',
+                    height: '8vh',
+                    minHeight: 48,
+                    fontSize: 'clamp(0.875rem, 1vw, 1rem)',
+                    backgroundColor: grayBackground,
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ─── “다음” 버튼 ─── */}
+          <div style={{ textAlign: 'center', marginBottom: '4vh' }}>
+            <PrimaryButton
+              disabled={!isFormValid}
+              style={{
+                width: '100%',
+                height: '7.5vh',
+                maxHeight: 64,
+                fontSize: 'clamp(1rem, 1.1vw, 1.125rem)',
+              }}
+              onClick={() => navigate('/')}
+            >
+              다음
+            </PrimaryButton>
+          </div>
         </div>
       </div>
     </Background>

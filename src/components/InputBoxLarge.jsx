@@ -1,13 +1,30 @@
+// src/components/InputBoxLarge.jsx
 import React, { useState } from 'react';
 import { Colors, FontStyles } from './styleConstants';
 
+/**
+ * InputBoxLarge
+ *
+ *  - 기존: 내부에서 width: 552px, height: 72px를 고정하고 있었음
+ *  - 수정: width, height, fontSize 등 스타일을 부모로부터 props.style로 받도록 변경
+ *
+ * props:
+ *  - placeholder: 입력창 플레이스홀더 텍스트
+ *  - errorMessage: 에러 메시지 (빈 문자열이면 에러 없음)
+ *  - leftIcon: 왼쪽 아이콘(src 문자열) or null
+ *  - rightIconVisible: 비밀번호 보이기 아이콘(src) or null
+ *  - rightIconHidden: 비밀번호 가리기 아이콘(src) or null
+ *  - isPassword: boolean, 비밀번호 토글 여부
+ *  - style: { width?, height?, fontSize?, borderRadius?, ... } 형태의 객체
+ */
 export default function InputBoxLarge({
   placeholder = '플레이스 홀더 텍스트를 입력해 주세요.',
   errorMessage = '',
   leftIcon = null,
-  rightIconVisible = null, // eye on
-  rightIconHidden = null,  // eye off
+  rightIconVisible = null,
+  rightIconHidden = null,
   isPassword = false,
+  style = {},            // 새로 추가: 부모가 넘겨줄 수 있는 style 프롭
 }) {
   const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -26,20 +43,28 @@ export default function InputBoxLarge({
     return 'none';
   };
 
-  const togglePassword = () => setShowPassword(prev => !prev);
+  const togglePassword = () => setShowPassword((prev) => !prev);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'Pretendard, sans-serif' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        fontFamily: FontStyles.body.fontFamily,
+        width: '100%',      // 기본적으로 가로 100%
+        ...style,           // 부모가 넘긴 style을 병합
+      }}
+    >
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          width: '552px',
-          height: '72px',
+          width: '94%',       // 무조건 부모 컨테이너 width에 맞추도록
+          height: '100%',      // 부모가 지정한 height를 따름
           padding: '0 16px',
-          borderRadius: 8,
-          backgroundColor: Colors.componentBackground, // rgba(255,255,255,0.1)
+          backgroundColor: Colors.componentBackground,
           border: getBorderStyle(),
           transition: 'border 0.2s ease',
         }}
@@ -47,7 +72,17 @@ export default function InputBoxLarge({
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* 왼쪽 아이콘 */}
-        {leftIcon && <img src={leftIcon} alt="left icon" style={{ width: 20, height: 20 }} />}
+        {leftIcon && (
+          <img
+            src={leftIcon}
+            alt="left icon"
+            style={{
+              width: style.iconSize ?? 20,
+              height: style.iconSize ?? 20,
+              flexShrink: 0,
+            }}
+          />
+        )}
 
         {/* 입력 필드 */}
         <input
@@ -64,6 +99,7 @@ export default function InputBoxLarge({
             outline: 'none',
             background: 'transparent',
             ...FontStyles.body,
+            fontSize: style.fontSize ?? FontStyles.body.fontSize,
             color: Colors.grey07,
           }}
         />
@@ -74,14 +110,26 @@ export default function InputBoxLarge({
             src={showPassword ? rightIconVisible : rightIconHidden}
             alt="toggle password visibility"
             onClick={togglePassword}
-            style={{ width: 20, height: 20, cursor: 'pointer' }}
+            style={{
+              width: style.iconSize ?? 20,
+              height: style.iconSize ?? 20,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
           />
         )}
       </div>
 
       {/* 에러 메시지 */}
       {isError && (
-        <span style={{ ...FontStyles.caption, color: Colors.systemRed, marginLeft: 4 }}>
+        <span
+          style={{
+            ...FontStyles.caption,
+            color: Colors.systemRed,
+            marginLeft: 4,
+            fontSize: style.errorFontSize ?? FontStyles.caption.fontSize,
+          }}
+        >
           {errorMessage}
         </span>
       )}

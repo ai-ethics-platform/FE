@@ -5,7 +5,7 @@ export const Colors = {
     brandGradientEnd: '#192D3A',
     brandDark:'#054347',
     brandLight:'#99BCBE',
-    componentBackground: 'rgba(255, 255, 255, 0.7)',
+    componentBackground: '#FCFDFA',
     componentBackgroundActive: 'rgba(53, 71, 80, 0.05)',
     componentBackgroundFloat: 'rgba(255, 255, 255, 0.7)',
     dim: 'rgba(0, 0, 0, 0.25)',

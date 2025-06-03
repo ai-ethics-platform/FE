@@ -8,9 +8,9 @@ export default function BackButton({ disabled = false }) {
 
   const getBackground = () => {
      if (disabled) return Colors.grey03; // '#BAC1C5'
-    if (isActive) return Colors.brandGradientEnd; // '#192D3A'
-    if (isHovered) return Colors.brandPrimary; // '#354750'
-    return `linear-gradient(180deg, ${Colors.brandGradientStart} 0%, ${Colors.brandGradientEnd} 100%)`;  };
+    if (isActive) return Colors.brandDark; // '#192D3A'
+    if (isHovered) return '#0D575C'; // '#354750'
+    return Colors.brandPrimary;  };
 
   return (
     <button

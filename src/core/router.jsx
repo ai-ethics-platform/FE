@@ -14,10 +14,15 @@ import Game02 from "../pages/Game02";
 import Game03 from '../pages/Game03';
 import Game04 from "../pages/Game04";
 import Game05 from '../pages/Game05';
+import Game05_1 from "../pages/Game05_1";
 import Game06 from '../pages/Game06';
+import Game07 from "../pages/Game07";
+import Game08 from "../pages/Game08";
+import Game09 from "../pages/Game09";
 import CD1 from "../pages/CD1";
 import CD2 from "../pages/CD2";
 import CD3 from "../pages/CD3";
+import GameMap from "../pages/GameMap";
 
 function Router() {
    return (
@@ -38,11 +43,15 @@ function Router() {
       <Route path="/game03" element={<Game03 />} />
       <Route path="/game04" element={<Game04 />} />
       <Route path="/game05" element={<Game05 />} />
+      <Route path="/game05_01" element={<Game05_1 />} />
       <Route path="/game06" element={<Game06 />} />
+      <Route path="/game07" element={<Game07 />} />
+      <Route path="/game08" element={<Game08 />} />
+      <Route path="/game09" element={<Game09 />} />
       <Route path="/character_description1" element={<CD1 />} />
       <Route path="/character_description2" element={<CD2 />} />
       <Route path="/character_description3" element={<CD3 />} />
-
+      <Route path="/gamemap" element={<GameMap />} />
       </Routes>
     </BrowserRouter>
   );

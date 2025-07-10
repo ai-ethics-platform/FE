@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import contentbox from '../assets/contentBox1.svg';
 import pagnationLeft from '../assets/paginationleft.svg';
 import pagnationRight from '../assets/paginationright.svg';
@@ -13,13 +13,22 @@ export default function ContentTextBox({
   currentIndex = 0,
   setCurrentIndex = () => {},
   onContinue = () => {},
-}) {
+  continueLabel = "다음",
+}) 
+ {
   const [typingDone, setTypingDone] = useState(false);
-
   const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };
-  const typedMain = useTypingEffect(currentParagraph.main, 70, () => {
-    setTypingDone(true);
-  });
+  const isTextReady = currentParagraph.main && currentParagraph.main.length > 0;
+
+  useEffect(() => {
+    setTypingDone(false);
+  }, [currentIndex]);
+ 
+  const typedMain = useTypingEffect(
+    isTextReady ? currentParagraph.main : '',
+    70,
+    () => setTypingDone(true)
+  );
   const typedSub = typingDone ? currentParagraph.sub : '';
 
   const handlePrev = () => {
@@ -42,10 +51,12 @@ export default function ContentTextBox({
 
   const showLeft = currentIndex > 0;
   const showRight = currentIndex < paragraphs.length - 1;
-
+  useEffect(() => {
+    setTypingDone(false);
+  }, [currentIndex]);
   return (
-    <div style={{ position: 'relative', width: 960, height: 200 }}>
-      <img
+   <div style={{ position: 'relative', width: 960, minHeight: 200 }}>
+    <img
         src={contentbox}
         alt="frame"
         style={{
@@ -57,7 +68,6 @@ export default function ContentTextBox({
           zIndex: 0,
         }}
       />
-
       <div
         style={{
           position: 'absolute',
@@ -68,6 +78,7 @@ export default function ContentTextBox({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
+          minHeight : 150,
           zIndex: 1,
         }}
       >
@@ -105,7 +116,7 @@ export default function ContentTextBox({
                 src={showLeft ? pagnationBothR : pagnationRight}
                 alt="next"
                 style={{
-                  marginBottom: 20,
+                  marginBottom: 40,
                   height: 24,
                   cursor: typingDone ? 'pointer' : 'default',
                   opacity: typingDone ? 1 : 0.3,
@@ -114,10 +125,9 @@ export default function ContentTextBox({
               />
             )}
           </div>
-
           {typingDone && currentIndex === paragraphs.length - 1 && (
             <div style={{ marginBottom: 20 }}>
-              <Continue width={264} height={72} step={paragraphs.length} onClick={onContinue} />
+              <Continue width={264} height={72} step={2} onClick={onContinue} label={continueLabel}/>
             </div>
           )}
         </div>

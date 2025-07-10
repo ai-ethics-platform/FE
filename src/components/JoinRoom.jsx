@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
+import InputBoxSmall from './InputBoxSmall';
 
 export default function JoinRoom({ onClose }) {
   const [roomCode, setRoomCode] = useState('');
@@ -27,8 +28,8 @@ export default function JoinRoom({ onClose }) {
     <div
       style={{
         width: 552,
-        height: 360,
-        backgroundColor: Colors.grey01,
+        height: 444,
+        backgroundColor: Colors.componentBackgroundFloat,
         borderRadius: 12,
         padding: 32,
         position: 'relative',
@@ -56,11 +57,10 @@ export default function JoinRoom({ onClose }) {
       />
 
       {/* 타이틀 */}
-      <div style={{ ...FontStyles.title, color: Colors.grey07, marginBottom: 32 }}>
-        JOIN THE ROOM
+      <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 32 }}>
+        방 참여하기 
       </div>
 
-      {/* 입력 필드 */}
       <input
         type="text"
         placeholder="방 코드 6자리를 입력해 주세요."
@@ -70,15 +70,29 @@ export default function JoinRoom({ onClose }) {
           width: '80%',
           height: 56,
           ...FontStyles.body,
-          border: 'none',
-          borderRadius: 8,
+          border: `0.4px solid ${Colors.brandPrimary}`,
+          borderRadius: 0,
           textAlign: 'center',
-          backgroundColor: Colors.grey02,
+          backgroundColor: Colors.grey01,
           color: Colors.grey06,
           marginBottom: 40,
-          outline: 'none',
+          outline: 'black',
         }}
       />
+      {/* <InputBoxSmall 
+         type="text"
+         placeholder="방 코드 6자리를 입력해 주세요."
+         value={roomCode}
+         onChange={handleChange}
+         style={{
+          width: 360,
+          height: 72,
+          ...FontStyles.body,
+          border: Colors.brandPrimary,
+          backgroundColor: Colors.grey02,
+          color: Colors.grey06,
+        }}
+      /> */}
 
       {/* 입장 버튼 */}
       <PrimaryButton

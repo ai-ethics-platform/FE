@@ -18,7 +18,7 @@ export default function RoomCard({ icon, title, description, disabled = false, o
 
   return (
     <div
-      onClick={!disabled ? onClick : undefined} // ✅ onClick 처리
+      onClick={!disabled ? onClick : undefined}
       style={{
         position: 'relative',
         width: CardSizes.width,
@@ -91,7 +91,7 @@ export default function RoomCard({ icon, title, description, disabled = false, o
             marginBottom: 15,
           }}
         />
-        <div style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary, marginBottom: 15 }}>
+        <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 15 }}>
           {title}
         </div>
         <div

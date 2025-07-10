@@ -1,3 +1,4 @@
+// src/pages/SelectHomeMate.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -22,55 +23,47 @@ export default function SelectHomeMate() {
 
   return (
     <Background bgIndex={3}>
-      <div
-        style={{
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
+        {/* 사이드바 */}
+        <div style={{
           position: 'fixed',
-          inset: 0,
-          overflow: 'hidden',
-          zIndex: 0,
-        }}
-      >
-        {/* ─── 사이드바 (Layout과 동일하게 상단 32.5% 기준 세로 중앙) ─── */}
-        <div
-          style={{
-            position: 'fixed',
-            top: '32.5%',
-            left: 0,
-            transform: 'translateY(-50%)',
-            width: 220,
-            padding: '20px 0',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 24,
-            alignItems: 'flex-start',
-          }}
-        >
+          top: '32.5%',
+          left: 0,
+          transform: 'translateY(-50%)',
+          width: 220,
+          padding: '20px 0',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 24,
+          alignItems: 'flex-start',
+        }}>
           <UserProfile player="1P" isLeader />
           <UserProfile player="2P" isSpeaking />
           <UserProfile player="3P" />
         </div>
 
-        {/* ─── 중앙 정렬된 캐릭터 이미지 + ContentTextBox ─── */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '80vw',
-            maxWidth: 936,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
+        {/* 중앙 캐릭터 선택 UI */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '80vw',
+          maxWidth: 936,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}>
           <div style={{ display: 'flex', gap: 24 }}>
             {images.map((src, idx) => (
               <img
                 key={idx}
                 src={src}
                 alt={`Character ${idx + 1}`}
-                onClick={() => setActiveIndex(idx)}
+                onClick={() => {
+                  console.log('선택 인덱스:', idx);
+                  setActiveIndex(idx)
+                }}
                 style={{
                   width: 264,
                   height: 360,
@@ -81,16 +74,6 @@ export default function SelectHomeMate() {
                   transform: activeIndex === idx ? 'scale(1.01)' : 'scale(1)',
                   transition: 'all 0.2s ease-in-out',
                 }}
-                onMouseEnter={(e) => {
-                  if (activeIndex !== idx) {
-                    e.currentTarget.style.transform = 'scale(1.03)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeIndex !== idx) {
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }
-                }}
               />
             ))}
           </div>
@@ -100,9 +83,8 @@ export default function SelectHomeMate() {
               paragraphs={paragraphs}
               onContinue={() => {
                 if (activeIndex !== null) {
-                  navigate('/matename', {
-                    state: { selectedIndex: activeIndex },
-                  });
+                  localStorage.setItem('selectedCharacterIndex', activeIndex);
+                  navigate('/matename');
                 } else {
                   alert('캐릭터를 먼저 선택해주세요!');
                 }

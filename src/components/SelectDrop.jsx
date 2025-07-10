@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import arrowUp from '../assets/arrowUp.svg';
 import arrowDown from '../assets/arrowDown.svg';
 import { Colors, FontStyles } from './styleConstants';
@@ -18,6 +18,18 @@ export default function SelectDrop({
   useEffect(() => {
     setSelected(value);
   }, [value]);
+
+  useEffect(() => {
+    if (isOpen && dropdownRef.current) {
+      dropdownRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+    }
+  }, [isOpen]);
+  
+  const dropdownRef = useRef(null); 
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
@@ -103,21 +115,20 @@ export default function SelectDrop({
           }}
         />
       </div>
-
       {isOpen && (
-        <div style={dropdownStyle}>
-          {options.map((opt, idx) => (
-            <div
-              key={idx}
-              style={optionStyle}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => handleSelect(opt)}
-            >
-              {opt}
-            </div>
-          ))}
-        </div>
-      )}
+      <div style={dropdownStyle} ref={dropdownRef}>
+        {options.map((opt, idx) => (
+          <div
+            key={idx}
+            style={optionStyle}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => handleSelect(opt)}
+          >
+            {opt}
+          </div>
+        ))}
+      </div>
+    )}
     </div>
   );
 }

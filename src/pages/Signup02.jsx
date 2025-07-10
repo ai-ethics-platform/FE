@@ -13,11 +13,12 @@ import lockIcon from '../assets/password.svg';
 import eyeOnIcon from '../assets/eyeon.svg';
 import eyeOffIcon from '../assets/eyeoff.svg';
 import { Colors, FontStyles } from '../components/styleConstants';
+import axios from 'axios';
 
 export default function Signup02() {
   const navigate = useNavigate();
   const emailRef = useRef(null);
-
+  const [username, setUsername] = useState('');
   const [emailError, setEmailError] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -28,6 +29,12 @@ export default function Signup02() {
   const [education, setEducation] = useState('');
   const [grade, setGrade] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [email, setEmail] = useState('');
+  const [birthError, setBirthError] = useState('');
+
+  //아이디 중복 확인 
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState(null); // true/false/null
+const [usernameCheckError, setUsernameCheckError] = useState(''); 
 
   // 비밀번호 확인 일치 여부
   useEffect(() => {
@@ -40,20 +47,30 @@ export default function Signup02() {
 
   // 이메일 유효성 검사
   useEffect(() => {
-    const inputEl = emailRef.current?.querySelector('input');
-    const emailValue = inputEl ? inputEl.value : '';
-    if (emailValue && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(emailValue)) {
+    if (email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
       setEmailError('유효한 이메일 주소를 입력하세요.');
     } else {
       setEmailError('');
     }
-  });
+  }, [email]);
 
-  // 숫자만 입력받도록
-  const handleNumericInput = (setter) => (e) => {
-    const onlyNums = e.target.value.replace(/\D/g, '');
+  // 생년월일 유효 검사 
+  const handleBirthInput = (setter, maxLength, type) => (e) => {
+    const onlyNums = e.target.value.replace(/\D/g, '').slice(0, maxLength);
     setter(onlyNums);
+  
+    const y = type === 'year' ? onlyNums : birthYear;
+    const m = type === 'month' ? onlyNums : birthMonth;
+    const d = type === 'day' ? onlyNums : birthDay;
+  
+    const isValid =
+      y.length === 4 && Number(y) >= 1000 && Number(y) <= 2030 &&
+      m.length === 2 && Number(m) >= 1 && Number(m) <= 12 &&
+      d.length === 2 && Number(d) >= 1 && Number(d) <= 31;
+  
+    setBirthError(isValid ? '' : '올바른 형식은 2001-01-01 입니다.');
   };
+  
 
   // 학년 옵션
   const getGradeOptions = () => {
@@ -66,23 +83,21 @@ export default function Signup02() {
   };
 
   // 폼이 모두 유효해야만 버튼 활성화
-  const isFormValid = (() => {
-    const inputEl = emailRef.current?.querySelector('input');
-    const emailValue = inputEl ? inputEl.value : '';
-    return (
-      Boolean(emailValue.trim()) &&
-      !emailError &&
-      Boolean(password) &&
-      Boolean(confirmPassword) &&
-      !passwordError &&
-      Boolean(birthYear.trim()) &&
-      Boolean(birthMonth.trim()) &&
-      Boolean(birthDay.trim()) &&
-      (gender === '남자' || gender === '여자') &&
-      Boolean(education) &&
-      Boolean(grade)
-    );
-  })();
+  const isFormValid = (
+    Boolean(username.trim()) &&
+   // isUsernameAvailable === true && 
+    Boolean(email.trim()) &&
+    !emailError &&
+    Boolean(password) &&
+    Boolean(confirmPassword) &&
+    !passwordError &&
+    Boolean(birthYear.trim()) &&
+    Boolean(birthMonth.trim()) &&
+    Boolean(birthDay.trim()) &&
+    (gender === '남' || gender === '여') &&
+    Boolean(education) &&
+    Boolean(grade)
+  );
 
   const inputStyle = {
     flex: 1,
@@ -125,6 +140,70 @@ export default function Signup02() {
   };
 
   const grayBackground = Colors.grey01;
+
+  const messageTextStyle = {
+    color: Colors.systemRed, // 성공일 경우엔 따로 바꿔줌
+    fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+    fontFamily: 'inherit', // 프로젝트 전체 폰트 상속
+    letterSpacing: '-0.015em', // 자간 살짝 줄임 (자연스러움)
+    marginBottom:'0vh',
+  };
+  
+
+  // API 연결  - 로그인 중복 확인 
+
+  const handleCheckUsername = async () => {
+    if (!username.trim()) {
+      setUsernameCheckError('아이디를 입력하세요.');
+      return;
+    }
+  
+    try {
+      const res = await axios.post(
+        '/auth/check-username',
+        { username: username.trim() },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+  
+      if (res.data.available) {
+        setIsUsernameAvailable(true);
+        setUsernameCheckError('');
+      } else {
+        setIsUsernameAvailable(false);
+        setUsernameCheckError('이미 사용 중인 아이디입니다.');
+      }
+    } catch (err) {
+      console.error(err);
+      setIsUsernameAvailable(false);
+      setUsernameCheckError('확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  // API 연결 - 회원가입  
+  const handleSignup = async () => {
+    const birthdate = `${birthYear}/${birthMonth.padStart(2, '0')}/${birthDay.padStart(2, '0')}`;
+
+    const requestBody = {
+      username,
+      email,
+      password,
+      birthdate,
+      gender,
+      education_level: education,
+      major: grade,
+    };
+    console.log('데이터:', requestBody);  
+    try {
+      const response = await axios.post('/auth/signup', requestBody, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      console.log('회원가입 성공:', response.data);
+      navigate('/login');
+    } catch (error) {
+      console.error('회원가입 실패:', error.response?.data || error.message);
+      alert('회원가입 중 오류가 발생했습니다.');
+    }
+  };
 
   return (
     <Background bgIndex={2}>
@@ -199,12 +278,65 @@ export default function Signup02() {
                 color: Colors.grey07,
               }}
             >
-              아이디(이메일) 및 비밀번호
+              아이디, 이메일 및 비밀번호
+            </div>
+            {/* 아이디 */}
+            <div style={{ marginBottom: '2vh'}}>
+              <div style = {{position: 'relative'}}>
+              <InputBoxLarge
+                placeholder="아이디"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setIsUsernameAvailable(null);
+                  setUsernameCheckError('');
+                }}
+                leftIcon={profileIcon}
+                style={{
+                  width: '100%',
+                  height: '8vh',
+                  minHeight: 48,
+                  fontSize: 'clamp(0.875rem, 1vw, 1rem)',
+                  paddingRight: 80,
+                }}
+              />
+              <button
+                onClick={handleCheckUsername}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: 12,
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'auto',
+                  zIndex: 2,
+                  background: 'none',
+                  border: 'none',
+                  background: 'none',
+                  color: Colors.brandPrimary,
+                  fontSize: 'clamp(0.75rem, 0.9vw, 0.875rem)',
+                  padding: 0,
+                  cursor: 'pointer',
+                }}
+              >
+                중복 확인
+              </button>
+              </div>
+              {usernameCheckError && (
+                <div style={messageTextStyle}>{usernameCheckError}</div>
+              )}
+              {isUsernameAvailable === true && (
+                <div style={{ ...messageTextStyle, color: Colors.systemGreen }}>
+                  사용 가능한 아이디입니다.
+                </div>
+              )}
             </div>
 
-            <div style={{ marginBottom: '2vh' }} ref={emailRef}>
+            {/* 이메일 */}
+            <div style={{ marginBottom: '2vh' }}>
               <InputBoxLarge
                 placeholder="아이디(이메일)"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 leftIcon={profileIcon}
                 style={{
                   width: '100%',
@@ -213,18 +345,10 @@ export default function Signup02() {
                   fontSize: 'clamp(0.875rem, 1vw, 1rem)',
                 }}
               />
+              {emailError && (
+                <div style={messageTextStyle}>{emailError}</div>
+              )}
             </div>
-            {emailError && (
-              <div
-                style={{
-                  color: Colors.systemRed,
-                  fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
-                  marginBottom: '2vh',
-                }}
-              >
-                {emailError}
-              </div>
-            )}
 
             <div style={{ marginBottom: '2vh' }}>
               <PasswordCheck
@@ -259,17 +383,11 @@ export default function Signup02() {
                   fontSize: 'clamp(0.875rem, 1vw, 1rem)',
                 }}
               />
-              {passwordError && (
-                <div
-                  style={{
-                    color: Colors.systemRed,
-                    fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
-                    marginTop: '1vh',
-                  }}
-                >
-                  {passwordError}
-                </div>
-              )}
+             {passwordError && (
+              <div style={messageTextStyle}>
+                {passwordError}
+              </div>
+            )}
             </div>
           </div>
 
@@ -296,21 +414,24 @@ export default function Signup02() {
                 style={inputStyle}
                 placeholder="년도"
                 value={birthYear}
-                onChange={handleNumericInput(setBirthYear)}
-              />
+                onChange={handleBirthInput(setBirthYear, 4, 'year')}
+                />
               <input
                 style={inputStyle}
                 placeholder="월"
                 value={birthMonth}
-                onChange={handleNumericInput(setBirthMonth)}
-              />
+                onChange={handleBirthInput(setBirthMonth, 2, 'month')}
+                />
               <input
                 style={inputStyle}
                 placeholder="일"
                 value={birthDay}
-                onChange={handleNumericInput(setBirthDay)}
-              />
+                onChange={handleBirthInput(setBirthDay, 2, 'day')}
+                />
             </div>
+            {birthError && (
+              <div style={messageTextStyle}>{birthError}</div>
+            )}
           </div>
 
           {/* ─── “성별” 섹션 ─── */}
@@ -325,7 +446,7 @@ export default function Signup02() {
               성별 *
             </div>
             <div style={{ display: 'flex', gap: '1vw', marginBottom: '2vh' }}>
-              {['남자', '여자'].map((g) => (
+              {['남', '여'].map((g) => (
                 <div
                   key={g}
                   onClick={() => setGender(g)}
@@ -386,18 +507,22 @@ export default function Signup02() {
 
           {/* ─── “다음” 버튼 ─── */}
           <div style={{ textAlign: 'center', marginBottom: '4vh' }}>
-            <PrimaryButton
-              disabled={!isFormValid}
-              style={{
-                width: '100%',
-                height: '7.5vh',
-                maxHeight: 64,
-                fontSize: 'clamp(1rem, 1.1vw, 1.125rem)',
-              }}
-              onClick={() => navigate('/')}
-            >
-              다음
-            </PrimaryButton>
+          <PrimaryButton
+          disabled={!isFormValid}
+          onClick={
+            
+            handleSignup}
+          
+          style={{
+            width: '100%',
+            height: '7.5vh',
+            maxHeight: 64,
+            fontSize: 'clamp(1rem, 1.1vw, 1.125rem)',
+          }}
+        >
+          다음
+        </PrimaryButton>
+        
           </div>
         </div>
       </div>

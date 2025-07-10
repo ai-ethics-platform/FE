@@ -1,4 +1,3 @@
-// MicTestPopup.jsx
 import React from 'react';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
@@ -14,7 +13,7 @@ return (
         transform: 'translate(-50%, -50%)',
         width: 552,
         height: 540,
-        backgroundColor: Colors.grey02,
+        backgroundColor: Colors.componentBackgroundFloat,
         borderRadius: 8,
         boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
         display: 'flex',

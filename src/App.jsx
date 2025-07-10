@@ -5,7 +5,10 @@ import useScrollRestore from './hooks/useScrollRestore';
 function App() {
   useScrollRestore();
 
-  return <Router />;
+  return (
+    <Router />
+  
+  )
 }
 
 export default App;

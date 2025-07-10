@@ -15,7 +15,7 @@ import StatusMeReady from '../assets/meready.svg';
 import StatusWaiting from '../assets/waiting.svg';
 import StatusCannotReady from '../assets/cannotready.svg';
 import crownIcon from '../assets/crown.svg';
-import { CardSizes } from '../components/stylecardsize';
+import { CardSizes } from './waitingCardSize';
 
 const statusMap = {
   waitingforready: StatusWaitingforReady,

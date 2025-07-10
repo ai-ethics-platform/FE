@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import BackButton from '../components/BackButton';
 import RoomCard from '../components/RoomCard';
-import LogoutPopup from '../components/LogoutPopup'; // 추가
+import LogoutPopup from '../components/LogoutPopup'; 
 import JoinRoom from '../components/JoinRoom';
-import CreateRoom from '../components/CreateRoom';
+import CreateRoom from '../components/CreateRoom2';
 import createIcon from '../assets/roomcreate.svg';
 import joinIcon from '../assets/joinviacode.svg';
 import randomIcon from '../assets/joinrandom.svg';
@@ -13,7 +13,7 @@ import { FontStyles,Colors } from '../components/styleConstants';
 
 export default function SelectRoom() { 
   const navigate = useNavigate();
-  const [isLogoutPopupOpen, setIsLogoutPopupOpen] = useState(false); // 팝업 상태
+  const [isLogoutPopupOpen, setIsLogoutPopupOpen] = useState(false); 
 const [isJoinRoomOpen, setIsJoinRoomOpen] = useState(false);
 const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
   // 스크롤 방지
@@ -49,33 +49,33 @@ const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          paddingTop: 10,
+          paddingTop: 0,
         }}
       >
         <div
           style={{
             display: 'flex',
             flexDirection: 'row',
-            gap: 20,
+            gap: 30,
             flexWrap: 'nowrap',
           }}
         >
           <RoomCard
             icon={createIcon}
-            title="CREATE ROOM"
+            title="방 만들기"
             description="새로운 방을 만들고 시뮬레이션을 시작하세요."
-             onClick={() => setIsCreateRoomOpen(true)}
+            onClick={() => setIsCreateRoomOpen(true)}
           />
           <RoomCard
             icon={joinIcon}
-            title="JOIN THE ROOM"
+            title="방 참여하기"
             description="코드를 통해 비공개 방에 참여할 수 있습니다."
             onClick={() => setIsJoinRoomOpen(true)} // 여기에 추가
 
           />
           <RoomCard
             icon={randomIcon}
-            title="RANDOM MATCH"
+            title="랜덤 방 참여하기"
             description="공개된 방 중 하나에 무작위로 입장합니다."
             disabled
           />

@@ -3,21 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox';
 import player1DescImg from '../assets/images/Player1_description.png';
+import { resolveParagraphs } from '../utils/resolveParagraphs';
 
 export default function CD1() {
   const navigate = useNavigate();
-  const subtopic = '가정 1';
-
-  const paragraphs = [
+  const subtopic = localStorage.getItem('subtopic') ;
+  const round = Number(localStorage.getItem('currentRound'));
+  const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
+  const rawParagraphs = [
     {
       main:
-        '  당신은 어머니를 10년 이상 돌본 요양보호사 K입니다.\n' +
-        '  최근 ...',
+      `  당신은 어머니를 10년 이상 돌본 요양보호사 K입니다.
+         최근 ${mateName}를 도입한 후 전일제에서 하루 2시간 근무로 전환되었습니다. 
+         당신은 로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}와 협업해야 하는 상황이 많습니다. `,
+    
     },
   ];
+  
+  const paragraphs = resolveParagraphs(rawParagraphs, mateName);
 
   return (
-    <Layout subtopic={subtopic} me="1P">
+    <Layout round = {round} subtopic={subtopic} me="1P">
       {/* ─── 중앙에 배치될 콘텐츠 ─── */}
       <div
         style={{
@@ -38,10 +44,10 @@ export default function CD1() {
           }}
         />
         <div style={{ width: '100%', maxWidth: 900 }}>
-          <ContentTextBox
-            paragraphs={paragraphs}
-            onContinue={() => navigate('/game02')}
-          />
+        <ContentTextBox
+          paragraphs={paragraphs}
+          onContinue={() => navigate('/game02')}
+        />
         </div>
       </div>
     </Layout>

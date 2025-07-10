@@ -1,161 +1,191 @@
 // src/pages/Game03.jsx
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Layout           from '../components/Layout';
+import Layout from '../components/Layout';
 import SelectCardToggle from '../components/SelectButton';
-import Continue         from '../components/Continue';
-import contentBoxFrame  from '../assets/contentBox4.svg';
+import Continue from '../components/Continue';
+import contentBoxFrame from '../assets/contentBox4.svg';
 import { Colors, FontStyles } from '../components/styleConstants';
 
+import { getDilemmaImages } from '../components/dilemmaImageLoader';
 
-const CARD_W = 640;   // Card 기본 폭
-const CARD_H = 170;   // Card 기본 높이
-const BTN_W  = 160;
-const BTN_H  =  48;
-const CIRCLE =  16;
-const BORDER =   2;
-const LINE   =   3;
-
+const CARD_W = 640;
+const CARD_H = 170;
+const BTN_W = 160;
+const BTN_H = 48;
+const CIRCLE = 16;
+const BORDER = 2;
+const LINE = 3;
+//동의 비동의에 대한 값은 api 연결로 동작 
 
 export default function Game03() {
   const nav = useNavigate();
 
-  const [agree, setAgree] = useState(null); 
-  const [conf,  setConf]  = useState(0);    // 1~5, 0 = 미선택
-  const pct = conf ? ((conf - 1) / 4) * 100 : 0; // 슬라이더 % (1~5 ⇒ 0~100)
+  const category = localStorage.getItem('category') ?? '안드로이드';
+  const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
+  const mode = localStorage.getItem('mode') ?? 'neutral';
+
+  const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
+
+  const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
+
+  const [step, setStep] = useState(1);           // step 1: 동의 / step 2: 확신도
+  const [agree, setAgree] = useState(null);      // 'agree' or 'disagree'
+  const [conf, setConf] = useState(0);           // 확신도 (1~5)
+  const pct = conf ? ((conf - 1) / 4) * 100 : 0;  // 확신도 퍼센트 계산
+  const [round, setRound] = useState(1);
+
+  useEffect(() => {
+    const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+    const calculatedRound = completed.length + 1;
+    setRound(calculatedRound);
+    localStorage.setItem('currentRound', calculatedRound.toString()); // 보조용 저장
+  }, []);
 
   return (
-    <Layout subtopic="가정 1" me="3P">
-     
-      <Card width={936} height={216}>
-        <p style={title}>
-          Q1) 24시간 개인정보 수집 업데이트에&nbsp;동의하시겠습니까?
-        </p>
-
-        <div style={{ display: 'flex', gap: 24 }}>
-          <SelectCardToggle
-            label="동의"
-            selected={agree === 'agree'}
-            onClick={() => setAgree('agree')}
-            width={220}
-            height={56}
-          />
-          <SelectCardToggle
-            label="비동의"
-            selected={agree === 'disagree'}
-            onClick={() => setAgree('disagree')}
-            width={220}
-            height={56}
-          />
-        </div>
-      </Card>
-
-      {/* ──────────────── Q2 카드 ──────────────── */}
-      <Card width={936} height={216} extraTop={50}>
-        <p style={title}>Q2) 당신의 선택에 얼마나 확신이 있나요?</p>
-
-        {/* 슬라이더 영역 */}
-        <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
-          
-          <div
-            style={{
-              position: 'absolute',
-              top: 12,
-              left: 0,
-              right: 0,
-              height: LINE,
-              background: Colors.grey03,
-            }}
-          />
-         
-          <div
-            style={{
-              position: 'absolute',
-              top: 12,
-              left: 0,
-              width: `${pct}%`,
-              height: LINE,
-              background: Colors.brandPrimary,
-            }}
-          />
-         
-          <div
-            style={{
-              position: 'relative',
-              display: 'flex',
-              justifyContent: 'space-between',
-            }}
-          >
-            {[1, 2, 3, 4, 5].map((n) => {
-              const isNow  = conf === n;
-              const passed = conf > n;
-
-              return (
-                <div key={n} style={{ textAlign: 'center' }}>
-                  <div
-                    onClick={() => setConf(n)}
-                    style={{
-                      width: CIRCLE,
-                      height: CIRCLE,
-                      borderRadius: '50%',
-                      background: isNow
-                        ? Colors.grey01
-                        : passed
-                        ? Colors.brandPrimary
-                        : Colors.grey03,
-                      border: `${BORDER}px solid ${
-                        isNow ? Colors.brandPrimary : 'transparent'
-                      }`,
-                      cursor: 'pointer',
-                      margin: '0 auto',
-                    }}
-                  />
-                  <span
-                    style={{
-                      ...FontStyles.caption,
-                      color: Colors.grey06,
-                      marginTop: 4,
-                      display: 'inline-block',
-                    }}
-                  >
-                    {n}
-                  </span>
-                </div>
-              );
-            })}
+    <Layout subtopic={subtopic} round = {round} me="3P">
+      {step === 1 && (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
+            {comicImages.map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt={`설명 이미지 ${idx + 1}`}
+                style={{ width: 230, height: 135.38, objectFit: 'contain' }}
+              />
+            ))}
           </div>
-        </div>
-        </Card>
-        {/* 다음 버튼 */}
-        <div style={{ marginTop: 15 }}>
-        <Continue
-  width={264}
-  height={72}
-  step={1}
-  disabled={!agree || conf === 0}
-  onClick={() => {
-    console.log('선택값:', agree, conf);    
-    nav('/game04', {
-      state: { agreement: agree, confidence: conf },
-    });
-  }}
-/>
 
-        </div>
-      
+            {/* 여기서 API 연결 시 당신이 누구인지에 대한 로직 수정 필요  */}
+          <Card width={936} height={216} extraTop={60}>
+            <p style={title}>
+              Q1) 당신은 요양보호사 K입니다. 24시간 개인정보 수집 업데이트에&nbsp;동의하시겠습니까?
+            </p>
+            <div style={{ display: 'flex', gap: 24 }}>
+              <SelectCardToggle
+                label="동의"
+                selected={agree === 'agree'}
+                onClick={() => setAgree('agree')}
+                width={220}
+                height={56}
+              />
+              <SelectCardToggle
+                label="비동의"
+                selected={agree === 'disagree'}
+                onClick={() => setAgree('disagree')}
+                width={220}
+                height={56}
+              />
+            </div>
+          </Card>
+
+          <div style={{ marginTop: 40 }}>
+            <Continue
+              width={264}
+              height={72}
+              step={1}
+              disabled={!agree}
+              onClick={() => setStep(2)}
+            />
+          </div>
+        </>
+      )}
+
+      {step === 2 && (
+        <>
+          <Card width={936} height={216} extraTop={150}>
+            <p style={title}>Q2) 당신의 선택에 얼마나 확신이 있나요?</p>
+            <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 0,
+                  right: 0,
+                  height: LINE,
+                  background: Colors.grey03,
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 0,
+                  width: `${pct}%`,
+                  height: LINE,
+                  background: Colors.brandPrimary,
+                }}
+              />
+              <div
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                }}
+              >
+                {[1, 2, 3, 4, 5].map((n) => {
+                  const isNow = conf === n;
+                  const passed = conf > n;
+
+                  return (
+                    <div key={n} style={{ textAlign: 'center' }}>
+                      <div
+                        onClick={() => setConf(n)}
+                        style={{
+                          width: CIRCLE,
+                          height: CIRCLE,
+                          borderRadius: '50%',
+                          background: isNow
+                            ? Colors.grey01
+                            : passed
+                            ? Colors.brandPrimary
+                            : Colors.grey03,
+                          border: `${BORDER}px solid ${
+                            isNow ? Colors.brandPrimary : 'transparent'
+                          }`,
+                          cursor: 'pointer',
+                          margin: '0 auto',
+                        }}
+                      />
+                      <span
+                        style={{
+                          ...FontStyles.caption,
+                          color: Colors.grey06,
+                          marginTop: 4,
+                          display: 'inline-block',
+                        }}
+                      >
+                        {n}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </Card>
+
+          <div style={{ marginTop: 80 }}>
+            <Continue
+              width={264}
+              height={72}
+              step={2}
+              disabled={conf === 0}
+              onClick={() =>
+                nav('/game04', {
+                  state: { agreement: agree, confidence: conf },
+                })
+              }
+            />
+          </div>
+        </>
+      )}
     </Layout>
   );
 }
 
-
-function Card({
-  children,
-  extraTop = 0,
-  width = CARD_W,
-  height = CARD_H,
-  style = {},
-}) {
+function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style = {} }) {
   return (
     <div
       style={{
@@ -166,13 +196,11 @@ function Card({
         ...style,
       }}
     >
-      {/* 배경 프레임 */}
       <img
         src={contentBoxFrame}
         alt=""
         style={{ width: '100%', height: '100%', objectFit: 'fill' }}
       />
-      {/* 내용 레이어 */}
       <div
         style={{
           position: 'absolute',
@@ -191,7 +219,7 @@ function Card({
   );
 }
 
-/* ─────────────── 공통 텍스트 스타일 ─────────────── */
+// ─── 텍스트 스타일 ───
 const title = {
   ...FontStyles.title,
   color: Colors.grey06,

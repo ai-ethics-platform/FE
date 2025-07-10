@@ -1,14 +1,11 @@
 import React from 'react';
 import { Colors, FontStyles } from './styleConstants';
-
 import icon1 from '../assets/1player.svg';
 import icon2 from '../assets/2player.svg';
 import icon3 from '../assets/3player.svg';
-
 import profile1 from '../assets/1playerprofile.svg';
 import profile2 from '../assets/2playerprofile.svg';
 import profile3 from '../assets/3playerprofile.svg';
-
 import crownIcon from '../assets/crown.svg';
 import speakingIcon from '../assets/speaking.svg'; 
 
@@ -35,16 +32,12 @@ export default function UserProfile({
   characterDesc = '',
   isLeader = false,
   isMe = false,
-  ...rest              // onClick, className, style 등
+  ...rest              // onClick, className, style 
 }) {
   const isDetailed = characterDesc?.trim() !== '';
   const color = colorMap[player] || Colors.player1P;
   const icon  = isDetailed ? profileMap[player] : iconMap[player];
-
-  // ① rest에서 style만 분리
   const { style: externalStyle, ...divProps } = rest;
-
-  // ② 기본 스타일
   const baseStyle = {
     position: 'relative',
     width: 200,
@@ -58,7 +51,6 @@ export default function UserProfile({
   };
 
   return (
-    // ③ style은 한 번만!
     <div {...divProps} style={{ ...baseStyle, ...externalStyle }}>
       {isMe && (
         <img
@@ -67,7 +59,6 @@ export default function UserProfile({
           style={{ position: 'absolute', top: 0, left: 0, width: 8, height: '100%' }}
         />
       )}
-
       <div
         style={{
           width: 64,
@@ -87,11 +78,10 @@ export default function UserProfile({
           style={{ width: 70, height: 70, objectFit: 'cover', borderRadius: '50%' }}
         />
       </div>
-
       <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', lineHeight: 1 }}>
-          <span style={{ ...FontStyles.bodyBold, color }}>{player}</span>
-          {isLeader && (
+        <span style={{ ...FontStyles.title, color }}>{player.replace('P', '')}</span>
+        {isLeader && (
             <img
               src={crownIcon}
               alt="방장"
@@ -103,7 +93,7 @@ export default function UserProfile({
         {isDetailed && (
           <div
             style={{
-              ...FontStyles.caption,
+              ...FontStyles.Body,
               color,
               marginTop: 2,
               maxWidth: 120,

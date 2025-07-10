@@ -10,7 +10,7 @@ export default function GameFrame({
   onRightClick = () => {},
   disableLeft = false,
   disableRight = false,
-  hideArrows = false, // 🔹 추가된 prop
+  hideArrows = false, // 
   width = 512,
   height = 64,
 }) {
@@ -29,7 +29,7 @@ export default function GameFrame({
         }}
       />
 
-      {/* 화살표 (조건부 렌더링) */}
+      {/* 화살표  */}
       {!hideArrows && (
         <>
           <img

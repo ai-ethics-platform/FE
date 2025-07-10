@@ -6,18 +6,19 @@ import player2DescImg from '../assets/images/Player2_description.png';
 
 export default function CD2() {
   const navigate = useNavigate();
-  const subtopic = '가정 1';
+  const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
+  const round = Number(localStorage.getItem('currentRound') ?? '1');
+  const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
 
   const paragraphs = [
     {
-      main:
-        '  당신은 자녀 J씨의 노모 L입니다.\n' +
-        '  가사도우미의 도움을 받다가 최근....',
+      main: `  당신은 자녀 J씨의 노모 L입니다.
+        가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다. `,
     },
   ];
 
   return (
-    <Layout subtopic={subtopic} me="2P">
+    <Layout round={round} subtopic={subtopic} me="2P">
       {/* 중앙에 배치될 콘텐츠 */}
       <div
         style={{

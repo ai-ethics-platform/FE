@@ -62,24 +62,35 @@ export default function WaitingRoom() {
               }}
             >
       
-        <GameFrame
-          topic={allTopics[currentIndex]}
-          onLeftClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))}
-          onRightClick={() => setCurrentIndex((prev) => Math.min(prev + 1, allTopics.length - 1))}
-          disableLeft={currentIndex === 0}
-          disableRight={currentIndex === allTopics.length - 1}
-          hideArrows={false}
-        />
+      <GameFrame
+        topic={allTopics[currentIndex]}
+        onLeftClick={() => {
+          const newIndex = Math.max(currentIndex - 1, 0);
+          setCurrentIndex(newIndex);
+          console.log(allTopics[newIndex]);
+          localStorage.setItem('category', allTopics[newIndex]); 
+        }}
+        onRightClick={() => {
+          const newIndex = Math.min(currentIndex + 1, allTopics.length - 1);
+          setCurrentIndex(newIndex);
+          console.log(allTopics[newIndex]);
+          localStorage.setItem('category', allTopics[newIndex]); 
+        }}
+        disableLeft={currentIndex === 0}
+        disableRight={currentIndex === allTopics.length - 1}
+        hideArrows={false}
+      />
       </div>
 
       {/* 상태 카드 */}
       <div style={{
-        height: '100vh',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
-        gap: 0,
-        paddingTop: 0,
+        alignItems: 'flex-start', // ← 중앙에서 위쪽으로 이동
+        gap: '32px', // ← 카드 간 거리 (조절 가능)
+        paddingTop: '160px', // ← 상단 공간 확보
+        height: '100vh',
+        boxSizing: 'border-box',
       }}>
         <div style={{ transform: 'scale(0.9)' }}>
           <StatusCard player="2P" isOwner={false} isMe={false} />

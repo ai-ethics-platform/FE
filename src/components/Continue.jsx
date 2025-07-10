@@ -7,7 +7,8 @@ export default function Continue({
   height = 72,
   step = 1,
   onClick,
-  disabled = false,          
+  disabled = false,  
+  label = "다음",        
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive,  setIsActive]  = useState(false);
@@ -23,7 +24,7 @@ export default function Continue({
           : 1
       : 1;
 
-  /** 텍스트 색상 (희미하게) */
+  /** 텍스트 색상  */
   const textColor = interactive ? Colors.grey01 : Colors.grey04;
 
   return (
@@ -71,7 +72,7 @@ export default function Continue({
         }}
       >
         <span style={{ ...FontStyles.headlineSmall, color: textColor }}>
-          다음
+        {label}
         </span>
         <span style={{ ...FontStyles.title, color: Colors.grey04 }}>
           {step}/3

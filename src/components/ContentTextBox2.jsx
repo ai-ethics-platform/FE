@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import contentbox from '../assets/contentBox1.svg';
 import pagnationLeft from '../assets/paginationleft.svg';
 import pagnationRight from '../assets/paginationright.svg';
@@ -16,14 +16,21 @@ export default function ContentTextBox2({
   const [typingDone, setTypingDone] = useState(false);      
 
   const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };
+  const isTextReady = currentParagraph.main && currentParagraph.main.length > 0;
 
+  useEffect(() => {
+    setTypingDone(false);
+  }, [currentIndex]);
  
-  const typedMain = useTypingEffect(currentParagraph.main, 70, () => {
-    setTypingDone(true);
-  });
+  const typedMain = useTypingEffect(
+    isTextReady ? currentParagraph.main : '',
+    70,
+    () => setTypingDone(true)
+  );
 
   const typedSub = typingDone ? currentParagraph.sub : '';
 
+  
   /*─────────────────────────── handlers ───────────────────────────*/
   const handlePrev = () => {
     if (!typingDone) return; 

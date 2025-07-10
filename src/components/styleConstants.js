@@ -7,7 +7,7 @@ export const Colors = {
     brandLight:'#99BCBE',
     componentBackground: '#FCFDFA',
     componentBackgroundActive: 'rgba(53, 71, 80, 0.05)',
-    componentBackgroundFloat: 'rgba(255, 255, 255, 0.7)',
+    componentBackgroundFloat: '#FCFDFA',
     dim: 'rgba(0, 0, 0, 0.25)',
     systemRed: '#9E2D2F',
 

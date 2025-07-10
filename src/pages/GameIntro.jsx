@@ -8,13 +8,13 @@ import { useNavigate } from 'react-router-dom';
 export default function GameIntro() {
   const navigate = useNavigate();
   const fullText =
-    `지금은 20XX년,\n국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
-    `이 로봇의 기능은 아래와 같습니다.\n` +
-    `• 가족의 감정, 건강 상태, 생활 습관 등을 입력하면 맞춤형 알림, 식단 제안 등의 서비스를 제공\n` +
-    `• 기타 업데이트 시 정교화된 서비스 추가 가능`;
+    `          지금은 20XX년,\n국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
+    `    이 로봇의 기능은 아래와 같습니다.\n` +
+    `     • 가족의 감정, 건강 상태, 생활 습관 등을 입력하면 맞춤형 알림, 식단 제안 등의 서비스를 제공\n` +
+    `     • 기타 업데이트 시 정교화된 서비스 추가 가능`;
 
   return (
-    <Background bgIndex={3}>
+    <Background bgIndex={2}>
       <div
         style={{
           position: 'fixed',
@@ -40,8 +40,8 @@ export default function GameIntro() {
             }}
           >
             <UserProfile player="1P" characterDesc="" isLeader />
-            <UserProfile player="2P" characterDesc="" isSpeaking />
-            <UserProfile player="3P" characterDesc="" />
+            <UserProfile player="2{" characterDesc="" isSpeaking />
+            <UserProfile player="토끼" characterDesc="" />
           </div>
         </div>
 

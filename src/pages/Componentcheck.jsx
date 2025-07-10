@@ -6,7 +6,7 @@ import password from "../assets/password.svg";
 import passwordcheck from "../assets/passwordcheck.svg";
 import eyeon from "../assets/eyeon.svg";
 import eyeoff from "../assets/eyeoff.svg";
-
+import homeIcon from '../assets/homeIcon.svg';
 import lock from "../assets/lock.svg";
 import back from "../assets/back.svg";
 import close from "../assets/close.svg";
@@ -21,8 +21,8 @@ import roomcreate from "../assets/roomcreate.svg"
 import joinviacode from "../assets/joinviacode.svg";
 import joinrandom from "../assets/joinrandom.svg";
 import cardframe from "../assets/cardframe.svg";
-
 import CreateRoom from '../components/CreateRoom';
+import CreateRoom2 from '../components/CreateRoom2';
 import PrimaryButton from '../components/PrimaryButton';  
 import SecondaryButton from '../components/SecondaryButton';
 import TextButton from '../components/TextButton';
@@ -43,7 +43,8 @@ import checkbutton from '../assets/checkbutton.svg';
 import JoinRoom from '../components/JoinRoom';
 import ContentBox2 from '../components/ContentBox2';
 import GameFrame from '../components/GameFrame';
-
+import GameMapFrame from '../components/GameMapFrame';
+import GameMapOptionBox from '../components/GameMapOptionBox';
 const fullText = `지금은 20XX년,\n국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
   `이 로봇의 기능은 아래와 같습니다.\n` +
   `• 가족의 감정, 건강 상태, 생활 습관 등을 입력하면 맞춤형 알림, 식단 제안 등의 서비스를 제공\n` +
@@ -90,9 +91,9 @@ export default function Componentcheck() {
 
       </div>
      {/* CreateRoom 컴포넌트와 버튼 사이에 여백 추가 */}
-     <div style={{ marginTop: 32, position: 'relative', zIndex: 10 }}>
+     {/* <div style={{ marginTop: 32, position: 'relative', zIndex: 10 }}>
         <CreateRoom />
-      </div>
+      </div> */}
 <UserProfile player="1P" characterDesc="" isLeader={true} />
 <UserProfile player="2P" characterDesc="디테일 있음" />
       {/* 버튼 클릭 불가 문제 해결을 위해 zIndex 부여 */}
@@ -157,7 +158,18 @@ export default function Componentcheck() {
     <JoinRoom />
     </div>
     <ContentBox2 text={fullText} typingSpeed={50} />
-
+    <GameMapOptionBox
+  option1={{
+    text: '가정 1',
+    disabled: false,
+    onClick: () => console.log('가정 1 클릭'),
+  }}
+  option2={{
+    text: '가정 2',
+    disabled: false,
+    onClick: () => console.log('가정 2 클릭'),
+  }}/>
+    
 <ContentTextBox
   paragraphs={[
     { main: ' AI가 인간처럼 말할 수 있을까요?', sub: '(AI가 말하는 능력에 대한 의문)' },
@@ -172,6 +184,21 @@ export default function Componentcheck() {
     topic='안드로이드'
   />
 </div>
+
+<div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
+<GameMapFrame
+  icon={homeIcon}
+  title="가정"
+  options={['가정 1', '가정 2']}
+  onSelectOption={(option) => {
+    console.log(`${option} 선택됨`);
+    // 필요한 동작 추가
+  }}
+/>    </div>
+
+<div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
+<CreateRoom2/>
+  </div>
     </Background>
     );
   }

@@ -6,18 +6,20 @@ import player2DescImg from '../assets/images/Player3_description.png';
 
 export default function CD2() {
   const navigate = useNavigate();
-  const subtopic = '가정 1';
+  const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
+  const round = Number(localStorage.getItem('currentRound') ?? '1');
+  const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
 
   const paragraphs = [
     {
-      main:
-        '  당신은 자녀 J씨입니다.\n' +
-        '  노쇠하신 어머니가 걱정되지만 바쁜 직장생활로 어머니를...',
+      main: `  당신은 자녀 J씨입니다.
+        노쇠하신 어머니가 걱정되지만, 바쁜 직장생활로 어머니를 돌보아드릴 여유가 거의 없습니다.
+        최근 ${mateName}의 돌봄 서비스를 소개받고, 어머니께 적용할 수 있을지 고민 중입니다.`,
     },
   ];
 
   return (
-    <Layout subtopic={subtopic} me="2P">
+    <Layout round={round} subtopic={subtopic} me="2P">
       {/* 중앙에 배치될 콘텐츠 */}
       <div
         style={{

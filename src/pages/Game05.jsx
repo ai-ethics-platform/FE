@@ -1,197 +1,143 @@
-// src/pages/Game03.jsx
-import React, { useState } from 'react';
+//API 연결 후 다수결 선택에 따른 agree, disagre 속성 로컬 스토리지에 저장 후 그거에 따른 이미지 가져오는 로직 수정 필요 
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Layout           from '../components/Layout';
-import SelectCardToggle from '../components/SelectButton';
-import Continue         from '../components/Continue2';
-import contentBoxFrame  from '../assets/contentBox4.svg';
-import { Colors, FontStyles } from '../components/styleConstants';
+import Layout from '../components/Layout';
+import ContentTextBox from '../components/ContentTextBox';
+import closeIcon from '../assets/close.svg';
 
+import { getDilemmaImages } from '../components/dilemmaImageLoader';
+import { paragraphsData } from '../components/paragraphs';
+import { resolveParagraphs } from '../utils/resolveParagraphs';
 
-const CARD_W = 640;   // Card 기본 폭
-const CARD_H = 170;   // Card 기본 높이
-const CIRCLE =  16;
-const BORDER =   2;
-const LINE   =   3;
+import profile1Img from '../assets/images/CharacterPopUp1.png';
+import profile2Img from '../assets/images/CharacterPopUp2.png';
+import profile3Img from '../assets/images/CharacterPopUp3.png';
 
+const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
+export default function Game05() {
+  const navigate = useNavigate();
 
-export default function Game03() {
-  const nav = useNavigate();
+  const [mateName, setMateName] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [openProfile, setOpenProfile] = useState(null);
 
-  const [agree, setAgree] = useState(null); 
-  const [conf,  setConf]  = useState(0);    // 1~5, 0 = 미선택
-  const pct = conf ? ((conf - 1) / 4) * 100 : 0; // 슬라이더 % (1~5 ⇒ 0~100)
+  // round 동기화
+  const [round, setRound] = useState(1);
+  useEffect(() => {
+    const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+    const calculatedRound = completed.length + 1;
+    setRound(calculatedRound);
+    localStorage.setItem('currentRound', calculatedRound.toString());
+  }, []);
 
+  const mainTopic = localStorage.getItem('category') ?? '안드로이드';
+  const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
+
+  // 다수결 결과를 기반으로 agree/disagree 판단
+  const mode = 'agree'; // 실제 적용 시에는 localStorage.getItem('agreement') 등으로 변경
+  const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
+
+  useEffect(() => {
+    const storedName = localStorage.getItem('mateName');
+    if (storedName) setMateName(storedName);
+
+    console.log('[Game05] mainTopic:', mainTopic);
+    console.log('[Game05] subtopic:', subtopic);
+    console.log('[Game05] mode:', mode);
+  }, []);
+
+  const comicImages = getDilemmaImages(mainTopic, subtopic, mode, selectedIndex);
+  const rawParagraphs = paragraphsData[mainTopic]?.[subtopic]?.[mode] || [];
+  const paragraphs = resolveParagraphs(rawParagraphs, mateName);
+
+  const handleContinue = () => {
+    navigate('/game05_01', {
+      state: { agreement: mode, confidence: 0 },
+    });
+  };
   return (
-    <Layout subtopic="가정 1" me="3P">
-     
-      <Card width={936} height={216}>
-        <p style={title}>
-          Q1) 24시간 개인정보 수집 업데이트에&nbsp;동의하시겠습니까?
-        </p>
-
-        <div style={{ display: 'flex', gap: 24 }}>
-          <SelectCardToggle
-            label="동의"
-            selected={agree === 'agree'}
-            onClick={() => setAgree('agree')}
-            width={220}
-            height={56}
-          />
-          <SelectCardToggle
-            label="비동의"
-            selected={agree === 'disagree'}
-            onClick={() => setAgree('disagree')}
-            width={220}
-            height={56}
-          />
-        </div>
-      </Card>
-
-      {/* ──────────────── Q2 카드 ──────────────── */}
-      <Card width={936} height={216} extraTop={50}>
-        <p style={title}>Q2) 여러분의 선택에 얼마나 확신이 있나요?</p>
-
-        {/* 슬라이더 영역 */}
-        <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
-          
-          <div
-            style={{
-              position: 'absolute',
-              top: 12,
-              left: 0,
-              right: 0,
-              height: LINE,
-              background: Colors.grey03,
-            }}
-          />
-         
-          <div
-            style={{
-              position: 'absolute',
-              top: 12,
-              left: 0,
-              width: `${pct}%`,
-              height: LINE,
-              background: Colors.brandPrimary,
-            }}
-          />
-         
+    <>
+      {openProfile && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 2000,
+          }}
+          onClick={() => setOpenProfile(null)}
+        >
           <div
             style={{
               position: 'relative',
-              display: 'flex',
-              justifyContent: 'space-between',
+              background: '#fff',
+              padding: 32,
+              borderRadius: 12,
+              boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {[1, 2, 3, 4, 5].map((n) => {
-              const isNow  = conf === n;
-              const passed = conf > n;
-
-              return (
-                <div key={n} style={{ textAlign: 'center' }}>
-                  <div
-                    onClick={() => setConf(n)}
-                    style={{
-                      width: CIRCLE,
-                      height: CIRCLE,
-                      borderRadius: '50%',
-                      background: isNow
-                        ? Colors.grey01
-                        : passed
-                        ? Colors.brandPrimary
-                        : Colors.grey03,
-                      border: `${BORDER}px solid ${
-                        isNow ? Colors.brandPrimary : 'transparent'
-                      }`,
-                      cursor: 'pointer',
-                      margin: '0 auto',
-                    }}
-                  />
-                  <span
-                    style={{
-                      ...FontStyles.caption,
-                      color: Colors.grey06,
-                      marginTop: 4,
-                      display: 'inline-block',
-                    }}
-                  >
-                    {n}
-                  </span>
-                </div>
-              );
-            })}
+            <img
+              src={profileImages[openProfile]}
+              alt={`Profile ${openProfile}`}
+              style={{ width: 360, height: 'auto', display: 'block' }}
+            />
+            <img
+              src={closeIcon}
+              alt="close"
+              style={{
+                position: 'absolute',
+                top: 24,
+                right: 24,
+                width: 40,
+                height: 40,
+                cursor: 'pointer',
+              }}
+              onClick={() => setOpenProfile(null)}
+            />
           </div>
         </div>
-        </Card>
-        {/* 다음 버튼 */}
-        <div style={{ marginTop: 15 }}>
-        <Continue
-  width={264}
-  height={72}
-  step={1}
-  disabled={!agree || conf === 0}
-  onClick={() => {
-    console.log('선택값:', agree, conf);    
-    nav('/game06', {
-      state: { agreement: agree, confidence: conf },
-    });
-  }}
-/>
-
-        </div>
-      
-    </Layout>
-  );
-}
-
-
-function Card({
-  children,
-  extraTop = 0,
-  width = CARD_W,
-  height = CARD_H,
-  style = {},
-}) {
-  return (
-    <div
-      style={{
-        width,
-        height,
-        marginTop: extraTop,
-        position: 'relative',
-        ...style,
-      }}
-    >
-      {/* 배경 프레임 */}
-      <img
-        src={contentBoxFrame}
-        alt=""
-        style={{ width: '100%', height: '100%', objectFit: 'fill' }}
-      />
-      {/* 내용 레이어 */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 24,
-          padding: '0 24px',
-        }}
+      )}
+{/* 누가 방장인지에 대한 로직 필요  */}
+      <Layout
+        subtopic={subtopic}
+        me="3P"
+        round= {round}
+        onProfileClick={(playerId) => setOpenProfile(playerId)}
       >
-        {children}
-      </div>
-    </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 32,
+          }}
+        >
+          <img
+            src={comicImages[currentIndex]}
+            alt={`comic ${currentIndex + 1}`}
+            style={{
+              width: 760,
+              height: 'auto',
+              borderRadius: 8,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            }}
+          />
+
+          <div style={{ width: '100%', maxWidth: 900 }}>
+            <ContentTextBox
+              paragraphs={paragraphs}
+              currentIndex={currentIndex}
+              setCurrentIndex={setCurrentIndex}
+              onContinue={handleContinue}
+            />
+          </div>
+        </div>
+      </Layout>
+    </>
   );
 }
-
-/* ─────────────── 공통 텍스트 스타일 ─────────────── */
-const title = {
-  ...FontStyles.title,
-  color: Colors.grey06,
-  textAlign: 'center',
-};

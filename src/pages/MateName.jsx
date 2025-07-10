@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import Layout          from '../components/Layout';       // 변경된 Layout 사용
-import InputBoxSmall   from '../components/InputBoxSmall';
+import Layout from '../components/Layout';
+import InputBoxSmall from '../components/InputBoxSmall';
 import ContentTextBox2 from '../components/ContentTextBox2';
 
 import character1 from '../assets/images/character1.png';
@@ -14,14 +14,14 @@ export default function MateName() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const selectedIndex = location.state?.selectedIndex ?? 0;
+  const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
   const images = [character1, character2, character3];
 
   const [name, setName] = useState('');
 
   const paragraphs = [
     {
-      main: '  여러분이 사용자라면 HomeMate를 어떻게 부를까요?',
+      main: '     여러분이 사용자라면 HomeMate를 어떻게 부를까요?',
       sub: '(함께 토론한 후 1P가 입력하고 "다음" 버튼을 클릭해 주세요)',
     },
   ];
@@ -31,14 +31,15 @@ export default function MateName() {
       alert('이름을 입력해주세요!');
       return;
     }
-    navigate('/game01', {
-      state: { selectedIndex, name },
+
+    localStorage.setItem('mateName', name);
+    navigate('/gamemap', {
+      state: { selectedIndex },
     });
   };
 
   return (
     <Layout subtopic="가정 1" me="1P">
-      {/* Stage 내부 : 중앙 정렬 */}
       <div
         style={{
           display: 'flex',
@@ -47,7 +48,6 @@ export default function MateName() {
           gap: 4,
         }}
       >
-        {/* ① 선택된 캐릭터 이미지 */}
         <img
           src={images[selectedIndex]}
           alt="Selected Character"
@@ -59,8 +59,6 @@ export default function MateName() {
             border: '2px solid #354750',
           }}
         />
-
-        {/* ② 작은 입력창 */}
         <InputBoxSmall
           placeholder="여러분의 HomeMate 이름을 입력하세요"
           width={520}
@@ -68,13 +66,8 @@ export default function MateName() {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-
-        {/* ③ 텍스트 박스 + 다음 버튼 */}
         <div style={{ width: '100%', maxWidth: 936 }}>
-          <ContentTextBox2
-            paragraphs={paragraphs}
-            onContinue={handleContinue}
-          />
+          <ContentTextBox2 paragraphs={paragraphs} onContinue={handleContinue} />
         </div>
       </div>
     </Layout>

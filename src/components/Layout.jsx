@@ -121,7 +121,6 @@ export default function Layout({
           />
         </aside>
 
-        {/* ─ 중앙 Stage ─ */}
         <section className="layout-stage">
           <div className="layout-gameframe">
             <GameFrame
@@ -133,8 +132,6 @@ export default function Layout({
               hideArrows
             />
           </div>
-
-          {/* 메인 콘텐츠 영역 (예: 이미지 + 텍스트 등) */}
           {children}
         </section>
       </div>

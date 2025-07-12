@@ -23,7 +23,6 @@ export default function Continue({
           : 1
       : 1;
 
-  /** 텍스트 색상 */
   const textColor = interactive ? Colors.grey01 : Colors.grey04;
 
   return (

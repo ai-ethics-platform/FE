@@ -16,7 +16,6 @@ export default function GameFrame({
 }) {
   return (
     <div style={{ position: 'relative', width, height }}>
-      {/* 프레임 이미지 */}
       <img
         src={gameFrame}
         alt="game frame"
@@ -29,7 +28,6 @@ export default function GameFrame({
         }}
       />
 
-      {/* 화살표  */}
       {!hideArrows && (
         <>
           <img
@@ -66,7 +64,6 @@ export default function GameFrame({
         </>
       )}
 
-      {/* 주제 텍스트 */}
       <div
         style={{
           position: 'absolute',

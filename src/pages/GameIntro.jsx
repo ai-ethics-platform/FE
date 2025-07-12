@@ -26,7 +26,6 @@ export default function GameIntro() {
           zIndex: 0,
         }}
       >
-        {/* ─── 좌측 사이드바 ─── */}
         <div style={{ position: 'absolute', top: 60, left: 0 }}>
           <div
             style={{
@@ -40,12 +39,11 @@ export default function GameIntro() {
             }}
           >
             <UserProfile player="1P" characterDesc="" isLeader />
-            <UserProfile player="2{" characterDesc="" isSpeaking />
-            <UserProfile player="토끼" characterDesc="" />
+            <UserProfile player="2P" characterDesc="" isSpeaking />
+            <UserProfile player="3P" characterDesc="" />
           </div>
         </div>
 
-        {/* ─── 중앙 정렬된 ContentBox2 + Continue ─── */}
         <div
           style={{
             position: 'absolute',

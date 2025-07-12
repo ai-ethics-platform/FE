@@ -31,7 +31,6 @@ export default function ContentTextBox2({
   const typedSub = typingDone ? currentParagraph.sub : '';
 
   
-  /*─────────────────────────── handlers ───────────────────────────*/
   const handlePrev = () => {
     if (!typingDone) return; 
     if (currentIndex > 0) {

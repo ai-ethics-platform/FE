@@ -1,4 +1,3 @@
-// src/pages/Game03.jsx
 import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,7 +16,6 @@ const BTN_H = 48;
 const CIRCLE = 16;
 const BORDER = 2;
 const LINE = 3;
-//동의 비동의에 대한 값은 api 연결로 동작 
 
 export default function Game03() {
   const nav = useNavigate();
@@ -30,17 +28,17 @@ export default function Game03() {
 
   const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
 
-  const [step, setStep] = useState(1);           // step 1: 동의 / step 2: 확신도
-  const [agree, setAgree] = useState(null);      // 'agree' or 'disagree'
-  const [conf, setConf] = useState(0);           // 확신도 (1~5)
-  const pct = conf ? ((conf - 1) / 4) * 100 : 0;  // 확신도 퍼센트 계산
+  const [step, setStep] = useState(1);           
+  const [agree, setAgree] = useState(null);      
+  const [conf, setConf] = useState(0);           
+  const pct = conf ? ((conf - 1) / 4) * 100 : 0;  
   const [round, setRound] = useState(1);
 
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     const calculatedRound = completed.length + 1;
     setRound(calculatedRound);
-    localStorage.setItem('currentRound', calculatedRound.toString()); // 보조용 저장
+    localStorage.setItem('currentRound', calculatedRound.toString()); 
   }, []);
 
   return (
@@ -58,7 +56,6 @@ export default function Game03() {
             ))}
           </div>
 
-            {/* 여기서 API 연결 시 당신이 누구인지에 대한 로직 수정 필요  */}
           <Card width={936} height={216} extraTop={60}>
             <p style={title}>
               Q1) 당신은 요양보호사 K입니다. 24시간 개인정보 수집 업데이트에&nbsp;동의하시겠습니까?
@@ -219,7 +216,6 @@ function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style =
   );
 }
 
-// ─── 텍스트 스타일 ───
 const title = {
   ...FontStyles.title,
   color: Colors.grey06,

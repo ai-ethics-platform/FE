@@ -19,7 +19,6 @@ export default function CD2() {
 
   return (
     <Layout round={round} subtopic={subtopic} me="2P">
-      {/* 중앙에 배치될 콘텐츠 */}
       <div
         style={{
           display: 'flex',

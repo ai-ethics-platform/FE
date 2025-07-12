@@ -7,9 +7,9 @@ export default function ArrowButton({ disabled = false }) {
   const [isActive, setIsActive] = useState(false);
 
   const getBackground = () => {
-    if (disabled) return Colors.grey03; // '#BAC1C5'
-    if (isActive) return Colors.brandGradientEnd; // '#192D3A'
-    if (isHovered) return Colors.brandPrimary; // '#354750'
+    if (disabled) return Colors.grey03; 
+    if (isActive) return Colors.brandGradientEnd; 
+    if (isHovered) return Colors.brandPrimary; 
     return `linear-gradient(180deg, ${Colors.brandGradientStart} 0%, ${Colors.brandGradientEnd} 100%)`;
   };
 
@@ -27,7 +27,7 @@ export default function ArrowButton({ disabled = false }) {
         width: 200,
         height: 80,
         border: 'none',
-        outline: 'none', // <- active 시 테두리 제거
+        outline: 'none', 
         borderRight: '24px solid transparent',
         borderRadius: 4,
         background: getBackground(),

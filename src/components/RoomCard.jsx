@@ -35,7 +35,6 @@ export default function RoomCard({ icon, title, description, disabled = false, o
       onMouseDown={() => !disabled && setIsActive(true)}
       onMouseUp={() => setIsActive(false)}
     >
-      {/* 카드 프레임 */}
       <img
         src={getFrameImage()}
         alt="프레임"
@@ -50,7 +49,6 @@ export default function RoomCard({ icon, title, description, disabled = false, o
         }}
       />
 
-      {/* 잠금 아이콘 */}
       {disabled && (
         <img
           src={lockIcon}
@@ -66,7 +64,6 @@ export default function RoomCard({ icon, title, description, disabled = false, o
         />
       )}
 
-      {/* 콘텐츠 */}
       <div
         style={{
           position: 'relative',

@@ -69,7 +69,6 @@ export default function Game07() {
           <ContentBox2 text={paragraph.main} width={936} height={407} />
 
           {isResultAvailable ? (
-            //  결과 보기 조건 충족: 계속 진행 + 결과 보기
             <div style={{ display: 'flex', gap: 24 }}>
               <Continue
                 alt="계속 진행"
@@ -82,13 +81,15 @@ export default function Game07() {
                 step={2}
                 label="결과 보기"
                 onClick={() => {
-                  saveCompletedTopic(); // 결과 보기 전에도 저장
-                  setShowPopup(true);
+                  if (completedTopics.length >= 5) {
+                    navigate('/game09');
+                  } else {
+                    setShowPopup(true);
+                  }
                 }}
               />
             </div>
           ) : (
-            // ❗아직 3개 미만: 다음 라운드로만 이동
             <Continue
               alt="다음 라운드"
               step={2}
@@ -100,7 +101,6 @@ export default function Game07() {
         </div>
       </Layout>
 
-      {/* 결과 보기 팝업 */}
       {showPopup && (
         <div
           style={{

@@ -21,30 +21,27 @@ export default function Signup() {
 
   return (
     <Background bgIndex={2}>
-      {/* ─────────── 전체 화면을 덮는 컨테이너 ─────────── */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          overflowY: 'auto',           // 세로 스크롤 허용
+          overflowY: 'auto',           
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'flex-start',     // 화면 상단부터 시작
-          padding: '2vh 0',             // 상단/하단 패딩 2vh
+          alignItems: 'flex-start',     
+          padding: '2vh 0',             
           boxSizing: 'border-box',
         }}
       >
-        {/* ─────────── 중앙에 고정된 “폼 래퍼” ─────────── */}
         <div
           style={{
-            width: '50vw',               // 화면 너비의 50%
-            maxWidth: 552,               // 최대 552px
-            padding: '2vh 24px',         // 상하 2vh, 좌우 24px
+            width: '50vw',               
+            maxWidth: 552,               
+            padding: '2vh 24px',         
             boxSizing: 'border-box',
             ...FontStyles.body,
           }}
         >
-          {/* ─── 뒤로 가기 버튼 + 로고 (반응형 배치) ─── */}
           <div
             style={{
               position: 'relative',
@@ -61,7 +58,7 @@ export default function Signup() {
                 left: 0,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                width: '4vh',       // 높이 기준 4vh (최대 40px에 가까움)
+                width: '4vh',       
                 maxWidth: 40,
                 cursor: 'pointer',
               }}
@@ -81,14 +78,13 @@ export default function Signup() {
                 src={logo}
                 alt="logo"
                 style={{
-                  height: '5vh',   // 반응형 logo 높이 (최대 약 50px)
+                  height: '5vh',   
                   maxHeight: 48,
                 }}
               />
             </div>
           </div>
 
-          {/** ─── “연구 소개” 레이블 ─── **/}
           <div
             style={{
               fontSize: 'clamp(1rem, 1.2vw, 1.125rem)',
@@ -100,7 +96,6 @@ export default function Signup() {
             연구 소개
           </div>
 
-          {/* ─── “연구 소개” 텍스트 박스 ─── */}
           <div
             style={{
               fontSize: 'clamp(0.875rem, 1.2vw, 1rem)',  
@@ -186,7 +181,6 @@ export default function Signup() {
             </div>
           )}
 
-          {/** ─── 데이터 보관 및 처리 방침 토글 ─── **/}
           <div
             style={{
               marginTop: '5vh',
@@ -244,7 +238,6 @@ export default function Signup() {
             </div>
           )}
 
-          {/** ─── 연구 책임자 및 문의처 토글 ─── **/}
           <div
             style={{
               marginTop: '5vh',
@@ -287,7 +280,6 @@ export default function Signup() {
             </div>
           )}
 
-          {/** ─── 체크박스(SelectCard) ─── **/}
           <div style={{ marginTop: '1.5vh', display: 'flex', flexDirection: 'column', gap: '2vh' }}>
             <div
               style={{
@@ -334,7 +326,6 @@ export default function Signup() {
             </div>
           </div>
 
-          {/** ─── 다음 버튼 ─── **/}
           <div style={{ marginTop: '5vh', textAlign: 'center', marginBottom: '4vh' }}>
             <PrimaryButton
               disabled={!isAllAgreed}

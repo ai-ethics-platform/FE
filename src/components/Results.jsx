@@ -1,9 +1,37 @@
 import React from 'react';
 import closeIcon from '../assets/close.svg';
 import SecondaryButton from './SecondaryButton';
-import { FontStyles,Colors } from './styleConstants';
+import { FontStyles, Colors } from './styleConstants';
+import { useNavigate } from 'react-router-dom';
 
-export default function ResultPopup({ onClose, onViewResult }) {
+export default function ResultPopup({ onClose }) {
+  const navigate = useNavigate();
+
+  const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+
+  const allRequired = [
+    '가정 1',
+    '국가 인공지능 위원회 1',
+    '국제 인류발전 위원회 1',
+  ];
+
+  const optionalTopics = [
+    { label: '가정 2', value: '가정 2' },
+    { label: '국가 인공지능 위원회 2', value: '국가 인공지능 위원회 2' },
+  ];
+
+  const unplayedOptions = optionalTopics.filter(
+    (opt) => !completedTopics.includes(opt.value)
+  );
+
+  const handleGoToSubtopic = (subtopic) => {
+    const category = subtopic.split(' ')[0];
+    localStorage.setItem('subtopic', subtopic);
+    localStorage.setItem('category', category);
+    localStorage.setItem('mode', 'neutral');
+    navigate('/game02');
+  };
+
   return (
     <div
       style={{
@@ -18,7 +46,6 @@ export default function ResultPopup({ onClose, onViewResult }) {
         alignItems: 'center',
       }}
     >
-      {/* 닫기 버튼 */}
       <img
         src={closeIcon}
         alt="close"
@@ -33,11 +60,10 @@ export default function ResultPopup({ onClose, onViewResult }) {
         }}
       />
 
-      {/* 안내 문구 */}
       <div
         style={{
-         ...FontStyles.headlineSmall,
-          color : Colors.brandPrimary,
+          ...FontStyles.headlineSmall,
+          color: Colors.brandPrimary,
           textAlign: 'center',
           lineHeight: '1.5',
           marginBottom: 24,
@@ -48,32 +74,33 @@ export default function ResultPopup({ onClose, onViewResult }) {
         이대로 결과를 볼까요?
       </div>
 
-      {/* 비활성 인풋박스들 */}
-      <SecondaryButton
-      style={{
-        width: 360,
-        height: 72,
-        justifyContent: 'center',
-        marginBottom: 12,
-      }}>
-         가정 2</SecondaryButton>
-      <SecondaryButton
-      style={{
-        width: 360,
-        height: 72,
-        justifyContent: 'center',
-        marginBottom: 12,
-      }}> 국가 인공지능위원회 1 </SecondaryButton>
-      {/* 버튼 */}
+      {unplayedOptions.map((opt) => (
+        <SecondaryButton
+          key={opt.value}
+          style={{
+            width: 360,
+            height: 72,
+            justifyContent: 'center',
+            marginBottom: 12,
+          }}
+          onClick={() => handleGoToSubtopic(opt.value)}
+        >
+          {opt.label}
+        </SecondaryButton>
+      ))}
+
       <div style={{ marginTop: 20 }}>
         <SecondaryButton
-        style={{
+          style={{
             width: 168,
             height: 72,
             justifyContent: 'center',
             marginBottom: 12,
           }}
-           onClick={onViewResult}>결과 보기 </SecondaryButton>
+          onClick={() => navigate('/game08')}
+        >
+          결과 보기
+        </SecondaryButton>
       </div>
     </div>
   );

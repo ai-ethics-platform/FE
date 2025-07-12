@@ -15,13 +15,11 @@ import img4 from '../assets/images/Android_dilemma_2_4.jpg';
 
 const comicImages = [img1, img2, img3, img4 ];
 
-// 팝업 프로필
 import profile1Img from '../assets/images/CharacterPopUp1.png';
 import profile2Img from '../assets/images/CharacterPopUp2.png';
 import profile3Img from '../assets/images/CharacterPopUp3.png';
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
-// 질문 텍스트(단락 배열)
 const paragraphs = [
   
     {
@@ -43,7 +41,6 @@ export default function Game08() {
   const navigate = useNavigate();
   const subtopic = '가정 1';
 
-  // ─── 상태 관리 ───────────────────────────────────
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openProfile, setOpenProfile]     = useState(null); 
 
@@ -55,7 +52,6 @@ export default function Game08() {
 
   return (
     <>
-      {/* ───────── 팝업 모달 ───────── */}
       {openProfile && (
         <div
           style={{
@@ -103,7 +99,6 @@ export default function Game08() {
         </div>
       )}
 
-      {/* ─── Layout 적용 ─── */}
       <Layout
         subtopic="결과: 우리들의 선택"
         me="3P"
@@ -111,7 +106,6 @@ export default function Game08() {
           setOpenProfile(playerId);
         }}
       >
-        {/* Layout의 중앙 Stage 내부에 넣을 콘텐츠 */}
         <div
           style={{
             display: 'flex',
@@ -120,7 +114,6 @@ export default function Game08() {
             gap: 32,
           }}
         >
-          {/* ─── 만화(Comic) 이미지 ─── */}
           <img
             src={comicImages[currentIndex]}
             alt={`comic ${currentIndex + 1}`}
@@ -132,7 +125,6 @@ export default function Game08() {
             }}
           />
 
-          {/* ─── 대화창(ContentTextBox) + Continue ─── */}
           <div style={{ width: '100%', maxWidth: 900 }}>
             <ContentTextBox
               paragraphs={paragraphs}

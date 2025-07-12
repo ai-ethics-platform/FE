@@ -1,4 +1,3 @@
-// src/components/dilemmaImageLoader.js
 
 const allImages = import.meta.glob('../assets/images/*_dilemma_*.jpg', { eager: true });
 
@@ -21,7 +20,6 @@ const modeToOffset = {
   disagree: 2,
 };
 
-// selectedCharacterIndex: 0 (기본) → 괄호 없이, 1 or 2 → (2), (3)
 export function getDilemmaImages(category, subtopic, mode = 'neutral', selectedCharacterIndex = 0) {
   const prefix = topicPrefixes[category] || 'Android';
   const base = subtopicToBaseIndex[subtopic] || 1;

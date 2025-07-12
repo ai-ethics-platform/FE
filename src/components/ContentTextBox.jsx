@@ -82,7 +82,6 @@ export default function ContentTextBox({
           zIndex: 1,
         }}
       >
-        {/* 텍스트 */}
         <div>
           <div style={{ ...FontStyles.bodyBold, marginBottom: 3 }}>
             {typedMain.split('\n').map((line, idx) => (
@@ -95,7 +94,6 @@ export default function ContentTextBox({
           <div style={{ ...FontStyles.caption, color: Colors.grey04 }}>{typedSub}</div>
         </div>
 
-        {/* 네비 + 버튼 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: 16 }}>
             {showLeft && (

@@ -32,7 +32,7 @@ export default function UserProfile({
   characterDesc = '',
   isLeader = false,
   isMe = false,
-  ...rest              // onClick, className, style 
+  ...rest             
 }) {
   const isDetailed = characterDesc?.trim() !== '';
   const color = colorMap[player] || Colors.player1P;

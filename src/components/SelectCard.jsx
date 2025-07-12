@@ -31,14 +31,14 @@ export default function SelectCard({
       ? `1px solid ${Colors.grey07}`
       : `1px solid ${Colors.grey04}`,
     cursor: 'pointer',
-    ...restStyle,   // 기타 스타일(부모가 넘긴 모든 속성) 병합
+    ...restStyle,   
   };
 
   const checkboxWrapperStyle = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: iconSize !== undefined ? iconSize * 1.2 : 24,   // 아이콘 크기의 120%로 박스 지정
+    width: iconSize !== undefined ? iconSize * 1.2 : 24,   
     height: iconSize !== undefined ? iconSize * 1.2 : 24,
     minWidth: iconSize !== undefined ? iconSize * 1.2 : 24,
     minHeight: iconSize !== undefined ? iconSize * 1.2 : 24,
@@ -57,12 +57,10 @@ export default function SelectCard({
 
   return (
     <div style={containerStyle} onClick={onClick}>
-      {/* 체크박스 래퍼 */}
       <div style={checkboxWrapperStyle}>
         {selected && <img src={checkboxIcon} alt="check" style={iconStyle} />}
       </div>
 
-      {/* 라벨 텍스트 */}
       <span
         style={{
           flex: 1,

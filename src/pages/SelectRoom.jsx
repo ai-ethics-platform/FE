@@ -16,7 +16,6 @@ export default function SelectRoom() {
   const [isLogoutPopupOpen, setIsLogoutPopupOpen] = useState(false); 
 const [isJoinRoomOpen, setIsJoinRoomOpen] = useState(false);
 const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
-  // 스크롤 방지
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -26,23 +25,21 @@ const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
   }, []);
 
   const handleBackClick = () => {
-    setIsLogoutPopupOpen(true); // 팝업 열기
+    setIsLogoutPopupOpen(true); 
   };
 
   const handleLogout = () => {
-    navigate('/'); // 로그아웃 시 홈으로 이동
+    navigate('/'); 
   };
 
   return (
     <Background bgIndex={3}>
-      {/* ← Back 버튼 */}
       <div style={{ position: 'absolute', top: -10, left: -10 }}>
         <div onClick={handleBackClick}>
           <BackButton />
         </div>
       </div>
 
-      {/* 중앙 카드 영역 */}
       <div
         style={{
           height: '100vh',
@@ -56,7 +53,7 @@ const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
           style={{
             display: 'flex',
             flexDirection: 'row',
-            gap: 30,
+            gap: 20,
             flexWrap: 'nowrap',
           }}
         >
@@ -82,7 +79,6 @@ const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
         </div>
       </div>
 
-      {/* 로그아웃 팝업 오버레이 */}
       {isLogoutPopupOpen && (
         <div
           style={{

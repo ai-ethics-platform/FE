@@ -47,8 +47,8 @@ export default function StatusCard({
     ? ['continue', 'meready']
     : ['waitingforready', 'uready'];
 
-  const statusIndex = externalStatusIndex ?? 0; // fallback
-  const setStatusIndex = onStatusChange ?? (() => {}); // fallback
+  const statusIndex = externalStatusIndex ?? 0;
+  const setStatusIndex = onStatusChange ?? (() => {}); 
 
   const showPlayer = player && playerMap[player];
   const status = showPlayer ? statusList[statusIndex] : 'waiting';

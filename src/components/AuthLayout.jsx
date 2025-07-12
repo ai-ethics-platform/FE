@@ -1,18 +1,7 @@
-// src/layout/AuthLayout.jsx
 import React, { useEffect, useState } from 'react';
 import Background from '../components/Background';
 
-/**
- * AuthLayout
- *  - 로그인/회원가입 등 인증 관련 페이지 전용 레이아웃
- *  - 1280×720 고정 캔버스 위에 children을 중앙 정렬하고,
- *    화면 크기에 따라 자동으로 스케일(zoom) 처리해 줌.
- *
- * props:
- *  - children: 레이아웃 중앙에 들어갈 로그인/회원가입 콘텐츠
- */
 export default function AuthLayout({ children }) {
-  // 1280×720을 기준으로 스케일 비율 계산
   const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
@@ -73,7 +62,6 @@ export default function AuthLayout({ children }) {
             transform: `translate(-50%, -50%) scale(${zoom})`,
           }}
         >
-          {/* 1280×720 안쪽에 children을 중앙 정렬 */}
           <div
             style={{
               width: '100%',

@@ -45,7 +45,6 @@ export default function CreateRoom({ onClose }) {
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
       }}
     >
-      {/* 닫기 버튼 */}
       <img
         src={closeIcon}
         alt="close"
@@ -60,7 +59,6 @@ export default function CreateRoom({ onClose }) {
         }}
       />
 
-      {/* 타이틀 */}
       <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 8 }}>
         방 만들기
       </div>
@@ -68,7 +66,6 @@ export default function CreateRoom({ onClose }) {
         이번 게임에서 플레이할 주제를 선택해 주세요.
       </div>
 
-      {/* 주제 선택 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
         {topics.map((topic) => (
           <div
@@ -98,7 +95,6 @@ export default function CreateRoom({ onClose }) {
         ))}
       </div>
 
-      {/* 입장하기 버튼 */}
       <PrimaryButton
         disabled={!selectedTopic}
         onClick={handleClick}

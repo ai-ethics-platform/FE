@@ -6,7 +6,6 @@ export default function SecondaryButton({ onClick, disabled = false, children, s
   const [isActive, setIsActive] = useState(false);
 
   const baseStyle = {
-    //borderRadius: '8px',
     padding: '16px 24px',
     ...FontStyles.button,
     textAlign: 'center',

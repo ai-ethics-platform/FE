@@ -7,16 +7,15 @@ export default function Frame15() {
         position: 'absolute',
         left: '20.625%',  
         top:  '11.13%' ,    
-        width:    '50px',      // 50/1920*100
-        height:   '796px',   // Figma Auto Layout H
+        width:    '50px',     
+        height:   '796px',   
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '24px',       // Figma Auto Layout Gap
+        gap: '24px',       
         boxSizing: 'border-box',
       }}>
       <img src={vector15} alt="" style={{ display: 'block' }} />
-      {/* 나머지 벡터들도 동일하게 */}
     </div>
   )
 }

@@ -1,4 +1,3 @@
-// components/OutPopup.js
 import React from 'react';
 import closeIcon from '../assets/close.svg';
 import SecondaryButton from './SecondaryButton';
@@ -9,7 +8,7 @@ export default function OutPopup({ onClose }) {
   const navigate = useNavigate();
 
   const handleLeaveRoom = () => {
-    navigate('/selectroom'); // 방 나가기 버튼 클릭 시 이동
+    navigate('/selectroom'); 
   };
 
   return (
@@ -29,7 +28,6 @@ export default function OutPopup({ onClose }) {
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
       }}
     >
-      {/* 닫기 버튼 */}
       <img
         src={closeIcon}
         alt="닫기"

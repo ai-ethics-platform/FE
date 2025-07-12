@@ -33,17 +33,20 @@ export default function Signup02() {
   const [birthError, setBirthError] = useState('');
 
   //아이디 중복 확인 
-  const [isUsernameAvailable, setIsUsernameAvailable] = useState(null); // true/false/null
+const [isUsernameAvailable, setIsUsernameAvailable] = useState(null); // true/false/null
 const [usernameCheckError, setUsernameCheckError] = useState(''); 
 
-  // 비밀번호 확인 일치 여부
-  useEffect(() => {
-    if (password && confirmPassword && password !== confirmPassword) {
-      setPasswordError('비밀번호가 일치하지 않습니다.');
-    } else {
-      setPasswordError('');
-    }
-  }, [password, confirmPassword]);
+  // 비밀번호 확인 일치 여부 , 8자리 이상
+useEffect(() => {
+  if (password.length > 0 && password.length < 8) {
+    setPasswordError('비밀번호는 최소 8자 이상이어야 합니다.');
+  } else if (password && confirmPassword && password !== confirmPassword) {
+    setPasswordError('비밀번호가 일치하지 않습니다.');
+  } else {
+    setPasswordError('');
+  }
+}, [password, confirmPassword]);
+
 
   // 이메일 유효성 검사
   useEffect(() => {
@@ -61,16 +64,13 @@ const [usernameCheckError, setUsernameCheckError] = useState('');
   
     const y = type === 'year' ? onlyNums : birthYear;
     const m = type === 'month' ? onlyNums : birthMonth;
-    const d = type === 'day' ? onlyNums : birthDay;
   
     const isValid =
       y.length === 4 && Number(y) >= 1000 && Number(y) <= 2030 &&
-      m.length === 2 && Number(m) >= 1 && Number(m) <= 12 &&
-      d.length === 2 && Number(d) >= 1 && Number(d) <= 31;
+      m.length === 2 && Number(m) >= 1 && Number(m) <= 12;
   
-    setBirthError(isValid ? '' : '올바른 형식은 2001-01-01 입니다.');
+    setBirthError(isValid ? '' : '올바른 형식은 2001-01 입니다.');
   };
-  
 
   // 학년 옵션
   const getGradeOptions = () => {
@@ -93,7 +93,6 @@ const [usernameCheckError, setUsernameCheckError] = useState('');
     !passwordError &&
     Boolean(birthYear.trim()) &&
     Boolean(birthMonth.trim()) &&
-    Boolean(birthDay.trim()) &&
     (gender === '남' || gender === '여') &&
     Boolean(education) &&
     Boolean(grade)
@@ -151,17 +150,23 @@ const [usernameCheckError, setUsernameCheckError] = useState('');
   
 
   // API 연결  - 로그인 중복 확인 
-
   const handleCheckUsername = async () => {
-    if (!username.trim()) {
+    const trimmedUsername = username.trim();
+  
+    if (!trimmedUsername) {
       setUsernameCheckError('아이디를 입력하세요.');
+      return;
+    }
+  
+    if (!/^[a-zA-Z0-9_]{4,20}$/.test(trimmedUsername)) {
+      setUsernameCheckError('아이디는 영문, 숫자, 언더스코어로 4~20자여야 합니다.');
       return;
     }
   
     try {
       const res = await axios.post(
-        '/auth/check-username',
-        { username: username.trim() },
+        'https://dilemmai.org/auth/check-username',
+        { username: trimmedUsername },
         { headers: { 'Content-Type': 'application/json' } }
       );
   
@@ -178,30 +183,31 @@ const [usernameCheckError, setUsernameCheckError] = useState('');
       setUsernameCheckError('확인 중 오류가 발생했습니다.');
     }
   };
-
+  
   // API 연결 - 회원가입  
   const handleSignup = async () => {
-    const birthdate = `${birthYear}/${birthMonth.padStart(2, '0')}/${birthDay.padStart(2, '0')}`;
+    const birthdate = `${birthYear}/${birthMonth.padStart(2, '0')}`;  // 예: 2003/09
 
     const requestBody = {
       username,
       email,
-      password,
+      password:"securePass123",
       birthdate,
       gender,
       education_level: education,
-      major: grade,
+      major:grade,
+      is_active: true,
     };
     console.log('데이터:', requestBody);  
     try {
-      const response = await axios.post('/auth/signup', requestBody, {
+      const response = await axios.post('https://dilemmai.org/auth/signup', requestBody, {
         headers: { 'Content-Type': 'application/json' },
       });
       console.log('회원가입 성공:', response.data);
-      navigate('/login');
+      navigate('/selectroom');
     } catch (error) {
       console.error('회원가입 실패:', error.response?.data || error.message);
-      alert('회원가입 중 오류가 발생했습니다.');
+      alert(`회원가입 오류: ${JSON.stringify(error.response?.data?.detail || '')}`);
     }
   };
 
@@ -334,7 +340,7 @@ const [usernameCheckError, setUsernameCheckError] = useState('');
             {/* 이메일 */}
             <div style={{ marginBottom: '2vh' }}>
               <InputBoxLarge
-                placeholder="아이디(이메일)"
+                placeholder="이메일"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 leftIcon={profileIcon}
@@ -422,12 +428,7 @@ const [usernameCheckError, setUsernameCheckError] = useState('');
                 value={birthMonth}
                 onChange={handleBirthInput(setBirthMonth, 2, 'month')}
                 />
-              <input
-                style={inputStyle}
-                placeholder="일"
-                value={birthDay}
-                onChange={handleBirthInput(setBirthDay, 2, 'day')}
-                />
+            
             </div>
             {birthError && (
               <div style={messageTextStyle}>{birthError}</div>
@@ -522,7 +523,6 @@ const [usernameCheckError, setUsernameCheckError] = useState('');
         >
           다음
         </PrimaryButton>
-        
           </div>
         </div>
       </div>

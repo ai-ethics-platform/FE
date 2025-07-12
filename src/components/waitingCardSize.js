@@ -1,4 +1,3 @@
-// waitingCardSize.js
 export const CardSizes = {
     width: 360,
     height: 480,

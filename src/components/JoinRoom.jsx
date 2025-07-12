@@ -41,7 +41,6 @@ export default function JoinRoom({ onClose }) {
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
       }}
     >
-      {/* 닫기 아이콘 */}
       <img
         src={closeIcon}
         alt="close"
@@ -55,12 +54,9 @@ export default function JoinRoom({ onClose }) {
           cursor: 'pointer',
         }}
       />
-
-      {/* 타이틀 */}
       <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 32 }}>
         방 참여하기 
       </div>
-
       <input
         type="text"
         placeholder="방 코드 6자리를 입력해 주세요."
@@ -79,22 +75,7 @@ export default function JoinRoom({ onClose }) {
           outline: 'black',
         }}
       />
-      {/* <InputBoxSmall 
-         type="text"
-         placeholder="방 코드 6자리를 입력해 주세요."
-         value={roomCode}
-         onChange={handleChange}
-         style={{
-          width: 360,
-          height: 72,
-          ...FontStyles.body,
-          border: Colors.brandPrimary,
-          backgroundColor: Colors.grey02,
-          color: Colors.grey06,
-        }}
-      /> */}
-
-      {/* 입장 버튼 */}
+     
       <PrimaryButton
         disabled={!isValidCode}
         onClick={handleJoin} 

@@ -7,9 +7,9 @@ export default function BackButton({ disabled = false }) {
   const [isActive, setIsActive] = useState(false);
 
   const getBackground = () => {
-     if (disabled) return Colors.grey03; // '#BAC1C5'
-    if (isActive) return Colors.brandDark; // '#192D3A'
-    if (isHovered) return '#0D575C'; // '#354750'
+     if (disabled) return Colors.grey03; 
+    if (isActive) return Colors.brandDark; 
+    if (isHovered) return '#0D575C'; 
     return Colors.brandPrimary;  };
 
   return (
@@ -26,7 +26,7 @@ export default function BackButton({ disabled = false }) {
         width: 200,
         height: 80,
         border: 'none',
-        outline: 'none', //  active 시 테두리 제거
+        outline: 'none', 
         borderRight: '24px solid transparent',
         borderRadius: 4,
         background: getBackground(),

@@ -23,7 +23,6 @@ export default function GameMapFrame({
   const opt1 = option1 || (options[0]
     ? { text: options[0], disabled: false, onClick: () => onSelectOption(options[0]) }
     : null);
-//여기서 조건부로 disable 처리 하도록 로직 수정 필요 
   const opt2 = option2 || (options[1]
     ? { text: options[1], disabled: true, onClick: () => onSelectOption(options[1]) }
     : null);

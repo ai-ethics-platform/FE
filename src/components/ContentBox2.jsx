@@ -13,7 +13,6 @@ export default function ContentBox2({ text, typingSpeed = 70 }) {
       alignItems: 'center',
       justifyContent: 'center',
     }}>
-      {/* 프레임 이미지 */}
       <img
         src={contentBoxFrame}
         alt="content frame"
@@ -27,8 +26,6 @@ export default function ContentBox2({ text, typingSpeed = 70 }) {
           
         }}
       />
-
-      {/* 내용 텍스트 */}
       <div style={{
         position: 'relative',
         lineHeight: '28px',

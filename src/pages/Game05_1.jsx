@@ -22,7 +22,6 @@ export default function Game05_01() {
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
 
-  // ✅ round 상태 동기화
   const [round, setRound] = useState(1);
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -46,7 +45,6 @@ export default function Game05_01() {
     <Layout subtopic={subtopic} round={round} me="3P">
       {step === 1 && (
         <>
-          {/* 비교 이미지 */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
             {[neutralLast, agreeLast].map((img, idx) => (
               <img
@@ -58,7 +56,6 @@ export default function Game05_01() {
             ))}
           </div>
 
-          {/* Q1 */}
           <Card width={936} height={216} extraTop={60}>
             <p style={title}>
               당신은 요양보호사 K입니다. 24시간 개인정보 수집 업데이트에&nbsp;동의하시겠습니까?
@@ -96,14 +93,12 @@ export default function Game05_01() {
 
       {step === 2 && (
         <>
-          {/* Q2 */}
           <Card width={936} height={216} extraTop={150}>
             <p style={title}>
               여러분의 선택에 얼마나 확신을 가지고 있나요? 합의를 통해 최종 결정하세요.
             </p>
 
             <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
-              {/* 백그라운드 라인 */}
               <div
                 style={{
                   position: 'absolute',
@@ -114,7 +109,6 @@ export default function Game05_01() {
                   background: Colors.grey03,
                 }}
               />
-              {/* 퍼센트 바 */}
               <div
                 style={{
                   position: 'absolute',
@@ -125,7 +119,6 @@ export default function Game05_01() {
                   background: Colors.brandPrimary,
                 }}
               />
-              {/* 점들 */}
               <div
                 style={{
                   position: 'relative',
@@ -174,7 +167,6 @@ export default function Game05_01() {
             </div>
           </Card>
 
-          {/* 다음으로 진행 */}
           <div style={{ marginTop: 80 }}>
             <Continue
               width={264}
@@ -195,7 +187,6 @@ export default function Game05_01() {
   );
 }
 
-// ─── 카드 레이아웃 ───
 function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style = {} }) {
   return (
     <div
@@ -230,7 +221,6 @@ function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style =
   );
 }
 
-// ─── 제목 스타일 ───
 const title = {
   ...FontStyles.title,
   color: Colors.grey06,

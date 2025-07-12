@@ -36,8 +36,8 @@ export default function PasswordCheck({
         flexDirection: 'column',
         gap: 4,
         fontFamily: FontStyles.body.fontFamily,
-        width: '100%',     // 부모가 지정한 가로 폭에 맞춤
-        ...style,          // 부모가 넘긴 style 병합 (width, height, fontSize, iconSize 등)
+        width: '100%',     
+        ...style,          
       }}
     >
       <div
@@ -45,8 +45,8 @@ export default function PasswordCheck({
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          width: '100%',           // 부모가 지정한 너비(폭)에 맞춤
-          height: '100%',          // 부모가 지정한 높이를 따른다
+          width: '100%',           
+          height: '100%',          
           padding: '0 16px',
           backgroundColor: Colors.componentBackground,
           border: getBorderStyle(),
@@ -56,7 +56,6 @@ export default function PasswordCheck({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* 왼쪽 아이콘 */}
         {leftIcon && (
           <img
             src={leftIcon}
@@ -69,7 +68,6 @@ export default function PasswordCheck({
           />
         )}
 
-        {/* 입력 필드 */}
         <input
           type={isPassword ? (showPassword ? 'text' : 'password') : 'text'}
           value={value}
@@ -89,7 +87,6 @@ export default function PasswordCheck({
           }}
         />
 
-        {/* 오른쪽 eye 토글 아이콘 */}
         {isPassword && (
           <img
             src={showPassword ? rightIconVisible : rightIconHidden}
@@ -105,7 +102,6 @@ export default function PasswordCheck({
         )}
       </div>
 
-      {/* 에러 메시지 */}
       {isError && (
         <span
           style={{

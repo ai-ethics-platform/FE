@@ -8,11 +8,10 @@ const logoStyle = {
 export default function Frame1() {
   return (
     <div style={{
-      backgroundColor: 'transparent', // 혹은 필요에 따라 반투명 rgba
+      backgroundColor: 'transparent', 
      
     }}>
       <img src={logo} alt="logo" style={logoStyle} />
-      {/* 여기에 다른 벡터 컴포넌트들 */}
     </div>
   )
 }

@@ -1,4 +1,3 @@
-// src/pages/SelectHomeMate.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -24,7 +23,6 @@ export default function SelectHomeMate() {
   return (
     <Background bgIndex={3}>
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
-        {/* 사이드바 */}
         <div style={{
           position: 'fixed',
           top: '32.5%',
@@ -42,7 +40,6 @@ export default function SelectHomeMate() {
           <UserProfile player="3P" />
         </div>
 
-        {/* 중앙 캐릭터 선택 UI */}
         <div style={{
           position: 'absolute',
           top: '50%',

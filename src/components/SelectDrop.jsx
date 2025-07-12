@@ -41,7 +41,7 @@ export default function SelectDrop({
 
   const wrapperStyle = {
     position: 'relative',
-    width: style.width ?? '100%',      // 기본 width: 부모가 주면 그것을 따르고, 아니면 100%
+    width: style.width ?? '100%',      
     ...FontStyles.body,
     fontSize: style.fontSize ?? FontStyles.body.fontSize,
     userSelect: 'none',
@@ -50,9 +50,8 @@ export default function SelectDrop({
   const controlStyle = {
     width: '100%',
     height: style.height ?? '8vh',     
-    minHeight: style.minHeight ?? 48,     // 최소 48px부터 
-    padding: `0 ${style.paddingX ?? '1.5vw'}`, // 좌우 패딩: 부모 지정 or 1.5vw
-    
+    minHeight: style.minHeight ?? 48,     
+    padding: `0 ${style.paddingX ?? '1.5vw'}`, 
     backgroundColor: bgColor,
     border: isOpen
       ? `1px solid ${Colors.grey07}`
@@ -67,10 +66,9 @@ export default function SelectDrop({
     boxSizing: 'border-box',
   };
 
-  // 드롭다운 목록이 열릴 때 보이는 박스 스타일
   const dropdownStyle = {
     position: 'absolute',
-    top: `calc(${style.height ?? '6.5vh'} + 0.2vh)`, // control 높이 바로 아래
+    top: `calc(${style.height ?? '6.5vh'} + 0.2vh)`, 
     left: 0,
     width: '100%',
     backgroundColor: bgColor,

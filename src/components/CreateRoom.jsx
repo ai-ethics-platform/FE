@@ -1,4 +1,3 @@
-// src/components/CreateRoom.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,30 +13,22 @@ import { Colors, FontStyles } from './styleConstants';
 export default function CreateRoom({ onClose, disabled = true }) {
   const navigate = useNavigate();
 
-  // 화면 크기에 비례하여 스케일을 계산하는 대신, 
-  // “최대 80% 너비” 혹은 “최대 80% 높이”를 기준으로 삼도록 변경
   const [containerStyle, setContainerStyle] = useState({});
   useEffect(() => {
     function updateSize() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      // ① 화면 너비 대비 80%
       const maxWidth = vw * 0.8;
-      // ② 화면 높이 대비 80%, 원본 높이 744
       const maxHeight = vh * 0.8;
-      // 1200×744 비율을 유지하기 위해 비율 계산
       const aspectRatio = 1200 / 744;
 
       let finalWidth, finalHeight;
 
-      // 우선 “너비 제한(maxWidth)”을 사용해서 비율에 맞는 높이를 계산
       const heightFromWidth = maxWidth / aspectRatio;
       if (heightFromWidth <= maxHeight) {
-        // 너비 80%로 잡고 비율에 맞춰서 높이가 maxHeight 이내라면 OK
         finalWidth = maxWidth;
         finalHeight = heightFromWidth;
       } else {
-        // 그렇지 않으면 “높이 80%”를 기준으로 잡고, 그에 맞는 너비를 계산
         finalHeight = maxHeight;
         finalWidth = maxHeight * aspectRatio;
       }
@@ -58,7 +49,6 @@ export default function CreateRoom({ onClose, disabled = true }) {
   };
 
   return (
-    // 뒷배경 오버레이
     <div
       style={{
         position: 'fixed',
@@ -74,7 +64,6 @@ export default function CreateRoom({ onClose, disabled = true }) {
         overflow: 'auto',
       }}
     >
-      {/* 비율 유지 컨테이너 */}
       <div
         style={{
           ...containerStyle, 
@@ -84,14 +73,13 @@ export default function CreateRoom({ onClose, disabled = true }) {
           overflow: 'hidden',
         }}
       >
-        {/* 닫기 버튼 */}
         <img
           src={closeIcon}
           alt="Close"
           onClick={onClose}
           style={{
             position: 'absolute',
-            right: containerStyle.width * (40 / 1200), // 원본 절대값(40px)을 컨테이너 비율에 맞춰 조정
+            right: containerStyle.width * (40 / 1200), 
             top: containerStyle.height * (40 / 744),
             width: containerStyle.width * (40 / 1200),
             height: containerStyle.height * (40 / 744),
@@ -100,7 +88,6 @@ export default function CreateRoom({ onClose, disabled = true }) {
           }}
         />
 
-        {/* CREATE ROOM 텍스트 */}
         <div
           style={{
             position: 'absolute',
@@ -115,7 +102,6 @@ export default function CreateRoom({ onClose, disabled = true }) {
           CREATE ROOM
         </div>
 
-        {/* 설명 텍스트 */}
         <div
           style={{
             position: 'absolute',
@@ -130,7 +116,6 @@ export default function CreateRoom({ onClose, disabled = true }) {
           플레이할 게임의 주제를 선택해 주세요.
         </div>
 
-        {/* 안드로이드 맵 이미지 */}
         <img
           src={androidMap}
           alt="Android"
@@ -138,12 +123,11 @@ export default function CreateRoom({ onClose, disabled = true }) {
             position: 'absolute',
             left: containerStyle.width * (138 / 1200),
             top: containerStyle.height * (15 / 744),
-            width: containerStyle.width * (/* 원본 맵 너비 비율 */ 500 / 1200),
+            width: containerStyle.width * (500 / 1200),
             height: 'auto',
           }}
         />
 
-        {/* 안드로이드 프레임 */}
         <img
           src={gameFrame}
           alt="Android Frame"
@@ -151,7 +135,7 @@ export default function CreateRoom({ onClose, disabled = true }) {
             position: 'absolute',
             left: containerStyle.width * (225 / 1200),
             top: containerStyle.height * (190 / 744),
-            width: containerStyle.width * (/* 원본 프레임 너비 비율 */ 300 / 1200),
+            width: containerStyle.width * ( 300 / 1200),
             height: 'auto',
           }}
         />
@@ -172,7 +156,6 @@ export default function CreateRoom({ onClose, disabled = true }) {
           안드로이드
         </div>
 
-        {/* 사용자 설정 (비활성화) */}
         <img
           src={userMap}
           alt="User Setting"
@@ -180,7 +163,7 @@ export default function CreateRoom({ onClose, disabled = true }) {
             position: 'absolute',
             left: containerStyle.width * (612 / 1200),
             top: containerStyle.height * (89 / 744),
-            width: containerStyle.width * (/* 원본 이미지 너비 비율 */ 400 / 1200),
+            width: containerStyle.width * (400 / 1200),
             height: 'auto',
             opacity: disabled ? 0.6 : 1,
             pointerEvents: disabled ? 'none' : 'auto',
@@ -244,7 +227,6 @@ export default function CreateRoom({ onClose, disabled = true }) {
           사용자 설정
         </div>
 
-        {/* 자율 무기 시스템 */}
         <img
           src={weaponMap}
           alt="Weapon System"

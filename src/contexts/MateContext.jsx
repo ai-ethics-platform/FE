@@ -1,4 +1,3 @@
-// src/contexts/MateContext.jsx
 import { createContext, useContext, useState } from 'react';
 
 const MateContext = createContext();

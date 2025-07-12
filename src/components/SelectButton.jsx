@@ -22,14 +22,14 @@ export default function SelectButton({
   };
 
   const getBorderColor = () => {
-    if (selected) return Colors.grey07; // #1E293B
-    if (isHovered) return Colors.grey04; // #CBD5E1
+    if (selected) return Colors.grey07; 
+    if (isHovered) return Colors.grey04; 
     return 'transparent';
   };
 
   const getBackgroundColor = () => {
-    if (selected) return '#E2E8F0'; // 
-    return Colors.componentBackground; // 
+    if (selected) return '#E2E8F0'; 
+    return Colors.componentBackground; 
   };
 
   const style = {

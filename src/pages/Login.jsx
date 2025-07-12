@@ -1,4 +1,3 @@
-// src/pages/Login.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -12,15 +11,16 @@ import profileIcon from '../assets/login.svg';
 import lockIcon from '../assets/password.svg';
 import eyeOnIcon from '../assets/eyeon.svg';
 import eyeOffIcon from '../assets/eyeoff.svg';
+import axios from 'axios'; 
 
 import { Colors, FontStyles } from '../components/styleConstants';
 
 export default function Login() {
   const navigate = useNavigate();
   const [pwVisible, setPwVisible] = useState(false);
-
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   useEffect(() => {
-    // 화면 스크롤 방지 (필요하다면)
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
@@ -29,8 +29,7 @@ export default function Login() {
   }, []);
 
   return (
-    <Background bgIndex={1}>
-      {/* 전체 화면을 덮는 컨테이너 */}
+    <Background bgIndex={2}>
       <div
         style={{
           position: 'absolute',
@@ -40,7 +39,6 @@ export default function Login() {
           alignItems: 'center',
         }}
       >
-        {/* 로그인 폼 래퍼: 폭은 화면 너비의 50% or 최대 500px */}
         <div
           style={{
             width: '50vw',
@@ -53,7 +51,6 @@ export default function Login() {
             boxSizing: 'border-box',
           }}
         >
-          {/* 1) 상단 텍스트 */}
           <p
             style={{
               fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
@@ -65,31 +62,29 @@ export default function Login() {
             AI 윤리 시뮬레이션 게임
           </p>
 
-          {/* 2) 프레임 로고 */}
           <div
             style={{
-              width: '100%',       // 래퍼(≤500px)의 100%
+              width: '100%',      
               display: 'flex',
               justifyContent: 'center',
             }}
           >
-            {/* Frame1 자체 너비는 래퍼 폭의 80% → 최대 400px */}
             <div
               style={{
                 width: '80%',
                 maxWidth: 400,
-                /* 아래쪽 간격은 gap이나 marginBottom으로 충분함 */
               }}
             >
               <Frame1 style={{ width: '100%' }} />
             </div>
           </div>
 
-          {/* 3) 아이디 입력 */}
           <InputBoxLarge
             placeholder="아이디(이메일)을 입력해 주세요."
             leftIcon={profileIcon}
             bgColor={Colors.componentBackgroundFloat}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             style={{
               width: '100%',
               height: '8vh',
@@ -98,7 +93,6 @@ export default function Login() {
               
             }}
           />
-          {/* 4) 비밀번호 입력 */}
           <InputBoxLarge
             placeholder="비밀번호를 입력해 주세요."
             leftIcon={lockIcon}
@@ -107,6 +101,8 @@ export default function Login() {
             isPassword={!pwVisible}
             onClickRightIcon={() => setPwVisible((v) => !v)}
             bgColor={Colors.componentBackgroundFloat}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             style={{
               width: '100%',
               height: '8vh',
@@ -116,7 +112,6 @@ export default function Login() {
             }}
           />
 
-          {/* 5) 로그인 버튼 */}
           <PrimaryButton
             style={{
               width: '100%',
@@ -125,14 +120,38 @@ export default function Login() {
               fontSize: 'clamp(1rem, 2vw, 1.125rem)',
               marginTop: '2vh',
             }}
-            onClick={() => {
-              // TODO: 로그인 처리
-            }}
-          >
-            로그인
-          </PrimaryButton>
+           
+            onClick={async () => {
+              console.log('입력된 username:', username);
+              console.log('입력된 password:', password);
+            
+              try {
+                const form = new URLSearchParams();
+                form.append('username', username);
+                form.append('password', password);
+            
+                const response = await axios.post('https://dilemmai.org/auth/login', form, {
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                });
+            
+                console.log('로그인 성공:', response.data);
+              } catch (error) {
+                if (error.response) {
+                  console.error('로그인 실패:', error.response.data);
+                  alert('로그인 실패: ' + JSON.stringify(error.response.data.detail, null, 2));
+                } else {
+                  console.error('Error:', error.message);
+                }
+              }
+              navigate('/selectroom');
 
-          {/* 6) 회원가입 / 비밀번호 찾기 링크 */}
+            }}
+            >
+              로그인
+            </PrimaryButton>
+
           <div
             style={{
               display: 'flex',
@@ -149,7 +168,6 @@ export default function Login() {
             </TextButton>
           </div>
 
-          {/* 7) Guest 로그인 */}
           <SecondaryButton
             style={{
               width: '100%',
@@ -159,7 +177,6 @@ export default function Login() {
               marginTop: '2vh',
             }}
             onClick={() => {
-              // TODO: Guest 로그인
             }}
           >
             Guest로 로그인

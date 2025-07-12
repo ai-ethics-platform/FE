@@ -4,14 +4,12 @@ import { FontStyles, Colors } from '../components/styleConstants';
 export default function SelectCardBox({ srcFrame, title, count, avatars }) {
   return (
     <div style={{ position:'relative', width:360, height:391 }}>
-      {/* 프레임 이미지 */}
       <img
         src={srcFrame}
         alt=""
         style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'fill' }}
       />
 
-      {/* 내용 */}
       <div
         style={{
           position:'absolute', inset:0, zIndex:1,

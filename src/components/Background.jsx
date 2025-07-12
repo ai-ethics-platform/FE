@@ -11,7 +11,6 @@ const Background = ({ bgIndex = 1, children }) => {
 
   return (
     <>
-      {/* 고정 배경 레이어: 뷰포트 전 영역 커버 */}
       <div
         style={{
          position: 'fixed',
@@ -26,7 +25,6 @@ const Background = ({ bgIndex = 1, children }) => {
           zIndex: -1,
         }}
       />
-      {/* 콘텐츠 레이어: 배경 위에 위치 */}
       <div style={{ position: 'relative', zIndex: 0, minHeight: '100vh' }}>
         {children}
       </div>

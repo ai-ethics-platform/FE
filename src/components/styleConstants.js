@@ -1,4 +1,3 @@
-// styleConstants.js
 export const Colors = {
     brandPrimary: '#0D575C',
     brandGradientStart: '#6E7C7D',

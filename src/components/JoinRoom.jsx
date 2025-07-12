@@ -44,7 +44,7 @@ export default function JoinRoom({ onClose }) {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
-          Authorization: `Bearer ${refreshToken}`,
+          'X-Refresh-Token': `Bearer ${refreshToken}`,
 
         },
       });

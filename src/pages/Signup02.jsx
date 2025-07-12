@@ -316,7 +316,6 @@ useEffect(() => {
                   zIndex: 2,
                   background: 'none',
                   border: 'none',
-                  background: 'none',
                   color: Colors.brandPrimary,
                   fontSize: 'clamp(0.75rem, 0.9vw, 0.875rem)',
                   padding: 0,

@@ -3,7 +3,7 @@ import contentbox from '../assets/contentBox1.svg';
 import pagnationLeft from '../assets/paginationleft.svg';
 import pagnationRight from '../assets/paginationright.svg';
 import pagnationBothL from '../assets/paginationBothL.svg';
-import pagnationBothR from '../assets/paginationbothR.svg';
+import pagnationBothR from '../assets/paginationBothR.svg';
 import { Colors, FontStyles } from './styleConstants';
 import Continue from './Continue';
 import useTypingEffect from '../hooks/useTypingEffect';

@@ -3,7 +3,7 @@ import contentbox from '../assets/contentBox1.svg';
 import pagnationLeft from '../assets/paginationleft.svg';
 import pagnationRight from '../assets/paginationright.svg';
 import pagnationBothL from '../assets/paginationBothL.svg';
-import pagnationBothR from '../assets/paginationbothR.svg';
+import pagnationBothR from '../assets/paginationBothR.svg';
 import { Colors, FontStyles } from './styleConstants';
 import Continue from './Continue2';
 import useTypingEffect from '../hooks/useTypingEffect';
@@ -79,7 +79,7 @@ export default function ContentTextBox2({
             )}
             {showRight && (
               <img
-                src={showLeft ? pagnationBothR : pagnationRight}
+                src={showLeft ? pagnationbothR : pagnationRight}
                 alt="next"
                 style={{marginBottom:20, height: 24, cursor: typingDone ? 'pointer' : 'default', opacity: typingDone ? 1 : 0.3 }}
                 onClick={handleNext}

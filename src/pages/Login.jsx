@@ -129,13 +129,18 @@ export default function Login() {
                 const form = new URLSearchParams();
                 form.append('username', username);
                 form.append('password', password);
-            
+             
                 const response = await axios.post('https://dilemmai.org/auth/login', form, {
                   headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                   },
                 });
-            
+               
+                const { access_token, refresh_token } = response.data;
+
+                localStorage.setItem('access_token', access_token);
+                localStorage.setItem('refresh_token', refresh_token);
+
                 console.log('로그인 성공:', response.data);
               } catch (error) {
                 if (error.response) {

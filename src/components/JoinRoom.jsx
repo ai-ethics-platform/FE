@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
+import axios from 'axios';
+
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
-import InputBoxSmall from './InputBoxSmall';
 
 export default function JoinRoom({ onClose }) {
   const [roomCode, setRoomCode] = useState('');
@@ -17,10 +18,42 @@ export default function JoinRoom({ onClose }) {
       setRoomCode(value.slice(0, 6));
     }
   };
+  const handleJoin = async () => {
+    if (!isValidCode) return;
 
-  const handleJoin = () => {
-    if (isValidCode) {
-      navigate('/waitingroom'); 
+    const accessToken = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!accessToken) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    if (!refreshToken) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    const requestBody = {
+      room_code: roomCode,
+      nickname: '이윤서',
+    };
+
+    console.log('참여 요청 데이터:', requestBody);
+
+    try {
+      const response = await axios.post('https://dilemmai.org/rooms/join/code', requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${refreshToken}`,
+
+        },
+      });
+
+      console.log('방 입장 성공:', response.data);
+      navigate('/waitingroom');
+    } catch (error) {
+      console.error('방 입장 실패:', error.response?.data || error.message);
+      alert(`방 입장 오류: ${JSON.stringify(error.response?.data?.detail || '')}`);
     }
   };
 
@@ -75,7 +108,6 @@ export default function JoinRoom({ onClose }) {
           outline: 'black',
         }}
       />
-     
       <PrimaryButton
         disabled={!isValidCode}
         onClick={handleJoin} 

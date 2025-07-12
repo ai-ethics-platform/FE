@@ -188,12 +188,14 @@ useEffect(() => {
     const requestBody = {
       username,
       email,
-      password:"securePass123",
+      password,
       birthdate,
       gender,
       education_level: education,
-      major:grade,
+      major:"공학계열",
       is_active: true,
+      "data_consent": true,
+      "voice_consent": true
     };
     console.log('데이터:', requestBody);  
     try {
@@ -441,7 +443,7 @@ useEffect(() => {
             >
               성별 *
             </div>
-            <div style={{ display: 'flex', gap: '1vw', marginBottom: '2vh' }}>
+            <div style={{ display: 'flex', gap: '1vw', marginBottom: '1vh' }}>
               {['남', '여'].map((g) => (
                 <div
                   key={g}

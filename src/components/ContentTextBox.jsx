@@ -1,9 +1,9 @@
 import React, { useState,useEffect } from 'react';
 import contentbox from '../assets/contentBox1.svg';
-import paginationLeft from '../assets/paginationleft.svg';
-import paginationRight from '../assets/paginationright.svg';
-import paginationBothL from '../assets/paginationbothL.svg';
-import paginationBothR from '../assets/paginationbothR.svg';
+import pagnationLeft from '../assets/paginationleft.svg';
+import pagnationRight from '../assets/paginationright.svg';
+import pagnationBothL from '../assets/paginationbothL.svg';
+import pagnationBothR from '../assets/paginationbothR.svg';
 import { Colors, FontStyles } from './styleConstants';
 import Continue from './Continue';
 import useTypingEffect from '../hooks/useTypingEffect';

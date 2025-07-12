@@ -1,4 +1,3 @@
-// src/components/Background.jsx
 import React from 'react';
 import bg1 from '../assets/images/bg1.png';
 import bg2 from '../assets/images/bg2.png';

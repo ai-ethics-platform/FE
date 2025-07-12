@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Layout         from '../components/Layout';      // ★ 수정된 Layout 불러오기
+import Layout         from '../components/Layout';      
 import ContentTextBox from '../components/ContentTextBox';
 import Continue       from '../components/Continue';
 import GameFrame      from '../components/GameFrame';
@@ -46,7 +46,7 @@ export default function Game08() {
 
   const handleContinue = () => {
     navigate('/game09', {
-      state: { agreement: null, confidence: 0 }, // Game03에 넘길 게 있으면 여기에
+      state: { agreement: null, confidence: 0 }, 
     });
   };
 

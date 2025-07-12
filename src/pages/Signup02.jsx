@@ -32,11 +32,9 @@ export default function Signup02() {
   const [email, setEmail] = useState('');
   const [birthError, setBirthError] = useState('');
 
-  //아이디 중복 확인 
-const [isUsernameAvailable, setIsUsernameAvailable] = useState(null); // true/false/null
+const [isUsernameAvailable, setIsUsernameAvailable] = useState(null); 
 const [usernameCheckError, setUsernameCheckError] = useState(''); 
 
-  // 비밀번호 확인 일치 여부 , 8자리 이상
 useEffect(() => {
   if (password.length > 0 && password.length < 8) {
     setPasswordError('비밀번호는 최소 8자 이상이어야 합니다.');
@@ -48,7 +46,6 @@ useEffect(() => {
 }, [password, confirmPassword]);
 
 
-  // 이메일 유효성 검사
   useEffect(() => {
     if (email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
       setEmailError('유효한 이메일 주소를 입력하세요.');
@@ -141,10 +138,10 @@ useEffect(() => {
   const grayBackground = Colors.grey01;
 
   const messageTextStyle = {
-    color: Colors.systemRed, // 성공일 경우엔 따로 바꿔줌
+    color: Colors.systemRed, 
     fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
-    fontFamily: 'inherit', // 프로젝트 전체 폰트 상속
-    letterSpacing: '-0.015em', // 자간 살짝 줄임 (자연스러움)
+    fontFamily: 'inherit', 
+    letterSpacing: '-0.015em', 
     marginBottom:'0vh',
   };
   
@@ -186,7 +183,7 @@ useEffect(() => {
   
   // API 연결 - 회원가입  
   const handleSignup = async () => {
-    const birthdate = `${birthYear}/${birthMonth.padStart(2, '0')}`;  // 예: 2003/09
+    const birthdate = `${birthYear}/${birthMonth.padStart(2, '0')}`;  
 
     const requestBody = {
       username,
@@ -217,10 +214,10 @@ useEffect(() => {
         style={{
           position: 'absolute',
           inset: 0,
-          overflowY: 'auto',        // 세로 스크롤 허용
+          overflowY: 'auto',        
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'flex-start', // 상단부터 렌더링
+          alignItems: 'flex-start', 
           padding: '2vh 0',
           boxSizing: 'border-box',
         }}
@@ -397,7 +394,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* ─── “생년월일” 섹션 ─── */}
           <div style={{ marginBottom: '2vh' }}>
             <div
               style={{
@@ -435,7 +431,6 @@ useEffect(() => {
             )}
           </div>
 
-          {/* ─── “성별” 섹션 ─── */}
           <div style={{ marginBottom: '2vh' }}>
             <div
               style={{
@@ -459,7 +454,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* ─── “학업 상태” 섹션 ─── */}
           <div style={{ marginBottom: '0vh' }}>
             <div
               style={{

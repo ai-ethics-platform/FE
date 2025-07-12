@@ -42,7 +42,7 @@ export default function Game02() {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     const calculatedRound = completed.length + 1;
     setRound(calculatedRound);
-    localStorage.setItem('currentRound', calculatedRound.toString()); // 보조용 저장
+    localStorage.setItem('currentRound', calculatedRound.toString()); 
   }, []);
 
   console.log('[Paragraphs 확인]', { category, subtopic, mode });

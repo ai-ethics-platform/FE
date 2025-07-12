@@ -67,7 +67,7 @@ const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
             icon={joinIcon}
             title="방 참여하기"
             description="코드를 통해 비공개 방에 참여할 수 있습니다."
-            onClick={() => setIsJoinRoomOpen(true)} // 여기에 추가
+            onClick={() => setIsJoinRoomOpen(true)} 
 
           />
           <RoomCard

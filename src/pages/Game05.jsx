@@ -22,7 +22,6 @@ export default function Game05() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openProfile, setOpenProfile] = useState(null);
 
-  // round 동기화
   const [round, setRound] = useState(1);
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -34,8 +33,7 @@ export default function Game05() {
   const mainTopic = localStorage.getItem('category') ?? '안드로이드';
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
 
-  // 다수결 결과를 기반으로 agree/disagree 판단
-  const mode = 'agree'; // 실제 적용 시에는 localStorage.getItem('agreement') 등으로 변경
+  const mode = 'agree'; 
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
 
   useEffect(() => {

@@ -1,4 +1,3 @@
-// src/pages/Signup.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -113,7 +112,6 @@ export default function Signup() {
             대화 중 수집되는 정보는 연구에만 사용됩니다.
           </div>
 
-          {/** ─── 수집 및 활용 항목 토글 ─── **/}
           <div
             style={{
               marginTop: '3vh',

@@ -10,7 +10,7 @@ export default function GameFrame({
   onRightClick = () => {},
   disableLeft = false,
   disableRight = false,
-  hideArrows = false, // 
+  hideArrows = false, 
   width = 512,
   height = 64,
 }) {

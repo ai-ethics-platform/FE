@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import Layout       from '../components/Layout';   // ← Layout 사용
+import Layout       from '../components/Layout';   
 import ContentBox2  from '../components/ContentBox2';
 
 const fullText =

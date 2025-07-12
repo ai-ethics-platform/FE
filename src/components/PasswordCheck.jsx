@@ -11,7 +11,7 @@ export default function PasswordCheck({
   isPassword = false,
   value = '',
   onChange = () => {},
-  style = {},           // 부모가 넘겨줄 수 있는 style 프롭
+  style = {},           
 }) {
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);

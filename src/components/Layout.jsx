@@ -89,7 +89,6 @@ export default function Layout({
       `}</style>
 
       <div className="layout-viewport">
-        {/* ─ 왼쪽 사이드바 ─ */}
         <aside className="layout-sidebar">
           <UserProfile
             player="1P"

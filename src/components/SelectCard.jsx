@@ -21,8 +21,8 @@ export default function SelectCard({
   const containerStyle = {
     display: 'flex',
     alignItems: 'center',
-    width: width || '100%',          // 부모가 넘겨준 width가 없으면 100%
-    height: height || '100%',        // 부모가 넘겨준 height가 없으면 컨텐츠 높이에 맞춤
+    width: width || '100%',          
+    height: height || '100%',        
     padding: padding !== undefined ? padding : '0 16px',
     gap: gap !== undefined ? gap : 12,
     backgroundColor: Colors.componentBackground,

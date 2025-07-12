@@ -84,7 +84,7 @@ export const FontStyles = {
     },
   logo: {
     fontFamily: 'Cafe24 Ohsquare air',
-    fontWeight: 500, // 혹은 'lighter'
+    fontWeight: 500, 
     fontSize: 26,
     lineHeight: '44px',
     letterSpacing: '0',

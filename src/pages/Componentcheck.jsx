@@ -90,7 +90,6 @@ export default function Componentcheck() {
 
 
       </div>
-     {/* CreateRoom 컴포넌트와 버튼 사이에 여백 추가 */}
      {/* <div style={{ marginTop: 32, position: 'relative', zIndex: 10 }}>
         <CreateRoom />
       </div> */}

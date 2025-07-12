@@ -21,7 +21,6 @@ export default function LogoutPopup({ onClose, onLogout }) {
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
       }}
     >
-      {/* Close Icon */}
       <img
         src={closeIcon}
         alt="close"
@@ -36,7 +35,6 @@ export default function LogoutPopup({ onClose, onLogout }) {
         }}
       />
 
-      {/* Title */}
       <div
         style={{
           ...FontStyles.title,
@@ -48,7 +46,6 @@ export default function LogoutPopup({ onClose, onLogout }) {
         게임을 종료하고 로그아웃할까요?
       </div>
 
-      {/* Secondary Button */}
       <SecondaryButton
         onClick={() => {
           console.log('logout button clicked');

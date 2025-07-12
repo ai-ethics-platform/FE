@@ -1,9 +1,9 @@
 import React, { useState,useEffect } from 'react';
 import contentbox from '../assets/contentBox1.svg';
-import pagnationLeft from '../assets/paginationleft.svg';
-import pagnationRight from '../assets/paginationright.svg';
-import pagnationBothL from '../assets/paginationbothL.svg';
-import pagnationBothR from '../assets/paginationbothR.svg';
+import paginationLeft from '../assets/paginationleft.svg';
+import paginationRight from '../assets/paginationright.svg';
+import paginationBothL from '../assets/paginationbothL.svg';
+import paginationBothR from '../assets/paginationbothR.svg';
 import { Colors, FontStyles } from './styleConstants';
 import Continue from './Continue';
 import useTypingEffect from '../hooks/useTypingEffect';
@@ -51,9 +51,7 @@ export default function ContentTextBox({
 
   const showLeft = currentIndex > 0;
   const showRight = currentIndex < paragraphs.length - 1;
-  useEffect(() => {
-    setTypingDone(false);
-  }, [currentIndex]);
+
   return (
    <div style={{ position: 'relative', width: 960, minHeight: 200 }}>
     <img
@@ -98,7 +96,7 @@ export default function ContentTextBox({
           <div style={{ display: 'flex', gap: 16 }}>
             {showLeft && (
               <img
-                src={showRight ? pagnationBothL : pagnationLeft}
+                src={showRight ? paginationBothL : paginationLeft}
                 alt="prev"
                 style={{
                   marginBottom: 20,
@@ -111,7 +109,7 @@ export default function ContentTextBox({
             )}
             {showRight && (
               <img
-                src={showLeft ? pagnationBothR : pagnationRight}
+                src={showLeft ? paginationBothR : paginationRight}
                 alt="next"
                 style={{
                   marginBottom: 40,

@@ -381,6 +381,9 @@ export default function MateName() {
         state: { selectedIndex },
       });
     } catch (err) {
+      navigate('/gamemap', {
+        state: { selectedIndex },
+      });
       console.error('❌ AI 이름 저장 실패:', err);
       const msg = err.response?.data?.detail;
       alert(`이름 저장 중 오류: ${msg || '알 수 없는 오류'}`);

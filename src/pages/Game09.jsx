@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect }  from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout       from '../components/Layout';   
 import ContentBox2  from '../components/ContentBox2';
@@ -8,6 +8,17 @@ const fullText =
 export default function Game09() {
   const navigate = useNavigate();
   const subtopic = '다른 사람들이 선택한 미래 ';
+
+  useEffect(() => {
+    // 언마운트 시 leaveSession 호출
+    return () => {
+      voiceManager.leaveSession()
+        .then(success => {
+          if (success) console.log('🛑 음성 세션에서 나감 완료');
+          else console.warn('⚠️ 음성 세션 나가기 실패');
+        });
+    };
+  }, []);
 
   return (
     <Layout subtopic={subtopic} me="1P">

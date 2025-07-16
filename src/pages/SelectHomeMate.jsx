@@ -118,6 +118,8 @@ export default function SelectHomeMate() {
       navigate('/matename');
     } catch (err) {
       console.error('❌ AI 선택 실패:', err);
+      navigate('/matename');
+
       if (err.response) {
         console.error('📦 서버 응답 data:', err.response.data);
         alert(`오류: ${JSON.stringify(err.response.data)}`);

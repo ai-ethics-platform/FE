@@ -1,262 +1,3 @@
-// // utils/VoiceManager.js
-// import axiosInstance from '../api/axiosInstance';
-
-// class VoiceManager {
-//   constructor() {
-//     this.isConnected = false;
-//     this.isSpeaking = false;
-//     this.sessionId = null;
-//     this.mediaStream = null;
-//     this.audioContext = null;
-//     this.analyser = null;
-//     this.animationFrame = null;
-//     this.speakingThreshold = 30; // 임계값 낮춤 (더 민감하게)
-//     this.nickname = null;
-//     this.participantId = null;
-//     this.lastSpeakingState = false;
-//     this.micLevel = 0; // 현재 마이크 레벨
-//     this.isDebugMode = true; // 디버그 모드
-//   }
-
-//   // 음성 세션 초기화
-//   async initializeVoiceSession() {
-//     try {
-//       console.log('🎤 음성 세션 초기화 시작');
-      
-//       // 1. 마이크 연결
-//       await this.connectMicrophone();
-      
-//       // 2. 세션 ID 및 닉네임 설정
-//       const roomCode = localStorage.getItem('room_code');
-//       const { data: me } = await axiosInstance.get('/users/me');
-      
-//       this.sessionId = `voice_session_${roomCode}_${Date.now()}`;
-//       this.nickname = `Player_${me.id}`;
-//       this.participantId = me.id;
-      
-//       console.log('✅ 음성 세션 초기화 완료:', {
-//         sessionId: this.sessionId,
-//         nickname: this.nickname,
-//         participantId: this.participantId,
-//         isConnected: this.isConnected,
-//         speakingThreshold: this.speakingThreshold
-//       });
-      
-//       // 3. 초기 마이크 ON 상태 전송
-//       await this.sendVoiceStatusToServer(false);
-      
-//       // 4. 음성 감지 시작
-//       this.startSpeechDetection();
-      
-//       return true;
-//     } catch (error) {
-//       console.error('❌ 음성 세션 초기화 실패:', error);
-//       return false;
-//     }
-//   }
-
-//   // 마이크 연결
-//   async connectMicrophone() {
-//     try {
-//       console.log('🎤 마이크 연결 시도...');
-      
-//       this.mediaStream = await navigator.mediaDevices.getUserMedia({ 
-//         audio: {
-//           echoCancellation: true,
-//           noiseSuppression: true,
-//           autoGainControl: true,
-//           sampleRate: 44100
-//         }
-//       });
-      
-//       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-//       this.analyser = this.audioContext.createAnalyser();
-      
-//       const microphone = this.audioContext.createMediaStreamSource(this.mediaStream);
-//       microphone.connect(this.analyser);
-      
-//       // 분석기 설정 (더 민감하게)
-//       this.analyser.fftSize = 256;
-//       this.analyser.smoothingTimeConstant = 0.8;
-      
-//       this.isConnected = true;
-//       console.log('✅ 마이크 연결 성공! 임계값:', this.speakingThreshold);
-      
-//     } catch (error) {
-//       console.error('❌ 마이크 연결 실패:', error);
-//       if (error.name === 'NotAllowedError') {
-//         alert('마이크 권한이 필요합니다. 브라우저 설정에서 마이크 권한을 허용해주세요.');
-//       }
-//       throw error;
-//     }
-//   }
-
-//   // 서버에 음성 상태 전송
-//   async sendVoiceStatusToServer(isSpeaking) {
-//     try {
-//       // 상태가 변하지 않았으면 전송하지 않음
-//       if (this.lastSpeakingState === isSpeaking) return;
-      
-//       this.lastSpeakingState = isSpeaking;
-
-//       // 실제 서버 API는 아직 없으므로 WebSocket으로 직접 전송
-//       const message = {
-//         participant_id: parseInt(this.participantId),
-//         nickname: this.nickname,
-//         is_mic_on: this.isConnected,
-//         is_speaking: isSpeaking
-//       };
-
-//       // WebSocket이 있다면 직접 전송 (테스트용)
-//       if (window.webSocketInstance && window.webSocketInstance.sendMessage) {
-//         window.webSocketInstance.sendMessage(message);
-//         console.log('📡 WebSocket으로 음성 상태 전송:', message);
-//       }
-
-//       // 콘솔에 상태 출력
-//       console.log('🎤 음성 상태 변경:', {
-//         participantId: this.participantId,
-//         nickname: this.nickname,
-//         is_mic_on: this.isConnected,
-//         is_speaking: isSpeaking,
-//         micLevel: this.micLevel.toFixed(1)
-//       });
-      
-//     } catch (error) {
-//       console.error('❌ 음성 상태 전송 실패:', error);
-//       this.lastSpeakingState = !isSpeaking; // 실패 시 상태 복원
-//     }
-//   }
-
-//   // 음성 감지 시작
-//   startSpeechDetection() {
-//     if (!this.analyser) {
-//       console.error('❌ 분석기가 없습니다');
-//       return;
-//     }
-
-//     const bufferLength = this.analyser.frequencyBinCount;
-//     const dataArray = new Uint8Array(bufferLength);
-    
-//     const detectSpeech = () => {
-//       if (!this.analyser) return;
-      
-//       this.analyser.getByteFrequencyData(dataArray);
-      
-//       // 평균 음성 레벨 계산
-//       const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
-//       this.micLevel = average;
-      
-//       const currentlySpeaking = average > this.speakingThreshold;
-      
-//       // 디버그 모드에서 레벨 출력
-//       if (this.isDebugMode && Math.floor(Date.now() / 500) % 2 === 0) {
-//         console.log(`🎵 마이크 레벨: ${average.toFixed(1)} (임계값: ${this.speakingThreshold})`);
-//       }
-      
-//       // 음성 상태 변화 감지
-//       if (currentlySpeaking !== this.isSpeaking) {
-//         this.isSpeaking = currentlySpeaking;
-        
-//         console.log('🗣️ 음성 상태 변화 감지:', {
-//           speaking: currentlySpeaking,
-//           level: average.toFixed(1),
-//           threshold: this.speakingThreshold,
-//           participantId: this.participantId
-//         });
-        
-//         // 서버에 음성 상태 전송
-//         this.sendVoiceStatusToServer(currentlySpeaking);
-//       }
-      
-//       this.animationFrame = requestAnimationFrame(detectSpeech);
-//     };
-    
-//     console.log('🎯 음성 감지 시작 (임계값:', this.speakingThreshold, ')');
-//     console.log('💡 마이크에 대고 말해보세요!');
-//     detectSpeech();
-//   }
-
-//   // 임계값 조정
-//   setSpeakingThreshold(threshold) {
-//     this.speakingThreshold = threshold;
-//     console.log('🎚️ 음성 임계값 변경:', threshold);
-//   }
-
-//   // 디버그 모드 토글
-//   toggleDebugMode() {
-//     this.isDebugMode = !this.isDebugMode;
-//     console.log('🐛 디버그 모드:', this.isDebugMode ? 'ON' : 'OFF');
-//   }
-
-//   // 음성 감지 중지
-//   stopSpeechDetection() {
-//     if (this.animationFrame) {
-//       cancelAnimationFrame(this.animationFrame);
-//       this.animationFrame = null;
-//     }
-//     console.log('🔇 음성 감지 중지');
-//   }
-
-//   // 마이크 연결 해제
-//   disconnectMicrophone() {
-//     this.stopSpeechDetection();
-    
-//     if (this.mediaStream) {
-//       this.mediaStream.getTracks().forEach(track => track.stop());
-//       this.mediaStream = null;
-//     }
-    
-//     if (this.audioContext) {
-//       this.audioContext.close();
-//       this.audioContext = null;
-//     }
-    
-//     this.analyser = null;
-//     this.isConnected = false;
-//     this.isSpeaking = false;
-//     this.lastSpeakingState = false;
-//     this.micLevel = 0;
-    
-//     console.log('🔇 마이크 연결 해제');
-//   }
-
-//   // 음성 세션 정리
-//   async cleanup() {
-//     if (this.isSpeaking) {
-//       await this.sendVoiceStatusToServer(false);
-//     }
-    
-//     this.disconnectMicrophone();
-    
-//     this.sessionId = null;
-//     this.nickname = null;
-//     this.participantId = null;
-    
-//     console.log('🧹 음성 세션 정리 완료');
-//   }
-
-//   // 현재 상태 반환
-//   getStatus() {
-//     return {
-//       isConnected: this.isConnected,
-//       isSpeaking: this.isSpeaking,
-//       sessionId: this.sessionId,
-//       nickname: this.nickname,
-//       participantId: this.participantId,
-//       micLevel: this.micLevel,
-//       speakingThreshold: this.speakingThreshold
-//     };
-//   }
-// }
-
-// // 싱글톤 인스턴스
-// const voiceManager = new VoiceManager();
-
-// // 전역에서 접근 가능하도록 설정 (테스트용)
-// window.voiceManager = voiceManager;
-
-// export default voiceManager;// utils/VoiceManager.js - 연속 녹음 기능
 import axiosInstance from '../api/axiosInstance';
 
 class VoiceManager {
@@ -282,7 +23,58 @@ class VoiceManager {
     this.recordingStartTime = null;
     this.sessionInitialized = false; // 세션 초기화 여부
   }
+  // 세션 나가기
+  async leaveSession() {
+    this.sessionId ||= localStorage.getItem('session_id');
+        
+    if (!this.sessionId) {
+      console.warn('leaveSession: sessionId가 없습니다.');
+      return false;
+    }
+    try {
+      await axiosInstance.post(
+        `/voice/sessions/${this.sessionId}/leave`,{}
+      );
+      console.log('🛑 leaveSession 성공');
+      return true;
+    } catch (err) {
+      console.error('❌ leaveSession 실패:', err);
+      return false;
+    }
+  }
+// voiceManager.js에 추가할 수 있는 메서드
+getLocalStream() {
+    return this.mediaStream;
+  }
+  
+  getAudioTracks() {
+    return this.mediaStream ? this.mediaStream.getAudioTracks() : [];
+  }
+  // 서버 join 호출
+  async joinSession() {
+    if (!this.sessionId || !this.nickname) {
+      console.error('❌ joinSession: sessionId 또는 nickname이 없습니다.');
+      return false;
+    }
+    try {
+      console.log('📥 joinSession 요청:', this.sessionId, this.nickname);
+      await axiosInstance.post(
+        `/voice/sessions/${this.sessionId}/join`,
+        { session_id: this.sessionId, nickname: this.nickname }
+      );
+      console.log('✅ joinSession 성공');
+      return true;
 
+    } catch (err) {
+      const msg = err.response?.data?.detail;
+      if (msg === '이미 참가 중인 음성 세션입니다.') {
+        console.warn('⚠️ 이미 참가 중인 세션입니다. join 무시');
+        return true;
+      }
+      console.error('❌ joinSession 실패:', msg || err);
+      return false;
+    }
+  }
   // 음성 세션 초기화 (GameIntro2에서만 호출)
   async initializeVoiceSession() {
     if (this.sessionInitialized) {
@@ -475,7 +267,7 @@ class VoiceManager {
       const currentlySpeaking = average > this.speakingThreshold;
       
       if (this.isDebugMode && Math.floor(Date.now() / 500) % 2 === 0) {
-        console.log(`🎵 마이크 레벨: ${average.toFixed(1)} (임계값: ${this.speakingThreshold})`);
+        //console.log(`🎵 마이크 레벨: ${average.toFixed(1)} (임계값: ${this.speakingThreshold})`);
       }
       
       if (currentlySpeaking !== this.isSpeaking) {

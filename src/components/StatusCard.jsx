@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import frameDefault from '../assets/cardframe.svg';
 import frameHover from '../assets/cardframehover.svg';
 import frameActive from '../assets/cardframeactive.svg';
@@ -26,16 +26,17 @@ const statusMap = {
   cannotready: StatusCannotReady,
 };
 
-const playerMap = {
-  '1P': player1,
-  '2P': player2,
-  '3P': player3,
+const roleImageMap = {
+  1: player1,
+  2: player2,
+  3: player3,
 };
 
 export default function StatusCard({
   player,
   isOwner = false,
   isMe = false,
+  roleId,
   onContinueClick,
   statusIndex: externalStatusIndex,
   onStatusChange,
@@ -47,11 +48,17 @@ export default function StatusCard({
     ? ['continue', 'meready']
     : ['waitingforready', 'uready'];
 
-  const statusIndex = externalStatusIndex ?? 0;
-  const setStatusIndex = onStatusChange ?? (() => {}); 
+  const [internalStatusIndex, setInternalStatusIndex] = useState(0);
+  const statusIndex =
+    typeof externalStatusIndex === 'number' ? externalStatusIndex : internalStatusIndex;
+  const setStatusIndex = onStatusChange ?? setInternalStatusIndex;
 
-  const showPlayer = player && playerMap[player];
+  const showPlayer = roleId && roleImageMap[roleId];
   const status = showPlayer ? statusList[statusIndex] : 'waiting';
+
+  useEffect(() => {
+    console.log(`[StatusCard] ${player} | isMe: ${isMe} | statusIndex: ${statusIndex} | status: ${status}`);
+  }, [player, isMe, statusIndex, status]);
 
   const cycleStatus = () => {
     setStatusIndex((prev) => (prev + 1) % statusList.length);
@@ -59,7 +66,6 @@ export default function StatusCard({
 
   const handleStatusClick = () => {
     if (!showPlayer) return;
-
     if (isMe && status === 'continue' && typeof onContinueClick === 'function') {
       onContinueClick();
     } else {
@@ -89,21 +95,11 @@ export default function StatusCard({
       onMouseUp={() => setIsActive(false)}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <img
-        src={frameSrc}
-        alt="frame"
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          zIndex: 0,
-        }}
-      />
+      <img src={frameSrc} alt="frame" style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 0 }} />
 
       {showPlayer ? (
         <img
-          src={playerMap[player]}
+          src={roleImageMap[roleId]}
           alt="player"
           style={{
             position: 'absolute',
@@ -149,7 +145,7 @@ export default function StatusCard({
       )}
 
       <img
-        src={statusMap[showPlayer ? status : 'waiting']}
+        src={statusMap[status]}
         alt={status}
         onClick={(e) => {
           if (!showPlayer) return;

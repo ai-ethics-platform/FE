@@ -3,14 +3,51 @@ import closeIcon from '../assets/close.svg';
 import SecondaryButton from './SecondaryButton';
 import { useNavigate } from 'react-router-dom';
 import { Colors, FontStyles } from './styleConstants';
+import axiosInstance from '../api/axiosInstance'; // ✅ 추가
 
 export default function OutPopup({ onClose }) {
   const navigate = useNavigate();
+  const handleLeaveRoom = async () => {
+    const room_code = String(localStorage.getItem("room_code"));
+    console.log("room_code:", room_code);
 
-  const handleLeaveRoom = () => {
-    navigate('/selectroom'); 
+    try {
+      const res = await axiosInstance.post('/rooms/out', {
+        room_code
+      });
+
+      const {
+        player_count,
+        room_deleted,
+        new_host,
+        game_started,
+        requires_lobby_redirect,
+        message
+      } = res.data;
+  
+      console.log("🚪 방 나가기 응답:", res.data);
+  
+      alert(message); // 사용자에게 메시지 표시
+  
+      // ✅ 로컬 스토리지 정리
+      localStorage.removeItem("room_code");
+      localStorage.removeItem("category");
+      localStorage.removeItem("subtopic");
+  
+      // ✅ 경로 이동 처리
+      if (requires_lobby_redirect || room_deleted) {
+        navigate("/selectroom");
+      } else if (game_started) {
+        navigate("/");  // 게임 중 나간 경우 처리용 페이지가 있다면
+      } else {
+        navigate("/selectroom");  // 대기실에서 나간 경우
+      }
+    } catch (err) {
+      console.error("❌ 방 나가기 실패:", err);
+      alert("방 나가기 실패: " +  err.response.data);
+    }
   };
-
+  
   return (
     <div
       style={{
@@ -47,9 +84,10 @@ export default function OutPopup({ onClose }) {
       </p>
 
       <SecondaryButton 
-      style={{ width: 168, height: 72}}
-      onClick={handleLeaveRoom}> 
-      방나가기
+        style={{ width: 168, height: 72}}
+        onClick={handleLeaveRoom}
+      > 
+        방나가기
       </SecondaryButton> 
     </div>
   );

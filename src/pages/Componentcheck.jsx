@@ -16,7 +16,7 @@ import arrowLhover from "../assets/arrowLhover.svg";
 import arrowRhover from "../assets/arrowRhover.svg";
 import arrowUp from "../assets/arrowUp.svg";
 import arrowDown from "../assets/arrowDown.svg";
-
+import mikeon from "../assets/1playermikeon.svg";
 import roomcreate from "../assets/roomcreate.svg"
 import joinviacode from "../assets/joinviacode.svg";
 import joinrandom from "../assets/joinrandom.svg";
@@ -43,6 +43,7 @@ import checkbutton from '../assets/checkbutton.svg';
 import JoinRoom from '../components/JoinRoom';
 import ContentBox2 from '../components/ContentBox2';
 import GameFrame from '../components/GameFrame';
+import RoomCode from '../components/RoomCode';
 import GameMapFrame from '../components/GameMapFrame';
 import GameMapOptionBox from '../components/GameMapOptionBox';
 const fullText = `지금은 20XX년,\n국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
@@ -87,14 +88,20 @@ export default function Componentcheck() {
       <img src = {cardframe}/>
       <img src={nocheckbutton}/>
       <img src={checkbutton}/> 
-
+<img src ={mikeon}/>
 
       </div>
      {/* <div style={{ marginTop: 32, position: 'relative', zIndex: 10 }}>
         <CreateRoom />
       </div> */}
-<UserProfile player="1P" characterDesc="" isLeader={true} />
-<UserProfile player="2P" characterDesc="디테일 있음" />
+<UserProfile
+  player="1P"
+  // 상세 프로필 없을 때
+  isLeader={true}    // 방장이면 crown
+  isMe={true}        // 내 프로필이라면 왼쪽 스피킹 바
+  isSpeaking={false}  // 말하고 있는 사람은 mikeon 아이콘
+/>
+<UserProfile player="2P"   isSpeaking={true} characterDesc="디테일 있음" />
       {/* 버튼 클릭 불가 문제 해결을 위해 zIndex 부여 */}
       <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
         <PrimaryButton disabled={false}>버튼 텍스트</PrimaryButton>
@@ -197,6 +204,8 @@ export default function Componentcheck() {
 
 <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
 <CreateRoom2/>
+<RoomCode roomCode="154152" />
+
   </div>
     </Background>
     );

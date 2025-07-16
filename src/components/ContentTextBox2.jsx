@@ -59,7 +59,7 @@ export default function ContentTextBox2({
           <div style={{ ...FontStyles.title, color: Colors.brandPrimary, marginBottom: 3 }}>
             {typedMain.split('\n').map((line, idx) => (
             <React.Fragment key={idx}>
-            {line}
+              {line}
             < br />
             </React.Fragment>
         ))}
@@ -79,8 +79,7 @@ export default function ContentTextBox2({
             )}
             {showRight && (
               <img
-                src={showLeft ? pagnationbothR : pagnationRight}
-                alt="next"
+              src={showLeft ? pagnationBothR : pagnationRight}                alt="next"
                 style={{marginBottom:20, height: 24, cursor: typingDone ? 'pointer' : 'default', opacity: typingDone ? 1 : 0.3 }}
                 onClick={handleNext}
               />

@@ -3,22 +3,60 @@ import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
+import RoomTypeToggle from './RoomTypeToggle';
 
 import mainTopicDefault from '../assets/maintopicframedefault.svg';
 import mainTopicHover from '../assets/maintopicframehover.svg';
 import mainTopicActive from '../assets/maintopicframe.svg';
 
+import axiosInstance from '../api/axiosInstance';
+import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
+
 const topics = ['안드로이드', '자율 무기 시스템'];
 
-export default function CreateRoom({ onClose }) {
+export default function CreateRoom2({ onClose }) {
+  const [isPublic, setIsPublic] = useState(false); // 기본은 비공개
+
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [hoveredTopic, setHoveredTopic] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    localStorage.setItem('category', selectedTopic);
-    if (selectedTopic) {
-      navigate('/waitingroom', { state: { topic: selectedTopic } });
+  const handleCreateRoom = async () => {
+    if (!selectedTopic) return;
+  
+    const title = `${selectedTopic} 토론방`;
+    const description = `AI 윤리 주제 중 '${selectedTopic}'에 대한 토론`;
+    const topic = selectedTopic;
+  
+    try {
+      setLoading(true);
+      await fetchWithAutoToken();
+  
+      //  1단계: 방 생성
+      const response = await axiosInstance.post('/rooms/create/private', {
+        title,
+        description,
+        topic,
+        allow_random_matching: true
+
+      });
+  
+      const roomCode = response.data.room.room_code;
+      localStorage.setItem('room_code', roomCode);
+      localStorage.setItem('category', topic);
+      console.log(" 방 생성 성공 room_code:", roomCode);
+  
+      //  3단계: 대기방으로 이동
+      navigate('/waitingroom', { state: { topic } });
+  
+    } catch (err) {
+      console.error(' 방 생성 또는 입장 실패:', err);
+      console.error('응답 메시지:', err.response?.data);  // <-- 여기에 오류 메시지 나옴
+
+      alert('방 생성 또는 입장 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,6 +103,7 @@ export default function CreateRoom({ onClose }) {
       <div style={{ color: Colors.grey05, marginBottom: 32 }}>
         이번 게임에서 플레이할 주제를 선택해 주세요.
       </div>
+      <RoomTypeToggle isPublic={isPublic} setIsPublic={setIsPublic} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
         {topics.map((topic) => (
@@ -96,15 +135,15 @@ export default function CreateRoom({ onClose }) {
       </div>
 
       <PrimaryButton
-        disabled={!selectedTopic}
-        onClick={handleClick}
+        disabled={!selectedTopic || loading}
+        onClick={handleCreateRoom}
         style={{
           width: 168,
           height: 72,
           opacity: selectedTopic ? 1 : 0.4,
         }}
       >
-        입장하기
+        {loading ? '로딩 중...' : '입장하기'}
       </PrimaryButton>
     </div>
   );

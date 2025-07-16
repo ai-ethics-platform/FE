@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import UserProfile from '../components/Userprofile';
@@ -7,9 +7,81 @@ import character1 from '../assets/images/character1.png';
 import character2 from '../assets/images/character2.png';
 import character3 from '../assets/images/character3.png';
 
+import axiosInstance from '../api/axiosInstance';
+import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
+import voiceManager from '../utils/voiceManager';
+import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+
 export default function SelectHomeMate() {
   const [activeIndex, setActiveIndex] = useState(null);
+  const [hostId, setHostId] = useState(null);
+  const [myRoleId, setMyRoleId] = useState(null);
   const navigate = useNavigate();
+
+  // 역할별 사용자 ID 매핑
+  const [roleUserMapping, setRoleUserMapping] = useState({
+    role1_user_id: null,
+    role2_user_id: null,
+    role3_user_id: null,
+  });
+
+  // 음성 상태 관리
+  const { voiceStates, getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
+
+  // 음성 세션 상태
+  const [voiceSessionStatus, setVoiceSessionStatus] = useState({
+    isConnected: false,
+    isSpeaking: false,
+    sessionId: null,
+    nickname: null,
+    participantId: null,
+    micLevel: 0,
+    speakingThreshold: 30
+  });
+
+  useEffect(() => {
+    // 로컬스토리지에서 hostId, myRoleId 불러오기
+    const storedHost = localStorage.getItem('host_id');
+    const storedMyRole = localStorage.getItem('myrole_id');
+    const role1UserId = localStorage.getItem('role1_user_id');
+    const role2UserId = localStorage.getItem('role2_user_id');
+    const role3UserId = localStorage.getItem('role3_user_id');
+
+    setHostId(storedHost);
+    setMyRoleId(storedMyRole);
+    setRoleUserMapping({
+      role1_user_id: role1UserId,
+      role2_user_id: role2UserId,
+      role3_user_id: role3UserId,
+    });
+  }, []);
+
+  // 음성 세션 상태 업데이트
+  useEffect(() => {
+    const statusInterval = setInterval(() => {
+      const currentStatus = voiceManager.getStatus();
+      setVoiceSessionStatus(currentStatus);
+    }, 100);
+    
+    return () => clearInterval(statusInterval);
+  }, []);
+
+  // 특정 역할의 음성 상태 가져오기 (내 것은 실시간, 다른 사람은 WebSocket)
+  const getVoiceStateForRoleWithMyStatus = (roleId) => {
+    const roleIdStr = String(roleId);
+    
+    // 내 역할이면 실시간 상태 반환
+    if (roleIdStr === myRoleId) {
+      return {
+        is_speaking: voiceSessionStatus.isSpeaking,
+        is_mic_on: voiceSessionStatus.isConnected,
+        nickname: voiceSessionStatus.nickname || ''
+      };
+    }
+    
+    // 다른 사람 역할이면 WebSocket 상태 반환
+    return getVoiceStateForRole(roleId);
+  };
 
   const paragraphs = [
     {
@@ -20,8 +92,44 @@ export default function SelectHomeMate() {
 
   const images = [character1, character2, character3];
 
+  const handleContinue = async () => {
+    if (activeIndex === null) {
+      alert('캐릭터를 먼저 선택해주세요!');
+      return;
+    }
+    const roomCode = localStorage.getItem('room_code');
+    if (!roomCode) {
+      alert('room_code가 없습니다. 방에 먼저 입장하세요.');
+      return;
+    }
+
+    try {
+      await fetchWithAutoToken();
+    
+      const response = await axiosInstance.post('/rooms/ai-select', {
+        room_code: roomCode,
+        ai_type: activeIndex +1 ,
+      });
+    
+      console.log('✅ 서버 응답:', response.data);
+    
+      localStorage.setItem('selectedCharacterIndex', activeIndex);
+
+      navigate('/matename');
+    } catch (err) {
+      console.error('❌ AI 선택 실패:', err);
+      if (err.response) {
+        console.error('📦 서버 응답 data:', err.response.data);
+        alert(`오류: ${JSON.stringify(err.response.data)}`);
+      } else {
+        alert('네트워크 오류 또는 서버 문제');
+      }
+    }
+  };
+
   return (
     <Background bgIndex={3}>
+     
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
         <div style={{
           position: 'fixed',
@@ -35,9 +143,30 @@ export default function SelectHomeMate() {
           gap: 24,
           alignItems: 'flex-start',
         }}>
-          <UserProfile player="1P" isLeader />
-          <UserProfile player="2P" isSpeaking />
-          <UserProfile player="3P" />
+          <UserProfile 
+            player="1P" 
+            isLeader={hostId === '1'} 
+            isMe={myRoleId === '1'} 
+            isSpeaking={getVoiceStateForRoleWithMyStatus(1).is_speaking}
+            isMicOn={getVoiceStateForRoleWithMyStatus(1).is_mic_on}
+            nickname={getVoiceStateForRoleWithMyStatus(1).nickname}
+          />
+          <UserProfile 
+            player="2P" 
+            isLeader={hostId === '2'} 
+            isMe={myRoleId === '2'} 
+            isSpeaking={getVoiceStateForRoleWithMyStatus(2).is_speaking}
+            isMicOn={getVoiceStateForRoleWithMyStatus(2).is_mic_on}
+            nickname={getVoiceStateForRoleWithMyStatus(2).nickname}
+          />
+          <UserProfile 
+            player="3P" 
+            isLeader={hostId === '3'} 
+            isMe={myRoleId === '3'} 
+            isSpeaking={getVoiceStateForRoleWithMyStatus(3).is_speaking}
+            isMicOn={getVoiceStateForRoleWithMyStatus(3).is_mic_on}
+            nickname={getVoiceStateForRoleWithMyStatus(3).nickname}
+          />
         </div>
 
         <div style={{
@@ -57,10 +186,7 @@ export default function SelectHomeMate() {
                 key={idx}
                 src={src}
                 alt={`Character ${idx + 1}`}
-                onClick={() => {
-                  console.log('선택 인덱스:', idx);
-                  setActiveIndex(idx)
-                }}
+                onClick={() => setActiveIndex(idx)}
                 style={{
                   width: 264,
                   height: 360,
@@ -78,17 +204,12 @@ export default function SelectHomeMate() {
           <div style={{ marginTop: 14, width: '100%' }}>
             <ContentTextBox
               paragraphs={paragraphs}
-              onContinue={() => {
-                if (activeIndex !== null) {
-                  localStorage.setItem('selectedCharacterIndex', activeIndex);
-                  navigate('/matename');
-                } else {
-                  alert('캐릭터를 먼저 선택해주세요!');
-                }
-              }}
+              onContinue={handleContinue}
             />
           </div>
         </div>
+
+       
       </div>
     </Background>
   );

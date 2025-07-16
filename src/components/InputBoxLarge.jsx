@@ -41,19 +41,19 @@ export default function InputBoxLarge({
         ...style,
       }}
     >
-      <div
+    <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 8,
-          width: '100%',
-          paddingLeft: 16,
-          paddingRight: 16,
+          gap: 12, 
+          padding: '0 16px',
           height: '100%',
           backgroundColor: Colors.componentBackground,
           border: getBorderStyle(),
+          boxSizing: 'border-box', 
+          width: '100%',
           transition: 'border 0.2s ease',
-        }}
+        }}    
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >

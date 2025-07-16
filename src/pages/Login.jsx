@@ -37,12 +37,15 @@ export default function Login() {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          padding: '0 1rem', // 모바일 대응
+
         }}
       >
         <div
           style={{
-            width: '50vw',
-            maxWidth: 500,
+            //width: '50vw',
+            width:'100%',
+            maxWidth: 450,
             padding: '2vh 0',
             display: 'flex',
             flexDirection: 'column',
@@ -61,7 +64,6 @@ export default function Login() {
           >
             AI 윤리 시뮬레이션 게임
           </p>
-
           <div
             style={{
               width: '100%',      
@@ -71,14 +73,13 @@ export default function Login() {
           >
             <div
               style={{
-                width: '80%',
+                width: '100%',
                 maxWidth: 400,
               }}
             >
-              <Frame1 style={{ width: '100%' }} />
-            </div>
+        <Frame1 style={{ width: '100%', display: 'block', margin: '0 auto' }} />
+  </div>
           </div>
-
           <InputBoxLarge
             placeholder="아이디(이메일)을 입력해 주세요."
             leftIcon={profileIcon}
@@ -90,7 +91,7 @@ export default function Login() {
               height: '8vh',
               maxHeight: 60,
               fontSize: 'clamp(0.875rem, 2vw, 1rem)',
-              
+              boxSizing: 'border-box',
             }}
           />
           <InputBoxLarge
@@ -111,7 +112,6 @@ export default function Login() {
             
             }}
           />
-
           <PrimaryButton
             style={{
               width: '100%',
@@ -142,6 +142,8 @@ export default function Login() {
                 localStorage.setItem('refresh_token', refresh_token);
 
                 console.log('로그인 성공:', response.data);
+                navigate('/selectroom');
+
               } catch (error) {
                 if (error.response) {
                   console.error('로그인 실패:', error.response.data);
@@ -150,8 +152,6 @@ export default function Login() {
                   console.error('Error:', error.message);
                 }
               }
-              navigate('/selectroom');
-
             }}
             >
               로그인

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
 import Layout from '../components/Layout';
 import ContentBox2 from '../components/ContentBox2';
@@ -10,25 +11,32 @@ import { resolveParagraphs } from '../utils/resolveParagraphs';
 
 export default function Game07() {
   const navigate = useNavigate();
+  const { isHost, sendNextPage } = useHostActions();
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
-  const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
 
+  // Host-driven navigation via WebSocket
+  useWebSocketNavigation(navigate, { nextPagePath: '/gamemap', infoPath: '/gamemap' });
+  useWebSocketNavigation(navigate, { nextPagePath: '/game08', infoPath: '/game08' });
+
+  const mateName = localStorage.getItem('mateName'); // already set earlier
   const rawParagraphs = [
     {
       main:
-        '  우리 가족은 최종적으로 개인정보 제공에 동의하지 않았고, 서비스 관련 약간의 불편함은 있으나 가족의 사생활을 보호하는 것에 만족하였습니다. \n\n우리 가족의 생활을 위해 여러분은 어떤 가치를 택하고, 무엇을 포기했나요?'
+        '  우리 가족은 최종적으로 개인정보 제공에 동의하지 않았고, 서비스 관련 약간의 불편함은 있으나 가족의 사생활을 보호하는 것에 만족하였습니다.\n\n' +
+        '우리 가족의 생활을 위해 여러분은 어떤 가치를 택하고, 무엇을 포기했나요?',
     },
   ];
-
   const [paragraph] = resolveParagraphs(rawParagraphs, mateName);
-  const [showPopup, setShowPopup] = useState(false);
-  const [completedTopics, setCompletedTopics] = useState([]);
-  const [currentRound, setCurrentRound] = useState(1); 
 
+  const [completedTopics, setCompletedTopics] = useState([]);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [showPopup, setShowPopup] = useState(false);
+
+  // Load completed topics
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     setCompletedTopics(saved);
-    setCurrentRound(saved.length+1); 
+    setCurrentRound(saved.length + 1);
   }, []);
 
   const saveCompletedTopic = () => {
@@ -36,12 +44,8 @@ export default function Game07() {
     if (!current.includes(subtopic)) {
       const updated = [...current, subtopic];
       localStorage.setItem('completedTopics', JSON.stringify(updated));
-      setCompletedTopics(updated); 
-      localStorage.setItem('currentRound', updated.length.toString()); 
-      console.log(` 완료 저장: ${subtopic}`);
-      console.log(' 현재 완료 목록:', updated);
-    } else {
-      console.log(`이미 완료됨: ${subtopic}`);
+      setCompletedTopics(updated);
+      localStorage.setItem('currentRound', updated.length.toString());
     }
   };
 
@@ -50,7 +54,19 @@ export default function Game07() {
     localStorage.removeItem('category');
     localStorage.removeItem('subtopic');
     localStorage.removeItem('mode');
-    navigate('/gamemap');
+    if (!isHost) {
+      alert('⚠️ 방장만 다음 라운드로 진행할 수 있습니다.');
+      return;
+    }
+    sendNextPage();
+  };
+
+  const handleViewResult = () => {
+    if (!isHost) {
+      alert('⚠️ 방장만 결과 보기로 진행할 수 있습니다.');
+      return;
+    }
+    sendNextPage();
   };
 
   const isResultAvailable = completedTopics.length >= 3;
@@ -58,68 +74,36 @@ export default function Game07() {
   return (
     <>
       <Layout round={currentRound} subtopic={subtopic} me="1P">
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 32,
-          }}
-        >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={paragraph.main} width={936} height={407} />
-
           {isResultAvailable ? (
             <div style={{ display: 'flex', gap: 24 }}>
               <Continue
-                alt="계속 진행"
-                step={2}
                 label="라운드 선택으로"
-                style={{ width: 264, height: 72, cursor: 'pointer' }}
                 onClick={handleNextRound}
+                disabled={!isHost}
+                style={{ width: 264, height: 72 }}
               />
               <Continue3
-                step={2}
                 label="결과 보기"
-                onClick={() => {
-                  if (completedTopics.length >= 5) {
-                    navigate('/game09');
-                  } else {
-                    setShowPopup(true);
-                  }
-                }}
+                onClick={handleViewResult}
+                disabled={!isHost}
               />
             </div>
           ) : (
             <Continue
-              alt="다음 라운드"
-              step={2}
               label="라운드 선택으로"
-              style={{ width: 264, height: 72, cursor: 'pointer' }}
               onClick={handleNextRound}
+              disabled={!isHost}
+              style={{ width: 264, height: 72 }}
             />
           )}
         </div>
       </Layout>
 
       {showPopup && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <ResultPopup
-            onClose={() => setShowPopup(false)}
-            onViewResult={() => navigate('/game08')}
-          />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <ResultPopup onClose={() => setShowPopup(false)} onViewResult={handleViewResult} />
         </div>
       )}
     </>

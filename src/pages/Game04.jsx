@@ -10,66 +10,103 @@ import profile2    from '../assets/2playerprofile.svg';
 import profile3    from '../assets/3playerprofile.svg';
 import { Colors, FontStyles } from '../components/styleConstants';
 
-const agreed    = ['1P', '2P'];
-const disagreed = ['3P'];
-const avatarOf  = { '1P': profile1, '2P': profile2, '3P': profile3 };
+import axiosInstance from '../api/axiosInstance';
+import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+
+const avatarOf = { '1P': profile1, '2P': profile2, '3P': profile3 };
 
 export default function Game04() {
   const { state } = useLocation();
-  const nav = useNavigate();
+  const navigate   = useNavigate();
 
-  const myVote = state?.agreement ?? null;
+  // WebSocket: 다음 페이지(Game05)로 이동
+  useWebSocketNavigation(navigate, { nextPagePath: '/game05', infoPath: '/game05' });
+  const { isHost, sendNextPage } = useHostActions();
+
+  const myVote   = state?.agreement ?? null;
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
+  const roomCode = localStorage.getItem('room_code') ?? '';
 
   const [round, setRound] = useState(1);
   useEffect(() => {
-    const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+    const completed       = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     const calculatedRound = completed.length + 1;
     setRound(calculatedRound);
     localStorage.setItem('currentRound', calculatedRound.toString());
   }, []);
 
-  // 타이머 관련
+  // participants 상태 확인 및 mode 저장 (optional)
+  useEffect(() => {
+    (async () => {
+      try {
+        await fetchWithAutoToken();
+        const res = await axiosInstance.get(
+          `/rooms/${roomCode}/rounds/${round}/status`
+        );
+        const parts = res.data.participants;
+        const agreeCount    = parts.filter(p => p.choice === 1).length;
+        const disagreeCount = parts.filter(p => p.choice === 2).length;
+        const majorityMode = agreeCount >= disagreeCount ? 'agree' : 'disagree';
+        localStorage.setItem('mode', majorityMode);
+      } catch (err) {
+        console.error('참여자 상태 조회 오류:', err);
+      }
+    })();
+  }, [roomCode, round]);
+
+  const agreedList    = state?.agreement === 'agree'
+    ? ['1P','2P'] : [];
+  const disagreedList = state?.agreement === 'disagree'
+    ? ['3P'] : [];
+
   const [secsLeft, setSecsLeft] = useState(10);
   useEffect(() => {
     if (secsLeft <= 0) return;
-    const id = setInterval(() => setSecsLeft(s => s - 1), 1000);
-    return () => clearInterval(id);
+    const timer = setInterval(() => setSecsLeft(s => s - 1), 1000);
+    return () => clearInterval(timer);
   }, [secsLeft]);
 
-  const timeStr = `${String(Math.floor(secsLeft / 60)).padStart(2, '0')
-                 }:${String(secsLeft % 60).padStart(2, '0')}`;
+  const timeStr = `${String(Math.floor(secsLeft/60)).padStart(2,'0')}` +
+                  `:${String(secsLeft%60).padStart(2,'0')}`;
 
-  const handleContinue = () => nav('/game05');
+  const handleContinue = () => {
+    if (!isHost) {
+      alert('⚠️ 방장만 진행할 수 있습니다.');
+      return;
+    }
+    sendNextPage();
+  };
 
   return (
     <Layout subtopic={subtopic} round={round} me="3P">
       <div style={{ display: 'flex', gap: 48 }}>
-        {[{ label: '동의', list: agreed, key: 'agree' },
-          { label: '비동의', list: disagreed, key: 'disagree' }]
-          .map(({ label, list, key }) => (
-            <div key={key} style={{ position: 'relative', width: 360, height: 391 }}>
-              <img
-                src={myVote === key ? boxSelected : boxUnselect}
-                alt=""
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }}
-              />
-              <div style={{
-                position: 'relative', zIndex: 1, height: '100%',
-                display: 'flex', flexDirection: 'column',
-                justifyContent: 'center', alignItems: 'center', textAlign: 'center',
-              }}>
-                <p style={{ ...FontStyles.headlineSmall, color: Colors.grey06 }}>{label}</p>
-                <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, margin: '16px 0' }}>
-                  {list.length}명
-                </p>
-                <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-                  {list.map(id => (
-                    <img key={id} src={avatarOf[id]} alt={id} style={{ width: 48, height: 48 }} />
-                  ))}
-                </div>
+        {[
+          { label: '동의',   list: agreedList,    key: 'agree'    },
+          { label: '비동의', list: disagreedList, key: 'disagree' },
+        ].map(({ label, list, key }) => (
+          <div key={key} style={{ position: 'relative', width: 360, height: 391 }}>
+            <img
+              src={list.length && state.agreement===key ? boxSelected : boxUnselect}
+              alt=""
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }}
+            />
+            <div style={{
+              position: 'relative', zIndex: 1, height: '100%',
+              display: 'flex', flexDirection: 'column',
+              justifyContent: 'center', alignItems: 'center', textAlign: 'center',
+            }}>
+              <p style={{ ...FontStyles.headlineSmall, color: Colors.grey06 }}>{label}</p>
+              <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, margin: '16px 0' }}>
+                {list.length}명
+              </p>
+              <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+                {list.map(id => (
+                  <img key={id} src={avatarOf[id]} alt={id} style={{ width: 48, height: 48 }} />
+                ))}
               </div>
             </div>
+          </div>
         ))}
       </div>
 
@@ -89,7 +126,13 @@ export default function Game04() {
             </div>
           </>
         ) : (
-          <Continue width={264} height={72} step={1} onClick={handleContinue} />
+          <Continue
+            width={264}
+            height={72}
+            step={1}
+            disabled={!isHost}
+            onClick={handleContinue}
+          />
         )}
       </div>
     </Layout>

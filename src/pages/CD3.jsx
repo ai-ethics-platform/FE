@@ -3,13 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox';
 import player2DescImg from '../assets/images/Player3_description.png';
+import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
 
 export default function CD2() {
   const navigate = useNavigate();
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
   const round = Number(localStorage.getItem('currentRound') ?? '1');
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
-
+  useWebSocketNavigation(navigate, { 
+      infoPath:'/game02',
+      nextPagePath: '/game02' 
+    });
+ const { isHost, sendNextPage } = useHostActions();
+  
+  const handleContinue = () => {
+    if (isHost) {
+      sendNextPage();
+    } else {
+      alert('⚠️ 방장만 진행할 수 있습니다.');
+    }
+  };
   const paragraphs = [
     {
       main: `  당신은 자녀 J씨입니다.

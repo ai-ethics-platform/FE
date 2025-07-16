@@ -3,12 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox';
 import player2DescImg from '../assets/images/Player2_description.png';
+import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
 
 export default function CD2() {
   const navigate = useNavigate();
+  // WebSocket navigation with custom nextPagePath
+  useWebSocketNavigation(navigate, { 
+    infoPath:'/game02',
+    nextPagePath: '/game02' 
+  });
+
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
   const round = Number(localStorage.getItem('currentRound') ?? '1');
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
+
+  const { isHost, sendNextPage } = useHostActions();
+
+  const handleContinue = () => {
+    if (isHost) {
+      sendNextPage();
+    } else {
+      alert('⚠️ 방장만 진행할 수 있습니다.');
+    }
+  };
 
   const paragraphs = [
     {
@@ -40,7 +57,7 @@ export default function CD2() {
         <div style={{ width: '100%', maxWidth: 900 }}>
           <ContentTextBox
             paragraphs={paragraphs}
-            onContinue={() => navigate('/game02')}
+            onContinue={handleContinue}
           />
         </div>
       </div>

@@ -4,12 +4,19 @@ import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox';
 import player1DescImg from '../assets/images/Player1_description.png';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
+import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
 
 export default function CD1() {
   const navigate = useNavigate();
+  useWebSocketNavigation(navigate, { 
+      infoPath:'/game02',
+      nextPagePath: '/game02' 
+    });
   const subtopic = localStorage.getItem('subtopic') ;
   const round = Number(localStorage.getItem('currentRound'));
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
+   const { isHost, sendNextPage } = useHostActions();
+ 
   const rawParagraphs = [
     {
       main:
@@ -19,7 +26,13 @@ export default function CD1() {
     
     },
   ];
-  
+  const handleContinue = () => {
+    if (isHost) {
+      sendNextPage();
+    } else {
+      alert('⚠️ 방장만 진행할 수 있습니다.');
+    }
+  };
   const paragraphs = resolveParagraphs(rawParagraphs, mateName);
 
   return (

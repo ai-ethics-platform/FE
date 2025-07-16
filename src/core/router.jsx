@@ -9,7 +9,7 @@ import GameIntro from "../pages/GameIntro";
 import GameIntro2 from "../pages/GameIntro2";
 import SelectHomeMate from '../pages/SelectHomeMate';
 import MateName from "../pages/MateName";
-import Game01 from '../pages/game01';
+import Game01 from '../pages/Game01';
 import Game02 from "../pages/Game02";
 import Game03 from '../pages/Game03';
 import Game04 from "../pages/Game04";

@@ -18,7 +18,6 @@ import axiosInstance from '../api/axiosInstance';
 import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
-import voiceManager from '../utils/voiceManager';
 
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
@@ -77,19 +76,6 @@ export default function Game02() {
       alert('⚠️ 방장만 진행할 수 있습니다.');
     }
   };
-  
-
-
-  // WebSocket 연결이 열리면 녹음 시작
-  useEffect(() => {
-    if (!isConnected) return;     // 연결 전엔 아무것도 안 함
-
-    console.log('🟢 WS 연결됨, 이제 녹음 시작 요청');
-    if (voiceManager.startRecordingOnServer()) {
-      voiceManager.startRecording();
-    }
-  }, [isConnected]);
-  
 
   return (
     <>

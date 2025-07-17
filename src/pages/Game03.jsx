@@ -27,6 +27,7 @@ export default function Game03() {
   const nav = useNavigate();
   const pollingRef = useRef(null);
 
+
   // WebRTC 음성 상태
   const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
   const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);

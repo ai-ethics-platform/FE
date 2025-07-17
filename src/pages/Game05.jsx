@@ -1,265 +1,100 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';
-import SelectCardToggle from '../components/SelectButton';
-import Continue from '../components/Continue2';
-import contentBoxFrame from '../assets/contentBox4.svg';
-import { Colors, FontStyles } from '../components/styleConstants';
+import ContentTextBox from '../components/ContentTextBox';
+import closeIcon from '../assets/close.svg';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
+import { paragraphsData } from '../components/paragraphs';
+import { resolveParagraphs } from '../utils/resolveParagraphs';
+
+import profile1Img from '../assets/images/CharacterPopUp1.png';
+import profile2Img from '../assets/images/CharacterPopUp2.png';
+import profile3Img from '../assets/images/CharacterPopUp3.png';
+
 import axiosInstance from '../api/axiosInstance';
 import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
-import { useHostActions } from '../hooks/useWebSocketMessage';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
-// 🆕 WebRTC Hooks
-import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import UserProfile from '../components/Userprofile';
+const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
-const CARD_W = 640;
-const CARD_H = 170;
-const CIRCLE = 16;
-const BORDER = 2;
-const LINE = 3;
+export default function Game05() {
+  const navigate = useNavigate();
+  // WebSocket navigation: next_page/info → Game05_01
+  useWebSocketNavigation(navigate, { nextPagePath: '/game05_1', infoPath: '/game05_1' });
+  const { isHost, sendNextPage } = useHostActions();
 
-export default function Game05_01() {
-  const nav = useNavigate();
-  const pollingRef = useRef(null);
+  const [mateName, setMateName] = useState('');
+  const [paragraphs, setParagraphs] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [openProfile, setOpenProfile] = useState(null);
+  const [round, setRound] = useState(1);
 
-  // WebSocket host actions
-  const { isHost } = useHostActions();
-
-  // WebRTC 음성 상태
-  const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  const getVoiceState = (role) => {
-    if (String(role) === rtcRole) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on:    voiceSessionStatus.isConnected,
-        nickname:     voiceSessionStatus.nickname || ''
-      };
-    }
-    return getVoiceStateForRole(role);
-  };
-
-  // 로컬 저장값
-  const roleId        = Number(localStorage.getItem('myrole_id'));
-  const roomCode      = localStorage.getItem('room_code') ?? '';
   const mainTopic     = localStorage.getItem('category') ?? '안드로이드';
   const subtopic      = localStorage.getItem('subtopic') ?? '가정 1';
+  const mode          = localStorage.getItem('mode');
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
+  const comicImages   = getDilemmaImages(mainTopic, subtopic, mode, selectedIndex);
+  const rawParagraphs = paragraphsData[mainTopic]?.[subtopic]?.[mode] || [];
+  const roomCode      = localStorage.getItem('room_code');
 
-  // 라운드 계산
-  const [round, setRound] = useState(1);
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-    const r = completed.length + 1;
-    setRound(r);
-    localStorage.setItem('currentRound', String(r));
-    return () => clearTimeout(pollingRef.current);
+    const calculatedRound = completed.length + 1;
+    setRound(calculatedRound);
+    localStorage.setItem('currentRound', calculatedRound.toString());
   }, []);
 
-  // 역할명
-  const roleNames = { 1: '요양보호사 K', 2: '노모 L', 3: '자녀 J' };
-  const roleName  = roleNames[roleId] || '참여자';
-
-  // 이미지 불러오기
-  const neutralImgs = getDilemmaImages(mainTopic, subtopic, 'neutral', selectedIndex);
-  const agreeImgs   = getDilemmaImages(mainTopic, subtopic, 'agree', selectedIndex);
-  const neutralLast = neutralImgs[neutralImgs.length - 1];
-  const agreeLast   = agreeImgs[agreeImgs.length - 1];
-
-  // 단계 관리
-  const [step, setStep] = useState(1);
-  const [consensusChoice, setConsensusChoice] = useState(null);
-  const [statusData, setStatusData]           = useState(null);
-  const [conf, setConf]                       = useState(0);
-  const pct = conf ? ((conf - 1) / 4) * 100 : 0;
-
-  // 합의 상태 폴링
   useEffect(() => {
-    let timer;
-    const poll = async () => {
+    const fetchMateName = async () => {
       try {
         await fetchWithAutoToken();
-        const res = await axiosInstance.get(
-          `/rooms/${roomCode}/rounds/${round}/status`
-        );
-        setStatusData(res.data);
-        if (!res.data.consensus_completed) {
-          timer = setTimeout(poll, 2000);
-        }
-      } catch {
-        timer = setTimeout(poll, 5000);
+        const response = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });
+        const aiName = response.data.ai_name;
+        setMateName(aiName);
+        setParagraphs(resolveParagraphs(rawParagraphs, aiName));
+      } catch (err) {
+        console.error('[Game05] mateName API 실패:', err);
+        const fallback = 'HOMEMATE';
+        setMateName(fallback);
+        setParagraphs(resolveParagraphs(rawParagraphs, fallback));
       }
     };
-    if (step === 1) poll();
-    return () => clearTimeout(timer);
-  }, [roomCode, round, step]);
+    fetchMateName();
+  }, [mainTopic, subtopic, mode, roomCode, rawParagraphs]);
 
-  // Step1: 합의 선택
-  const handleConsensus = async (choice) => {
-    if (!isHost) {
-      alert('⚠️ 합의 선택은 호스트만 가능합니다.');
-      return;
-    }
-    const intChoice = choice === 'agree' ? 1 : 2;
-    setConsensusChoice(choice);
-    try {
-      await fetchWithAutoToken();
-      await axiosInstance.post(
-        `/rooms/rooms/round/${roomCode}/consensus`,
-        { round_number: round, choice: intChoice }
-      );
-    } catch (err) {
-      console.error('합의 전송 중 오류:', err);
-    }
-  };
-
-  // Step1 Continue (다음 단계)
-  const handleStep1Continue = () => {
-    if (!isHost) {
-      alert('⚠️ 호스트만 다음 단계로 진행할 수 있습니다.');
-      return;
-    }
-    setStep(2);
-  };
-
-  // Step2: 합의 확신도
-  const submitConfidence = async () => {
-    if (!isHost) {
-      alert('⚠️ 확신도 제출은 호스트만 가능합니다.');
-      return;
-    }
-    try {
-      await fetchWithAutoToken();
-      await axiosInstance.post(
-        `/rooms/rooms/round/${roomCode}/consensus/confidence`,
-        { round_number: round, confidence: conf }
-      );
-      const nextRoute = consensusChoice === 'agree' ? '/game06' : '/game07';
-      nav(nextRoute, { state: { consensus: consensusChoice } });
-    } catch (err) {
-      console.error('확신 전송 중 오류:', err);
+  // Handle Continue: host only sends next_page
+  const handleContinue = () => {
+    if (isHost) {
+      sendNextPage();
+    } else {
+      alert('⚠️ 방장만 진행할 수 있습니다.');
     }
   };
 
   return (
-    <Layout subtopic={subtopic} round={round} me="3P">
-
-      {step === 1 && (
-        <>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginLeft: 240 }}>
-            {[neutralLast, agreeLast].map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt={`설명 이미지 ${idx + 1}`}
-                style={{ width: 400, height: 180, objectFit: 'fill' }}
-              />
-            ))}
+    <>
+      {openProfile && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}
+          onClick={() => setOpenProfile(null)}
+        >
+          <div style={{ position: 'relative', background: '#fff', padding: 32, borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
+            <img src={profileImages[openProfile]} alt={`Profile ${openProfile}`} style={{ width: 360, height: 'auto', display: 'block' }} />
+            <img src={closeIcon} alt="close" style={{ position: 'absolute', top: 24, right: 24, width: 40, height: 40, cursor: 'pointer' }} onClick={() => setOpenProfile(null)} />
           </div>
-
-          <Card width={936} height={216} extraTop={60}>
-            <p style={title}>
-              Q1) 당신은 <strong>{roleName}</strong>입니다. 합의 선택을 진행하시겠습니까?
-            </p>
-            <div style={{ display: 'flex', gap: 24 }}>
-              <SelectCardToggle
-                label="동의"
-                selected={consensusChoice === 'agree'}
-                onClick={() => handleConsensus('agree')}
-                width={220}
-                height={56}
-              />
-              <SelectCardToggle
-                label="비동의"
-                selected={consensusChoice === 'disagree'}
-                onClick={() => handleConsensus('disagree')}
-                width={220}
-                height={56}
-              />
-            </div>
-          </Card>
-
-          <div style={{ marginTop: 40, marginLeft: 240 }}>
-            <Continue
-              width={264}
-              height={72}
-              step={1}
-              disabled={!statusData?.consensus_completed}
-              onClick={handleStep1Continue}
-            />
-          </div>
-        </>
+        </div>
       )}
 
-      {step === 2 && (
-        <>
-          <Card width={936} height={216} extraTop={150}>
-            <p style={title}>Q2) 합의된 결정에 얼마나 확신이 있나요?</p>
-            <div style={{ position: 'relative', width: '80%', minWidth: 300, marginLeft: 240 }}>
-              <div style={{ position: 'absolute', top: 12, left: 0, right: 0, height: LINE, background: Colors.grey03 }} />
-              <div style={{ position: 'absolute', top: 12, left: 0, width: `${pct}%`, height: LINE, background: Colors.brandPrimary }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                {[1, 2, 3, 4, 5].map((n) => {
-                  const isNow = conf === n;
-                  const passed = conf > n;
-                  return (
-                    <div key={n} style={{ textAlign: 'center' }}>
-                      <div
-                        onClick={() => setConf(n)}
-                        style={{
-                          width: CIRCLE,
-                          height: CIRCLE,
-                          borderRadius: '50%',
-                          background: isNow ? Colors.grey01 : passed ? Colors.brandPrimary : Colors.grey03,
-                          border: `${BORDER}px solid ${isNow ? Colors.brandPrimary : 'transparent'}`,
-                          cursor: 'pointer',
-                          margin: '0 auto',
-                        }}
-                      />
-                      <span style={{ ...FontStyles.caption, color: Colors.grey06, marginTop: 4, display: 'inline-block' }}>
-                        {n}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-          </Card>
-
-          <div style={{ marginTop: 80, textAlign: 'center', marginLeft: 240 }}>
-            <Continue
-              width={264}
-              height={72}
-              step={2}
-              disabled={conf === 0}
-              onClick={submitConfidence}
-            />
+      <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
+          <img src={comicImages[currentIndex]} alt={`comic ${currentIndex + 1}`} style={{ width: 760, height: 'auto', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+          <div style={{ width: '100%', maxWidth: 900 }}>
+            <ContentTextBox paragraphs={paragraphs} currentIndex={currentIndex} setCurrentIndex={setCurrentIndex} onContinue={handleContinue} />
           </div>
-        </>
-      )}
-    </Layout>
+        </div>
+      </Layout>
+    </>
   );
 }
-
-function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style = {} }) {
-  return (
-    <div style={{ width, height, marginTop: extraTop, position: 'relative', ...style }}>
-      <img src={contentBoxFrame} alt="" style={{ width: '100%', height: '100%', objectFit: 'fill' }} />
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 24, padding: '0 24px' }}>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-const title = {
-  ...FontStyles.title,
-  color: Colors.grey06,
-  textAlign: 'center',
-};

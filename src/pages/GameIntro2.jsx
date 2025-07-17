@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import gameIntro from '../assets/images/gameintro.png';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import { useWebRTC } from '../WebRTCProvider'; // 🆕 WebRTC Hook 사용
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
 export default function GameIntro2() {
   const navigate = useNavigate();
@@ -14,6 +15,10 @@ export default function GameIntro2() {
   const [myRoleId, setMyRoleId] = useState(null);
   const [hostId, setHostId] = useState(null);
 
+   // WebSocket: 다음 페이지(Game05)로 이동
+    useWebSocketNavigation(navigate, { nextPagePath: '/selecthomemate', infoPath: '/selecthomemate' });
+    const { isHost, sendNextPage } = useHostActions();
+  
   // 🆕 WebRTC Provider에서 상태와 함수들 가져오기
   const {
     isInitialized,
@@ -161,8 +166,7 @@ export default function GameIntro2() {
               currentIndex={currentIndex}
               setCurrentIndex={setCurrentIndex}
               onContinue={() => {
-                console.log('🚀 다음 페이지로 이동 - 음성 세션 및 P2P 연결 유지');
-                navigate('/selecthomemate');
+               {handleContinue}
               }}
             />
           </div>
@@ -171,3 +175,9 @@ export default function GameIntro2() {
     </Background>
   );
 }
+
+// Continue
+const handleContinue = () => {
+  if (isHost) sendNextPage();
+  else alert('⚠️ 방장만 진행할 수 있습니다.');
+};

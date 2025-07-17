@@ -11,6 +11,8 @@ import player2 from "../assets/2player.svg";
 import player3 from "../assets/3player.svg";
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
+import { FontStyles,Colors } from '../components/styleConstants';
+import codeBg from '../assets/roomcodebackground.svg';  // 방 코드 배경 SVG
 
 export default function WaitingRoom() {
   const location = useLocation();
@@ -367,11 +369,72 @@ export default function WaitingRoom() {
 
       {/* 뒤로 가기 */}
       <div
-        style={{ position: 'absolute', top: -10, left: -10 }}
-        onClick={() => setShowOutPopup(true)}
-      >
-        <BackButton/>
-      </div>
+      style={{
+        position: 'absolute',
+        top: -10,
+        left: -10,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        zIndex: 1000,
+        cursor: 'pointer',
+      }}
+      onClick={() => setShowOutPopup(true)}
+    >
+<div style={{ position: 'relative', zIndex: 2 }}>
+    <BackButton />
+  </div>
+      <div
+    style={{
+      position: 'relative',
+      width: 200,      // BG 폭
+      height: 80,      // BG 높이
+      marginLeft: -40,
+      zIndex: 1,            // BackButton 아래
+      overflow: 'hidden' // BackButton.clipPath 와 맞추기
+    }}
+  >
+    {/* 배경 SVG */}
+    <img
+      src={codeBg}
+      alt="code background"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        transform: 'rotate(180deg)',
+        clipPath: 'polygon(12% 0%, 100% 0%, 100% 100%, 0% 100%)'
+
+        // BackButton의 clipPath를 좌우 반전해서 사용
+      }}
+    />
+
+    {/* 텍스트를 BG 위에 */}
+    <span
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...FontStyles.title,
+        color: Colors.brandPrimary,
+        userSelect: 'none',
+      }}
+    >
+      CODE: {room_code}
+    </span>
+  </div>
+
+      
+      
+    </div>
       {showOutPopup && (
         <div style={{
           position: 'fixed', inset: 0,

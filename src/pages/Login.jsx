@@ -62,7 +62,7 @@ export default function Login() {
               color: Colors.grey09,
             }}
           >
-            AI 윤리 시뮬레이션 게임
+            AI 윤리 딜레마 게임
           </p>
           <div
             style={{

@@ -12,6 +12,11 @@ import axiosInstance from '../api/axiosInstance';
 import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useHostActions } from '../hooks/useWebSocketMessage';
 
+// 🆕 WebRTC Hooks
+import { useWebRTC } from '../WebRTCProvider';
+import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import UserProfile from '../components/Userprofile';
+
 const CARD_W = 640;
 const CARD_H = 170;
 const CIRCLE = 16;
@@ -25,12 +30,25 @@ export default function Game05_01() {
   // WebSocket host actions
   const { isHost } = useHostActions();
 
+  // WebRTC 음성 상태
+  const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
+  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
+  const getVoiceState = (role) => {
+    if (String(role) === rtcRole) {
+      return {
+        is_speaking: voiceSessionStatus.isSpeaking,
+        is_mic_on:    voiceSessionStatus.isConnected,
+        nickname:     voiceSessionStatus.nickname || ''
+      };
+    }
+    return getVoiceStateForRole(role);
+  };
+
   // 로컬 저장값
   const roleId        = Number(localStorage.getItem('myrole_id'));
-  const roomCode     = localStorage.getItem('room_code') ?? '';
-  const hostId       = Number(localStorage.getItem('host_id'));
-  const mainTopic    = localStorage.getItem('category') ?? '안드로이드';
-  const subtopic     = localStorage.getItem('subtopic') ?? '가정 1';
+  const roomCode      = localStorage.getItem('room_code') ?? '';
+  const mainTopic     = localStorage.getItem('category') ?? '안드로이드';
+  const subtopic      = localStorage.getItem('subtopic') ?? '가정 1';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
 
   // 라운드 계산
@@ -56,8 +74,8 @@ export default function Game05_01() {
   // 단계 관리
   const [step, setStep] = useState(1);
   const [consensusChoice, setConsensusChoice] = useState(null);
-  const [statusData, setStatusData] = useState(null);
-  const [conf, setConf] = useState(0);
+  const [statusData, setStatusData]           = useState(null);
+  const [conf, setConf]                       = useState(0);
   const pct = conf ? ((conf - 1) / 4) * 100 : 0;
 
   // 합의 상태 폴링
@@ -130,9 +148,10 @@ export default function Game05_01() {
 
   return (
     <Layout subtopic={subtopic} round={round} me="3P">
+    
       {step === 1 && (
         <>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginLeft: 240 }}>
             {[neutralLast, agreeLast].map((img, idx) => (
               <img
                 key={idx}
@@ -165,7 +184,7 @@ export default function Game05_01() {
             </div>
           </Card>
 
-          <div style={{ marginTop: 40 }}>
+          <div style={{ marginTop: 40, marginLeft: 240 }}>
             <Continue
               width={264}
               height={72}
@@ -181,7 +200,7 @@ export default function Game05_01() {
         <>
           <Card width={936} height={216} extraTop={150}>
             <p style={title}>Q2) 합의된 결정에 얼마나 확신이 있나요?</p>
-            <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
+            <div style={{ position: 'relative', width: '80%', minWidth: 300, marginLeft: 240 }}>
               <div style={{ position: 'absolute', top: 12, left: 0, right: 0, height: LINE, background: Colors.grey03 }} />
               <div style={{ position: 'absolute', top: 12, left: 0, width: `${pct}%`, height: LINE, background: Colors.brandPrimary }} />
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -210,9 +229,10 @@ export default function Game05_01() {
                 })}
               </div>
             </div>
+
           </Card>
 
-          <div style={{ marginTop: 80, textAlign: 'center' }}>
+          <div style={{ marginTop: 80, textAlign: 'center', marginLeft: 240 }}>
             <Continue
               width={264}
               height={72}

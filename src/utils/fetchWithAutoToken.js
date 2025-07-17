@@ -1,5 +1,6 @@
 // utils/fetchWithAutoToken.js
 import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';   // ← pull in your main client
 
 const API_BASE = 'https://dilemmai.org';
 
@@ -7,31 +8,34 @@ export const fetchWithAutoToken = async (origConfig = null) => {
   let accessToken  = localStorage.getItem('access_token');
   const refreshToken = localStorage.getItem('refresh_token');
 
-  // 내부에서만 쓰는 axios 인스턴스
+  // this client is only for /users/me and /auth/refresh
   const client = axios.create({ baseURL: API_BASE });
 
-  // 1) 현재 accessToken 으로 /users/me 확인
+  // 1) 먼저, 저장된 accessToken으로 /users/me 검증
   try {
     await client.get('/users/me', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    // 유효하면 그냥 리턴
     return;
   } catch (err) {
-    const status = err.response?.status;
-    if (status === 401 || status === 403) {
-      // 2) 토큰 만료/무효면 refresh 시도
+    if (err.response?.status === 401 || err.response?.status === 403) {
+      // 2) 만료되었으면 refresh 시도
       try {
         const res = await client.post(
           '/auth/refresh',
           {}, 
           { headers: { 'X-Refresh-Token': refreshToken } }
         );
+
         accessToken = res.data.access_token;
         localStorage.setItem('access_token', accessToken);
+        localStorage.setItem('refresh_token', res.data.refresh_token);
         console.log('🔄 access_token 갱신 완료');
 
-        // 3) 갱신 후, 원래 요청이 넘어왔다면 재실행
+        // **중요** axiosInstance에도 새 토큰을 붙여 줘야 실제 get/post에도 반영됩니다.
+        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+        // 3) origConfig가 넘어왔으면 (보통 없지만) 재실행
         if (origConfig) {
           origConfig.headers = {
             ...origConfig.headers,
@@ -39,14 +43,16 @@ export const fetchWithAutoToken = async (origConfig = null) => {
           };
           return client(origConfig);
         }
+
+        return;
       } catch (refreshErr) {
         console.error('❌ refreshToken 갱신 실패', refreshErr);
-        // 리프레시 실패 시, 로그아웃 처리하거나 로그인 페이지로
+        // 리프레시 실패 시, 로그아웃 처리하거나 로그인 페이지로 이동
+        localStorage.clear();
+        window.location.href = '/login';
         throw refreshErr;
       }
-    } else {
-      // 4) 그 외 에러는 그대로 throw
-      throw err;
     }
+    throw err;
   }
 };

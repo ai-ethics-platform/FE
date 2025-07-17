@@ -9,6 +9,11 @@ import Continue3 from '../components/Continue3';
 import ResultPopup from '../components/Results';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 
+// 🆕 WebRTC integration
+import { useWebRTC } from '../WebRTCProvider';
+import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import UserProfile from '../components/Userprofile';
+
 export default function Game07() {
   const navigate = useNavigate();
   const { isHost, sendNextPage } = useHostActions();
@@ -18,7 +23,21 @@ export default function Game07() {
   useWebSocketNavigation(navigate, { nextPagePath: '/gamemap', infoPath: '/gamemap' });
   useWebSocketNavigation(navigate, { nextPagePath: '/game08', infoPath: '/game08' });
 
-  const mateName = localStorage.getItem('mateName'); // already set earlier
+  // 🆕 WebRTC audio state
+  const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
+  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
+  const getVoiceState = (role) => {
+    if (String(role) === myRoleId) {
+      return {
+        is_speaking: voiceSessionStatus.isSpeaking,
+        is_mic_on:    voiceSessionStatus.isConnected,
+        nickname:     voiceSessionStatus.nickname || ''
+      };
+    }
+    return getVoiceStateForRole(role);
+  };
+
+  const mateName = localStorage.getItem('mateName');
   const rawParagraphs = [
     {
       main:
@@ -62,6 +81,7 @@ export default function Game07() {
   };
 
   const handleViewResult = () => {
+    saveCompletedTopic();
     if (!isHost) {
       alert('⚠️ 방장만 결과 보기로 진행할 수 있습니다.');
       return;

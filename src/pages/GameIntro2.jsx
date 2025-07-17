@@ -4,9 +4,8 @@ import UserProfile from '../components/Userprofile';
 import ContentTextBox from '../components/ContentTextBox';
 import { useNavigate } from 'react-router-dom';
 import gameIntro from '../assets/images/gameintro.png';
-import voiceManager from '../utils/voiceManager';
-import axiosInstance from '../api/axiosInstance';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import { useWebRTC } from '../WebRTCProvider'; // 🆕 WebRTC Hook 사용
 
 export default function GameIntro2() {
   const navigate = useNavigate();
@@ -15,27 +14,21 @@ export default function GameIntro2() {
   const [myRoleId, setMyRoleId] = useState(null);
   const [hostId, setHostId] = useState(null);
 
-  // 역할별 사용자 ID 매핑
-  const [roleUserMapping, setRoleUserMapping] = useState({
-    role1_user_id: null,
-    role2_user_id: null,
-    role3_user_id: null,
-  });
+  // 🆕 WebRTC Provider에서 상태와 함수들 가져오기
+  const {
+    isInitialized,
+    signalingConnected,
+    peerConnections,
+    roleUserMapping,
+    myUserId,
+    voiceSessionStatus,
+    adjustThreshold
+  } = useWebRTC();
 
-  // 음성 상태 관리
+  // 음성 상태 관리 (기존 로직 유지)
   const { voiceStates, getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
 
-  // 음성 세션 상태
-  const [voiceSessionStatus, setVoiceSessionStatus] = useState({
-    isConnected: false,
-    isSpeaking: false,
-    sessionId: null,
-    nickname: null,
-    participantId: null,
-    micLevel: 0,
-    speakingThreshold: 30
-  });
-
+  // 🔧 컴포넌트 초기화
   useEffect(() => {
     const storedName = localStorage.getItem('mateName');
     const storedMyRole = localStorage.getItem('myrole_id');
@@ -48,89 +41,10 @@ export default function GameIntro2() {
     console.log('📋 GameIntro2 초기화:', {
       mateName: storedName,
       myRoleId: storedMyRole,
-      hostId: storedHost
+      hostId: storedHost,
+      myUserId: myUserId
     });
-  }, []);
-
-  // 역할별 사용자 ID 매핑 저장
-  const saveRoleUserMapping = async () => {
-    try {
-      const roomCode = localStorage.getItem('room_code');
-      const { data: room } = await axiosInstance.get(`/rooms/code/${roomCode}`);
-      
-      console.log('🎯 역할별 사용자 매핑 저장:', room.participants);
-      
-      const mapping = {
-        role1_user_id: null,
-        role2_user_id: null,
-        role3_user_id: null,
-      };
-      
-      room.participants.forEach(participant => {
-        const roleId = participant.role_id;
-        const userId = participant.user_id;
-        
-        if (roleId) {
-          localStorage.setItem(`role${roleId}_user_id`, String(userId));
-          mapping[`role${roleId}_user_id`] = String(userId);
-          console.log(`📝 Role ${roleId} → User ${userId} 매핑 저장`);
-        }
-      });
-      
-      setRoleUserMapping(mapping);
-      return mapping;
-      
-    } catch (error) {
-      console.error('❌ 역할별 사용자 매핑 저장 실패:', error);
-      return null;
-    }
-  };
-
-  // 음성 세션 초기화
-  useEffect(() => {
-    const initializeVoiceSession = async () => {
-      try {
-        console.log('🎤 GameIntro2에서 음성 세션 초기화 시작');
-        
-        // 1. 역할별 사용자 매핑 저장
-        await saveRoleUserMapping();
-        
-        // 2. 음성 세션 초기화
-        const success = await voiceManager.initializeVoiceSession();
-        
-        if (success) {
-          console.log('✅ GameIntro2 음성 세션 초기화 성공');
-          
-          // 상태 업데이트 주기적으로 확인
-          const statusInterval = setInterval(() => {
-            const currentStatus = voiceManager.getStatus();
-            setVoiceSessionStatus(currentStatus);
-          }, 100); // 100ms마다 업데이트 (더 빠른 반응)
-          
-          return () => {
-            clearInterval(statusInterval);
-          };
-          
-        } else {
-          console.error('❌ GameIntro2 음성 세션 초기화 실패');
-        }
-      } catch (error) {
-        console.error('❌ GameIntro2 음성 세션 초기화 중 오류:', error);
-      }
-    };
-
-    const initTimeout = setTimeout(initializeVoiceSession, 1000);
-    
-    return () => {
-      clearTimeout(initTimeout);
-    };
-  }, []);
-
-  // 임계값 조정 함수
-  const adjustThreshold = (delta) => {
-    const newThreshold = Math.max(10, Math.min(100, voiceSessionStatus.speakingThreshold + delta));
-    voiceManager.setSpeakingThreshold(newThreshold);
-  };
+  }, [myUserId]);
 
   const paragraphs = [
     {
@@ -146,6 +60,39 @@ export default function GameIntro2() {
 
   return (
     <Background bgIndex={2}>
+      {/* 🆕 간소화된 디버그 정보 */}
+      <div style={{
+        position: 'fixed',
+        top: 10,
+        right: 10,
+        background: 'rgba(0,0,0,0.8)',
+        color: 'white',
+        padding: '10px',
+        borderRadius: '5px',
+        fontSize: '12px',
+        zIndex: 1000,
+        maxWidth: '300px'
+      }}>
+        <div>WebRTC 초기화: {isInitialized ? '✅' : '⏳'}</div>
+        <div>시그널링: {signalingConnected ? '✅ 연결됨' : '❌ 연결안됨'}</div>
+        <div>P2P 연결: {peerConnections.size}개</div>
+        <div>음성 세션: {voiceSessionStatus.isConnected ? '✅' : '❌'}</div>
+        <div>내 ID: {myUserId}</div>
+        <div>내 역할: {myRoleId}</div>
+        <div>호스트: {hostId}</div>
+        <div>역할: {myRoleId === hostId ? '👑 호스트' : '👤 참가자'}</div>
+        
+        {/* 🆕 음성 임계값 조정 (디버그용) */}
+        <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #444' }}>
+          <div>음성 임계값: {voiceSessionStatus.speakingThreshold}</div>
+          <div>
+            <button onClick={() => adjustThreshold(-5)} style={{ fontSize: '10px', margin: '2px' }}>-5</button>
+            <button onClick={() => adjustThreshold(5)} style={{ fontSize: '10px', margin: '2px' }}>+5</button>
+          </div>
+          <div>마이크 레벨: {voiceSessionStatus.micLevel}</div>
+          <div>말하는 중: {voiceSessionStatus.isSpeaking ? '🎤' : '🔇'}</div>
+        </div>
+      </div>
       
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
         <div style={{
@@ -209,19 +156,17 @@ export default function GameIntro2() {
           />
 
           <div style={{ marginTop: 24, width: '100%' }}>
-            <ContentTextBox
+          <ContentTextBox
               paragraphs={paragraphs}
               currentIndex={currentIndex}
               setCurrentIndex={setCurrentIndex}
               onContinue={() => {
-                console.log('🚀 다음 페이지로 이동 - 음성 세션 유지');
+                console.log('🚀 다음 페이지로 이동 - 음성 세션 및 P2P 연결 유지');
                 navigate('/selecthomemate');
               }}
             />
           </div>
         </div>
-
-        
       </div>
     </Background>
   );

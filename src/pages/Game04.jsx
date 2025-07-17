@@ -1,3 +1,4 @@
+// pages/Game04.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -14,6 +15,11 @@ import axiosInstance from '../api/axiosInstance';
 import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
+// 🆕 WebRTC Hooks
+import { useWebRTC } from '../WebRTCProvider';
+import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import UserProfile from '../components/Userprofile';
+
 const avatarOf = { '1P': profile1, '2P': profile2, '3P': profile3 };
 
 export default function Game04() {
@@ -23,6 +29,20 @@ export default function Game04() {
   // WebSocket: 다음 페이지(Game05)로 이동
   useWebSocketNavigation(navigate, { nextPagePath: '/game05', infoPath: '/game05' });
   const { isHost, sendNextPage } = useHostActions();
+
+  // WebRTC 음성 상태
+  const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
+  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
+  const getVoiceState = (role) => {
+    if (String(role) === rtcRole) {
+      return {
+        is_speaking: voiceSessionStatus.isSpeaking,
+        is_mic_on:    voiceSessionStatus.isConnected,
+        nickname:     voiceSessionStatus.nickname || ''
+      };
+    }
+    return getVoiceStateForRole(role);
+  };
 
   const myVote   = state?.agreement ?? null;
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
@@ -36,7 +56,7 @@ export default function Game04() {
     localStorage.setItem('currentRound', calculatedRound.toString());
   }, []);
 
-  // participants 상태 확인 및 mode 저장 (optional)
+  // participants 상태 확인 및 mode 저장
   useEffect(() => {
     (async () => {
       try {
@@ -55,10 +75,8 @@ export default function Game04() {
     })();
   }, [roomCode, round]);
 
-  const agreedList    = state?.agreement === 'agree'
-    ? ['1P','2P'] : [];
-  const disagreedList = state?.agreement === 'disagree'
-    ? ['3P'] : [];
+  const agreedList    = state?.agreement === 'agree'    ? ['1P','2P'] : [];
+  const disagreedList = state?.agreement === 'disagree' ? ['3P']      : [];
 
   const [secsLeft, setSecsLeft] = useState(10);
   useEffect(() => {
@@ -80,7 +98,8 @@ export default function Game04() {
 
   return (
     <Layout subtopic={subtopic} round={round} me="3P">
-      <div style={{ display: 'flex', gap: 48 }}>
+
+      <div style={{ display: 'flex', gap: 48, marginLeft: 240 }}>
         {[
           { label: '동의',   list: agreedList,    key: 'agree'    },
           { label: '비동의', list: disagreedList, key: 'disagree' },
@@ -110,7 +129,7 @@ export default function Game04() {
         ))}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: 26 }}>
+      <div style={{ textAlign: 'center', marginTop: 26, marginLeft: 240 }}>
         {secsLeft > 0 ? (
           <>
             <p style={{ ...FontStyles.headlineSmall, color: Colors.grey06 }}>

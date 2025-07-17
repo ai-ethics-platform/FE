@@ -1,9 +1,10 @@
-// pages/Game02.js
+// pages/Game02.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox';
+import UserProfile from '../components/Userprofile';
 import closeIcon from '../assets/close.svg';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
@@ -18,16 +19,17 @@ import axiosInstance from '../api/axiosInstance';
 import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import { useWebRTC } from '../WebRTCProvider';
+import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
 export default function Game02() {
   const navigate = useNavigate();
-  // next_page 수신 시 게임3로 이동, info도 동일하게 처리
   useWebSocketNavigation(navigate, { nextPagePath: '/game03', infoPath: '/game03' });
-
   const { isHost, sendNextPage } = useHostActions();
 
+  // 로컬 설정
   const category = localStorage.getItem('category') ?? '안드로이드';
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
   const mode = localStorage.getItem('mode') ?? 'neutral';
@@ -37,18 +39,33 @@ export default function Game02() {
   const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
   const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];
 
+  // AI 이름 & 라운드
   const [mateName, setMateName] = useState('');
   const [paragraphs, setParagraphs] = useState([]);
   const [round, setRound] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openProfile, setOpenProfile] = useState(null);
 
-  // 라운드 & AI 이름
+  // WebRTC 음성 상태
+  const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
+  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
+  const getVoiceState = (role) => {
+    if (String(role) === rtcRole) {
+      return {
+        is_speaking: voiceSessionStatus.isSpeaking,
+        is_mic_on: voiceSessionStatus.isConnected,
+        nickname: voiceSessionStatus.nickname || ''
+      };
+    }
+    return getVoiceStateForRole(role);
+  };
+
+  // 라운드 설정 및 AI 이름 조회
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     const nextRound = completed.length + 1;
     setRound(nextRound);
-    localStorage.setItem('currentRound', nextRound.toString());
+    localStorage.setItem('currentRound', String(nextRound));
 
     const stored = localStorage.getItem('mateName');
     if (stored) setMateName(stored);
@@ -57,28 +74,26 @@ export default function Game02() {
         await fetchWithAutoToken();
         const { data } = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });
         setMateName(data.ai_name);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
     })();
   }, [roomCode]);
 
   // mateName 반영
   useEffect(() => {
-    if (mateName) {
-      setParagraphs(resolveParagraphs(rawParagraphs, mateName));
-    }
+    if (mateName) setParagraphs(resolveParagraphs(rawParagraphs, mateName));
   }, [mateName, rawParagraphs]);
 
-  // Continue 버튼: 호스트면 next_page 전송, 아니면 경고
+  // Continue
   const handleContinue = () => {
-    if (isHost) {
-      sendNextPage();
-    } else {
-      alert('⚠️ 방장만 진행할 수 있습니다.');
-    }
+    if (isHost) sendNextPage();
+    else alert('⚠️ 방장만 진행할 수 있습니다.');
   };
 
   return (
     <>
+      {/* 프로필 팝업 */}
       {openProfile && (
         <div
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}
@@ -100,13 +115,14 @@ export default function Game02() {
       )}
 
       <Layout subtopic={subtopic} me="3P" round={round} onProfileClick={setOpenProfile}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
+       
+        {/* 본문 */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32, marginLeft: 240 }}>
           <img
             src={comicImages[currentIndex]}
             alt={`comic ${currentIndex + 1}`}
-            style={{ width: 760, height: 'auto', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            style={{ width: 760, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
           />
-
           <div style={{ width: '100%', maxWidth: 900 }}>
             <ContentTextBox
               paragraphs={paragraphs}

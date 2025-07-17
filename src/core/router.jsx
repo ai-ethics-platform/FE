@@ -11,7 +11,7 @@ import SelectHomeMate from '../pages/SelectHomeMate';
 import MateName from "../pages/MateName";
 import Game01 from '../pages/Game01';
 import Game02 from "../pages/Game02";
-import Game03 from '../pages/Game03';
+import Game03 from "../pages/Game03";
 import Game04 from "../pages/Game04";
 import Game05 from "../pages/Game05";
 import Game05_1 from "../pages/Game05_1";
@@ -24,8 +24,10 @@ import CD2 from "../pages/CD2";
 import CD3 from "../pages/CD3";
 import GameMap from "../pages/GameMap";
 import WebSocketProvider from "../WebSocketProvider";
+import WebRTCProvider from "../WebRTCProvider"; // 🆕 WebRTC Provider 추가
 import MicTest from '../pages/MicTest';
 import VoiceTestSimulator from '../pages/VoiceTestSimulator';
+
 function Router() {
   return (
     <BrowserRouter>
@@ -36,37 +38,36 @@ function Router() {
         <Route path="/signup01" element={<Signup01 />} />
         <Route path="/signup02" element={<Signup02 />} />
         <Route path="/selectroom" element={<SelectRoom />} />
-
-        {/* WebSocket이 필요한 페이지들 - WebSocketProvider로 감싸기 */}
+        
+        {/* 🔥 이중 Provider 구조: WebSocket + WebRTC */}
         <Route path="/*" element={
           <WebSocketProvider>
-            <Routes>
-            <Route path="/voicetestsimulator" element={<VoiceTestSimulator />} />
-
-              <Route path="/waitingroom" element={<WaitingRoom />} />
-              <Route path="/gameintro" element={<GameIntro />} />
-              <Route path="/gameintro2" element={<GameIntro2 />} />
-              <Route path="/selecthomemate" element={<SelectHomeMate />} />
-              <Route path="/matename" element={<MateName />} />
-              
-              {/* 🔧 game01을 WebSocketProvider 안으로 이동 */}
-              <Route path="/mictest" element={<MicTest />} />
-
-              <Route path="/game01" element={<Game01 />} />
-              <Route path="/game02" element={<Game02 />} />
-              <Route path="/game03" element={<Game03 />} />
-              <Route path="/game04" element={<Game04 />} />
-              <Route path="/game05" element={<Game05 />} />
-              <Route path="/game05_1" element={<Game05_1 />} />
-              <Route path="/game06" element={<Game06 />} />
-              <Route path="/game07" element={<Game07 />} />
-              <Route path="/game08" element={<Game08 />} />
-              <Route path="/game09" element={<Game09 />} />
-              <Route path="/character_description1" element={<CD1 />} />
-              <Route path="/character_description2" element={<CD2 />} />
-              <Route path="/character_description3" element={<CD3 />} />
-              <Route path="/gamemap" element={<GameMap />} />
-            </Routes>
+            <WebRTCProvider>
+              <Routes>
+                <Route path="/voicetestsimulator" element={<VoiceTestSimulator />} />
+                <Route path="/waitingroom" element={<WaitingRoom />} />
+                <Route path="/gameintro" element={<GameIntro />} />
+                <Route path="/gameintro2" element={<GameIntro2 />} />
+                <Route path="/selecthomemate" element={<SelectHomeMate />} />
+                <Route path="/matename" element={<MateName />} />
+                
+                <Route path="/mictest" element={<MicTest />} />
+                <Route path="/game01" element={<Game01 />} />
+                <Route path="/game02" element={<Game02 />} />
+                <Route path="/game03" element={<Game03 />} />
+                <Route path="/game04" element={<Game04 />} />
+                <Route path="/game05" element={<Game05 />} />
+                <Route path="/game05_1" element={<Game05_1 />} />
+                <Route path="/game06" element={<Game06 />} />
+                <Route path="/game07" element={<Game07 />} />
+                <Route path="/game08" element={<Game08 />} />
+                <Route path="/game09" element={<Game09 />} />
+                <Route path="/character_description1" element={<CD1 />} />
+                <Route path="/character_description2" element={<CD2 />} />
+                <Route path="/character_description3" element={<CD3 />} />
+                <Route path="/gamemap" element={<GameMap />} />
+              </Routes>
+            </WebRTCProvider>
           </WebSocketProvider>
         } />
       </Routes>

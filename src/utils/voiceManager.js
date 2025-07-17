@@ -232,13 +232,13 @@ getLocalStream() {
         console.log('📡 WebSocket으로 음성 상태 전송:', message);
       }
 
-      console.log('🎤 음성 상태 변경:', {
-        participantId: this.participantId,
-        nickname: this.nickname,
-        is_mic_on: this.isConnected,
-        is_speaking: isSpeaking,
-        micLevel: this.micLevel.toFixed(1)
-      });
+    //   console.log('🎤 음성 상태 변경:', {
+    //     participantId: this.participantId,
+    //     nickname: this.nickname,
+    //     is_mic_on: this.isConnected,
+    //     is_speaking: isSpeaking,
+    //     micLevel: this.micLevel.toFixed(1)
+    //   });
       
     } catch (error) {
       console.error('❌ 음성 상태 전송 실패:', error);
@@ -273,12 +273,12 @@ getLocalStream() {
       if (currentlySpeaking !== this.isSpeaking) {
         this.isSpeaking = currentlySpeaking;
         
-        console.log('🗣️ 음성 상태 변화 감지:', {
-          speaking: currentlySpeaking,
-          level: average.toFixed(1),
-          threshold: this.speakingThreshold,
-          participantId: this.participantId
-        });
+        // console.log('🗣️ 음성 상태 변화 감지:', {
+        //   speaking: currentlySpeaking,
+        //   level: average.toFixed(1),
+        //   threshold: this.speakingThreshold,
+        //   participantId: this.participantId
+        // });
         
         this.sendVoiceStatusToServer(currentlySpeaking);
       }

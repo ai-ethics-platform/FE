@@ -12,15 +12,34 @@ import axiosInstance from '../api/axiosInstance';
 import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
+// 🆕 WebRTC imports
+import { useWebRTC } from '../WebRTCProvider';
+import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import UserProfile from '../components/Userprofile';
+
 export default function Game06() {
   const navigate = useNavigate();
-  // WebSocket navigation: 방장 '다음 라운드' or '결과 보기' 선택 시 이동
+  // WebSocket navigation
   useWebSocketNavigation(navigate, { nextPagePath: '/gamemap', infoPath: '/gamemap' });
   useWebSocketNavigation(navigate, { nextPagePath: '/game08', infoPath: '/game08' });
 
   const { isHost } = useHostActions();
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
   const roomCode = localStorage.getItem('room_code') ?? '123456';
+
+  // 🆕 WebRTC audio state
+  const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
+  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
+  const getVoiceState = (role) => {
+    if (String(role) === myRoleId) {
+      return {
+        is_speaking: voiceSessionStatus.isSpeaking,
+        is_mic_on:    voiceSessionStatus.isConnected,
+        nickname:     voiceSessionStatus.nickname || ''
+      };
+    }
+    return getVoiceStateForRole(role);
+  };
 
   const [mateName, setMateName] = useState('HomeMate');
   const [paragraph, setParagraph] = useState({ main: '' });
@@ -33,14 +52,7 @@ export default function Game06() {
     setCompletedTopics(saved);
     setCurrentRound(saved.length + 1);
   }, []);
-
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-    setCompletedTopics(saved);
-    setCurrentRound(saved.length + 1);
-  }, []);
-
-    // Load or fetch AI mate name and prepare paragraph
+  // Load or fetch AI mate name and prepare paragraph
   useEffect(() => {
     const storedName = localStorage.getItem('mateName');
     if (storedName) {
@@ -109,6 +121,7 @@ export default function Game06() {
       })();
     }
   }, [roomCode]);
+
 
   const saveCompletedTopic = () => {
     const current = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');

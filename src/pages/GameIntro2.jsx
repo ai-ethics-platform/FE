@@ -169,7 +169,7 @@ export default function GameIntro2() {
               paragraphs={paragraphs}
               currentIndex={currentIndex}
               setCurrentIndex={setCurrentIndex}
-              onContinue=  {handleContinue}
+              onContinue={handleContinue}
             />
           </div>
         </div>

@@ -53,7 +53,7 @@ export const useWebSocketNavigation = (
   { infoPath, nextPagePath } = {}
 ) => {
   useWebSocketMessage(
-    'info',
+    "info",
     () => {
       console.log('📨 info 수신 → 페이지 이동');
       if (infoPath) navigate(infoPath);
@@ -62,7 +62,7 @@ export const useWebSocketNavigation = (
   );
 
   useWebSocketMessage(
-    'next_page',
+    "next_page",
     () => {
       console.log('📨 next_page 수신 → 페이지 이동');
       if (nextPagePath) navigate(nextPagePath);
@@ -70,6 +70,7 @@ export const useWebSocketNavigation = (
     [navigate, nextPagePath]
   );
 };
+
 
 // 방장 전용 메시지 전송
 export const useHostActions = () => {
@@ -83,8 +84,9 @@ export const useHostActions = () => {
       alert('⚠️ 방장만 진행할 수 있습니다.');
       return false;
     }
-    return sendMessage({ type: 'next_page' });
+    return sendMessage({ type: "next_page" });
   };
 
   return { isHost, sendNextPage, sendMessage: isHost ? sendMessage : null };
 };
+

@@ -135,7 +135,7 @@ export const WebSocketProvider = ({ children }) => {
       socket.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         console.log('🔔 WebSocket 메시지 수신:', msg);
-        
+  
         // 모든 등록된 핸들러에게 메시지 전달
         messageHandlers.current.forEach((handler, handlerId) => {
           try {

@@ -14,7 +14,11 @@ export default function GameIntro2() {
   const [mateName, setMateName] = useState('');
   const [myRoleId, setMyRoleId] = useState(null);
   const [hostId, setHostId] = useState(null);
-
+  // Continue
+  const handleContinue = () => {
+    if (isHost) sendNextPage();
+    else alert('⚠️ 방장만 진행할 수 있습니다.');
+  };
    // WebSocket: 다음 페이지(Game05)로 이동
     useWebSocketNavigation(navigate, { nextPagePath: '/selecthomemate', infoPath: '/selecthomemate' });
     const { isHost, sendNextPage } = useHostActions();
@@ -165,9 +169,9 @@ export default function GameIntro2() {
               paragraphs={paragraphs}
               currentIndex={currentIndex}
               setCurrentIndex={setCurrentIndex}
-              onContinue={() => {
+              onContinue={
                {handleContinue}
-              }}
+              }
             />
           </div>
         </div>
@@ -175,9 +179,3 @@ export default function GameIntro2() {
     </Background>
   );
 }
-
-// Continue
-const handleContinue = () => {
-  if (isHost) sendNextPage();
-  else alert('⚠️ 방장만 진행할 수 있습니다.');
-};

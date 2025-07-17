@@ -39,7 +39,6 @@ function Router() {
         <Route path="/signup02" element={<Signup02 />} />
         <Route path="/selectroom" element={<SelectRoom />} />
         
-        {/* 🔥 이중 Provider 구조: WebSocket + WebRTC */}
         <Route path="/*" element={
           <WebSocketProvider>
             <WebRTCProvider>

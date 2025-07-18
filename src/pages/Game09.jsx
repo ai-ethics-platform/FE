@@ -42,7 +42,7 @@ export default function Game09() {
   }, []);
 
   return (
-    <Layout subtopic={subtopic} me="1P">
+    <Layout subtopic={subtopic} >
       <div
         style={{
           display: 'flex',

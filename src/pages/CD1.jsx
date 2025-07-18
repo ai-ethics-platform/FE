@@ -3,8 +3,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox';
-import UserProfile from '../components/Userprofile';
-import player1DescImg from '../assets/images/Player1_description.png';
+// Player1 description images for different subtopics
+import player1DescImg_title1 from '../assets/1player_des1.svg';
+import player1DescImg_title2 from '../assets/1player_des2.svg';
+import player1DescImg_title3 from '../assets/1player_des3.svg';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
 import { useWebRTC } from '../WebRTCProvider';
@@ -13,13 +15,13 @@ import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 export default function CD1() {
   const navigate = useNavigate();
   useWebSocketNavigation(navigate, { infoPath: '/game02', nextPagePath: '/game02' });
-  const subtopic = localStorage.getItem('subtopic');
+
+  const rawSubtopic = localStorage.getItem('subtopic');
+  const subtopic = rawSubtopic || '';
   const round = Number(localStorage.getItem('currentRound'));
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
 
   const { isHost, sendNextPage } = useHostActions();
-
-  // WebRTC 음성 세션 및 WebSocket 상태
   const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
   const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
 
@@ -34,71 +36,51 @@ export default function CD1() {
     return getVoiceStateForRole(role);
   };
 
-  const rawParagraphs = [
-    {
-      main: 
-        `  당신은 어머니를 10년 이상 돌본 요양보호사 K입니다.\n` +
-        `         최근 ${mateName}를 도입한 후 전일제에서 하루 2시간 근무로 전환되었습니다. \n` +
-        `         당신은 로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}와 협업해야 하는 상황이 많습니다. `
-    }
-  ];
+  // Determine description image and main text based on subtopic
+  let descImg = player1DescImg_title1;
+  let mainText = 
+    `당신은 어머니를 10년 이상 돌본 요양보호사 K입니다.` +
+    ` 최근 ${mateName}를 도입한 후 전일제에서 하루 2시간 근무로 전환되었습니다.\n` +
+    ` 당신은 로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}와 협업해야 하는 상황이 많습니다.`;
+
+  if (subtopic === '국가 인공지능 위원회 1' || subtopic === '국가 인공지능 위원회 2') {
+    descImg = player1DescImg_title2;
+    mainText =
+      `당신은 국내 대규모 로봇 제조사 소속이자, 로봇 제조사 연합회의 대표입니다.\n` +
+      ` 당신은 국가적 로봇 산업의 긍정적인 발전과 활용을 위한 목소리를 내기 위하여 참여했습니다.`;
+  } else if (subtopic === '국제 인류 발전 위원회 1') {
+    descImg = player1DescImg_title3;
+    mainText =
+      `당신은 ${mateName} 개발사를 포함하여 다양한 기업이 소속된 연합체의 대표입니다.\n` +
+      ` 인공지능과 세계의 발전을 위해 필요한 목소리를 내고자 참석했습니다.`;
+  }
+
+  const rawParagraphs = [{ main: mainText }];
   const paragraphs = resolveParagraphs(rawParagraphs, mateName);
 
   const handleContinue = () => {
-    if (isHost) {
-      sendNextPage();
-    } else {
-      alert('⚠️ 방장만 진행할 수 있습니다.');
-    }
+    navigate('/game02');
+    // if (isHost) sendNextPage();
+    // else alert('⚠️ 방장만 진행할 수 있습니다.');
   };
 
   return (
     <Layout round={round} subtopic={subtopic} me="1P">
-      {/* 사이드 프로필 */}
-      <div style={{
-        position: 'fixed',
-        top: '32.5%',
-        left: 0,
-        transform: 'translateY(-50%)',
-        width: 220,
-        padding: '20px 0',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 24,
-        alignItems: 'flex-start',
-        zIndex: 10
-      }}>
-        {[1, 2, 3].map(role => {
-          const vs = getVoiceState(role);
-          return (
-            <UserProfile
-              key={role}
-              player={`${role}P`}
-              isLeader={false}
-              isMe={String(role) === myRoleId}
-              isSpeaking={vs.is_speaking}
-              isMicOn={vs.is_mic_on}
-              nickname={vs.nickname}
-            />
-          );
-        })}
-      </div>
-
       <div style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         gap: 32,
-        marginTop: 32
+        marginTop: 22
       }}>
         <img
-          src={player1DescImg}
+          src={descImg}
           alt="Player 1 설명 이미지"
           style={{
             width: 264,
             height: 336,
             objectFit: 'contain',
-            marginBottom: 32,
+            marginBottom: 0,
           }}
         />
         <div style={{ width: '100%', maxWidth: 900 }}>

@@ -31,31 +31,31 @@ class WebRTCSignalingManager {
   
         const wsUrl = `wss://dilemmai.org/ws/voice/signaling?room_code=${this.roomCode}&token=${this.token}`;
         
-        console.log('🔗 WebRTC 시그널링 서버 연결 시도:', wsUrl);
+        console.log(' WebRTC 시그널링 서버 연결 시도:', wsUrl);
         
         this.signalingWs = new WebSocket(wsUrl);
         
         return new Promise((resolve, reject) => {
           this.signalingWs.onopen = (event) => {
-            console.log('✅ WebRTC 시그널링 서버 연결 성공');
+            console.log(' WebRTC 시그널링 서버 연결 성공');
             this.isConnected = true;
             this.setupMessageHandlers();
             resolve(true);
           };
   
           this.signalingWs.onerror = (error) => {
-            console.error('❌ WebRTC 시그널링 서버 연결 실패:', error);
+            console.error(' WebRTC 시그널링 서버 연결 실패:', error);
             this.isConnected = false;
             reject(error);
           };
   
           this.signalingWs.onclose = (event) => {
-            console.log('🔌 WebRTC 시그널링 서버 연결 종료');
+            console.log(' WebRTC 시그널링 서버 연결 종료');
             this.isConnected = false;
           };
         });
       } catch (error) {
-        console.error('❌ WebRTC 시그널링 연결 오류:', error);
+        console.error(' WebRTC 시그널링 연결 오류:', error);
         throw error;
       }
     }
@@ -65,7 +65,7 @@ class WebRTCSignalingManager {
       this.signalingWs.onmessage = async (event) => {
         try {
           const message = JSON.parse(event.data);
-          console.log('📨 WebRTC 시그널링 메시지 수신:', message);
+          console.log(' WebRTC 시그널링 메시지 수신:', message);
   
           switch (message.type) {
             case 'offer':
@@ -78,7 +78,7 @@ class WebRTCSignalingManager {
               await this.handleCandidate(message);
               break;
             default:
-              console.log('🤔 알 수 없는 메시지 타입:', message.type);
+              console.log(' 알 수 없는 메시지 타입:', message.type);
           }
   
           // 외부 핸들러 호출
@@ -86,7 +86,7 @@ class WebRTCSignalingManager {
             this.messageHandlers.get(message.type)(message);
           }
         } catch (error) {
-          console.error('❌ WebRTC 시그널링 메시지 처리 오류:', error);
+          console.error(' WebRTC 시그널링 메시지 처리 오류:', error);
         }
       };
     }
@@ -96,7 +96,7 @@ class WebRTCSignalingManager {
       try {
         const { sdp, from_role } = message;
         
-        console.log(`📞 Role ${from_role}로부터 Offer 수신`);
+        console.log(`Role ${from_role}로부터 Offer 수신`);
         
         // PeerConnection 생성 또는 가져오기
         const peerConnection = this.getPeerConnection(from_role);
@@ -118,10 +118,10 @@ class WebRTCSignalingManager {
           to_role: from_role
         });
         
-        console.log(`📤 Role ${from_role}에게 Answer 전송 완료`);
+        console.log(` Role ${from_role}에게 Answer 전송 완료`);
         
       } catch (error) {
-        console.error('❌ Offer 처리 오류:', error);
+        console.error(' Offer 처리 오류:', error);
       }
     }
   
@@ -130,7 +130,7 @@ class WebRTCSignalingManager {
       try {
         const { sdp, from_role } = message;
         
-        console.log(`📞 Role ${from_role}로부터 Answer 수신`);
+        console.log(` Role ${from_role}로부터 Answer 수신`);
         
         const peerConnection = this.getPeerConnection(from_role);
         
@@ -139,10 +139,10 @@ class WebRTCSignalingManager {
           sdp: sdp
         }));
         
-        console.log(`✅ Role ${from_role}와 WebRTC 연결 완료`);
+        console.log(` Role ${from_role}와 WebRTC 연결 완료`);
         
       } catch (error) {
-        console.error('❌ Answer 처리 오류:', error);
+        console.error('Answer 처리 오류:', error);
       }
     }
   
@@ -151,7 +151,7 @@ class WebRTCSignalingManager {
       try {
         const { candidate, sdpMid, sdpMLineIndex, from_role } = message;
         
-        console.log(`🧊 Role ${from_role}로부터 ICE Candidate 수신`);
+        console.log(`Role ${from_role}로부터 ICE Candidate 수신`);
         
         const peerConnection = this.getPeerConnection(from_role);
         
@@ -161,10 +161,10 @@ class WebRTCSignalingManager {
           sdpMLineIndex: sdpMLineIndex
         }));
         
-        console.log(`✅ Role ${from_role} ICE Candidate 추가 완료`);
+        console.log(`Role ${from_role} ICE Candidate 추가 완료`);
         
       } catch (error) {
-        console.error('❌ ICE Candidate 처리 오류:', error);
+        console.error(' ICE Candidate 처리 오류:', error);
       }
     }
   
@@ -188,12 +188,12 @@ class WebRTCSignalingManager {
         
         // 연결 상태 변경 이벤트
         peerConnection.onconnectionstatechange = () => {
-          console.log(`🔄 Role ${roleId} 연결 상태:`, peerConnection.connectionState);
+          console.log(` Role ${roleId} 연결 상태:`, peerConnection.connectionState);
         };
         
         // 미디어 스트림 수신 이벤트
         peerConnection.ontrack = (event) => {
-          console.log(`🎵 Role ${roleId}로부터 미디어 스트림 수신:`, event.streams);
+          console.log(`Role ${roleId}로부터 미디어 스트림 수신:`, event.streams);
           // 여기서 받은 오디오 스트림을 처리
         };
         
@@ -206,7 +206,7 @@ class WebRTCSignalingManager {
     // 다른 참가자에게 연결 시작 (Offer 생성)
     async startConnection(targetRoleId) {
       try {
-        console.log(`🚀 Role ${targetRoleId}에게 연결 시작`);
+        console.log(`Role ${targetRoleId}에게 연결 시작`);
         
         const peerConnection = this.getPeerConnection(targetRoleId);
         
@@ -224,10 +224,10 @@ class WebRTCSignalingManager {
           to_role: targetRoleId
         });
         
-        console.log(`📤 Role ${targetRoleId}에게 Offer 전송 완료`);
+        console.log(` Role ${targetRoleId}에게 Offer 전송 완료`);
         
       } catch (error) {
-        console.error('❌ 연결 시작 오류:', error);
+        console.error(' 연결 시작 오류:', error);
       }
     }
   
@@ -236,9 +236,9 @@ class WebRTCSignalingManager {
       if (this.signalingWs && this.isConnected) {
         const messageStr = JSON.stringify(message);
         this.signalingWs.send(messageStr);
-        console.log('📤 시그널링 메시지 전송:', message);
+        console.log('시그널링 메시지 전송:', message);
       } else {
-        console.error('❌ 시그널링 서버에 연결되지 않음');
+        console.error(' 시그널링 서버에 연결되지 않음');
       }
     }
   
@@ -266,12 +266,12 @@ class WebRTCSignalingManager {
   
     // 정리
     cleanup() {
-      console.log('🧹 WebRTC 시그널링 매니저 정리');
+      console.log(' WebRTC 시그널링 매니저 정리');
       
       // PeerConnection 정리
       this.peerConnections.forEach((pc, roleId) => {
         pc.close();
-        console.log(`🔌 Role ${roleId} PeerConnection 종료`);
+        console.log(' Role ${roleId} PeerConnection 종료');
       });
       this.peerConnections.clear();
       

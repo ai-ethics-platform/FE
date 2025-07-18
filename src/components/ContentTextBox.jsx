@@ -145,7 +145,7 @@ export default function ContentTextBox({
   paragraphs = [],
   currentIndex = 0,
   setCurrentIndex = () => {},
-  onContinue = () => {},
+  onContinue ,
   continueLabel = '다음',
 }) {
   const [typingDone, setTypingDone] = useState(false);

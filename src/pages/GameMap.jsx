@@ -41,10 +41,11 @@ export default function GameMap() {
   const handleSelect = (topic) => {
     const category = localStorage.getItem('category') || '안드로이드';
     const mode = 'neutral';
+    localStorage.setItem('title', title);
     localStorage.setItem('category', category);
     localStorage.setItem('subtopic', topic);
     localStorage.setItem('mode', mode);
-    navigate('/game01', { state: { category, subtopic: topic, mode } });
+    navigate('/game02', { state: { category, subtopic: topic, mode } });
   };
 
   const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -71,7 +72,7 @@ export default function GameMap() {
   });
 
   return (
-    <Layout subtopic={subtopic} round={round} me="1P">
+    <Layout subtopic={subtopic} round={round} nodescription={true}>
 
       {/* 메인 맵 프레임 */}
       <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginLeft: 60, marginTop: 12, zIndex: 1 }}>

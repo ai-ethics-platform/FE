@@ -6,9 +6,9 @@ import StatusCard from '../components/StatusCard';
 import MicTestPopup from '../components/MicTestPopup';
 import OutPopup from '../components/OutPopup';
 import GameFrame from '../components/GameFrame';
-import player1 from "../assets/1player.svg";
-import player2 from "../assets/2player.svg";
-import player3 from "../assets/3player.svg";
+import player1 from "../assets/1player_withnum.svg";
+import player2 from "../assets/2player_withnum.svg";
+import player3 from "../assets/3player_withnum.svg";
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { FontStyles,Colors } from '../components/styleConstants';
@@ -22,7 +22,6 @@ export default function WaitingRoom() {
 
   // WebSocket 연결
   const { isConnected, addMessageHandler, removeMessageHandler } = useWebSocket();
-
   // 1) UI 상태
   const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 ? initialIndex : 0);
   const [showMicPopup, setShowMicPopup] = useState(false);
@@ -41,244 +40,368 @@ export default function WaitingRoom() {
 
   const room_code = localStorage.getItem('room_code');
 
-  // ——————————————————————————————
-  // A) 내 ID, 방 생성자 ID 조회
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data: me } = await axiosInstance.get('/users/me');
-        setMyPlayerId(String(me.id));
-        localStorage.setItem("myuser_id",me.id);
-        console.log("myuser_id",me.id);
-        const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
-        setHostUserId(String(room.created_by));
-        
-        console.log('🏠 방 정보 로드:', {
-          myId: me.id,
-          hostId: room.created_by,
-          isHost: String(me.id) === String(room.created_by)
-        });
-      } catch (err) {
-        console.error('❌ 유저/방 정보 로드 실패:', err);
-      }
-    })();
-  }, [room_code]);
+  // // A) 내 ID, 방 생성자 ID 조회
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const { data: me } = await axiosInstance.get('/users/me');
+  //       setMyPlayerId(String(me.id));
+  //       localStorage.setItem("myuser_id",me.id);
+  //       console.log("myuser_id",me.id);
 
-  // B) participants 초기 로드
-  const loadParticipants = async () => {
+  //       //방정보 조회 -> 여기서 host_id, ready 상태 파악 
+  //       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
+  //       setHostUserId(String(room.created_by)); //호스트의 user_id 파악  
+  //       console.log("host의 userid= ", room.created_by);
+  //       console.log("내가 유저인가요? ", me.id == room.created_by);
+  //     } catch (err) {
+  //       console.error(' 유저/방 정보 로드 실패:', err);
+  //     }
+  //   })();
+  // }, [room_code]);
+// A) 초기 데이터 로드 - 내 정보 조회
+const loadMyInfo = async () => {
+  try {
+    const { data: userInfo } = await axiosInstance.get('/users/me');
+    const myUserId = userInfo.id;
+    localStorage.setItem('user_id', myUserId);
+    setMyPlayerId(String(myUserId));
+    console.log('내 정보 로드 완료:', { myUserId });
+    return myUserId;
+  } catch (err) {
+    console.error('내 정보 로드 실패:', err);
+    return null;
+  }
+};
+
+// B) participants 초기 로드 - 수정됨
+const loadParticipants = async () => {
+  try {
+    const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
+    console.log('참가자 데이터 로드:', room.participants);
+    
+    setParticipants(room.participants);
+
+    // ✅ API 응답에 is_host가 있으므로 그대로 사용 (1/0을 boolean으로 변환)
+    setAssignments(room.participants.map(p => ({
+      player_id: p.user_id,
+      is_host: Boolean(p.is_host), // 1 -> true, 0 -> false
+      // role_id는 로컬스토리지에서 가져와서 설정
+    })));
+
+    const readyMap = {};
+    room.participants.forEach(p => {
+      readyMap[String(p.user_id)] = p.is_ready ? 1 : 0;
+    });
+    setStatusIndexMap(readyMap);
+    
+    // 호스트 정보 설정 (created_by 활용)
+    const hostUserId = room.created_by;
+    setHostUserId(String(hostUserId));
+
+    return { participants: room.participants, hostUserId };
+
+  } catch (err) {
+    console.error('participants 로드 실패:', err);
+    return { participants: [], hostUserId: null };
+  }
+};
+
+// ✅ 새로운 함수: 로컬스토리지에서 역할 정보를 가져와서 assignments 업데이트
+const updateAssignmentsWithRoles = () => {
+  if (participants.length === 0) return;
+
+  const updatedAssignments = participants.map(p => {
+    // 로컬스토리지에서 해당 유저의 역할 찾기
+    let userRoleId = null;
+    for (let roleId = 1; roleId <= 3; roleId++) {
+      const roleUserId = localStorage.getItem(`role${roleId}_user_id`);
+      if (roleUserId && String(roleUserId) === String(p.user_id)) {
+        userRoleId = roleId;
+        break;
+      }
+    }
+
+    return {
+      player_id: p.user_id,
+      is_host: Boolean(p.is_host), // API에서 받은 is_host 사용
+      role_id: userRoleId, // 로컬스토리지에서 가져온 역할
+    };
+  });
+
+  console.log('역할 정보로 assignments 업데이트:', updatedAssignments);
+  setAssignments(updatedAssignments);
+};
+
+// C) 역할 배정 로직 - 수정됨
+const assignRoles = async () => {
+  if (hasAssignedRoles) {
+    console.log('역할 배정 이미 진행 중, 스킵');
+    return;
+  }
+
+  try {
+    setHasAssignedRoles(true);
+    console.log('역할 배정 API 호출 시작');
+    
+    const { data: roleAssignmentResult } = await axiosInstance.post(`/rooms/assign-roles/${room_code}`);
+    console.log('역할 배정 완료:', roleAssignmentResult);
+
+    // 역할 배정 결과를 로컬스토리지에 저장
+    if (roleAssignmentResult.assignments) {
+      const assignments = roleAssignmentResult.assignments;
+      const myUserId = localStorage.getItem('user_id');
+      const currentHostUserId = hostUserId;
+      
+      // 각 역할별 유저 ID 매핑 (API에서 player_id가 문자열로 옴)
+      const roleUserMap = {};
+      assignments.forEach(assignment => {
+        roleUserMap[assignment.role_id] = String(assignment.player_id);
+      });
+      
+      // 로컬스토리지에 저장
+      localStorage.setItem('role1_user_id', roleUserMap[1] || '');
+      localStorage.setItem('role2_user_id', roleUserMap[2] || '');
+      localStorage.setItem('role3_user_id', roleUserMap[3] || '');
+      
+      // 내 역할 ID 찾기 (player_id를 문자열로 비교)
+      const myAssignment = assignments.find(a => String(a.player_id) === String(myUserId));
+      if (myAssignment) {
+        localStorage.setItem('myrole_id', String(myAssignment.role_id));
+      }
+      
+      // 호스트의 역할 ID 찾기 (player_id를 문자열로 비교)
+      const hostAssignment = assignments.find(a => String(a.player_id) === String(currentHostUserId));
+      if (hostAssignment) {
+        localStorage.setItem('host_id', String(hostAssignment.role_id));
+      }
+      
+      console.log('로컬스토리지 저장 완료:', {
+        myrole_id: myAssignment?.role_id,
+        host_id: hostAssignment?.role_id,
+        role1_user_id: roleUserMap[1],
+        role2_user_id: roleUserMap[2],
+        role3_user_id: roleUserMap[3],
+      });
+
+      // ✅ 역할 배정 완료 후 즉시 assignments 업데이트
+      setTimeout(() => {
+        updateAssignmentsWithRoles();
+      }, 100);
+    }
+    
+    // 역할 배정 후 최신 데이터 다시 로드
+    setTimeout(() => {
+      loadParticipants();
+      // 로드 후 역할 정보도 업데이트
+      setTimeout(() => {
+        updateAssignmentsWithRoles();
+      }, 200);
+    }, 500);
+    
+  } catch (err) {
+    console.error('역할 배정 실패:', err);
+    setHasAssignedRoles(false);
+  }
+};
+
+// D) 참가자 변화 감지 및 역할 배정 트리거
+useEffect(() => {
+  console.log('참가자 상태 체크:', {
+    participantCount: participants.length,
+    myUserId: myPlayerId,
+    hostUserId: hostUserId,
+    isHost: myPlayerId === hostUserId,
+    hasAssignedRoles,
+  });
+
+  // 조건 확인: 3명 && 내가 호스트 && 역할 미배정
+  if (
+    participants.length === 3 &&
+    myPlayerId === hostUserId &&
+    !hasAssignedRoles
+  ) {
+    console.log('🚀 역할 배정 조건 충족! 역할 배정 시작');
+    assignRoles();
+  }
+}, [participants, myPlayerId, hostUserId, hasAssignedRoles]);
+
+// E) WebSocket 메시지 핸들러
+useEffect(() => {
+  if (!isConnected) return;
+
+  const handlerId = 'waiting-room';
+  
+  const messageHandler = (message) => {
+    console.log('WaitingRoom 메시지 수신:', message);
+    
+    switch (message.type) {
+      case 'join':
+        console.log('새 참가자 입장:', message);
+        setTimeout(() => {
+          loadParticipants();
+        }, 100);
+        break;
+        
+      case 'voice_status_update':
+        console.log('음성 상태 업데이트:', message);
+        setTimeout(() => {
+          loadParticipants();
+        }, 100);
+        break;
+        
+      default:
+        console.log('기타 메시지로 인한 참가자 업데이트');
+        setTimeout(() => {
+          loadParticipants();
+        }, 200);
+        break;
+    }
+  };
+  
+  addMessageHandler(handlerId, messageHandler);
+  
+  return () => {
+    removeMessageHandler(handlerId);
+  };
+}, [isConnected, room_code]);
+
+// F) 준비 상태 폴링 - 수정됨
+useEffect(() => {
+  const readyStatusPolling = setInterval(async () => {
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
-      console.log('참가자 데이터 로드:', room.participants);
-      
-      setParticipants(room.participants);
-      setAssignments(room.participants.map(p => ({
-        player_id: p.user_id,
-        role_id: p.role_id,
-        is_host: p.is_host,
+      console.log('준비 상태 폴링 - 참가자 상태:', room.participants.map(p => ({
+        id: p.user_id,
+        ready: p.is_ready
       })));
       
+      // 참가자 데이터 업데이트
+      setParticipants(room.participants);
+      
+      // ✅ is_host 정보 유지하고 역할 정보도 함께 업데이트
+      const updatedAssignments = room.participants.map(p => {
+        // 로컬스토리지에서 해당 유저의 역할 찾기
+        let userRoleId = null;
+        for (let roleId = 1; roleId <= 3; roleId++) {
+          const roleUserId = localStorage.getItem(`role${roleId}_user_id`);
+          if (roleUserId && String(roleUserId) === String(p.user_id)) {
+            userRoleId = roleId;
+            break;
+          }
+        }
+
+        return {
+          player_id: p.user_id,
+          is_host: Boolean(p.is_host), // API에서 받은 is_host 사용
+          role_id: userRoleId,
+        };
+      });
+      
+      setAssignments(updatedAssignments);
+      
+      // 준비 상태 맵 업데이트
       const readyMap = {};
       room.participants.forEach(p => {
         readyMap[String(p.user_id)] = p.is_ready ? 1 : 0;
       });
       setStatusIndexMap(readyMap);
       
-      return room.participants;
-    } catch (err) {
-      console.error(' participants 로드 실패:', err);
-      return [];
-    }
-  };
-
-  useEffect(() => {
-    loadParticipants();
-  }, [room_code]);
-
-  // C) 역할 배정 로직
-  const assignRoles = async () => {
-    if (hasAssignedRoles) {
-      console.log('🔄 역할 배정 이미 진행 중, 스킵');
-      return;
-    }
-
-    try {
-      setHasAssignedRoles(true);
-      console.log('🎯 역할 배정 API 호출 시작');
-      
-      await axiosInstance.post(`/rooms/assign-roles/${room_code}`);
-      console.log('✅ 역할 배정 완료');
-      
-      // 역할 배정 후 최신 데이터 다시 로드
-      setTimeout(() => {
-        loadParticipants();
-      }, 500);
-      
-    } catch (err) {
-      console.error(' 역할 배정 실패:', err);
-      setHasAssignedRoles(false);
-    }
-  };
-
-  // D) 참가자 변화 감지 및 역할 배정 트리거
-  useEffect(() => {
-    console.log('📊 참가자 상태 체크:', {
-      participantCount: participants.length,
-      isHost: myPlayerId === hostUserId,
-      hasAssignedRoles,
-      participants: participants.map(p => ({ id: p.user_id, role: p.role_id }))
-    });
-
-    // 조건 확인: 3명 && 방장 && 역할 미배정 && 역할이 null인 참가자 존재
-    if (
-      participants.length === 3 &&
-      myPlayerId === hostUserId &&
-      !hasAssignedRoles &&
-      participants.some(p => p.role_id == null)
-    ) {
-      console.log('🚀 역할 배정 조건 충족! 역할 배정 시작');
-      assignRoles();
-    }
-  }, [participants, myPlayerId, hostUserId, hasAssignedRoles]);
-
-  // E) WebSocket 메시지 핸들러
-  useEffect(() => {
-    if (!isConnected) return;
-
-    const handlerId = 'waiting-room';
-    
-    const messageHandler = (message) => {
-      console.log('🔔 WaitingRoom 메시지 수신:', message);
-      
-      switch (message.type) {
-        case 'join':
-          console.log('👋 새 참가자 입장:', message);
-          // 참가자 입장 시 방 정보 새로고침
-          setTimeout(() => {
-            loadParticipants();
-          }, 100);
-          break;
-          
-        case 'voice_status_update':
-          console.log('🎤 음성 상태 업데이트:', message);
-          // 음성 상태 변경도 참가자 변화의 신호로 활용
-          setTimeout(() => {
-            loadParticipants();
-          }, 100);
-          break;
-          
-        case 'room_update':
-        case 'participants_update':
-          console.log('🔄 방/참가자 업데이트:', message);
-          // 방 정보 업데이트 메시지가 있다면
-          setTimeout(() => {
-            loadParticipants();
-          }, 100);
-          break;
-          
-        default:
-          // 다른 메시지도 참가자 변화의 신호일 수 있으므로 안전하게 업데이트
-          console.log('📨 기타 메시지로 인한 참가자 업데이트');
-          setTimeout(() => {
-            loadParticipants();
-          }, 200);
-          break;
-      }
-    };
-    
-    addMessageHandler(handlerId, messageHandler);
-    
-    return () => {
-      removeMessageHandler(handlerId);
-    };
-  }, [isConnected, room_code]);
-
-  // F) 준비 상태 폴링 (5초 간격)
-  useEffect(() => {
-    const readyStatusPolling = setInterval(async () => {
-      try {
-        const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
-        console.log('🔄 준비 상태 폴링 - 참가자 상태:', room.participants.map(p => ({
-          id: p.user_id,
-          ready: p.is_ready
-        })));
-        
-        // 참가자 데이터 업데이트
-        setParticipants(room.participants);
-        setAssignments(room.participants.map(p => ({
-          player_id: p.user_id,
-          role_id: p.role_id,
-          is_host: p.is_host,
-        })));
-        
-        // 준비 상태 맵 업데이트
-        const readyMap = {};
-        room.participants.forEach(p => {
-          readyMap[String(p.user_id)] = p.is_ready ? 1 : 0;
-        });
-        setStatusIndexMap(readyMap);
-        
-        // 내 준비 상태도 동기화 (다른 탭에서 준비했을 경우를 대비)
-        if (myPlayerId) {
-          const myParticipant = room.participants.find(p => String(p.user_id) === myPlayerId);
-          if (myParticipant) {
-            setMyStatusIndex(myParticipant.is_ready ? 1 : 0);
-          }
+      // 내 준비 상태도 동기화
+      if (myPlayerId) {
+        const myParticipant = room.participants.find(p => String(p.user_id) === myPlayerId);
+        if (myParticipant) {
+          setMyStatusIndex(myParticipant.is_ready ? 1 : 0);
         }
-        
-      } catch (err) {
-        console.error('❌ 준비 상태 폴링 실패:', err);
       }
-    }, 5000); // 5초마다 폴링
-    
-    console.log('📡 준비 상태 폴링 시작 (5초 간격)');
-    
-    return () => {
-      clearInterval(readyStatusPolling);
-      console.log('📡 준비 상태 폴링 종료');
-    };
-  }, [room_code, myPlayerId]);
-
-  // G) Participant 변화 감지 폴링 (WebSocket 백업용)
-  useEffect(() => {
-    let participantPolling;
-    
-    // WebSocket이 연결되지 않은 경우에만 참가자 변화 폴링 사용
-    if (!isConnected) {
-      console.log('📡 WebSocket 미연결, 참가자 변화 폴링 시작');
-      participantPolling = setInterval(() => {
-        loadParticipants();
-      }, 3000); // 3초마다 폴링 (참가자 변화는 조금 더 빠르게)
+      
+    } catch (err) {
+      console.error('준비 상태 폴링 실패:', err);
     }
-    
-    return () => {
-      if (participantPolling) {
-        clearInterval(participantPolling);
-        console.log('📡 참가자 변화 폴링 종료');
-      }
-    };
-  }, [isConnected, room_code]);
-
-  // H) localStorage 저장
-  useEffect(() => {
-    if (hostUserId) {
-      localStorage.setItem('host_id', hostUserId);
-    }
-  }, [hostUserId]);
+  }, 3000);
   
-  useEffect(() => {
-    // assignments: [{ player_id, role_id, is_host }, …]
-    assignments.forEach(({ role_id, player_id }) => {
-      // role1_user_id, role2_user_id, role3_user_id 로 저장
-      localStorage.setItem(`role${role_id}_user_id`, String(player_id));
-    });
-  }, [assignments]);
+  console.log('준비 상태 폴링 시작 (3초 간격)');
+  
+  return () => {
+    clearInterval(readyStatusPolling);
+    console.log('📡 준비 상태 폴링 종료');
+  };
+}, [room_code, myPlayerId]);
 
+// G) Participant 변화 감지 폴링 (WebSocket 백업용)
+useEffect(() => {
+  let participantPolling;
+  
+  if (!isConnected) {
+    console.log('📡 WebSocket 미연결, 참가자 변화 폴링 시작');
+    participantPolling = setInterval(() => {
+      loadParticipants();
+    }, 3000);
+  }
+  
+  return () => {
+    if (participantPolling) {
+      clearInterval(participantPolling);
+      console.log('📡 참가자 변화 폴링 종료');
+    }
+  };
+}, [isConnected, room_code]);
+
+// H) 초기 로드 - 중복 제거됨
+useEffect(() => {
+  const initializeRoom = async () => {
+    // 먼저 내 정보 로드
+    const myUserId = await loadMyInfo();
+    if (myUserId) {
+      // 그 다음 참가자 정보 로드
+      await loadParticipants();
+      // 로드 후 역할 정보 업데이트 (이미 역할이 배정된 경우)
+      setTimeout(() => {
+        updateAssignmentsWithRoles();
+      }, 100);
+    }
+  };
+  
+  initializeRoom();
+}, [room_code]);
+
+// ✅ participants 변경 시 역할 정보 업데이트
+useEffect(() => {
+  if (participants.length > 0) {
+    // 약간의 딜레이를 주어 상태 업데이트가 완료된 후 실행
+    setTimeout(() => {
+      updateAssignmentsWithRoles();
+    }, 50);
+  }
+}, [participants]);
+
+// I) assignments 로그 확인용
+useEffect(() => {
+  console.log('현재 assignments 상태:', assignments);
+}, [assignments]);
+
+  // I) 역할 정보 로컬스토리지 저장 (역할 배정 완료 후에만 실행)
   useEffect(() => {
-    if (myPlayerId && assignments.length) {
-      const myAssign = assignments.find(a => String(a.player_id) === myPlayerId);
-      if (myAssign?.role_id != null) {
-        localStorage.setItem('myrole_id', String(myAssign.role_id));
+    // assignments에 role_id가 있는 경우에만 실행 (역할 배정 완료 후)
+    const hasRoleIds = assignments.some(a => a.role_id != null);
+    
+    if (hasRoleIds && assignments.length > 0) {
+      // 각 역할별 유저 ID 저장
+      assignments.forEach(({ role_id, player_id }) => {
+        if (role_id) {
+          localStorage.setItem(`role${role_id}_user_id`, String(player_id));
+        }
+      });
+      
+      // 내 역할 ID 저장
+      if (myPlayerId) {
+        const myAssign = assignments.find(a => String(a.player_id) === myPlayerId);
+        if (myAssign?.role_id != null) {
+          localStorage.setItem('myrole_id', String(myAssign.role_id));
+        }
       }
+      
+      console.log('역할 정보 로컬스토리지 업데이트 완료');
     }
   }, [assignments, myPlayerId]);
 
@@ -504,7 +627,7 @@ export default function WaitingRoom() {
       {/* 준비하기 ▶ 마이크 테스트 팝업 */}
       {showMicPopup && (
         <MicTestPopup
-          userImage={getPlayerImage(Number(myPlayerId))}
+          userImage={getPlayerImage(Number(localStorage.getItem('myrole_id')))}
           onConfirm={handleMicConfirm}
         />
       )}

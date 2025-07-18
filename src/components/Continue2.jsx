@@ -5,7 +5,6 @@ import { FontStyles, Colors } from './styleConstants';
 export default function Continue({
   width = 264,
   height = 72,
-  step = 1,
   onClick,
   disabled = false,          
 }) {
@@ -72,9 +71,7 @@ export default function Continue({
         <span style={{ ...FontStyles.headlineSmall, color: textColor }}>
           다음
         </span>
-        <span style={{ ...FontStyles.title, color: Colors.grey04 }}>
-          {step}/3
-        </span>
+        
       </div>
     </div>
   );

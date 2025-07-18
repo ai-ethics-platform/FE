@@ -101,20 +101,23 @@ export default function Game06() {
           console.error('AI 이름 로딩 실패:', err);
           const fallback = 'HomeMate';
           setMateName(fallback);
-          const raw = [{
-            main:
-              `  우리 가족은 최종적으로 감정 업데이트에 동의하였고,
-` +
-              `   ${fallback}와 더욱 친밀한 교류를 이어나가게 되었습니다.
+          
+          // 게임 돌아가게 하는 부분 수정 필요 
 
-` +
-              `   비록 몇몇 문제들이 있었지만 ${fallback}의 편의성 덕분에 이후
-` +
-              `   우리 가정 뿐 아니라 여러 가정에서 ${fallback}를 사용하게 되었습니다.
+//           const raw = [{
+//             main:
+//               `  우리 가족은 최종적으로 감정 업데이트에 동의하였고,
+// ` +
+//               `   ${fallback}와 더욱 친밀한 교류를 이어나가게 되었습니다.
 
-` +
-              `   이후, 가정 뿐 아니라 국가적인 고민거리들이 나타나게 되는데...`,
-          }];
+// ` +
+//               `   비록 몇몇 문제들이 있었지만 ${fallback}의 편의성 덕분에 이후
+// ` +
+//               `   우리 가정 뿐 아니라 여러 가정에서 ${fallback}를 사용하게 되었습니다.
+
+// ` +
+//               `   이후, 가정 뿐 아니라 국가적인 고민거리들이 나타나게 되는데...`,
+//           }];
           const [resolved] = resolveParagraphs(raw, fallback);
           setParagraph(resolved);
         }
@@ -156,7 +159,7 @@ export default function Game06() {
 
   return (
     <>
-      <Layout round={currentRound} subtopic={subtopic} me="1P">
+      <Layout round={currentRound} subtopic={subtopic} >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={paragraph.main} width={936} height={407} />
           {completedTopics.length >= 3 ? (

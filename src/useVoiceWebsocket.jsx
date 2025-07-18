@@ -25,7 +25,7 @@ export default function useVoiceWebSocket(room_code, onParticipantsUpdate) {
       );
 
       ws.current.onopen = () => {
-        console.log('✅ WebSocket 연결 성공');
+        console.log(' WebSocket 연결 성공');
       };
 
       ws.current.onmessage = (event) => {
@@ -33,17 +33,20 @@ export default function useVoiceWebSocket(room_code, onParticipantsUpdate) {
         if (message.type === 'room_update') {
           onParticipantsUpdate(message.data);
         }
+        if (message.type === 'next_page') {
+
+        }
       };
 
       ws.current.onerror = (error) => {
-        console.error('❌ WebSocket 에러:', error);
+        console.error('WebSocket 에러:', error);
       };
 
       ws.current.onclose = () => {
-        console.log('🔴 WebSocket 연결 종료');
+        console.log(' WebSocket 연결 종료');
       };
     } catch (error) {
-      console.error('❌ WebSocket 연결 실패:', error);
+      console.error(' WebSocket 연결 실패:', error);
     }
   };
 

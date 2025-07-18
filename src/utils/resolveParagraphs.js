@@ -1,6 +1,6 @@
 export function resolveParagraphs(rawParagraphs, mateName) {
     const replaceHomeMate = (text) => {
-      return text?.replace(/HomeMate/gi, mateName); // ✅ 대소문자 무시하고 모두 바꾸기
+      return text?.replace(/HomeMate/gi, mateName); 
     };
   
     return rawParagraphs.map((para) => ({

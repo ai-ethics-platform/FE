@@ -35,14 +35,13 @@ class VoiceManager {
       await axiosInstance.post(
         `/voice/sessions/${this.sessionId}/leave`,{}
       );
-      console.log('🛑 leaveSession 성공');
+      console.log(' leaveSession 성공');
       return true;
     } catch (err) {
-      console.error('❌ leaveSession 실패:', err);
+      console.error(' leaveSession 실패:', err);
       return false;
     }
   }
-// voiceManager.js에 추가할 수 있는 메서드
 getLocalStream() {
     return this.mediaStream;
   }
@@ -53,37 +52,37 @@ getLocalStream() {
   // 서버 join 호출
   async joinSession() {
     if (!this.sessionId || !this.nickname) {
-      console.error('❌ joinSession: sessionId 또는 nickname이 없습니다.');
+      console.error(' joinSession: sessionId 또는 nickname이 없습니다.');
       return false;
     }
     try {
-      console.log('📥 joinSession 요청:', this.sessionId, this.nickname);
+      console.log('joinSession 요청:', this.sessionId, this.nickname);
       await axiosInstance.post(
         `/voice/sessions/${this.sessionId}/join`,
         { session_id: this.sessionId, nickname: this.nickname }
       );
-      console.log('✅ joinSession 성공');
+      console.log(' joinSession 성공');
       return true;
 
     } catch (err) {
       const msg = err.response?.data?.detail;
       if (msg === '이미 참가 중인 음성 세션입니다.') {
-        console.warn('⚠️ 이미 참가 중인 세션입니다. join 무시');
+        console.warn('이미 참가 중인 세션입니다. join 무시');
         return true;
       }
-      console.error('❌ joinSession 실패:', msg || err);
+      console.error('joinSession 실패:', msg || err);
       return false;
     }
   }
   // 음성 세션 초기화 (GameIntro2에서만 호출)
   async initializeVoiceSession() {
     if (this.sessionInitialized) {
-      console.log('✅ 음성 세션이 이미 초기화되어 있음');
+      console.log(' 음성 세션이 이미 초기화되어 있음');
       return true;
     }
 
     try {
-      console.log('🎤 음성 세션 초기화 시작');
+      console.log('음성 세션 초기화 시작');
       
       // 1. 마이크 연결
       await this.connectMicrophone();
@@ -96,7 +95,7 @@ getLocalStream() {
       this.nickname = `Player_${me.id}`;
       this.participantId = me.id;
       
-      console.log('✅ 음성 세션 초기화 완료:', {
+      console.log(' 음성 세션 초기화 완료:', {
         sessionId: this.sessionId,
         nickname: this.nickname,
         participantId: this.participantId,
@@ -115,7 +114,7 @@ getLocalStream() {
       this.sessionInitialized = true;
       return true;
     } catch (error) {
-      console.error('❌ 음성 세션 초기화 실패:', error);
+      console.error(' 음성 세션 초기화 실패:', error);
       return false;
     }
   }
@@ -123,7 +122,7 @@ getLocalStream() {
   // 마이크 연결
   async connectMicrophone() {
     try {
-      console.log('🎤 마이크 연결 시도...');
+      console.log('마이크 연결 시도...');
       
       this.mediaStream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -144,10 +143,10 @@ getLocalStream() {
       this.analyser.smoothingTimeConstant = 0.8;
       
       this.isConnected = true;
-      console.log('✅ 마이크 연결 성공! 임계값:', this.speakingThreshold);
+      console.log(' 마이크 연결 성공! 임계값:', this.speakingThreshold);
       
     } catch (error) {
-      console.error('❌ 마이크 연결 실패:', error);
+      console.error(' 마이크 연결 실패:', error);
       if (error.name === 'NotAllowedError') {
         alert('마이크 권한이 필요합니다. 브라우저 설정에서 마이크 권한을 허용해주세요.');
       }
@@ -174,15 +173,15 @@ getLocalStream() {
       };
 
       this.mediaRecorder.onstop = () => {
-        console.log('🎬 녹음 종료, 총 청크:', this.recordedChunks.length);
+        console.log(' 녹음 종료, 총 청크:', this.recordedChunks.length);
       };
 
       this.mediaRecorder.start(1000); // 1초마다 청크 생성
       this.isRecording = true;
       
-      console.log('🎬 연속 녹음 시작');
+      console.log(' 연속 녹음 시작');
     } catch (error) {
-      console.error('❌ 녹음 시작 실패:', error);
+      console.error(' 녹음 시작 실패:', error);
     }
   }
 
@@ -195,7 +194,7 @@ getLocalStream() {
         const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
         const duration = Date.now() - this.recordingStartTime;
         
-        console.log('🎬 녹음 완료:', {
+        console.log(' 녹음 완료:', {
           size: blob.size,
           duration: duration,
           chunks: this.recordedChunks.length
@@ -229,7 +228,7 @@ getLocalStream() {
 
       if (window.webSocketInstance && window.webSocketInstance.sendMessage) {
         window.webSocketInstance.sendMessage(message);
-        console.log('📡 WebSocket으로 음성 상태 전송:', message);
+        console.log(' WebSocket으로 음성 상태 전송:', message);
       }
 
     //   console.log('🎤 음성 상태 변경:', {
@@ -241,7 +240,7 @@ getLocalStream() {
     //   });
       
     } catch (error) {
-      console.error('❌ 음성 상태 전송 실패:', error);
+      console.error(' 음성 상태 전송 실패:', error);
       this.lastSpeakingState = !isSpeaking;
     }
   }
@@ -249,7 +248,7 @@ getLocalStream() {
   // 음성 감지 시작
   startSpeechDetection() {
     if (!this.analyser) {
-      console.error('❌ 분석기가 없습니다');
+      console.error(' 분석기가 없습니다');
       return;
     }
 
@@ -286,21 +285,21 @@ getLocalStream() {
       this.animationFrame = requestAnimationFrame(detectSpeech);
     };
     
-    console.log('🎯 음성 감지 시작 (임계값:', this.speakingThreshold, ')');
-    console.log('💡 마이크에 대고 말해보세요!');
+    console.log(' 음성 감지 시작 (임계값:', this.speakingThreshold, ')');
+    console.log(' 마이크에 대고 말해보세요!');
     detectSpeech();
   }
 
   // 임계값 조정
   setSpeakingThreshold(threshold) {
     this.speakingThreshold = threshold;
-    console.log('🎚️ 음성 임계값 변경:', threshold);
+    console.log(' 음성 임계값 변경:', threshold);
   }
 
   // 디버그 모드 토글
   toggleDebugMode() {
     this.isDebugMode = !this.isDebugMode;
-    console.log('🐛 디버그 모드:', this.isDebugMode ? 'ON' : 'OFF');
+    console.log('디버그 모드:', this.isDebugMode ? 'ON' : 'OFF');
   }
 
   // 음성 감지 중지
@@ -309,7 +308,7 @@ getLocalStream() {
       cancelAnimationFrame(this.animationFrame);
       this.animationFrame = null;
     }
-    console.log('🔇 음성 감지 중지');
+    console.log('음성 감지 중지');
   }
 
   // 마이크 연결 해제
@@ -332,12 +331,12 @@ getLocalStream() {
     this.lastSpeakingState = false;
     this.micLevel = 0;
     
-    console.log('🔇 마이크 연결 해제');
+    console.log('마이크 연결 해제');
   }
 
   // 음성 세션 완전 종료 (마지막 페이지에서 호출)
   async terminateVoiceSession() {
-    console.log('🛑 음성 세션 완전 종료 시작');
+    console.log(' 음성 세션 완전 종료 시작');
     
     // 1. 녹음 중지 및 저장
     const recordingData = await this.stopRecording();
@@ -356,7 +355,7 @@ getLocalStream() {
     this.participantId = null;
     this.sessionInitialized = false;
     
-    console.log('🛑 음성 세션 완전 종료 완료');
+    console.log(' 음성 세션 완전 종료 완료');
     
     return recordingData;
   }
@@ -368,7 +367,7 @@ getLocalStream() {
       await this.sendVoiceStatusToServer(false);
     }
     
-    console.log('🧹 음성 세션 일시적 정리 완료 (녹음 유지)');
+    console.log(' 음성 세션 일시적 정리 완료 (녹음 유지)');
   }
 
   // 현재 상태 반환

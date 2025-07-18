@@ -157,11 +157,18 @@ import GameFrame from '../components/GameFrame';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import voiceManager from '../utils/voiceManager';
 
+// Character popup components
+// import CharacterPopup1 from '../components/CharacterPopup1';
+// import CharacterPopup2 from '../components/CharacterPopup2';
+// import CharacterPopup3 from '../components/CharacterPopup3';
+
+
 export default function Layout({
   subtopic = '가정 1',
   onProfileClick,
   children,
   round,
+  nodescription = false,
 }) {
   // Zoom for responsive scaling
   const [zoom, setZoom] = useState(1);
@@ -190,6 +197,9 @@ export default function Layout({
     micLevel: 0,
     speakingThreshold: 30
   });
+
+  //팝업 상태 
+  const [openProfile, setOpenProfile] = useState(null);
 
   useEffect(() => {
     // 로컬스토리지에서 데이터 불러오기
@@ -236,6 +246,7 @@ export default function Layout({
     return () => clearInterval(statusInterval);
   }, []);
 
+
   // 특정 역할의 음성 상태 가져오기 (내 것은 실시간, 다른 사람은 WebSocket)
   const getVoiceStateForRoleWithMyStatus = (roleId) => {
     const roleIdStr = String(roleId);
@@ -254,6 +265,30 @@ export default function Layout({
   };
 
   return (
+    <>
+      {/* Profile Popup as Component */}
+      {!nodescription && openProfile && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}
+          onClick={() => setOpenProfile(null)}
+        >
+          <div
+            style={{ position: 'relative', background: '#fff', padding: 32, borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.25)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {openProfile === '1P' && <CharacterPopup1 />}
+            {openProfile === '2P' && <CharacterPopup2 />}
+            {openProfile === '3P' && <CharacterPopup3 />}
+            <img
+              src={closeIcon}
+              alt="close"
+              style={{ position: 'absolute', top: 16, right: 16, width: 32, cursor: 'pointer' }}
+              onClick={() => setOpenProfile(null)}
+            />
+          </div>
+        </div>
+      )}
+
     <Background bgIndex={2}>
       <style>{`
         html, body, #root {
@@ -324,12 +359,12 @@ export default function Layout({
         <aside className="layout-sidebar">
           <UserProfile
             player="1P"
-            characterDesc="요양보호사"
             isLeader={hostId === '1'}
             isMe={myRoleId === '1'}
             isSpeaking={getVoiceStateForRoleWithMyStatus(1).is_speaking}
             isMicOn={getVoiceStateForRoleWithMyStatus(1).is_mic_on}
             nickname={getVoiceStateForRoleWithMyStatus(1).nickname}
+            nodescription={nodescription}
             {...(onProfileClick && {
               onClick: () => onProfileClick('1P'),
               style: { cursor: 'pointer' },
@@ -337,12 +372,12 @@ export default function Layout({
           />
           <UserProfile
             player="2P"
-            characterDesc="노모 L"
             isLeader={hostId === '2'}
             isMe={myRoleId === '2'}
             isSpeaking={getVoiceStateForRoleWithMyStatus(2).is_speaking}
             isMicOn={getVoiceStateForRoleWithMyStatus(2).is_mic_on}
             nickname={getVoiceStateForRoleWithMyStatus(2).nickname}
+            nodescription={nodescription}
             {...(onProfileClick && {
               onClick: () => onProfileClick('2P'),
               style: { cursor: 'pointer' },
@@ -355,6 +390,7 @@ export default function Layout({
             isMe={myRoleId === '3'}
             isSpeaking={getVoiceStateForRoleWithMyStatus(3).is_speaking}
             isMicOn={getVoiceStateForRoleWithMyStatus(3).is_mic_on}
+            nodescription={nodescription}
             nickname={getVoiceStateForRoleWithMyStatus(3).nickname}
             {...(onProfileClick && {
               onClick: () => onProfileClick('3P'),
@@ -380,5 +416,6 @@ export default function Layout({
        
       </div>
     </Background>
+    </>
   );
 }

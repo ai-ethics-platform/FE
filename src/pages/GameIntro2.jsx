@@ -5,8 +5,8 @@ import ContentTextBox from '../components/ContentTextBox';
 import { useNavigate } from 'react-router-dom';
 import gameIntro from '../assets/images/gameintro.png';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import { useWebRTC } from '../WebRTCProvider'; // 🆕 WebRTC Hook 사용
-import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import { useWebRTC } from '../WebRTCProvider'; 
+import { useWebSocketNavigation, useWebSocketMessageAll, useHostActions } from '../hooks/useWebSocketMessage';
 
 export default function GameIntro2() {
   const navigate = useNavigate();
@@ -14,6 +14,7 @@ export default function GameIntro2() {
   const [mateName, setMateName] = useState('');
   const [myRoleId, setMyRoleId] = useState(null);
   const [hostId, setHostId] = useState(null);
+
   // Continue
   const handleContinue = () => {
     if (isHost) sendNextPage();
@@ -22,7 +23,7 @@ export default function GameIntro2() {
    // WebSocket: 다음 페이지(Game05)로 이동
     useWebSocketNavigation(navigate, { nextPagePath: '/selecthomemate', infoPath: '/selecthomemate' });
     const { isHost, sendNextPage } = useHostActions();
-  
+
   // 🆕 WebRTC Provider에서 상태와 함수들 가져오기
   const {
     isInitialized,
@@ -47,7 +48,7 @@ export default function GameIntro2() {
     setMyRoleId(storedMyRole);
     setHostId(storedHost);
 
-    console.log('📋 GameIntro2 초기화:', {
+    console.log('GameIntro2 초기화:', {
       mateName: storedName,
       myRoleId: storedMyRole,
       hostId: storedHost,
@@ -57,7 +58,7 @@ export default function GameIntro2() {
 
   const paragraphs = [
     {
-      main: `  지금은 20XX년, 국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 ${mateName || 'HomeMate'}를 개발했습니다.`,
+      main: `  지금은 20XX년, 국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.`,
     },
     {
       main:
@@ -69,7 +70,7 @@ export default function GameIntro2() {
 
   return (
     <Background bgIndex={2}>
-      {/* 🆕 간소화된 디버그 정보 */}
+      {/* 디버그 정보 */}
       <div style={{
         position: 'fixed',
         top: 10,
@@ -91,7 +92,7 @@ export default function GameIntro2() {
         <div>호스트: {hostId}</div>
         <div>역할: {myRoleId === hostId ? '👑 호스트' : '👤 참가자'}</div>
         
-        {/* 🆕 음성 임계값 조정 (디버그용) */}
+        {/*  음성 임계값 조정 (디버그용) */}
         <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #444' }}>
           <div>음성 임계값: {voiceSessionStatus.speakingThreshold}</div>
           <div>

@@ -41,10 +41,10 @@ export const WebSocketProvider = ({ children }) => {
   const sendMessage = (message) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(message));
-      console.log('📤 WebSocket 메시지 전송:', message);
+      console.log(' WebSocket 메시지 전송:', message);
       return true;
     } else {
-      console.warn('🛑 WebSocket 연결되지 않음. 메시지 전송 실패:', message);
+      console.warn(' WebSocket 연결되지 않음. 메시지 전송 실패:', message);
       return false;
     }
   };
@@ -55,7 +55,7 @@ export const WebSocketProvider = ({ children }) => {
     const nickname = localStorage.getItem('nickname') || "이윤서";
     
     if (!roomCode) {
-      console.error('❌ room_code가 없습니다.');
+      console.error(' room_code가 없습니다.');
       return;
     }
 
@@ -69,11 +69,11 @@ export const WebSocketProvider = ({ children }) => {
       const newSessionId = res.data.session_id;
       setSessionId(newSessionId);
       localStorage.setItem('session_id', newSessionId);
-      console.log('✅ session_id 발급됨:', newSessionId);
+      console.log(' session_id 발급됨:', newSessionId);
       
       return newSessionId;
     } catch (err) {
-      console.error('❌ session_id 발급 실패:', err);
+      console.error('session_id 발급 실패:', err);
       throw err;
     }
   };
@@ -85,7 +85,7 @@ export const WebSocketProvider = ({ children }) => {
     }
     
     reconnectTimer.current = setTimeout(() => {
-      console.log(`🔄 WebSocket 재연결 시도 (${reconnectAttempts.current + 1}/${maxReconnectAttempts})`);
+      console.log(`WebSocket 재연결 시도 (${reconnectAttempts.current + 1}/${maxReconnectAttempts})`);
       reconnectAttempts.current++;
       reconnectDelay.current = Math.min(reconnectDelay.current * 2, 30000);
       connect(currentSessionId);
@@ -99,28 +99,28 @@ export const WebSocketProvider = ({ children }) => {
     
     // 이미 연결된 경우 중복 연결 방지
     if (ws.current?.readyState === WebSocket.OPEN) {
-      console.log('✅ WebSocket 이미 연결됨');
+      console.log('WebSocket 이미 연결됨');
       return;
     }
     
     // 연결 중인 경우 대기
     if (ws.current?.readyState === WebSocket.CONNECTING) {
-      console.log('⏳ WebSocket 연결 중...');
+      console.log('WebSocket 연결 중...');
       return;
     }
 
     if (!currentSessionId || !accessToken || !nickname) {
-      console.warn('⏳ WebSocket 연결 대기 중: 필요한 정보 없음');
+      console.warn(' WebSocket 연결 대기 중: 필요한 정보 없음');
       return;
     }
 
     try {
-      console.log('🔄 WebSocket 연결 시도:', currentSessionId);
+      console.log('WebSocket 연결 시도:', currentSessionId);
       const socket = new WebSocket(`wss://dilemmai.org/ws/voice/${currentSessionId}?token=${accessToken}`);
       ws.current = socket;
 
       socket.onopen = () => {
-        console.log('✅ WebSocket 연결 성공');
+        console.log(' WebSocket 연결 성공');
         setIsConnected(true);
         reconnectAttempts.current = 0;
         reconnectDelay.current = 1000;
@@ -141,18 +141,18 @@ export const WebSocketProvider = ({ children }) => {
           try {
             handler(msg);
           } catch (error) {
-            console.error(`❌ 메시지 핸들러 에러 (${handlerId}):`, error);
+            console.error(` 메시지 핸들러 에러 (${handlerId}):`, error);
           }
         });
       };
 
       socket.onerror = (error) => {
-        console.error('❌ WebSocket 에러:', error);
+        console.error(' WebSocket 에러:', error);
         setIsConnected(false);
       };
 
       socket.onclose = (event) => {
-        console.log('🔴 WebSocket 연결 종료:', event.code, event.reason);
+        console.log(' WebSocket 연결 종료:', event.code, event.reason);
         setIsConnected(false);
         
         // 정상적인 종료가 아니고, 수동으로 해제하지 않은 경우만 재연결
@@ -163,7 +163,7 @@ export const WebSocketProvider = ({ children }) => {
           
           // 토큰 만료 에러 (1006은 일반적인 비정상 종료)
           if (event.code === 1006) {
-            console.log('🔄 토큰 갱신 후 재연결 시도');
+            console.log(' 토큰 갱신 후 재연결 시도');
             // 토큰 갱신 시도
             fetchWithAutoToken().then(() => {
               scheduleReconnect(currentSessionId);
@@ -174,12 +174,12 @@ export const WebSocketProvider = ({ children }) => {
             scheduleReconnect(currentSessionId);
           }
         } else if (reconnectAttempts.current >= maxReconnectAttempts) {
-          console.error('❌ 최대 재연결 시도 횟수 초과');
+          console.error('최대 재연결 시도 횟수 초과');
         }
       };
 
     } catch (error) {
-      console.error('❌ WebSocket 연결 실패:', error);
+      console.error(' WebSocket 연결 실패:', error);
       setIsConnected(false);
     }
   };
@@ -199,18 +199,18 @@ export const WebSocketProvider = ({ children }) => {
     }
     setIsConnected(false);
     messageHandlers.current.clear();
-    console.log('🔴 WebSocket 수동으로 연결 해제');
+    console.log(' WebSocket 수동으로 연결 해제');
   };
 
   // 초기화 
   useEffect(() => {
     // StrictMode에서 중복 실행 방지 - 더 엄격한 체크
     if (isInitialized.current) {
-      console.log('🔄 WebSocket 이미 초기화됨, 스킵');
+      console.log('WebSocket 이미 초기화됨, 스킵');
       return;
     }
     
-    console.log('🚀 WebSocket 초기화 시작');
+    console.log(' WebSocket 초기화 시작');
     isInitialized.current = true;
     
     const init = async () => {
@@ -224,7 +224,7 @@ export const WebSocketProvider = ({ children }) => {
           currentSessionId = await initializeSession();
         } else {
           setSessionId(currentSessionId);
-          console.log('✅ 기존 session_id 사용:', currentSessionId);
+          console.log(' 기존 session_id 사용:', currentSessionId);
         }
 
         if (currentSessionId) {
@@ -234,7 +234,7 @@ export const WebSocketProvider = ({ children }) => {
           }, 100); // 지연 시간 단축
         }
       } catch (error) {
-        console.error('❌ WebSocket 초기화 실패:', error);
+        console.error(' WebSocket 초기화 실패:', error);
       }
     };
 
@@ -242,7 +242,7 @@ export const WebSocketProvider = ({ children }) => {
 
     // 컴포넌트 언마운트 시 정리
     return () => {
-      console.log('🧹 WebSocket 정리 시작');
+      console.log('WebSocket 정리 시작');
       // StrictMode에서는 cleanup 시 초기화 플래그를 리셋하지 않음
       if (reconnectTimer.current) {
         clearTimeout(reconnectTimer.current);
@@ -269,7 +269,7 @@ export const WebSocketProvider = ({ children }) => {
     // 페이지 가시성 변경 시 처리
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && !isConnected && sessionId) {
-        console.log('🔄 페이지 활성화, WebSocket 재연결 시도');
+        console.log(' 페이지 활성화, WebSocket 재연결 시도');
         isManuallyDisconnected.current = false;
         connect(sessionId);
       }

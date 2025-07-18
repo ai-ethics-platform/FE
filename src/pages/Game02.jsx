@@ -114,10 +114,10 @@ export default function Game02() {
         </div>
       )}
 
-      <Layout subtopic={subtopic} me="3P" round={round} onProfileClick={setOpenProfile}>
+      <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
        
         {/* 본문 */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32, marginLeft: 240 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <img
             src={comicImages[currentIndex]}
             alt={`comic ${currentIndex + 1}`}

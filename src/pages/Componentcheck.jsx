@@ -96,7 +96,6 @@ export default function Componentcheck() {
       </div> */}
 <UserProfile
   player="1P"
-  // 상세 프로필 없을 때
   isLeader={true}    // 방장이면 crown
   isMe={true}        // 내 프로필이라면 왼쪽 스피킹 바
   isSpeaking={false}  // 말하고 있는 사람은 mikeon 아이콘

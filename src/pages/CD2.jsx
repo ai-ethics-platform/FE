@@ -1,69 +1,3 @@
-// import React from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import Layout from '../components/Layout';
-// import ContentTextBox from '../components/ContentTextBox';
-// import player2DescImg from '../assets/images/Player2_description.png';
-// import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
-
-// export default function CD2() {
-//   const navigate = useNavigate();
-//   // WebSocket navigation with custom nextPagePath
-//   useWebSocketNavigation(navigate, { 
-//     infoPath:'/game02',
-//     nextPagePath: '/game02' 
-//   });
-
-//   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
-//   const round = Number(localStorage.getItem('currentRound') ?? '1');
-//   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
-
-//   const { isHost, sendNextPage } = useHostActions();
-
-//   const handleContinue = () => {
-//     if (isHost) {
-//       sendNextPage();
-//     } else {
-//       alert('⚠️ 방장만 진행할 수 있습니다.');
-//     }
-//   };
-
-//   const paragraphs = [
-//     {
-//       main: `  당신은 자녀 J씨의 노모 L입니다.
-//         가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다. `,
-//     },
-//   ];
-
-//   return (
-//     <Layout round={round} subtopic={subtopic} me="2P">
-//       <div
-//         style={{
-//           display: 'flex',
-//           flexDirection: 'column',
-//           alignItems: 'center',
-//           gap: 32,
-//         }}
-//       >
-//         <img
-//           src={player2DescImg}
-//           alt="Player 2 설명 이미지"
-//           style={{
-//             width: 264,
-//             height: 336,
-//             objectFit: 'contain',
-//             marginBottom: 32,
-//           }}
-//         />
-//         <div style={{ width: '100%', maxWidth: 900 }}>
-//           <ContentTextBox
-//             paragraphs={paragraphs}
-//             onContinue={handleContinue}
-//           />
-//         </div>
-//       </div>
-//     </Layout>
-//   );
-// }
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -75,7 +9,13 @@ import { useWebRTC } from '../WebRTCProvider';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import voiceManager from '../utils/voiceManager';
 import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
-import player2DescImg from '../assets/images/Player2_description.png';
+// Player2 description images for different subtopics
+import player2DescImg_title1 from '../assets/2player_des.svg';
+import player2DescImg_title2 from '../assets/2player_des.svg';
+import player2DescImg_title3 from '../assets/2player_des.svg';
+import { resolveParagraphs } from '../utils/resolveParagraphs';
+
+
 
 export default function CD2() {
   const navigate = useNavigate();
@@ -94,6 +34,7 @@ export default function CD2() {
   // WebRTC audio state
   const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
   const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
+  
   const getVoiceState = (role) => {
     if (String(role) === myRoleId) {
       return {
@@ -105,19 +46,29 @@ export default function CD2() {
     return getVoiceStateForRole(role);
   };
 
+  // Determine description image and main text based on subtopic
+  let descImg = player2DescImg_title1;
+  let mainText =
+    `당신은 자녀 J씨의 노모입니다. 가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다.`
+
+  if (subtopic === '국가 인공지능 위원회 1' || subtopic === '국가 인공지능 위원회 2') {
+    descImg = player2DescImg_title2;
+    mainText =
+      `당신은 ${mateName}를 사용해 온 소비자 대표입니다. 당신은 사용자로서 HomeMate 규제 여부와 관련한 목소리를 내고자 참여하였습니다.`;
+  } else if (subtopic === '국제 인류 발전 위원회 1') {
+    descImg = player2DescImg_title3;
+    mainText =
+      `당신은 국제적인 환경단체의 대표로 온 환경운동가입니다. AI의 발전이 환경에 도움이 될지, 문제가 될지 고민 중입니다.`;
+  }
+  const rawParagraphs = [{ main: mainText }];
+  const paragraphs = resolveParagraphs(rawParagraphs, mateName);
+
   const handleContinue = () => {
-    if (isHost) {
-      sendNextPage();
-    } else {
-      alert('⚠️ 방장만 진행할 수 있습니다.');
-    }
+    navigate('/game02');
+    // if (isHost) sendNextPage();
+    // else alert('⚠️ 방장만 진행할 수 있습니다.');
   };
 
-  const paragraphs = [
-    {
-      main: `  당신은 자녀 J씨의 노모 L입니다.\n        가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다. `,
-    },
-  ];
 
   return (
     <>
@@ -128,12 +79,12 @@ export default function CD2() {
           flexDirection: 'column',
           alignItems: 'center',
           gap: 32,
-          paddingTop: 40
+          marginTop: 22
         }}>
           <img
-            src={player2DescImg}
+            src={descImg}
             alt="Player 2 설명 이미지"
-            style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: 32 }}
+            style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: 0 }}
           />
           <div style={{ width: '100%', maxWidth: 900 }}>
             <ContentTextBox

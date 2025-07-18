@@ -147,11 +147,11 @@ export default function Game05_01() {
   };
 
   return (
-    <Layout subtopic={subtopic} round={round} me="3P">
+    <Layout subtopic={subtopic} round={round} >
     
       {step === 1 && (
         <>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginLeft: 240 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
             {[neutralLast, agreeLast].map((img, idx) => (
               <img
                 key={idx}
@@ -164,7 +164,7 @@ export default function Game05_01() {
 
           <Card width={936} height={216} extraTop={60}>
             <p style={title}>
-              Q1) 당신은 <strong>{roleName}</strong>입니다. 합의 선택을 진행하시겠습니까?
+              당신은 <strong>{roleName}</strong>입니다. 합의 선택을 진행하시겠습니까?
             </p>
             <div style={{ display: 'flex', gap: 24 }}>
               <SelectCardToggle
@@ -184,11 +184,10 @@ export default function Game05_01() {
             </div>
           </Card>
 
-          <div style={{ marginTop: 40, marginLeft: 240 }}>
+          <div style={{ marginTop: 40 }}>
             <Continue
               width={264}
               height={72}
-              step={1}
               disabled={!statusData?.consensus_completed}
               onClick={handleStep1Continue}
             />
@@ -199,8 +198,8 @@ export default function Game05_01() {
       {step === 2 && (
         <>
           <Card width={936} height={216} extraTop={150}>
-            <p style={title}>Q2) 합의된 결정에 얼마나 확신이 있나요?</p>
-            <div style={{ position: 'relative', width: '80%', minWidth: 300, marginLeft: 240 }}>
+            <p style={title}>합의된 결정에 얼마나 확신이 있나요?</p>
+            <div style={{ position: 'relative', width: '80%', minWidth: 300}}>
               <div style={{ position: 'absolute', top: 12, left: 0, right: 0, height: LINE, background: Colors.grey03 }} />
               <div style={{ position: 'absolute', top: 12, left: 0, width: `${pct}%`, height: LINE, background: Colors.brandPrimary }} />
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -232,11 +231,10 @@ export default function Game05_01() {
 
           </Card>
 
-          <div style={{ marginTop: 80, textAlign: 'center', marginLeft: 240 }}>
+          <div style={{ marginTop: 80, textAlign: 'center' }}>
             <Continue
               width={264}
               height={72}
-              step={2}
               disabled={conf === 0}
               onClick={submitConfidence}
             />

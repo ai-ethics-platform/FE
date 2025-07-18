@@ -97,9 +97,9 @@ export default function Game04() {
   };
 
   return (
-    <Layout subtopic={subtopic} round={round} me="3P">
+    <Layout subtopic={subtopic} round={round} >
 
-      <div style={{ display: 'flex', gap: 48, marginLeft: 240 }}>
+      <div style={{ display: 'flex', gap: 48 }}>
         {[
           { label: '동의',   list: agreedList,    key: 'agree'    },
           { label: '비동의', list: disagreedList, key: 'disagree' },
@@ -119,17 +119,13 @@ export default function Game04() {
               <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, margin: '16px 0' }}>
                 {list.length}명
               </p>
-              <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-                {list.map(id => (
-                  <img key={id} src={avatarOf[id]} alt={id} style={{ width: 48, height: 48 }} />
-                ))}
-              </div>
+              
             </div>
           </div>
         ))}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: 26, marginLeft: 240 }}>
+      <div style={{ textAlign: 'center', marginTop: 26}}>
         {secsLeft > 0 ? (
           <>
             <p style={{ ...FontStyles.headlineSmall, color: Colors.grey06 }}>

@@ -124,19 +124,19 @@ export default function Game03() {
   };
 
   return (
-    <Layout subtopic={subtopic} round={round} me="3P">
+    <Layout subtopic={subtopic} round={round}>
 
       {step === 1 && (
         <>
-          <div style={{ display:'flex', justifyContent:'center', gap:16, marginLeft:240 }}>
+          <div style={{ display:'flex', justifyContent:'center', gap:16 }}>
             {comicImages.map((img, idx) => (
               <img key={idx} src={img} alt={`설명 이미지 ${idx+1}`} style={{ width:230, height:135.38, objectFit:'contain' }} />
             ))}
           </div>
 
-          <Card width={936} height={216} extraTop={60} style={{ marginLeft:240 }}>
+          <Card width={936} height={216} extraTop={60} >
             <p style={title}>
-              Q1) 당신은 <strong>{roleName}</strong>입니다.<br/>
+              당신은 <strong>{roleName}</strong>입니다.<br/>
               24시간 개인정보 수집 업데이트에 동의하시겠습니까?
             </p>
             <div style={{ display:'flex', gap:24 }}>
@@ -144,8 +144,7 @@ export default function Game03() {
               <SelectCardToggle label="비동의" selected={agree==='disagree'} onClick={()=>setAgree('disagree')} width={220} height={56} />
             </div>
           </Card>
-
-          <div style={{ marginTop:40, textAlign:'center', marginLeft:240 }}>
+          <div style={{ marginTop:40, textAlign:'center' }}>
             {isWaiting
               ? <p>다른 플레이어 선택을 기다리는 중…</p>
               : <Continue width={264} height={72} step={1} disabled={!agree} onClick={handleSubmitChoice} />
@@ -156,8 +155,8 @@ export default function Game03() {
 
       {step === 2 && (
         <>
-          <Card width={936} height={216} extraTop={150} style={{ marginLeft:240 }}>
-            <p style={title}>Q2) 당신의 선택에 얼마나 확신이 있나요?</p>
+          <Card width={936} height={216} extraTop={150} >
+            <p style={title}>당신의 선택에 얼마나 확신이 있나요?</p>
             <div style={{ position:'relative', width:'80%', minWidth:300 }}>
               <div style={{ position:'absolute', top:12, left:0, right:0, height:LINE, background:Colors.grey03 }} />
               <div style={{ position:'absolute', top:12, left:0, width:`${pct}%`, height:LINE, background:Colors.brandPrimary }} />
@@ -176,7 +175,7 @@ export default function Game03() {
             </div>
           </Card>
 
-          <div style={{ marginTop:80, textAlign:'center', marginLeft:240 }}>
+          <div style={{ marginTop:80 }}>
             <Continue width={264} height={72} step={2} disabled={conf===0} onClick={handleSubmitConfidence} />
           </div>
         </>

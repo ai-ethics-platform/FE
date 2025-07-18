@@ -1,12 +1,12 @@
-// imagenamereplace_space.js (ESM 버전)
+// imagenamereplace_space.js
 import fs from 'fs';
 import path from 'path';
 
-const folderPath = './src/assets/images'; // 수정 필요시 이 경로를 바꾸세요
+const folderPath = './src/assets/images'; 
 
 fs.readdir(folderPath, (err, files) => {
   if (err) {
-    console.error('❌ 디렉토리 읽기 실패:', err);
+    console.error(' 디렉토리 읽기 실패:', err);
     return;
   }
 
@@ -20,9 +20,9 @@ fs.readdir(folderPath, (err, files) => {
     if (oldPath !== newPath) {
       fs.rename(oldPath, newPath, (err) => {
         if (err) {
-          console.error(`❌ 파일 이름 변경 실패: ${file}`, err);
+          console.error(` 파일 이름 변경 실패: ${file}`, err);
         } else {
-          console.log(`✅ ${file} → ${newFileName}`);
+          console.log(` ${file} → ${newFileName}`);
         }
       });
     }

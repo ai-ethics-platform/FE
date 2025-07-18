@@ -98,7 +98,6 @@ export default function Game08() {
 
       <Layout
         subtopic={subtopic}
-        me="3P"
         onProfileClick={(playerId) => setOpenProfile(playerId)}
       >
         

@@ -27,7 +27,8 @@ export default function Signup02() {
   const [birthDay, setBirthDay] = useState('');
   const [gender, setGender] = useState('');
   const [education, setEducation] = useState('');
-  const [grade, setGrade] = useState('');
+  // const [grade, setGrade] = useState('');
+  const [major, setMajor] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [email, setEmail] = useState('');
   const [birthError, setBirthError] = useState('');
@@ -68,16 +69,17 @@ useEffect(() => {
   
     setBirthError(isValid ? '' : '올바른 형식은 2001-01 입니다.');
   };
-
-  // 학년 옵션
-  const getGradeOptions = () => {
-    if (education === '중학생' || education === '고등학생') {
-      return ['1학년', '2학년', '3학년'];
-    } else if (education === '대학생') {
-      return ['1학년', '2학년', '3학년', '4학년'];
-    }
-    return [];
-  };
+  // 계열 옵션 
+   const majorOptions = ['예술계열', '공학계열', '인문계열', '사회계열']
+  // // 학년 옵션
+  // const getGradeOptions = () => {
+  //   if (education === '중학생' || education === '고등학생') {
+  //     return ['1학년', '2학년', '3학년'];
+  //   } else if (education === '대학생') {
+  //     return ['1학년', '2학년', '3학년', '4학년'];
+  //   }
+  //   return [];
+  // };
 
   // 폼이 모두 유효해야만 버튼 활성화
   const isFormValid = (
@@ -92,7 +94,11 @@ useEffect(() => {
     Boolean(birthMonth.trim()) &&
     (gender === '남' || gender === '여') &&
     Boolean(education) &&
-    Boolean(grade)
+    (
+      (education === '중학생' || education === '고등학생')
+      ? true
+      : Boolean(major)
+    )
   );
 
   const inputStyle = {
@@ -192,7 +198,7 @@ useEffect(() => {
       birthdate,
       gender,
       education_level: education,
-      major:"공학계열",
+      major,
       is_active: true,
       "data_consent": true,
       "voice_consent": true
@@ -403,7 +409,7 @@ useEffect(() => {
                 color: Colors.grey07,
               }}
             >
-              생년월일 *
+              생년월 *
             </div>
             <div
               style={{
@@ -468,11 +474,11 @@ useEffect(() => {
             </div>
             <div style={{ marginBottom: '2vh' }}>
               <SelectDrop
-                options={['중학생', '고등학생', '대학생']}
+                options={['중학생', '고등학생', '대학생','대학원생']}
                 value={education}
                 onSelect={(option) => {
                   setEducation(option);
-                  setGrade('');
+                  setMajor('');
                 }}
                 style={{
                   width: '100%',
@@ -483,12 +489,12 @@ useEffect(() => {
               />
             </div>
 
-            {education && (
+            {(education == '대학생' || education== '대학원생')&&(
               <div style={{ marginBottom: '4vh' }}>
                 <SelectDrop
-                  options={getGradeOptions()}
-                  value={grade}
-                  onSelect={(option) => setGrade(option)}
+                  options={majorOptions}
+                  value={major}
+                  onSelect={(option) => setMajor(option)}
                   style={{
                     width: '100%',
                     height: '8vh',

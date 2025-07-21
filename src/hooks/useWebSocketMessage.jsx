@@ -22,6 +22,17 @@ export const useWebSocketMessage = (messageType, handler, dependencies = []) => 
     return () => removeMessageHandler(handlerId);
   }, [messageType, addMessageHandler, removeMessageHandler]);
 };
+// useWebSocketMessage.js에 추가
+export const useWebSocketDebug = () => {
+  const { isConnected, sessionId } = useWebSocket();
+  
+  useEffect(() => {
+    console.log(`🔗 WebSocket 상태: ${isConnected ? '연결됨' : '연결안됨'}`);
+    console.log(`🆔 세션 ID: ${sessionId || '없음'}`);
+  }, [isConnected, sessionId]);
+
+  return { isConnected, sessionId };
+};
 
 // 모든 메시지에 대한 핸들러 등록
 export const useWebSocketMessageAll = (handler, dependencies = []) => {
@@ -89,4 +100,3 @@ export const useHostActions = () => {
 
   return { isHost, sendNextPage, sendMessage: isHost ? sendMessage : null };
 };
-

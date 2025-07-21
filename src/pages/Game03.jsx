@@ -12,7 +12,6 @@ import { getDilemmaImages } from '../components/dilemmaImageLoader';
 import axiosInstance from '../api/axiosInstance';
 import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 
-// 🆕 WebRTC Hooks
 import { useWebRTC } from '../WebRTCProvider';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import UserProfile from '../components/Userprofile';
@@ -125,7 +124,6 @@ export default function Game03() {
 
   return (
     <Layout subtopic={subtopic} round={round}>
-
       {step === 1 && (
         <>
           <div style={{ display:'flex', justifyContent:'center', gap:16 }}>

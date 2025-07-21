@@ -7,6 +7,7 @@ import Continue from '../components/Continue';
 import Continue3 from '../components/Continue3';
 import ResultPopup from '../components/Results';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
+import { paragraphsData } from '../components/paragraphs';
 
 import axiosInstance from '../api/axiosInstance';
 import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
@@ -24,8 +25,13 @@ export default function Game06() {
   useWebSocketNavigation(navigate, { nextPagePath: '/game08', infoPath: '/game08' });
 
   const { isHost } = useHostActions();
-  const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
-  const roomCode = localStorage.getItem('room_code') ?? '123456';
+  
+   const subtopic = "국가 인공지능 위원회 2";
+  const category = "안드로이드";
+  // const category = localStorage.getItem('category');
+  // const subtopic = localStorage.getItem('subtopic');
+  const roomCode = localStorage.getItem('room_code');
+  const mode      = 'ending1';
 
   // 🆕 WebRTC audio state
   const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
@@ -42,7 +48,7 @@ export default function Game06() {
   };
 
   const [mateName, setMateName] = useState('HomeMate');
-  const [paragraph, setParagraph] = useState({ main: '' });
+  const [paragraphs, setParagraphs]   = useState([]); 
   const [showPopup, setShowPopup] = useState(false);
   const [completedTopics, setCompletedTopics] = useState([]);
   const [currentRound, setCurrentRound] = useState(1);
@@ -50,6 +56,7 @@ export default function Game06() {
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     setCompletedTopics(saved);
+
     setCurrentRound(saved.length + 1);
   }, []);
   // Load or fetch AI mate name and prepare paragraph
@@ -57,22 +64,11 @@ export default function Game06() {
     const storedName = localStorage.getItem('mateName');
     if (storedName) {
       setMateName(storedName);
-      const raw = [{
-        main:
-          `  우리 가족은 최종적으로 감정 업데이트에 동의하였고,
-` +
-          `   ${storedName}와 더욱 친밀한 교류를 이어나가게 되었습니다.
 
-` +
-          `   비록 몇몇 문제들이 있었지만 ${storedName}의 편의성 덕분에 이후
-` +
-          `   우리 가정 뿐 아니라 여러 가정에서 ${storedName}를 사용하게 되었습니다.
+       const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];
+       setParagraphs(resolveParagraphs(rawParagraphs, storedName));
 
-` +
-          `   이후, 가정 뿐 아니라 국가적인 고민거리들이 나타나게 되는데...`,
-      }];
-      const [resolved] = resolveParagraphs(raw, storedName);
-      setParagraph(resolved);
+
     } else {
       (async () => {
         try {
@@ -81,43 +77,14 @@ export default function Game06() {
           const aiName = res.data.ai_name || 'HomeMate';
           setMateName(aiName);
           localStorage.setItem('mateName', aiName);
-          const raw = [{
-            main:
-              `  우리 가족은 최종적으로 감정 업데이트에 동의하였고,
-` +
-              `   ${aiName}와 더욱 친밀한 교류를 이어나가게 되었습니다.
 
-` +
-              `   비록 몇몇 문제들이 있었지만 ${aiName}의 편의성 덕분에 이후
-` +
-              `   우리 가정 뿐 아니라 여러 가정에서 ${aiName}를 사용하게 되었습니다.
+        const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];
+         setParagraphs(resolveParagraphs(rawParagraphs, aiName));
 
-` +
-              `   이후, 가정 뿐 아니라 국가적인 고민거리들이 나타나게 되는데...`,
-          }];
-          const [resolved] = resolveParagraphs(raw, aiName);
-          setParagraph(resolved);
         } catch (err) {
           console.error('AI 이름 로딩 실패:', err);
           const fallback = 'HomeMate';
           setMateName(fallback);
-          
-          // 게임 돌아가게 하는 부분 수정 필요 
-
-//           const raw = [{
-//             main:
-//               `  우리 가족은 최종적으로 감정 업데이트에 동의하였고,
-// ` +
-//               `   ${fallback}와 더욱 친밀한 교류를 이어나가게 되었습니다.
-
-// ` +
-//               `   비록 몇몇 문제들이 있었지만 ${fallback}의 편의성 덕분에 이후
-// ` +
-//               `   우리 가정 뿐 아니라 여러 가정에서 ${fallback}를 사용하게 되었습니다.
-
-// ` +
-//               `   이후, 가정 뿐 아니라 국가적인 고민거리들이 나타나게 되는데...`,
-//           }];
           const [resolved] = resolveParagraphs(raw, fallback);
           setParagraph(resolved);
         }
@@ -161,7 +128,7 @@ export default function Game06() {
     <>
       <Layout round={currentRound} subtopic={subtopic} >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
-          <ContentBox2 text={paragraph.main} width={936} height={407} />
+          <ContentBox2 text={paragraphs[currentRound - 1]?.main || ''} width={936} height={407} />
           {completedTopics.length >= 3 ? (
             <div style={{ display: 'flex', gap: 24 }}>
               <Continue

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
@@ -8,21 +8,33 @@ import Continue from '../components/Continue';
 import Continue3 from '../components/Continue3';
 import ResultPopup from '../components/Results';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
+import { paragraphsData } from '../components/paragraphs';
 
 // 🆕 WebRTC integration
+import axiosInstance from '../api/axiosInstance';
+
 import { useWebRTC } from '../WebRTCProvider';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import UserProfile from '../components/Userprofile';
 
 export default function Game07() {
   const navigate = useNavigate();
-  const { isHost, sendNextPage } = useHostActions();
-  const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
 
   // Host-driven navigation via WebSocket
   useWebSocketNavigation(navigate, { nextPagePath: '/gamemap', infoPath: '/gamemap' });
   useWebSocketNavigation(navigate, { nextPagePath: '/game08', infoPath: '/game08' });
 
+  const { isHost, sendNextPage } = useHostActions();
+
+
+  // const subtopic = "국가 인공지능 위원회 2";
+  // const category = "안드로이드";
+  
+  const subtopic = localStorage.getItem('subtopic');
+  const category = localStorage.getItem('category');
+  const roomCode = localStorage.getItem('room_code');
+  const mode      = 'ending2';
+
+  
   // 🆕 WebRTC audio state
   const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
   const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
@@ -36,21 +48,11 @@ export default function Game07() {
     }
     return getVoiceStateForRole(role);
   };
-
-  const mateName = localStorage.getItem('mateName');
-  const rawParagraphs = [
-    {
-      main:
-        '  우리 가족은 최종적으로 개인정보 제공에 동의하지 않았고, 서비스 관련 약간의 불편함은 있으나 가족의 사생활을 보호하는 것에 만족하였습니다.\n\n' +
-        '우리 가족의 생활을 위해 여러분은 어떤 가치를 택하고, 무엇을 포기했나요?',
-    },
-  ];
-  const [paragraph] = resolveParagraphs(rawParagraphs, mateName);
-
+  const [mateName, setMateName] = useState('HomeMate');
+  const [paragraphs, setParagraphs]   = useState([]); 
   const [completedTopics, setCompletedTopics] = useState([]);
   const [currentRound, setCurrentRound] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
-
   // Load completed topics
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -58,6 +60,39 @@ export default function Game07() {
     setCurrentRound(saved.length + 1);
   }, []);
 
+  useEffect(() => {
+    const storedName = localStorage.getItem('mateName');
+    if (storedName) {
+      setMateName(storedName);
+
+       const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];
+       setParagraphs(resolveParagraphs(rawParagraphs, storedName));
+
+
+    } else {
+      (async () => {
+        try {
+          await fetchWithAutoToken();
+          const res = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });
+          const aiName = res.data.ai_name || 'HomeMate';
+          setMateName(aiName);
+          localStorage.setItem('mateName', aiName);
+
+        const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];
+         setParagraphs(resolveParagraphs(rawParagraphs, aiName));
+
+        } catch (err) {
+          console.error('AI 이름 로딩 실패:', err);
+          const fallback = 'HomeMate';
+          setMateName(fallback);
+          const [resolved] = resolveParagraphs(raw, fallback);
+          setParagraph(resolved);
+        }
+      })();
+    }
+  }, [roomCode]);
+
+  
   const saveCompletedTopic = () => {
     const current = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     if (!current.includes(subtopic)) {
@@ -95,7 +130,7 @@ export default function Game07() {
     <>
       <Layout round={currentRound} subtopic={subtopic}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
-          <ContentBox2 text={paragraph.main} width={936} height={407} />
+          <ContentBox2 text={paragraphs[currentRound - 1]?.main || ''} width={936} height={407} />
           {isResultAvailable ? (
             <div style={{ display: 'flex', gap: 24 }}>
               <Continue

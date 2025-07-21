@@ -33,7 +33,7 @@ const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
   };
 
   return (
-    <Background bgIndex={3}>
+    <Background bgIndex={2}>
       <div style={{ position: 'absolute', top: -10, left: -10 }}>
         <div onClick={handleBackClick}>
           <BackButton />

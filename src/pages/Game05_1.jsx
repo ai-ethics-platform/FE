@@ -63,6 +63,7 @@ export default function Game05_01() {
 
   // 역할명
   const roleNames = { 1: '요양보호사 K', 2: '노모 L', 3: '자녀 J' };
+  
   const roleName  = roleNames[roleId] || '참여자';
 
   // 이미지 불러오기

@@ -24,7 +24,7 @@ import CD2 from "../pages/CD2";
 import CD3 from "../pages/CD3";
 import GameMap from "../pages/GameMap";
 import WebSocketProvider from "../WebSocketProvider";
-import WebRTCProvider from "../WebRTCProvider"; // 🆕 WebRTC Provider 추가
+import WebRTCProvider from "../WebRTCProvider"; 
 import MicTest from '../pages/MicTest';
 import VoiceTestSimulator from '../pages/VoiceTestSimulator';
 

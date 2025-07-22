@@ -22,10 +22,11 @@ export const useWebSocketMessage = (messageType, handler, dependencies = []) => 
     return () => removeMessageHandler(handlerId);
   }, [messageType, addMessageHandler, removeMessageHandler]);
 };
+
 // useWebSocketMessage.js에 추가
 export const useWebSocketDebug = () => {
   const { isConnected, sessionId } = useWebSocket();
-  
+   
   useEffect(() => {
     console.log(`🔗 WebSocket 상태: ${isConnected ? '연결됨' : '연결안됨'}`);
     console.log(`🆔 세션 ID: ${sessionId || '없음'}`);
@@ -82,21 +83,35 @@ export const useWebSocketNavigation = (
   );
 };
 
-
 // 방장 전용 메시지 전송
 export const useHostActions = () => {
   const { sendMessage } = useWebSocket();
   const myRoleId = localStorage.getItem('myrole_id');
   const hostId = localStorage.getItem('host_id');
   const isHost = myRoleId === hostId;
+  const UserId = localStorage.getItem('user_id');
 
+  const NextMessage ={
+    type :"next_page",
+    data:{
+      user_id: UserId
+    }
+  }
   const sendNextPage = () => {
     if (!isHost) {
       alert('⚠️ 방장만 진행할 수 있습니다.');
       return false;
     }
-    return sendMessage({ type: "next_page" });
+    return sendMessage(NextMessage);
   };
 
   return { isHost, sendNextPage, sendMessage: isHost ? sendMessage : null };
+};
+
+/**
+ * 음성 상태 업데이트 전용 훅
+ * 서버에서 받는 메시지 형태: { participant_id, nickname, is_mic_on, is_speaking }
+ */
+export const useVoiceStatusMessages = (handler, dependencies = []) => {
+  useWebSocketMessage('voice_status_update', handler, dependencies);
 };

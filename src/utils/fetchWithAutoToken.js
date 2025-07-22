@@ -1,7 +1,6 @@
 // utils/fetchWithAutoToken.js
 import axios from 'axios';
-import axiosInstance from '../api/axiosInstance';   // ← pull in your main client
-
+import axiosInstance from '../api/axiosInstance';   
 const API_BASE = 'https://dilemmai.org';
 
 export const fetchWithAutoToken = async (origConfig = null) => {
@@ -19,6 +18,7 @@ export const fetchWithAutoToken = async (origConfig = null) => {
     return;
   } catch (err) {
     if (err.response?.status === 401 || err.response?.status === 403) {
+      
       // 2) 만료되었으면 refresh 시도
       try {
         const res = await client.post(
@@ -49,7 +49,7 @@ export const fetchWithAutoToken = async (origConfig = null) => {
         console.error('❌ refreshToken 갱신 실패', refreshErr);
         // 리프레시 실패 시, 로그아웃 처리하거나 로그인 페이지로 이동
         localStorage.clear();
-        window.location.href = '/login';
+        window.location.href = '/';
         throw refreshErr;
       }
     }

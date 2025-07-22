@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import BackButton from '../components/BackButton';
 import StatusCard from '../components/StatusCard';
@@ -10,32 +10,15 @@ import player1 from "../assets/1player_withnum.svg";
 import player2 from "../assets/2player_withnum.svg";
 import player3 from "../assets/3player_withnum.svg";
 import axiosInstance from '../api/axiosInstance';
-import { useWebSocket } from '../WebSocketProvider';
-import { useWebRTC } from '../WebRTCProvider'; 
 import { FontStyles, Colors } from '../components/styleConstants';
 import codeBg from '../assets/roomcodebackground.svg';
-import voiceManager from '../utils/voiceManager';
 
 export default function WaitingRoom() {
   const location = useLocation();
+  const navigate = useNavigate();
   const allTopics = ['안드로이드', '자율 무기 시스템'];
   const initialTopic = location.state?.topic || '안드로이드';
   const initialIndex = allTopics.indexOf(initialTopic);
-
-  // WebSocket 연결
-  const { isConnected, addMessageHandler, removeMessageHandler, sendMessage, initializeVoiceWebSocket } = useWebSocket();
-  
-  // 🔧 WebRTC 연결 - 중복 제거 및 단일 진입점 사용
-  const { 
-    isInitialized: webrtcInitialized, 
-    signalingConnected, 
-    peerConnections,
-    initializeWebRTC,
-    voiceSessionStatus,
-    roleUserMapping,
-    myRoleId,
-    myUserId
-  } = useWebRTC();
   
   // 디버깅을 위한 고유 클라이언트 ID 생성
   const [clientId] = useState(() => {
@@ -43,6 +26,9 @@ export default function WaitingRoom() {
     console.log(`🔍 클라이언트 ID: ${id}`);
     return id;
   });
+
+  // ■ ❶ useRef로 폴링 타이머 ID 관리
+  const pollingIntervalRef = useRef(null);
 
   // 1) UI 상태
   const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 ? initialIndex : 0);
@@ -60,77 +46,15 @@ export default function WaitingRoom() {
   const [statusIndexMap, setStatusIndexMap] = useState({});
   const [hasAssignedRoles, setHasAssignedRoles] = useState(false);
 
-  // 4) 음성 관련 상태
-  const [voiceInitialized, setVoiceInitialized] = useState(false);
-  const [micPermissionGranted, setMicPermissionGranted] = useState(false);
-
-  // 5) 메시지 관련 상태 추가
-  const [initMessageSent, setInitMessageSent] = useState(false);
-  const [joinedUsers, setJoinedUsers] = useState(new Set());
-  const [voiceStatusUsers, setVoiceStatusUsers] = useState(new Map());
+  // 4) 폴링 관련 상태 (표시용)
+  const [isPolling, setIsPolling] = useState(false);
 
   // 업데이트 중복 방지 플래그
   const [isUpdating, setIsUpdating] = useState(false);
-
-  // 🔧 WebRTC 준비 완료 상태 추가
-  const [webrtcReady, setWebrtcReady] = useState(false);
  
   const room_code = localStorage.getItem('room_code');
 
-  // Websocket init 메시지 보내기 
-  const sendInitMessage = () => {
-    if (!isConnected || initMessageSent) return;
-    
-    const userId = localStorage.getItem('user_id');
-    const nickname = localStorage.getItem('nickname');
-    
-    if (!userId || !nickname) {
-      console.warn('⚠️ 사용자 정보가 없어서 init 메시지 전송 불가');
-      return;
-    }
-    const initMessage = {
-      type: "init",
-      data: {
-        user_id: parseInt(userId, 10),
-        guest_id: null,
-        nickname: nickname
-      }
-    };
-
-    const success = sendMessage(initMessage);
-    if (success) {
-      setInitMessageSent(true);
-      console.log(`📤 Websocket init 메시지 전송 완료:`, initMessage);
-    } else {
-      console.error(`❌ [${clientId}] init 메시지 전송 실패`);
-    }
-  };
-
-  const sendVoiceStatusUpdate = (isMicOn, isSpeaking) => {
-    if (!isConnected) return;
-
-    const userId = localStorage.getItem('user_id');
-    
-    const voiceStatusMessage = {
-      type: "voice_status_update",
-      data: {
-        user_id: parseInt(userId),
-        guset_id:null,
-        is_mic_on: isMicOn,
-        is_speaking: isSpeaking,
-        session_id: sessionId,
-      }
-    };
-
-    const success = sendMessage(voiceStatusMessage);
-    if (success) {
-      console.log(`📤 [${clientId}] 음성 상태 업데이트:`, voiceStatusMessage);
-    }
-  };
-
-  // 🔧 중복 WebSocket 연결 제거 - WebRTCProvider만 사용
-
-  // A) 초기 데이터 로드 - 내 정보 조회 (우선순위 높음)
+  // A) 초기 데이터 로드 - 내 정보 조회
   const loadMyInfo = async () => {
     try {
       const { data: userInfo } = await axiosInstance.get('/users/me');
@@ -152,7 +76,9 @@ export default function WaitingRoom() {
   // B) participants 로드 및 역할 배정 확인
   const loadParticipants = async () => {
     try {
+      console.log(`🔄 [${clientId}] API 호출: /rooms/code/${room_code}`);
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
+      console.log(`📊 [${clientId}] API 응답:`, room);
       
       setParticipants(room.participants);
       
@@ -165,7 +91,19 @@ export default function WaitingRoom() {
       });
       setStatusIndexMap(readyMap);
 
-      const hasRoleAssignments = room.participants.every(p => p.role_id != null);
+      const hasRoleAssignments = room.participants.length === 3 && 
+                                room.participants.every(p => p.role_id != null);
+      
+      console.log(`🎭 [${clientId}] 역할 배정 상태:`, {
+        participantCount: room.participants.length,
+        hasRoleAssignments,
+        participants: room.participants.map(p => ({
+          user_id: p.user_id,
+          nickname: p.nickname,
+          role_id: p.role_id,
+          is_ready: p.is_ready
+        }))
+      });
       
       if (hasRoleAssignments && !hasAssignedRoles) {
         console.log(`🎭 [${clientId}] API에서 역할 배정 발견!`);
@@ -206,54 +144,14 @@ export default function WaitingRoom() {
     }
   };
 
-  // 음성 세션 초기화
-  const initializeVoice = async () => {
-    if (voiceInitialized) {
-      console.log(`⚠️ [${clientId}] 음성이 이미 초기화됨`);
-      return;
-    }
-
-    const sessionId = localStorage.getItem('session_id');
-    if (!isConnected || !sessionId) {
-      console.log(`⏳ [${clientId}] WebSocket 연결 및 세션 대기 중...`);
-      setTimeout(() => initializeVoice(), 1000);
-      return;
-    }
-
-    try {
-      console.log(`🎤 [${clientId}] 음성 세션 초기화 시작`);
-      
-      window.webSocketInstance = { sendMessage };
-      
-      const success = await voiceManager.initializeVoiceSession();
-      
-      if (success) {
-        setVoiceInitialized(true);
-        setMicPermissionGranted(true);
-        console.log(`✅ [${clientId}] 음성 세션 초기화 완료`);
-        
-        // 음성 초기화 완료 후 init 메시지 전송
-        setTimeout(() => {
-          sendInitMessage();
-        }, 1000);
-        
-      } else {
-        console.error(`❌ [${clientId}] 음성 세션 초기화 실패`);
-        setMicPermissionGranted(false);
-      }
-    } catch (err) {
-      console.error(`❌ [${clientId}] 음성 초기화 에러:`, err);
-      setMicPermissionGranted(false);
-    }
-  };
-
-  // 나머지 함수들은 기존과 동일...
   const updateAssignmentsWithRoles = async () => {
     if (participants.length === 0 || isUpdating) return;
     
     setIsUpdating(true);
 
     try {
+      console.log(`🔄 [${clientId}] assignments 업데이트 시작`, { participantsCount: participants.length });
+      
       const updatedAssignments = participants.map(p => {
         let userRoleId = null;
         for (let roleId = 1; roleId <= 3; roleId++) {
@@ -271,6 +169,7 @@ export default function WaitingRoom() {
         };
       });
 
+      console.log(`📋 [${clientId}] 업데이트된 assignments:`, updatedAssignments);
       setAssignments(updatedAssignments);
       
       if (myPlayerId) {
@@ -279,6 +178,7 @@ export default function WaitingRoom() {
           const currentMyRole = localStorage.getItem('myrole_id');
           if (currentMyRole !== String(myAssign.role_id)) {
             localStorage.setItem('myrole_id', String(myAssign.role_id));
+            console.log(`💾 [${clientId}] 내 역할 업데이트: ${myAssign.role_id}`);
           }
         }
       }
@@ -289,6 +189,7 @@ export default function WaitingRoom() {
           const currentHostId = localStorage.getItem('host_id');
           if (currentHostId !== String(hostAssign.role_id)) {
             localStorage.setItem('host_id', String(hostAssign.role_id));
+            console.log(`💾 [${clientId}] 호스트 역할 업데이트: ${hostAssign.role_id}`);
           }
         }
       }
@@ -365,155 +266,153 @@ export default function WaitingRoom() {
     }
   };
 
-  // ✅ WebSocket 메시지 핸들러 강화
-  useEffect(() => {
-    if (!isConnected) return;
-
-    const handlerId = 'waiting-room-enhanced';
-    
-    const messageHandler = (message) => {
-      console.log(`📨 [${clientId}] WebSocket 메시지 수신:`, message);
+  // ■ ❷ 폴링 함수 - 방 상태를 주기적으로 확인
+  const pollRoomStatus = async () => {
+    try {
+      console.log(`🔄 [${clientId}] 폴링 실행 중...`);
+      const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
+      console.log(`📊 [${clientId}] 폴링 응답:`, {
+        participantCount: room.participants.length,
+        participants: room.participants.map(p => ({
+          user_id: p.user_id,
+          nickname: p.nickname,
+          role_id: p.role_id,
+          is_ready: p.is_ready,
+          is_host: p.is_host
+        }))
+      });
       
-      switch (message.type) {
-        case 'join':
-          if (message.participant_id && message.nickname) {
-            setJoinedUsers(prev => new Set([...prev, message.participant_id]));
-            console.log(`👋 [${clientId}] 새 유저 참가: ${message.nickname} (ID: ${message.participant_id})`);
-          }
-          
-          setTimeout(() => {
-            loadParticipants();
-          }, 100);
-          break;
-          
-        case 'voice_status_update':
-          setTimeout(() => {
-            loadParticipants();
-          }, 100);
-          break;
-          
-        default:
-          if (message.participant_id && message.nickname) {
-            setVoiceStatusUsers(prev => new Map(prev.set(message.participant_id, {
-              nickname: message.nickname,
-              is_mic_on: message.is_mic_on,
-              is_speaking: message.is_speaking,
-              lastUpdate: Date.now()
-            })));
-            
-            console.log(`🎤 [${clientId}] 음성 상태 브로드캐스트: ${message.nickname} - 마이크: ${message.is_mic_on ? 'ON' : 'OFF'}, 말하기: ${message.is_speaking ? 'ON' : 'OFF'}`);
-          }
-          
-          setTimeout(() => {
-            loadParticipants();
-          }, 200);
-          break;
-      }
-    };
-    
-    addMessageHandler(handlerId, messageHandler);
-    
-    return () => {
-      removeMessageHandler(handlerId);
-    };
-  }, [isConnected, room_code, sendMessage, joinedUsers]);
-
-  // ✅ 음성 상태 변화 감지 및 전송
-  useEffect(() => {
-    if (!voiceInitialized || !isConnected) return;
-
-    const statusInterval = setInterval(() => {
-      const status = voiceManager.getStatus();
+      // 1. 참가자 업데이트
+      setParticipants(room.participants);
       
-      if (status.isConnected !== voiceSessionStatus.isConnected || 
-          status.isSpeaking !== voiceSessionStatus.isSpeaking) {
-        
-        sendVoiceStatusUpdate(status.isConnected, status.isSpeaking);
+      // 2. 준비 상태 맵 업데이트
+      const readyMap = {};
+      room.participants.forEach(p => {
+        readyMap[String(p.user_id)] = p.is_ready ? 1 : 0;
+      });
+      setStatusIndexMap(readyMap);
+      console.log(`📊 [${clientId}] 준비 상태 맵:`, readyMap);
+      
+      // 3. 내 준비 상태 업데이트
+      if (myPlayerId) {
+        const myParticipant = room.participants.find(p => String(p.user_id) === myPlayerId);
+        if (myParticipant) {
+          const newStatusIndex = myParticipant.is_ready ? 1 : 0;
+          if (newStatusIndex !== myStatusIndex) {
+            console.log(`🔄 [${clientId}] 내 준비 상태 업데이트: ${myStatusIndex} → ${newStatusIndex}`);
+            setMyStatusIndex(newStatusIndex);
+          }
+        }
       }
-    }, 500);
-
-    return () => clearInterval(statusInterval);
-  }, [voiceInitialized, isConnected, voiceSessionStatus]);
-
-  // 나머지 useEffect들...
-
-  useEffect(() => {
-    if (
-      participants.length === 3 &&
-      myPlayerId === hostUserId &&
-      !hasAssignedRoles
-    ) {
-      assignRoles();
-    }
-  }, [participants, myPlayerId, hostUserId, hasAssignedRoles]);
-
-  useEffect(() => {
-      if (hasAssignedRoles) return;
-
-    const unifiedPolling = setInterval(async () => {
-      try {
-        const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
+      
+      // 4. 역할 배정 확인 및 적용
+      const hasApiRoles = room.participants.length === 3 && 
+                         room.participants.every(p => p.role_id != null);
+      
+      if (hasApiRoles) {
+        console.log(`🎭 [${clientId}] 폴링에서 역할 배정 발견!`);
         
-        setParticipants(room.participants);
-        
-        const readyMap = {};
+        const roleUserMap = {};
         room.participants.forEach(p => {
-          readyMap[String(p.user_id)] = p.is_ready ? 1 : 0;
+          if (p.role_id) {
+            roleUserMap[p.role_id] = String(p.user_id);
+          }
         });
-        setStatusIndexMap(readyMap);
         
-        if (myPlayerId) {
-          const myParticipant = room.participants.find(p => String(p.user_id) === myPlayerId);
-          if (myParticipant) {
-            setMyStatusIndex(myParticipant.is_ready ? 1 : 0);
-          }
-        }
+        // localStorage 업데이트 여부 확인
+        const currentRole1 = localStorage.getItem('role1_user_id');
+        const currentRole2 = localStorage.getItem('role2_user_id');
+        const currentRole3 = localStorage.getItem('role3_user_id');
         
-        if (myPlayerId !== hostUserId && room.participants.length === 3) {
-          const hasApiRoles = checkRolesFromAPI(room.participants);
-          const hasLocalRoles = checkIfRolesAlreadyAssigned();
+        if (currentRole1 !== (roleUserMap[1] || '') ||
+            currentRole2 !== (roleUserMap[2] || '') ||
+            currentRole3 !== (roleUserMap[3] || '')) {
           
-          if (hasApiRoles && !hasLocalRoles) {
-            const roleUserMap = {};
-            room.participants.forEach(p => {
-              if (p.role_id) {
-                roleUserMap[p.role_id] = String(p.user_id);
-              }
-            });
-            
-            localStorage.setItem('role1_user_id', roleUserMap[1] || '');
-            localStorage.setItem('role2_user_id', roleUserMap[2] || '');
-            localStorage.setItem('role3_user_id', roleUserMap[3] || '');
-            
-            const myUserId = localStorage.getItem('user_id');
-            const myParticipant = room.participants.find(p => String(p.user_id) === String(myUserId));
-            if (myParticipant && myParticipant.role_id) {
-              localStorage.setItem('myrole_id', String(myParticipant.role_id));
-            }
-            
-            const hostParticipant = room.participants.find(p => String(p.user_id) === String(hostUserId));
-            if (hostParticipant && hostParticipant.role_id) {
-              localStorage.setItem('host_id', String(hostParticipant.role_id));
-            }
-            
-            setHasAssignedRoles(true);
-            
-            setTimeout(() => {
-              updateAssignmentsWithRoles();
-            }, 100);
+          console.log(`💾 [${clientId}] 역할 매핑 업데이트:`, roleUserMap);
+          localStorage.setItem('role1_user_id', roleUserMap[1] || '');
+          localStorage.setItem('role2_user_id', roleUserMap[2] || '');
+          localStorage.setItem('role3_user_id', roleUserMap[3] || '');
+          
+          // 내 역할 업데이트
+          const myUserId = localStorage.getItem('user_id');
+          const myParticipant = room.participants.find(p => String(p.user_id) === String(myUserId));
+          if (myParticipant && myParticipant.role_id) {
+            localStorage.setItem('myrole_id', String(myParticipant.role_id));
+            console.log(`💾 [${clientId}] 내 역할 업데이트: ${myParticipant.role_id}`);
           }
+          
+          // 호스트 역할 업데이트
+          const hostUserId = String(room.created_by);
+          const hostParticipant = room.participants.find(p => String(p.user_id) === hostUserId);
+          if (hostParticipant && hostParticipant.role_id) {
+            localStorage.setItem('host_id', String(hostParticipant.role_id));
+            console.log(`💾 [${clientId}] 호스트 역할 업데이트: ${hostParticipant.role_id}`);
+          }
+          
+          setHasAssignedRoles(true);
+          
+          // assignments 즉시 업데이트
+          setTimeout(() => {
+            updateAssignmentsWithRoles();
+          }, 100);
         }
-        
-      } catch (err) {
-        console.error(`❌ [${clientId}] 통합 폴링 실패:`, err);
       }
-    }, 2000);
-    
-    return () => {
-      clearInterval(unifiedPolling);
-    };
-  }, [room_code, myPlayerId, hostUserId, hasAssignedRoles]);
+      
+      // 5. 모든 유저가 준비 완료되었는지 확인 - 최우선 체크
+      const readyCount = room.participants.filter(p => p.is_ready).length;
+      console.log(`✅ [${clientId}] 준비 완료 현황: ${readyCount}/${room.participants.length}`);
+      
+      if (readyCount === room.participants.length && room.participants.length === 3) {
+        console.log(`🚀 [${clientId}] 모두 준비 완료 → 게임 시작`);
+        
+        // 🔥 폴링을 즉시 중지
+        stopPolling();
+        
+        // 게임 화면으로 이동
+        navigate('/gameintro');
+        return; // 함수 조기 종료
+      }
+      
+    } catch (err) {
+      console.error(`❌ [${clientId}] 폴링 실패:`, err);
+    }
+  };
 
+  // ■ ❸ 폴링 시작 함수
+  const startPolling = () => {
+    // 이미 폴링 중이면 중복 시작 방지
+    if (pollingIntervalRef.current) {
+      console.log(`⚠️ [${clientId}] 폴링이 이미 실행 중`);
+      return;
+    }
+    
+    console.log(`🔄 [${clientId}] 폴링 시작 (5초 간격)`);
+    setIsPolling(true);
+    
+    // 즉시 한 번 실행
+    pollRoomStatus();
+    
+    // 5초마다 폴링
+    pollingIntervalRef.current = setInterval(() => {
+      pollRoomStatus();
+    }, 5000);
+  };
+
+  // ■ ❹ 폴링 중지 함수
+  const stopPolling = () => {
+    console.log(`⏹️ [${clientId}] stopPolling 호출됨`);
+    
+    if (pollingIntervalRef.current) {
+      console.log(`⏹️ [${clientId}] 폴링 인터벌 클리어: ${pollingIntervalRef.current}`);
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    
+    setIsPolling(false);
+    console.log(`⏹️ [${clientId}] 폴링 상태 업데이트 완료`);
+  };
+
+  // ■ ❺ 초기화 useEffect
   useEffect(() => {
     const initializeRoom = async () => {
       console.log(`🚀 [${clientId}] 초기화 시작`);
@@ -537,34 +436,6 @@ export default function WaitingRoom() {
         isHost: isHost ? '방장' : '일반 유저' 
       });
       
-      const tryWebSocketInit = async (attempt = 1, maxAttempts = 5) => {
-        try {
-          await initializeVoiceWebSocket(isHost);
-          console.log(`✅ [${clientId}] WebSocket 초기화 완료`);
-
-          setTimeout(async () => {
-            sendInitMessage();
-            console.log(`📤 [${clientId}] WebSocket 초기화 메시지 전송 완료`);
-          }, 2000);
-
-          return true;
-        } catch (error) {
-          console.warn(`⚠️ [${clientId}] WebSocket 초기화 실패 (시도 ${attempt}/${maxAttempts})`);
-          
-          if (!isHost && attempt < maxAttempts) {
-            setTimeout(() => {
-              tryWebSocketInit(attempt + 1, maxAttempts);
-            }, 3000);
-            return false;
-          } else {
-            console.error(`❌ [${clientId}] WebSocket 초기화 최종 실패`);
-            return false;
-          }
-        }
-      };
-      
-      await tryWebSocketInit();
-      
       if (checkIfRolesAlreadyAssigned()) {
         setHasAssignedRoles(true);
       }
@@ -572,66 +443,34 @@ export default function WaitingRoom() {
       setTimeout(() => {
         updateAssignmentsWithRoles();
       }, 200);
+      
+      // 폴링 시작
+      setTimeout(() => {
+        startPolling();
+      }, 1000);
     };
     
     initializeRoom();
+    
+    // ■ ❻ 컴포넌트 언마운트 시 또는 room_code 변경 시 폴링 중지
+    return () => {
+      console.log(`🧹 [${clientId}] 컴포넌트 cleanup - 폴링 중지`);
+      stopPolling();
+    };
   }, [room_code]);
 
-  // 🔧 WebRTC 초기화 - 모든 조건이 충족되었을 때만 실행
+  // 방장이고 참가자가 3명일 때 역할 배정
   useEffect(() => {
     if (
-      participants.length === 3 && 
-      hasAssignedRoles && 
-      !webrtcInitialized &&
-      !webrtcReady
+      participants.length === 3 &&
+      myPlayerId === hostUserId &&
+      !hasAssignedRoles
     ) {
-      console.log('🚀 [WaitingRoom] WebRTC 초기화 조건 충족 - WebRTCProvider 시작');
-      
-      setWebrtcReady(true);
-      
-      // WebRTCProvider의 initializeWebRTC만 호출
-      initializeWebRTC()
-        .then(() => {
-          console.log('✅ [WaitingRoom] WebRTCProvider 초기화 완료');
-          
-          // 음성 감지 시작
-          setTimeout(() => {
-            voiceManager.startSpeechDetection();
-            console.log('🎤 [WaitingRoom] 음성 감지 시작');
-          }, 2000);
-        })
-        .catch(err => {
-          console.error('❌ [WaitingRoom] WebRTC 초기화 실패:', err);
-          setWebrtcReady(false);
-        });
+      assignRoles();
     }
-  }, [participants, hasAssignedRoles, webrtcInitialized, webrtcReady, initializeWebRTC]);
+  }, [participants, myPlayerId, hostUserId, hasAssignedRoles]);
 
-  useEffect(() => {
-    const sessionId = localStorage.getItem('session_id');
-    const myRoleId = localStorage.getItem('myrole_id');
-    const hostId = localStorage.getItem('host_id');
-    
-    if (isConnected && sessionId && myRoleId && hostId && !voiceInitialized) {
-      console.log(`🎤 [${clientId}] 음성 초기화 조건 충족`);
-      
-      setTimeout(() => {
-        initializeVoice();
-      }, 1000);
-    }
-  }, [isConnected, voiceInitialized]);
-
-  useEffect(() => {
-    if (hasAssignedRoles && isConnected && !voiceInitialized) {
-      setTimeout(() => {
-        const sessionId = localStorage.getItem('session_id');
-        if (sessionId) {
-          initializeVoice();
-        }
-      }, 500);
-    }
-  }, [hasAssignedRoles, isConnected, voiceInitialized]);
-
+  // 참가자 변경 시 assignments 업데이트
   useEffect(() => {
     if (participants.length > 0) {
       const timeoutId = setTimeout(() => {
@@ -650,36 +489,15 @@ export default function WaitingRoom() {
       setMyStatusIndex(1);
       setShowMicPopup(false);
       
+      // 준비 완료 후 즉시 폴링으로 상태 확인 (한 번만)
       setTimeout(() => {
-        loadParticipants();
+        pollRoomStatus();
       }, 500);
       
-      if (data.game_starting && data.start_time) {
-        const delay = new Date(data.start_time) - new Date();
-        setTimeout(() => window.location.href = '/gameintro2', delay);
-      }
     } catch (err) {
       console.error(`❌ [${clientId}] ready 실패:`, err);
     }
   };
-
-  useEffect(() => {
-    if (participants.length === 0) return;
-    const readyCount = participants.filter(p => p.is_ready).length;
-    if (readyCount === participants.length && participants.length === 3) {
-      console.log(`✅ [${clientId}] 모두 준비 완료 → 게임 시작`);
-      window.location.href = '/gameintro2';
-    }
-  }, [participants]);
-
-  useEffect(() => {
-    return () => {
-      if (voiceInitialized) {
-        console.log(`🧹 [${clientId}] 컴포넌트 언마운트, 음성 정리`);
-        voiceManager.cleanup();
-      }
-    };
-  }, [voiceInitialized]);
 
   const getPlayerImage = (roleId) => {
     const playerImages = {
@@ -691,63 +509,81 @@ export default function WaitingRoom() {
   };
 
   const getOrderedPlayers = () => {
-    if (!myPlayerId || assignments.length !== 3)
-      return participants.map(p => p.user_id);
+    console.log(`🎯 [${clientId}] getOrderedPlayers 호출:`, {
+      myPlayerId,
+      participantsLength: participants.length,
+      assignmentsLength: assignments.length,
+      participants: participants.map(p => ({ user_id: p.user_id, nickname: p.nickname })),
+      assignments: assignments.map(a => ({ player_id: a.player_id, role_id: a.role_id }))
+    });
 
-    const me = assignments.find(a => String(a.player_id) === myPlayerId);
-    const others = assignments.filter(a => String(a.player_id) !== myPlayerId);
-    return [others[0]?.player_id, me?.player_id, others[1]?.player_id].filter(Boolean);
+    // participants가 있으면 항상 3명을 표시 (assignments가 없어도)
+    if (!myPlayerId || participants.length !== 3) {
+      const playerIds = participants.map(p => p.user_id);
+      console.log(`⚠️ [${clientId}] 조건 미충족, 기본 순서 반환:`, playerIds);
+      return playerIds;
+    }
+
+    // 나를 가운데 놓고 나머지를 양옆에 배치
+    const allPlayerIds = participants.map(p => p.user_id);
+    const otherPlayerIds = allPlayerIds.filter(id => String(id) !== String(myPlayerId));
+    
+    const orderedPlayers = [
+      otherPlayerIds[0], // 왼쪽
+      myPlayerId,        // 가운데 (나)
+      otherPlayerIds[1]  // 오른쪽
+    ].filter(Boolean);
+    
+    console.log(`✅ [${clientId}] 최종 플레이어 순서:`, {
+      left: otherPlayerIds[0],
+      center: myPlayerId,
+      right: otherPlayerIds[1],
+      result: orderedPlayers
+    });
+
+    return orderedPlayers;
   };
 
-  // 디버깅용 전역 함수 강화
+  // 디버깅용 전역 함수
   useEffect(() => {
     window.debugWaitingRoom = {
-      sendTestInit: () => {
-        sendInitMessage();
-      },
-      sendTestVoiceStatus: (isMicOn = true, isSpeaking = false) => {
-        sendVoiceStatusUpdate(isMicOn, isSpeaking);
-      },
-      
-      // 현재 상태 확인
-      getConnectionStatus: () => ({
-        isConnected,
-        voiceInitialized,
-        webrtcInitialized,
-        signalingConnected,
-        initMessageSent,
-        joinedUsers: Array.from(joinedUsers),
-        voiceStatusUsers: Object.fromEntries(voiceStatusUsers),
-        peerConnections: peerConnections.size,
-        roleUserMapping,
-        myRoleId,
-        myUserId
+      getStatus: () => ({
+        clientId,
+        isPolling,
+        pollingIntervalRef: pollingIntervalRef.current,
+        myPlayerId,
+        hostUserId,
+        participants: participants.length,
+        hasAssignedRoles,
+        statusIndexMap,
+        assignments: assignments.length,
       }),
       
-      // P2P 연결 상태 확인
-      checkP2PConnections: () => {
-        console.log('🔗 P2P 연결 상태:');
-        peerConnections.forEach((pc, userId) => {
-          console.log(`User ${userId}: ${pc.connectionState}`);
-        });
-        return peerConnections;
+      forcePoll: () => {
+        console.log('🔧 강제 폴링 실행');
+        pollRoomStatus();
       },
       
-      // WebRTC Provider 상태 강제 확인
-      forceWebRTCInit: () => {
-        console.log('🔧 강제 WebRTC 초기화 시도');
-        initializeWebRTC();
+      startPolling: () => {
+        console.log('🔧 폴링 시작');
+        startPolling();
+      },
+      
+      stopPolling: () => {
+        console.log('🔧 폴링 중지');
+        stopPolling();
       }
     };
 
     return () => {
       delete window.debugWaitingRoom;
     };
-  }, [isConnected, voiceInitialized, webrtcInitialized, signalingConnected, initMessageSent, joinedUsers, voiceStatusUsers, peerConnections, roleUserMapping, myRoleId, myUserId, initializeWebRTC]);
+  }, [isPolling, myPlayerId, hostUserId, participants, hasAssignedRoles, statusIndexMap, assignments]);
+
 
   return (
     <Background bgIndex={3}>
-      {/* ✅ 디버깅 정보 강화 - WebRTC 상태 추가 */}
+      {/* 디버깅 정보 */}
       <div style={{
         position: 'absolute',
         top: '10px',
@@ -762,17 +598,8 @@ export default function WaitingRoom() {
         fontFamily: 'monospace'
       }}>
         <div style={{color: '#00ff00'}}>🔍 Client: {clientId}</div>
-        <div style={{color: isConnected ? '#00ff00' : '#ff0000'}}>
-          WebSocket: {isConnected ? '✅' : '❌'}
-        </div>
-        <div style={{color: webrtcInitialized ? '#00ff00' : '#ff0000'}}>
-          WebRTC Provider: {webrtcInitialized ? '✅' : '❌'}
-        </div>
-        <div style={{color: signalingConnected ? '#00ff00' : '#ff0000'}}>
-          시그널링: {signalingConnected ? '✅' : '❌'}
-        </div>
-        <div style={{color: '#00ffff'}}>
-          P2P 연결: {peerConnections.size}/2
+        <div style={{color: isPolling ? '#00ff00' : '#ff0000'}}>
+          폴링: {isPolling ? '✅ 실행중' : '❌ 중지'}
         </div>
         <div style={{color: '#ffff00'}}>👥 참가자: {participants.length}/3</div>
         <div style={{color: '#00ffff'}}>👤 내 ID: {myPlayerId}</div>
@@ -783,19 +610,12 @@ export default function WaitingRoom() {
         <div style={{color: hasAssignedRoles ? '#00ff00' : '#ff0000'}}>
           🎭 역할배정: {hasAssignedRoles ? 'DONE' : myPlayerId === hostUserId ? 'HOST_PENDING' : 'POLLING'}
         </div>
-        <div style={{color: voiceInitialized ? '#00ff00' : '#ff0000'}}>
-          🎤 음성세션: {voiceInitialized ? 'INIT' : 'PENDING'}
-        </div>
-        <div style={{color: micPermissionGranted ? '#00ff00' : '#ff0000'}}>
-          🔊 마이크권한: {micPermissionGranted ? 'OK' : 'DENIED'}
-        </div>
-        <div>🎪 내 역할: {myRoleId || localStorage.getItem('myrole_id') || 'NONE'}</div>
+        <div>🎪 내 역할: {localStorage.getItem('myrole_id') || 'NONE'}</div>
         <div>👑 호스트 역할: {localStorage.getItem('host_id') || 'NONE'}</div>
         <div>✅ 준비완료: {participants.filter(p => p.is_ready).length}/3</div>
         <div>🔄 업데이트 중: {isUpdating ? 'YES' : 'NO'}</div>
-        <div style={{color: webrtcReady ? '#00ff00' : '#ff0000'}}>
-          🚀 WebRTC 준비: {webrtcReady ? 'READY' : 'WAITING'}
-        </div>
+        <div>📊 Assignments: {assignments.length}</div>
+        <div>🎯 현재 순서: {getOrderedPlayers().join(', ')}</div>
         
         <div style={{ 
           fontSize: '10px', 
@@ -808,20 +628,6 @@ export default function WaitingRoom() {
           <div>role1: {localStorage.getItem('role1_user_id') || 'NULL'}</div>
           <div>role2: {localStorage.getItem('role2_user_id') || 'NULL'}</div>
           <div>role3: {localStorage.getItem('role3_user_id') || 'NULL'}</div>
-        </div>
-        
-        <div style={{ 
-          fontSize: '10px', 
-          marginTop: '5px', 
-          borderTop: '1px solid #555', 
-          paddingTop: '5px',
-          color: '#cccccc'
-        }}>
-          <div>🌐 WebRTC Provider:</div>
-          <div>초기화: {webrtcInitialized ? 'OK' : 'NO'}</div>
-          <div>시그널링: {signalingConnected ? 'OK' : 'NO'}</div>
-          <div>내 User ID: {myUserId || 'NULL'}</div>
-          <div>내 Role ID: {myRoleId || 'NULL'}</div>
         </div>
       </div>
 
@@ -931,9 +737,26 @@ export default function WaitingRoom() {
         boxSizing: 'border-box'
       }}>
         {getOrderedPlayers().map((id, idx) => {
+          console.log(`🎨 [${clientId}] StatusCard 렌더링:`, {
+            id,
+            idx,
+            myPlayerId,
+            isMe: String(id) === String(myPlayerId),
+            hostUserId
+          });
+          
           const assign = assignments.find(a => String(a.player_id) === String(id));
-          const isOwner = String(id) === hostUserId;
-          const isMe = String(id) === myPlayerId;
+          const isOwner = String(id) === String(hostUserId);
+          const isMe = String(id) === String(myPlayerId);
+          
+          console.log(`🎨 [${clientId}] StatusCard ${idx} 상세:`, {
+            id,
+            assign,
+            isOwner,
+            isMe,
+            roleId: assign?.role_id,
+            statusIndex: isMe ? myStatusIndex : statusIndexMap[String(id)] || 0
+          });
           
           return (
             <div key={id} style={{ transform: `scale(${idx === 1 ? 1 : 0.9})` }}>

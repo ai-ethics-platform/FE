@@ -78,6 +78,7 @@
 //     </div>
 //   );
 // }
+
 import React, { useState, useRef, useEffect } from 'react';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';

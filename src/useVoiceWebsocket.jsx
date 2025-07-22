@@ -1,14 +1,12 @@
 import { useEffect, useRef } from 'react';
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 
 export default function useVoiceWebSocket(room_code, onParticipantsUpdate) {
   const ws = useRef(null);
 
   const connectWebSocket = async () => {
     try {
-      await fetchWithAutoToken();
-
+      
       const meRes = await axiosInstance.get('/users/me');
       const nickname = meRes.data.username;
 

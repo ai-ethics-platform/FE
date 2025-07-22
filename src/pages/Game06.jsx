@@ -10,7 +10,6 @@ import { resolveParagraphs } from '../utils/resolveParagraphs';
 import { paragraphsData } from '../components/paragraphs';
 
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
 // 🆕 WebRTC imports
@@ -59,7 +58,6 @@ export default function Game06() {
 
     setCurrentRound(saved.length + 1);
   }, []);
-  // Load or fetch AI mate name and prepare paragraph
   useEffect(() => {
     const storedName = localStorage.getItem('mateName');
     if (storedName) {
@@ -72,7 +70,6 @@ export default function Game06() {
     } else {
       (async () => {
         try {
-          await fetchWithAutoToken();
           const res = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });
           const aiName = res.data.ai_name || 'HomeMate';
           setMateName(aiName);

@@ -8,7 +8,6 @@ import character2 from '../assets/images/character2.png';
 import character3 from '../assets/images/character3.png';
 
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import { useWebRTC } from '../WebRTCProvider'; 
 
@@ -18,7 +17,7 @@ export default function SelectHomeMate() {
   const [hostId, setHostId] = useState(null);
   const [myRoleId, setMyRoleId] = useState(null);
 
-  // 🆕 WebRTC 상태 가져오기
+  //  WebRTC 상태 가져오기
   const { voiceSessionStatus } = useWebRTC();
 
   // 역할별 사용자 ID 매핑
@@ -81,7 +80,6 @@ export default function SelectHomeMate() {
     }
 
     try {
-      await fetchWithAutoToken();
       const { data } = await axiosInstance.post('/rooms/ai-select', {
         room_code: roomCode,
         ai_type: activeIndex + 1,
@@ -101,7 +99,7 @@ export default function SelectHomeMate() {
   };
 
   return (
-    <Background bgIndex={3}>
+    <Background bgIndex={2}>
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
         <div style={{
           position: 'fixed',

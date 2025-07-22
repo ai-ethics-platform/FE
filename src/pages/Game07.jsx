@@ -72,7 +72,6 @@ export default function Game07() {
     } else {
       (async () => {
         try {
-          await fetchWithAutoToken();
           const res = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });
           const aiName = res.data.ai_name || 'HomeMate';
           setMateName(aiName);

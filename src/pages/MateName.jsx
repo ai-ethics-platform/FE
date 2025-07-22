@@ -11,7 +11,6 @@ import character2 from '../assets/images/character2.png';
 import character3 from '../assets/images/character3.png';
 
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import { useWebRTC } from '../WebRTCProvider'; // WebRTC Hook
 
@@ -59,7 +58,6 @@ export default function MateName() {
   useEffect(() => {
     const fetchAiSelection = async () => {
       try {
-        await fetchWithAutoToken();
         const response = await axiosInstance.get('/rooms/ai-select', {
           params: { room_code: roomCode },
         });
@@ -97,7 +95,6 @@ export default function MateName() {
       return;
     }
     try {
-      await fetchWithAutoToken();
       await axiosInstance.post('/rooms/ai-name', {
         room_code: roomCode,
         ai_name: name.trim(),
@@ -112,7 +109,7 @@ export default function MateName() {
   };
 
   return (
-    <Background bgIndex={3}>
+    <Background bgIndex={2}>
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
         {/* 사이드 프로필 */}
         <div style={{

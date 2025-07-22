@@ -38,18 +38,16 @@ function Router() {
         <Route path="/signup01" element={<Signup01 />} />
         <Route path="/signup02" element={<Signup02 />} />
         <Route path="/selectroom" element={<SelectRoom />} />
-        
+        <Route path="/waitingroom" element={<WaitingRoom />} />
         <Route path="/*" element={
           <WebSocketProvider>
             <WebRTCProvider>
               <Routes>
                 <Route path="/voicetestsimulator" element={<VoiceTestSimulator />} />
-                <Route path="/waitingroom" element={<WaitingRoom />} />
                 <Route path="/gameintro" element={<GameIntro />} />
                 <Route path="/gameintro2" element={<GameIntro2 />} />
                 <Route path="/selecthomemate" element={<SelectHomeMate />} />
                 <Route path="/matename" element={<MateName />} />
-                
                 <Route path="/mictest" element={<MicTest />} />
                 <Route path="/game01" element={<Game01 />} />
                 <Route path="/game02" element={<Game02 />} />

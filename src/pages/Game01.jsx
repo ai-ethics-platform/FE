@@ -10,7 +10,6 @@ import character2 from '../assets/images/Char2.jpg';
 import character3 from '../assets/images/Char3.jpg';
 
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { useWebRTC } from '../WebRTCProvider';
@@ -74,7 +73,6 @@ export default function Game01() {
     } else {
       (async () => {
         try {
-          await fetchWithAutoToken();
           const res = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });
           setMateName(res.data.ai_name);
           localStorage.setItem('mateName', res.data.ai_name);

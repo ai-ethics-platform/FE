@@ -12,7 +12,6 @@ import profile3    from '../assets/3playerprofile.svg';
 import { Colors, FontStyles } from '../components/styleConstants';
 
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
 // 🆕 WebRTC Hooks
@@ -60,7 +59,6 @@ export default function Game04() {
   useEffect(() => {
     (async () => {
       try {
-        await fetchWithAutoToken();
         const res = await axiosInstance.get(
           `/rooms/${roomCode}/rounds/${round}/status`
         );

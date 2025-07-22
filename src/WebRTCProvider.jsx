@@ -47,7 +47,7 @@ const WebRTCProvider = ({ children }) => {
   // 🔧 ICE Candidate 큐 (원격 SDP 설정 전까지 임시 저장)
   const pendingCandidates = useRef(new Map()); // userId -> candidates[]
 
-  // 🔧 상태 동기화 useEffect
+  // 🔧 상태 동기화 useEffect - 의존성 배열 수정
   useEffect(() => {
     const syncStateFromLocalStorage = () => {
       const storedUserId = localStorage.getItem('user_id');
@@ -71,7 +71,10 @@ const WebRTCProvider = ({ children }) => {
         role3_user_id: localStorage.getItem('role3_user_id'),
       };
       
-      if (Object.values(mapping).some(id => id) && Object.values(roleUserMapping).every(id => !id)) {
+      const hasMapping = Object.values(mapping).some(id => id);
+      const hasCurrentMapping = Object.values(roleUserMapping).some(id => id);
+      
+      if (hasMapping && !hasCurrentMapping) {
         console.log(`🔄 [${providerId}] 역할 매핑 동기화:`, mapping);
         setRoleUserMapping(mapping);
       }
@@ -84,91 +87,9 @@ const WebRTCProvider = ({ children }) => {
     const syncInterval = setInterval(syncStateFromLocalStorage, 1000);
     
     return () => clearInterval(syncInterval);
-  }, [myUserId, myRoleId, roleUserMapping, providerId]);
+  }, [myUserId, myRoleId, providerId]); // roleUserMapping 제거
 
-  // 역할별 사용자 ID 매핑 저장
-  const saveRoleUserMapping = useCallback(async () => {
-    try {
-      const roomCode = localStorage.getItem('room_code');
-      if (!roomCode) {
-        console.log(`[${providerId}] room_code가 없어서 역할 매핑 스킵`);
-        return null;
-      }
-
-      const { data: room } = await axiosInstance.get(`/rooms/code/${roomCode}`);
-      
-      console.log(`🎭 [${providerId}] 역할별 사용자 매핑 저장:`, room.participants);
-      
-      const mapping = {
-        role1_user_id: null,
-        role2_user_id: null,
-        role3_user_id: null,
-      };
-      
-      // 내 역할 ID 찾기
-      let currentUserRoleId = null;
-      const currentUserId = localStorage.getItem('user_id');
-      
-      room.participants.forEach(participant => {
-        const roleId = participant.role_id;
-        const userId = participant.user_id;
-        
-        if (roleId) {
-          localStorage.setItem(`role${roleId}_user_id`, String(userId));
-          mapping[`role${roleId}_user_id`] = String(userId);
-          console.log(`📝 [${providerId}] Role ${roleId} → User ${userId} 매핑 저장`);
-          
-          // 내 역할 ID 찾기
-          if (String(userId) === currentUserId) {
-            currentUserRoleId = roleId;
-            localStorage.setItem('myrole_id', String(roleId));
-            console.log(`👤 [${providerId}] 내 역할 확인: User ${userId} = Role ${roleId}`);
-          }
-        }
-      });
-      
-      setRoleUserMapping(mapping);
-      setMyRoleId(currentUserRoleId);
-      
-      // 🔧 연결 계획 출력
-      console.log(`📋 [${providerId}] 연결 계획 (Role ${currentUserRoleId} 기준):`);
-      if (currentUserRoleId) {
-        for (let targetRole = currentUserRoleId + 1; targetRole <= 3; targetRole++) {
-          const targetUserId = mapping[`role${targetRole}_user_id`];
-          if (targetUserId) {
-            console.log(`   → Role ${targetRole} (User ${targetUserId})에게 Offer 전송 예정`);
-          }
-        }
-        for (let senderRole = 1; senderRole < currentUserRoleId; senderRole++) {
-          const senderUserId = mapping[`role${senderRole}_user_id`];
-          if (senderUserId) {
-            console.log(`   ← Role ${senderRole} (User ${senderUserId})로부터 Offer 수신 예정`);
-          }
-        }
-      }
-      
-      // 음성 세션 생성/조회
-      try {
-        const nickname = localStorage.getItem('nickname') || "사용자";
-        const { data: voiceSession } = await axiosInstance.post('/voice/sessions', {
-          room_code: roomCode,
-          nickname: nickname
-        });
-        console.log(`🎤 [${providerId}] 음성 세션 생성/조회 성공:`, voiceSession.session_id);
-        localStorage.setItem('voice_session_id', voiceSession.session_id);
-      } catch (sessionError) {
-        console.error(`❌ [${providerId}] 음성 세션 생성 실패:`, sessionError);
-      }
-      
-      return mapping;
-      
-    } catch (error) {
-      console.error(`❌ [${providerId}] 역할별 사용자 매핑 저장 실패:`, error);
-      return null;
-    }
-  }, [providerId]);
-
-  // 🔧 유틸리티 함수들
+  // 🔧 유틸리티 함수들 (먼저 정의)
   const getUserIdByRole = useCallback((roleId) => {
     return roleUserMapping[`role${roleId}_user_id`];
   }, [roleUserMapping]);
@@ -234,7 +155,7 @@ const WebRTCProvider = ({ children }) => {
       console.log(`🧊 [${providerId}] ICE 연결 상태 변경 (User ${remoteUserId}, Role ${remoteRoleId}):`, pc.iceConnectionState);
     };
 
-    // 🔧 Signaling 상태 모니터링 추가
+    // 🔧 Signaling 상태 모니터링 - stable 상태에서 대기 중인 candidates 처리
     pc.onsignalingstatechange = () => {
       const remoteRoleId = getRoleIdByUserId(remoteUserId);
       console.log(`📶 [${providerId}] Signaling 상태 변경 (User ${remoteUserId}, Role ${remoteRoleId}):`, pc.signalingState);
@@ -259,6 +180,7 @@ const WebRTCProvider = ({ children }) => {
 
     // 원격 스트림 수신 이벤트
     pc.ontrack = (event) => {
+
       console.log(`🎵 [${providerId}] 원격 스트림 수신 (User ${remoteUserId}):`, event.streams[0]);
       
       // 기존 오디오 요소 제거 (중복 방지)
@@ -280,64 +202,93 @@ const WebRTCProvider = ({ children }) => {
       console.log(`🔊 [${providerId}] 오디오 요소 생성 완료: User ${remoteUserId} (Role ${remoteRoleId})`);
     };
 
+    // 🔧 새로 추가: PeerConnection 생성 직후 대기 중인 candidates 확인
+    setTimeout(() => {
+      const pendingCands = pendingCandidates.current.get(remoteUserId) || [];
+      if (pendingCands.length > 0 && pc.remoteDescription) {
+        console.log(`🔄 [${providerId}] PeerConnection 생성 후 대기 중인 candidates 처리: ${pendingCands.length}개`);
+        pendingCands.forEach(async (candidate) => {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            console.log(`✅ [${providerId}] 생성 후 ICE candidate 추가 완료: User ${remoteUserId}`);
+          } catch (error) {
+            console.warn(`⚠️ [${providerId}] 생성 후 ICE candidate 추가 실패:`, error.message);
+          }
+        });
+        pendingCandidates.current.delete(remoteUserId);
+      }
+    }, 100);
+
     return pc;
   }, [myUserId, getRoleIdByUserId, myRoleId, providerId]);
 
-  // 🔧 Offer 처리
+  // 🔧 Offer 처리 - 연결되지 않은 모든 사용자로부터 수락
   const handleOffer = useCallback(async (message) => {
     try {
       console.log(`📨 [${providerId}] Offer 수신 처리 시작:`, message);
       
-      // 역할 ID 확인 (localStorage에서 직접)
+      // 역할 ID 확인
       let currentRoleId = myRoleId;
       if (!currentRoleId) {
-        console.log(`⚠️ [${providerId}] myRoleId가 없음, localStorage에서 직접 확인 중...`);
         const storedRoleId = localStorage.getItem('myrole_id');
         if (storedRoleId) {
           currentRoleId = parseInt(storedRoleId);
           console.log(`📝 [${providerId}] localStorage myrole_id 사용: Role ${currentRoleId}`);
           setMyRoleId(currentRoleId);
         } else {
-          console.error(`❌ [${providerId}] localStorage에서도 역할 ID를 찾을 수 없음`);
+          console.error(`❌ [${providerId}] 역할 ID를 찾을 수 없음`);
           return;
         }
       }
       
       console.log(`📋 [${providerId}] 현재 역할 ID: ${currentRoleId}`);
       
-      // localStorage에서 직접 사용자 ID 확인
-      const getSenderUserId = (roleId) => {
-        const userId = localStorage.getItem(`role${roleId}_user_id`);
-        console.log(`📝 [${providerId}] Role ${roleId} → User ${userId} (localStorage)`);
-        return userId;
-      };
-      
-      // 나보다 낮은 역할 ID들 확인
+      // 🔧 수정: 연결되지 않은 모든 사용자로부터의 Offer 수락
+      const connectedUserIds = new Set(peerConnections.keys());
       const possibleSenders = [];
-      for (let roleId = 1; roleId < currentRoleId; roleId++) {
-        const senderUserId = getSenderUserId(roleId);
-        if (senderUserId && !offerReceivedFromRoles.current.has(roleId)) {
+      
+      // 모든 역할의 사용자 확인
+      for (let roleId = 1; roleId <= 3; roleId++) {
+        if (roleId === currentRoleId) continue; // 자기 자신 제외
+        
+        const senderUserId = localStorage.getItem(`role${roleId}_user_id`);
+        if (senderUserId && !connectedUserIds.has(senderUserId)) {
           possibleSenders.push({ roleId, userId: senderUserId });
-          console.log(`👤 [${providerId}] 가능한 발신자: Role ${roleId} (User ${senderUserId})`);
+          console.log(`👤 [${providerId}] 연결 가능한 발신자: Role ${roleId} (User ${senderUserId})`);
         }
       }
       
-      console.log(`🔍 [${providerId}] 가능한 발신자 수: ${possibleSenders.length}`);
+      console.log(`🔍 [${providerId}] 연결 가능한 발신자 수: ${possibleSenders.length}`);
+      console.log(`📝 [${providerId}] 현재 PeerConnection 수: ${peerConnections.size}`);
+      console.log(`📝 [${providerId}] 기존 연결된 Users:`, Array.from(peerConnections.keys()));
       
       if (possibleSenders.length === 0) {
-        console.warn(`⚠️ [${providerId}] Role ${currentRoleId}로 Offer를 보낼 수 있는 역할이 없음`);
-        console.log(`📝 [${providerId}] 이미 받은 Offer:`, Array.from(offerReceivedFromRoles.current));
+        console.warn(`⚠️ [${providerId}] 새로 연결할 수 있는 사용자가 없음 (모두 연결됨)`);
         return;
       }
       
-      // 가장 낮은 역할 ID부터 순차 처리
+      // 첫 번째 가능한 발신자 선택
       const sender = possibleSenders[0];
       const remoteUserId = sender.userId;
       
       console.log(`✅ [${providerId}] Offer 발신자 확정: Role ${sender.roleId} (User ${remoteUserId})`);
+      
+      // Role 기준 추적 (디버깅용)
       offerReceivedFromRoles.current.add(sender.roleId);
       
-      // User ID 기반으로 PeerConnection 생성
+      // 기존 연결이 있다면 제거
+      if (peerConnections.has(remoteUserId)) {
+        console.log(`🔄 [${providerId}] 기존 PeerConnection 제거: User ${remoteUserId}`);
+        const oldPc = peerConnections.get(remoteUserId);
+        oldPc.close();
+        setPeerConnections(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(remoteUserId);
+          return newMap;
+        });
+      }
+      
+      // 새 PeerConnection 생성
       const pc = createPeerConnection(remoteUserId);
       setPeerConnections(prev => new Map(prev.set(remoteUserId, pc)));
       
@@ -349,19 +300,32 @@ const WebRTCProvider = ({ children }) => {
       
       console.log(`📝 [${providerId}] 원격 SDP 설정 완료: Role ${sender.roleId} (User ${remoteUserId})`);
       
-      // 로컬 스트림 추가
-      if (voiceManager.mediaStream) {
-        voiceManager.mediaStream.getTracks().forEach(track => {
-          pc.addTrack(track, voiceManager.mediaStream);
-          console.log(`🎤 [${providerId}] 로컬 오디오 트랙 추가 (Answer 생성 시):`, track.kind);
-        });
+      // 음성 스트림 추가
+      let mediaStream = voiceManager.mediaStream;
+      if (!mediaStream) {
+        console.log(`🎤 [${providerId}] 음성 스트림이 없음, 재초기화 시도`);
+        try {
+          await voiceManager.initializeVoiceSession();
+          mediaStream = voiceManager.mediaStream;
+        } catch (error) {
+          console.error(`❌ [${providerId}] 음성 스트림 재초기화 실패:`, error);
+        }
       }
       
-      // Answer 생성
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => {
+          pc.addTrack(track, mediaStream);
+          console.log(`🎤 [${providerId}] 로컬 오디오 트랙 추가:`, track.kind, track.enabled);
+        });
+        console.log(`✅ [${providerId}] 총 ${mediaStream.getTracks().length}개 트랙 추가됨`);
+      }
+      
+      // Answer 생성 및 전송
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       
-      // Answer를 서버로 전송
+      console.log(`📝 [${providerId}] Answer 생성 완료`);
+      
       if (signalingWsRef.current && signalingWsRef.current.readyState === WebSocket.OPEN) {
         const answerMessage = {
           type: "answer",
@@ -369,15 +333,13 @@ const WebRTCProvider = ({ children }) => {
         };
         
         signalingWsRef.current.send(JSON.stringify(answerMessage));
-        console.log(`📤 [${providerId}] Answer 전송 완료: Role ${sender.roleId} (User ${remoteUserId})에게`, answerMessage);
-      } else {
-        console.error(`❌ [${providerId}] WebSocket이 연결되지 않음`);
+        console.log(`📤 [${providerId}] Answer 전송 완료: User ${remoteUserId}에게`);
       }
       
     } catch (error) {
       console.error(`❌ [${providerId}] Offer 처리 오류:`, error);
     }
-  }, [createPeerConnection, myRoleId, providerId]);
+  }, [createPeerConnection, myRoleId, providerId, peerConnections]);
 
   // 🔧 Answer 처리 수정 - signaling state 기반으로 개선
   const handleAnswer = useCallback(async (message) => {
@@ -465,15 +427,10 @@ const WebRTCProvider = ({ children }) => {
     }
   }, [peerConnections, myRoleId, providerId]);
 
-  // 🔧 ICE Candidate 처리 개선 - 대기 큐 시스템 추가
+  // 🔧 ICE Candidate 처리 수정 - PeerConnection 찾기 로직 개선
   const handleCandidate = useCallback(async (message) => {
     try {
       console.log(`📨 [${providerId}] ICE Candidate 수신 처리:`, message);
-      
-      if (peerConnections.size === 0) {
-        console.warn(`⚠️ [${providerId}] PeerConnection이 없음 - Candidate 무시`);
-        return;
-      }
       
       const candidate = {
         candidate: message.candidate,
@@ -481,11 +438,29 @@ const WebRTCProvider = ({ children }) => {
         sdpMLineIndex: message.sdpMLineIndex
       };
       
-      // 🔧 수정: 더 관대한 조건으로 유효한 PeerConnection 찾기
+      // 🔧 수정: PeerConnection이 없을 때만 임시 저장
+      if (peerConnections.size === 0) {
+        console.warn(`⚠️ [${providerId}] PeerConnection이 전혀 없음 - 모든 가능한 User에 임시 저장`);
+        
+        // 모든 가능한 사용자 ID에 대해 임시 저장
+        for (let roleId = 1; roleId <= 3; roleId++) {
+          const userId = localStorage.getItem(`role${roleId}_user_id`);
+          if (userId && userId !== localStorage.getItem('user_id')) {
+            if (!pendingCandidates.current.has(userId)) {
+              pendingCandidates.current.set(userId, []);
+            }
+            pendingCandidates.current.get(userId).push(candidate);
+            console.log(`📦 [${providerId}] ICE candidate 임시 저장: User ${userId} (총 ${pendingCandidates.current.get(userId).length}개)`);
+          }
+        }
+        return;
+      }
+      
+      // 🔧 수정: 유효한 PeerConnection 찾기 - 조건 완화
       const validPeers = Array.from(peerConnections.entries())
         .filter(([userId, pc]) => {
           const hasRemoteSdp = pc.remoteDescription !== null;
-          const validSignalingStates = ['stable', 'have-remote-offer', 'have-local-offer'];
+          const validSignalingStates = ['stable', 'have-remote-offer', 'have-local-offer', 'have-remote-pranswer', 'have-local-pranswer'];
           const isValidSignalingState = validSignalingStates.includes(pc.signalingState);
           const isValidConnectionState = !['failed', 'closed'].includes(pc.connectionState);
           
@@ -504,43 +479,59 @@ const WebRTCProvider = ({ children }) => {
       console.log(`🔍 [${providerId}] 유효한 PeerConnection 수: ${validPeers.length}/${peerConnections.size}`);
       
       if (validPeers.length === 0) {
-        // 🔧 추가: Candidate를 일시적으로 저장
-        console.warn(`⚠️ [${providerId}] 유효한 PeerConnection이 없음 - candidates를 임시 저장`);
+        console.warn(`⚠️ [${providerId}] 유효한 PeerConnection이 없음 - 기존 연결에 임시 저장`);
         
-        // 모든 PeerConnection에 대해 일시적으로 저장
+        // 🔧 수정: 현재 연결된 모든 PeerConnection에 임시 저장
         peerConnections.forEach((pc, userId) => {
           if (!pendingCandidates.current.has(userId)) {
             pendingCandidates.current.set(userId, []);
           }
           pendingCandidates.current.get(userId).push(candidate);
-          console.log(`📦 [${providerId}] ICE candidate 임시 저장: User ${userId}`);
+          console.log(`📦 [${providerId}] ICE candidate 임시 저장: User ${userId} (총 ${pendingCandidates.current.get(userId).length}개)`);
         });
         return;
       }
       
-      // 모든 유효한 연결에 Candidate 추가
+      // 🔧 수정: 모든 유효한 연결에 Candidate 추가
+      let addedCount = 0;
       for (const [remoteUserId, pc] of validPeers) {
         try {
           await pc.addIceCandidate(new RTCIceCandidate(candidate));
           
           const remoteRoleId = getRoleIdByUserId(remoteUserId);
           console.log(`✅ [${providerId}] ICE Candidate 추가 완료: User ${remoteUserId} (Role ${remoteRoleId})`);
+          addedCount++;
         } catch (error) {
           console.warn(`⚠️ [${providerId}] ICE Candidate 추가 실패 (User ${remoteUserId}):`, error.message);
+          
+          // 실패한 경우 임시 저장
+          if (!pendingCandidates.current.has(remoteUserId)) {
+            pendingCandidates.current.set(remoteUserId, []);
+          }
+          pendingCandidates.current.get(remoteUserId).push(candidate);
+          console.log(`📦 [${providerId}] 실패한 Candidate 임시 저장: User ${remoteUserId}`);
         }
       }
+      
+      console.log(`📊 [${providerId}] ICE Candidate 처리 완료: ${addedCount}/${validPeers.length}개 성공`);
       
     } catch (error) {
       console.error(`❌ [${providerId}] ICE Candidate 처리 오류:`, error);
     }
   }, [peerConnections, getRoleIdByUserId, providerId]);
 
-  // 🔧 Offer 생성 및 전송
+  // 🔧 Offer 생성 및 전송 (Role ID 기준)
   const createAndSendOffer = useCallback(async (targetRoleId) => {
     try {
       const remoteUserId = getUserIdByRole(targetRoleId);
       if (!remoteUserId) {
         console.warn(`⚠️ [${providerId}] Role ${targetRoleId}에 해당하는 사용자 없음`);
+        return;
+      }
+      
+      // 🔧 중복 전송 방지
+      if (offerSentToRoles.current.has(targetRoleId)) {
+        console.warn(`⚠️ [${providerId}] Role ${targetRoleId}에게 이미 Offer 전송함`);
         return;
       }
       
@@ -553,17 +544,35 @@ const WebRTCProvider = ({ children }) => {
       const pc = createPeerConnection(remoteUserId);
       setPeerConnections(prev => new Map(prev.set(remoteUserId, pc)));
       
-      // 로컬 스트림 추가
-      if (voiceManager.mediaStream) {
-        voiceManager.mediaStream.getTracks().forEach(track => {
-          pc.addTrack(track, voiceManager.mediaStream);
-          console.log(`🎤 [${providerId}] 로컬 오디오 트랙 추가:`, track.kind);
+      // 음성 스트림 추가
+      let mediaStream = voiceManager.mediaStream;
+      if (!mediaStream) {
+        console.log(`🎤 [${providerId}] 음성 스트림이 없음, 재초기화 시도`);
+        try {
+          await voiceManager.initializeVoiceSession();
+          mediaStream = voiceManager.mediaStream;
+        } catch (error) {
+          console.error(`❌ [${providerId}] 음성 스트림 재초기화 실패:`, error);
+        }
+      }
+      
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => {
+          pc.addTrack(track, mediaStream);
+          console.log(`🎤 [${providerId}] 로컬 오디오 트랙 추가:`, track.kind, track.enabled);
         });
+        console.log(`✅ [${providerId}] 총 ${mediaStream.getTracks().length}개 트랙 추가됨`);
       }
       
       // Offer 생성
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
+      
+      console.log(`📝 [${providerId}] Offer 생성 완료:`, {
+        type: offer.type,
+        sdpLength: offer.sdp.length,
+        hasAudio: offer.sdp.includes('m=audio')
+      });
       
       // Offer를 서버로 전송
       if (signalingWsRef.current && signalingWsRef.current.readyState === WebSocket.OPEN) {
@@ -573,7 +582,7 @@ const WebRTCProvider = ({ children }) => {
         };
         
         signalingWsRef.current.send(JSON.stringify(offerMessage));
-        console.log(`📤 [${providerId}] Offer 생성 → Role ${targetRoleId} (User ${remoteUserId})에게 전송 완료`, offerMessage);
+        console.log(`📤 [${providerId}] Offer 전송 완료: Role ${targetRoleId} (User ${remoteUserId})에게`);
       } else {
         console.error(`❌ [${providerId}] 시그널링 WebSocket이 연결되지 않음`);
       }
@@ -582,6 +591,141 @@ const WebRTCProvider = ({ children }) => {
       console.error(`❌ [${providerId}] Offer 생성 오류:`, error);
     }
   }, [createPeerConnection, getUserIdByRole, providerId]);
+
+  // 🔧 P2P 연결 시작 - 백엔드 규칙에 맞게 수정
+  const startPeerConnections = useCallback(() => {
+    if (!myRoleId || !Object.values(roleUserMapping).some(id => id)) {
+      console.log(`⏳ [${providerId}] P2P 연결 대기 중 - 역할 ID 또는 역할 매핑 없음`);
+      return;
+    }
+
+    console.log(`🚀 [${providerId}] P2P 연결 시작: 내 역할 ${myRoleId} (User ${myUserId})`);
+
+    // 🔧 수정: 백엔드 연결 규칙에 따른 Offer 전송
+    // Role 1: Offer 전송 안함 (Answer만)
+    // Role 2: Role 1에게만 Offer 전송
+    // Role 3: Role 1, 2에게 Offer 전송
+
+    if (myRoleId === 1) {
+      console.log(`👤 [${providerId}] Role 1: Offer 전송하지 않음, Answer만 대기`);
+      console.log(`⬅️ [${providerId}] Role 2, 3으로부터 Offer 수신 대기 중`);
+      
+      // Role 1은 아무것도 하지 않음 (Offer를 받아서 Answer만 보냄)
+      
+    } else if (myRoleId === 2) {
+      console.log(`👤 [${providerId}] Role 2: Role 1에게만 Offer 전송`);
+      
+      const targetUserId = getUserIdByRole(1);
+      if (targetUserId) {
+        console.log(`➡️ [${providerId}] Role 1 (User ${targetUserId})에게 Offer 전송 예정`);
+        setTimeout(() => {
+          createAndSendOffer(1);
+        }, 1000);
+      } else {
+        console.log(`⚠️ [${providerId}] Role 1에 해당하는 사용자 없음`);
+      }
+      
+      console.log(`⬅️ [${providerId}] Role 3으로부터 Offer 수신 대기 중`);
+      
+    } else if (myRoleId === 3) {
+      console.log(`👤 [${providerId}] Role 3: Role 1, 2에게 Offer 전송`);
+      
+      // Role 1에게 Offer (우선순위 1)
+      const role1UserId = getUserIdByRole(1);
+      if (role1UserId) {
+        console.log(`➡️ [${providerId}] Role 1 (User ${role1UserId})에게 Offer 전송 예정`);
+        setTimeout(() => {
+          createAndSendOffer(1);
+        }, 1000);
+      }
+      
+      // Role 2에게 Offer (우선순위 2)
+      const role2UserId = getUserIdByRole(2);
+      if (role2UserId) {
+        console.log(`➡️ [${providerId}] Role 2 (User ${role2UserId})에게 Offer 전송 예정`);
+        setTimeout(() => {
+          createAndSendOffer(2);
+        }, 2000);
+      }
+    }
+    
+    console.log(`📋 [${providerId}] 연결 계획 완료 (Role ${myRoleId} 기준)`);
+  }, [myRoleId, roleUserMapping, getUserIdByRole, createAndSendOffer, myUserId, providerId]);
+
+  // 역할별 사용자 ID 매핑 저장
+  const saveRoleUserMapping = useCallback(async () => {
+    try {
+      const roomCode = localStorage.getItem('room_code');
+      if (!roomCode) {
+        console.log(`[${providerId}] room_code가 없어서 역할 매핑 스킵`);
+        return null;
+      }
+
+      const { data: room } = await axiosInstance.get(`/rooms/code/${roomCode}`);
+      
+      console.log(`🎭 [${providerId}] 역할별 사용자 매핑 저장:`, room.participants);
+      
+      const mapping = {
+        role1_user_id: null,
+        role2_user_id: null,
+        role3_user_id: null,
+      };
+      
+      // 내 역할 ID 찾기
+      let currentUserRoleId = null;
+      const currentUserId = localStorage.getItem('user_id');
+      
+      room.participants.forEach(participant => {
+        const roleId = participant.role_id;
+        const userId = participant.user_id;
+        
+        if (roleId) {
+          localStorage.setItem(`role${roleId}_user_id`, String(userId));
+          mapping[`role${roleId}_user_id`] = String(userId);
+          console.log(`📝 [${providerId}] Role ${roleId} → User ${userId} 매핑 저장`);
+          
+          // 내 역할 ID 찾기
+          if (String(userId) === currentUserId) {
+            currentUserRoleId = roleId;
+            localStorage.setItem('myrole_id', String(roleId));
+            console.log(`👤 [${providerId}] 내 역할 확인: User ${userId} = Role ${roleId}`);
+          }
+        }
+      });
+      
+      setRoleUserMapping(mapping);
+      setMyRoleId(currentUserRoleId);
+      
+      // 🔧 연결 계획 출력
+      console.log(`📋 [${providerId}] 연결 계획 (Role ${currentUserRoleId} 기준):`);
+      if (currentUserRoleId === 1) {
+        console.log(`  Role 1: Offer 전송 안함, Answer만`);
+      } else if (currentUserRoleId === 2) {
+        console.log(`  Role 2: Role 1에게만 Offer 전송`);
+      } else if (currentUserRoleId === 3) {
+        console.log(`  Role 3: Role 1, 2에게 Offer 전송`);
+      }
+      
+      // 음성 세션 생성/조회
+      try {
+        const nickname = localStorage.getItem('nickname') || "사용자";
+        const { data: voiceSession } = await axiosInstance.post('/voice/sessions', {
+          room_code: roomCode,
+          nickname: nickname
+        });
+        console.log(`🎤 [${providerId}] 음성 세션 생성/조회 성공:`, voiceSession.session_id);
+        localStorage.setItem('voice_session_id', voiceSession.session_id);
+      } catch (sessionError) {
+        console.error(`❌ [${providerId}] 음성 세션 생성 실패:`, sessionError);
+      }
+      
+      return mapping;
+      
+    } catch (error) {
+      console.error(`❌ [${providerId}] 역할별 사용자 매핑 저장 실패:`, error);
+      return null;
+    }
+  }, [providerId]);
 
   // 🔧 시그널링 WebSocket 연결
   const connectSignalingWebSocket = useCallback(() => {
@@ -695,37 +839,6 @@ const WebRTCProvider = ({ children }) => {
     }
   }, [handleOffer, handleAnswer, handleCandidate, providerId]);
 
-  // 🔧 P2P 연결 시작
-  const startPeerConnections = useCallback(() => {
-    if (!myRoleId || !Object.values(roleUserMapping).some(id => id)) {
-      console.log(`⏳ [${providerId}] P2P 연결 대기 중 - 역할 ID 또는 역할 매핑 없음`);
-      return;
-    }
-
-    console.log(`🚀 [${providerId}] P2P 연결 시작: 내 역할 ${myRoleId} (User ${myUserId})`);
-
-    // Role 기반 연결 순서, User ID로 실제 통신
-    for (let targetRoleId = myRoleId + 1; targetRoleId <= 3; targetRoleId++) {
-      const targetUserId = getUserIdByRole(targetRoleId);
-      if (targetUserId) {
-        console.log(`➡️ [${providerId}] Role ${targetRoleId} (User ${targetUserId})에게 Offer 전송 예정 (내 역할: ${myRoleId})`);
-        setTimeout(() => {
-          createAndSendOffer(targetRoleId);
-        }, (targetRoleId - myRoleId) * 1000);
-      } else {
-        console.log(`⚠️ [${providerId}] Role ${targetRoleId}에 해당하는 사용자 없음`);
-      }
-    }
-    
-    // 내가 받을 Offer 확인
-    for (let senderRoleId = 1; senderRoleId < myRoleId; senderRoleId++) {
-      const senderUserId = getUserIdByRole(senderRoleId);
-      if (senderUserId) {
-        console.log(`⬅️ [${providerId}] Role ${senderRoleId} (User ${senderUserId})로부터 Offer 대기 중`);
-      }
-    }
-  }, [myRoleId, roleUserMapping, getUserIdByRole, createAndSendOffer, myUserId, providerId]);
-
   // 🔧 WebRTC 초기화
   const initializeWebRTC = useCallback(async () => {
     if (initializationPromiseRef.current) {
@@ -771,7 +884,7 @@ const WebRTCProvider = ({ children }) => {
         }, 100);
         
         setIsInitialized(true);
-        console.log(`✅ [${providerId}] WebRTC 초기화 완료 (Role-User 하이브리드 방식)`);
+        console.log(`✅ [${providerId}] WebRTC 초기화 완료`);
         
         return () => {
           clearInterval(statusInterval);
@@ -787,7 +900,7 @@ const WebRTCProvider = ({ children }) => {
     return initializationPromiseRef.current;
   }, [saveRoleUserMapping, connectSignalingWebSocket, providerId]);
 
-  // 🔧 디버깅 함수
+  // 🔧 디버깅 함수 강화
   const debugPeerConnections = useCallback(() => {
     console.log(`🔍 [${providerId}] === PeerConnection 상태 전체 리포트 ===`);
     
@@ -804,23 +917,50 @@ const WebRTCProvider = ({ children }) => {
     
     console.log(`\n📋 [${providerId}] 역할 매핑:`, roleUserMapping);
     console.log(`👤 [${providerId}] 내 정보: User ${myUserId}, Role ${myRoleId}`);
-    console.log(`📤 [${providerId}] 보낸 Offer:`, Array.from(offerSentToRoles.current));
-    console.log(`📥 [${providerId}] 받은 Offer:`, Array.from(offerReceivedFromRoles.current));
-    console.log(`📦 [${providerId}] 대기 중인 Candidates:`, pendingCandidates.current.size);
+    console.log(`📤 [${providerId}] 보낸 Offer (Role):`, Array.from(offerSentToRoles.current));
+    console.log(`📥 [${providerId}] 받은 Offer (Role):`, Array.from(offerReceivedFromRoles.current));
+    console.log(`📦 [${providerId}] 대기 중인 Candidates:`, Object.fromEntries(pendingCandidates.current));
+    
+    // 🔧 연결 상태별 예상 동작
+    console.log(`\n🎯 [${providerId}] 역할별 예상 연결:`);
+    if (myRoleId === 1) {
+      console.log(`  Role 1: Offer 전송 안함, Role 2,3으로부터 Offer 수신만`);
+    } else if (myRoleId === 2) {
+      console.log(`  Role 2: Role 1에게만 Offer 전송, Role 3으로부터 Offer 수신`);
+    } else if (myRoleId === 3) {
+      console.log(`  Role 3: Role 1,2에게 Offer 전송`);
+    }
+    
+    // voiceManager 상태도 확인
+    const voiceStatus = voiceManager.getStatus();
+    console.log(`\n🎤 [${providerId}] 음성 상태:`, voiceStatus);
+    console.log(`🔊 [${providerId}] 미디어 스트림:`, voiceManager.mediaStream ? 'AVAILABLE' : 'NULL');
+    if (voiceManager.mediaStream) {
+      console.log(`🎵 [${providerId}] 트랙 수:`, voiceManager.mediaStream.getTracks().length);
+      voiceManager.mediaStream.getTracks().forEach((track, index) => {
+        console.log(`  Track ${index}: ${track.kind}, enabled: ${track.enabled}, readyState: ${track.readyState}`);
+      });
+    }
   }, [peerConnections, getRoleIdByUserId, roleUserMapping, myUserId, myRoleId, providerId]);
 
-  // 🔧 P2P 연결 시작 useEffect
+  // 🔧 P2P 연결 시작 useEffect - 안정성 개선
   useEffect(() => {
-    if (signalingConnected && myRoleId && Object.values(roleUserMapping).some(id => id)) {
-      console.log(`🚀 [${providerId}] 시그널링 연결 완료, Role-User 하이브리드 P2P 연결 시작`);
+    // 모든 조건이 충족되었는지 확인
+    const hasRoleId = myRoleId !== null;
+    const hasMapping = Object.values(roleUserMapping).some(id => id);
+    
+    if (signalingConnected && hasRoleId && hasMapping) {
+      console.log(`🚀 [${providerId}] 시그널링 연결 완료, P2P 연결 시작`);
       
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         startPeerConnections();
       }, 1000);
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [signalingConnected, myRoleId, roleUserMapping, startPeerConnections, providerId]);
+  }, [signalingConnected, myRoleId, startPeerConnections, providerId]); // roleUserMapping 제거하여 순환 방지
 
-  // 🔧 디버깅 도구 useEffect
+  // 🔧 디버깅 도구 useEffect - 의존성 배열 최적화
   useEffect(() => {
     window.debugWebRTC = {
       // 현재 상태 확인
@@ -859,9 +999,9 @@ const WebRTCProvider = ({ children }) => {
           candidates.forEach(async (candidate) => {
             try {
               await pc.addIceCandidate(new RTCIceCandidate(candidate));
-              console.log(`✅ 강제 ICE candidate 추가 완료`);
+              console.log(` 강제 ICE candidate 추가 완료`);
             } catch (error) {
-              console.warn(`⚠️ 강제 ICE candidate 추가 실패:`, error.message);
+              console.warn(` 강제 ICE candidate 추가 실패:`, error.message);
             }
           });
           pendingCandidates.current.delete(userId);
@@ -872,9 +1012,9 @@ const WebRTCProvider = ({ children }) => {
     return () => {
       delete window.debugWebRTC;
     };
-  }, [peerConnections, signalingConnected, myUserId, myRoleId, roleUserMapping, debugPeerConnections]);
+  }, [signalingConnected, myUserId, myRoleId]); // 자주 변경되는 의존성 제거
 
-  // 🔧 정리 useEffect
+  // 🔧 정리 useEffect - 의존성 최적화
   useEffect(() => {
     return () => {
       console.log(`🧹 [${providerId}] WebRTC Provider 정리 시작`);
@@ -883,7 +1023,6 @@ const WebRTCProvider = ({ children }) => {
       peerConnections.forEach(pc => {
         pc.close();
       });
-      setPeerConnections(new Map());
       
       // WebSocket 정리
       if (signalingWsRef.current) {
@@ -904,7 +1043,7 @@ const WebRTCProvider = ({ children }) => {
       
       console.log(`✅ [${providerId}] WebRTC Provider 정리 완료`);
     };
-  }, [providerId]);
+  }, []); // 빈 배열로 컴포넌트 언마운트 시에만 실행
 
   // 🔧 Context에서 제공할 값들
   const contextValue = {

@@ -10,7 +10,6 @@ import mainTopicHover from '../assets/maintopicframehover.svg';
 import mainTopicActive from '../assets/maintopicframe.svg';
 
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 
 const topics = ['안드로이드', '자율 무기 시스템'];
 
@@ -31,7 +30,6 @@ export default function CreateRoom2({ onClose }) {
   
     try {
       setLoading(true);
-      await fetchWithAutoToken();
   
       //  1단계: 방 생성
       const response = await axiosInstance.post('/rooms/create/private', {
@@ -46,7 +44,7 @@ export default function CreateRoom2({ onClose }) {
       localStorage.setItem('room_code', roomCode);
       localStorage.setItem('category', topic);
       console.log(" 방 생성 성공 room_code:", roomCode);
-  
+      
       //  3단계: 대기방으로 이동
       navigate('/waitingroom', { state: { topic } });
   

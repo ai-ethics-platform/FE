@@ -10,7 +10,6 @@ import { Colors, FontStyles } from '../components/styleConstants';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 
 import { useWebRTC } from '../WebRTCProvider';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
@@ -76,7 +75,6 @@ export default function Game03() {
     const choiceInt = agree === 'agree' ? 1 : 2;
     try {
       setWaiting(true);
-      await fetchWithAutoToken();
       await axiosInstance.post(
         `/rooms/rooms/round/${roomCode}/choice`,
         { round_number: round, choice: choiceInt }
@@ -91,7 +89,6 @@ export default function Game03() {
   // all_completed 체크 폴링
   const pollConsensus = async () => {
     try {
-      await fetchWithAutoToken();
       const res = await axiosInstance.get(
         `/rooms/${roomCode}/rounds/${round}/status`
       );
@@ -111,7 +108,6 @@ export default function Game03() {
   // step 2: 확신 선택 POST 후 다음 페이지 이동
   const handleSubmitConfidence = async () => {
     try {
-      await fetchWithAutoToken();
       await axiosInstance.post(
         `/rooms/rooms/round/${roomCode}/choice/confidence`,
         { round_number: round, confidence: conf }

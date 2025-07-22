@@ -9,7 +9,6 @@ import { Colors, FontStyles } from '../components/styleConstants';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useHostActions } from '../hooks/useWebSocketMessage';
 
 // 🆕 WebRTC Hooks
@@ -84,7 +83,6 @@ export default function Game05_01() {
     let timer;
     const poll = async () => {
       try {
-        await fetchWithAutoToken();
         const res = await axiosInstance.get(
           `/rooms/${roomCode}/rounds/${round}/status`
         );
@@ -109,7 +107,6 @@ export default function Game05_01() {
     const intChoice = choice === 'agree' ? 1 : 2;
     setConsensusChoice(choice);
     try {
-      await fetchWithAutoToken();
       await axiosInstance.post(
         `/rooms/rooms/round/${roomCode}/consensus`,
         { round_number: round, choice: intChoice }
@@ -135,7 +132,6 @@ export default function Game05_01() {
       return;
     }
     try {
-      await fetchWithAutoToken();
       await axiosInstance.post(
         `/rooms/rooms/round/${roomCode}/consensus/confidence`,
         { round_number: round, confidence: conf }

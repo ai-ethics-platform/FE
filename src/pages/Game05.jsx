@@ -14,7 +14,6 @@ import profile2Img from '../assets/images/CharacterPopUp2.png';
 import profile3Img from '../assets/images/CharacterPopUp3.png';
 
 import axiosInstance from '../api/axiosInstance';
-import { fetchWithAutoToken } from '../utils/fetchWithAutoToken';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
@@ -49,7 +48,6 @@ export default function Game05() {
   useEffect(() => {
     const fetchMateName = async () => {
       try {
-        await fetchWithAutoToken();
         const response = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });
         const aiName = response.data.ai_name;
         setMateName(aiName);

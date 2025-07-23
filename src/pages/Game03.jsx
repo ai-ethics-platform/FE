@@ -10,9 +10,10 @@ import { Colors, FontStyles } from '../components/styleConstants';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
 import axiosInstance from '../api/axiosInstance';
-
+import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+
 import UserProfile from '../components/Userprofile';
 
 const CARD_W = 640;
@@ -25,21 +26,6 @@ export default function Game03() {
   const nav = useNavigate();
   const pollingRef = useRef(null);
 
-
-  // WebRTC 음성 상태
-  const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  const getVoiceState = (role) => {
-    if (String(role) === rtcRole) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on: voiceSessionStatus.isConnected,
-        nickname: voiceSessionStatus.nickname || ''
-      };
-    }
-    return getVoiceStateForRole(role);
-  };
-
   // localStorage에서 값 가져오기
   const roleId        = Number(localStorage.getItem('myrole_id'));
   const roomCode      = localStorage.getItem('room_code') ?? '';
@@ -48,10 +34,28 @@ export default function Game03() {
   const mode          = 'neutral';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
 
-  // role_id → 역할 이름 매핑
-  const roleNames = { 1: '요양보호사 K', 2: '노모 L', 3: '자녀 J' };
-  const roleName  = roleNames[roleId] || '요양보호사 K';
-
+  
+  // 역할 이름 가져오기
+  const getRoleNameBySubtopic = (subtopic, roleId) => {
+    switch (subtopic) {
+      case '가정 1':
+      case '가정 2':
+        return roleId === 1 ? '요양보호사 K' : roleId === 2 ? '노모 L' : '자녀 J';
+      case '국가 인공지능 위원회 1':
+      case '국가 인공지능 위원회 2':
+        return roleId === 1 ? '로봇 제조사 연합회 대표'
+             : roleId === 2 ? '소비자 대표'
+             : '국가 인공지능 위원회 대표';
+      case '국제 인류 발전 위원회 1':
+        return roleId === 1 ? '기업 연합체 대표'
+             : roleId === 2 ? '국제 환경단체 대표'
+             : '소비자 대표';
+      default:
+        return '';
+    }
+  };
+  
+  const roleName = getRoleNameBySubtopic(subtopic, roleId);
   const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
 
   // 상태
@@ -70,6 +74,27 @@ export default function Game03() {
     return () => clearTimeout(pollingRef.current);
   }, []);
 
+  const { isConnected, sessionId, sendMessage } = useWebSocket();
+  const { isInitialized: webrtcInitialized } = useWebRTC();
+  const { isHost, sendNextPage } = useHostActions();
+  useWebSocketNavigation(nav, { nextPagePath: '/game04', infoPath: '/game04' });
+  
+  const [connectionStatus, setConnectionStatus] = useState({
+    websocket: false,
+    webrtc: false,
+    ready: false
+  });
+  
+  useEffect(() => {
+    const newStatus = {
+      websocket: isConnected,
+      webrtc: webrtcInitialized,
+      ready: isConnected && webrtcInitialized
+    };
+    setConnectionStatus(newStatus);
+    console.log('🔧 [Game03] 연결 상태 업데이트:', newStatus);
+  }, [isConnected, webrtcInitialized]);
+  
   // step 1: 개인 동의/비동의 POST 후 consensus 폴링 시작
   const handleSubmitChoice = async () => {
     const choiceInt = agree === 'agree' ? 1 : 2;
@@ -168,7 +193,6 @@ export default function Game03() {
               </div>
             </div>
           </Card>
-
           <div style={{ marginTop:80 }}>
             <Continue width={264} height={72} step={2} disabled={conf===0} onClick={handleSubmitConfidence} />
           </div>

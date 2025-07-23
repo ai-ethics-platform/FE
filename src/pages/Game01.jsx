@@ -3,27 +3,28 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox';
-import UserProfile from '../components/Userprofile';
-
 import character1 from '../assets/images/Char1.jpg';
 import character2 from '../assets/images/Char2.jpg';
 import character3 from '../assets/images/Char3.jpg';
-
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
-import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import voiceManager from '../utils/voiceManager';
+import { 
+  useWebSocketNavigation, 
+  useHostActions 
+} from '../hooks/useWebSocketMessage';
 
 export default function Game01() {
   const navigate = useNavigate();
-  const { isConnected, sessionId, sendMessage } = useWebSocket();
-  const myRoleId = localStorage.getItem('myrole_id');
 
-  console.log('🎮 Game01 렌더링:', { isConnected, sessionId });
+  // WebSocket과 WebRTC 상태 가져오기
+  const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
+  const myRoleId = localStorage.getItem('myrole_id');
+  const { isConnected, sessionId, sendMessage } = useWebSocket();
+
 
   const { isHost, sendNextPage } = useHostActions();
+  
   useWebSocketNavigation(navigate, {
     infoPath: `/character_description${myRoleId}`,
     nextPagePath: `/character_description${myRoleId}`
@@ -39,20 +40,6 @@ export default function Game01() {
   const [isLoading, setIsLoading] = useState(true);
   const hasFetchedAiName = useRef(false);
   const hasJoined = useRef(false);
-
-  // WebRTC 및 WebSocket 음성 상태
-  const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  const getVoiceState = (role) => {
-    if (String(role) === rtcRole) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on: voiceSessionStatus.isConnected,
-        nickname: voiceSessionStatus.nickname || ''
-      };
-    }
-    return getVoiceStateForRole(role);
-  };
 
   // 1. 라운드 계산
   useEffect(() => {
@@ -86,25 +73,55 @@ export default function Game01() {
     }
   }, [roomCode]);
 
-  // 3. Join 메시지
-  useEffect(() => {
-    if (isConnected && sessionId && !hasJoined.current) {
-      sendMessage({ type: 'join', participant_id: Number(myRoleId), nickname });
-      hasJoined.current = true;
-    }
-  }, [isConnected, sessionId, sendMessage, myRoleId, nickname]);
 
-  // 4. 디버그용 음성 세션 상태 확인
-  useEffect(() => {
-    const status = voiceManager.getStatus();
-    console.log('🎤 음성 상태:', status);
-  }, []);
+
+  const [connectionStatus, setConnectionStatus] = useState({
+    websocket: false,
+    webrtc: false,
+    ready: false
+  });
+
+
+   // 🔧 연결 상태 모니터링
+    useEffect(() => {
+      const newStatus = {
+        websocket: isConnected,
+        webrtc: webrtcInitialized,
+        ready: isConnected && webrtcInitialized
+      };
+  
+      setConnectionStatus(newStatus);
+  
+      console.log('🔧 [SelectHomeMate] 연결 상태 업데이트:', newStatus);
+    }, [isConnected, webrtcInitialized]);
 
   // Continue
   const handleContinue = () => {
-    if (isHost) sendNextPage();
-    else alert('⚠️ 방장만 진행할 수 있습니다.');
+    //  연결 상태 확인
+    if (!connectionStatus.ready) {
+      console.warn('⚠️ [SelectHomeMate] 연결이 완전하지 않음:', connectionStatus);
+      alert('연결 상태를 확인하고 다시 시도해주세요.');
+      return;
+    }
+
+    //  방장이 아닌 경우 차단
+    if (!isHost) {
+      console.log('⚠️ [SelectHomeMate] 방장이 아니므로 진행 불가');
+      alert('방장만 게임을 진행할 수 있습니다.');
+      return;
+    }
+    const success = sendNextPage();
+      if (success) {
+        console.log('📤 [game01] next_page 브로드캐스트 전송 성공');
+        console.log('📡 [game01] 서버가 모든 클라이언트에게 브로드캐스트 중...');
+        console.log('🎯 [game01] useWebSocketNavigation이 브로드캐스트를 받아서 자동으로 페이지 이동 처리');
+      } else {
+        console.error('❌ [game01] next_page 브로드캐스트 전송 실패');
+        alert('페이지 이동 신호 전송에 실패했습니다. 다시 시도해주세요.');
+      }
+
   };
+
   const title = localStorage.getItem('title');
 
   const paragraphs = [
@@ -136,7 +153,45 @@ export default function Game01() {
 
   return (
     <Layout round={round} subtopic={subtopic} nodescription={true}  >
-      
+       <div style={{
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        background: 'rgba(0,0,0,0.8)',
+        color: 'white',
+        padding: '12px',
+        borderRadius: '6px',
+        fontSize: '11px',
+        zIndex: 1000,
+        maxWidth: '350px',
+        fontFamily: 'monospace'
+      }}>
+        <div style={{color: '#00ff00'}}>🔍 [SelectHomeMate] 연결 상태</div>
+        <div style={{color: connectionStatus.websocket ? '#00ff00' : '#ff0000'}}>
+          WebSocket: {connectionStatus.websocket ? '✅ Connected' : '❌ Disconnected'}
+        </div>
+        <div style={{color: connectionStatus.webrtc ? '#00ff00' : '#ff0000'}}>
+          WebRTC: {connectionStatus.webrtc ? '✅ Initialized' : '❌ Not Ready'}
+        </div>
+        <div style={{color: connectionStatus.ready ? '#00ff00' : '#ff0000'}}>
+          Overall: {connectionStatus.ready ? '✅ Ready' : '⚠️ Not Ready'}
+        </div>
+        <div style={{color: '#ffff00'}}>
+          내 역할: {myRoleId || 'NULL'}
+        </div>
+        <div style={{color: voiceSessionStatus.isSpeaking ? '#00ff00' : '#888888'}}>
+          내 음성: {voiceSessionStatus.isSpeaking ? '🗣️ 말하는 중' : '🤐 조용함'}
+        </div>
+        <div style={{color: '#ffdddd'}}>
+          🔧 방장 전용 + 브로드캐스트 적용됨
+        </div>
+        {!isHost && (
+          <div style={{color: '#ffaa00'}}>
+            ⏳ 방장의 선택을 기다리는 중...
+          </div>
+        )}
+      </div>
+
       {/* 본문 */}
       <div style={{display:'flex',gap:24,flexWrap:'wrap',justifyContent:'center'}}>
         {images.map((src,i)=>(
@@ -144,7 +199,7 @@ export default function Game01() {
         ))}
       </div>
       <div style={{width:'100%',maxWidth:900}}>
-        <ContentTextBox paragraphs={paragraphs} onContinue={handleContinue} />
+        <ContentTextBox  disabled={!isHost} paragraphs={paragraphs} onContinue={handleContinue} />
       </div>
     </Layout>
   );

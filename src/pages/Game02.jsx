@@ -16,23 +16,32 @@ import profile2Img from '../assets/images/CharacterPopUp2.png';
 import profile3Img from '../assets/images/CharacterPopUp3.png';
 
 import axiosInstance from '../api/axiosInstance';
-
-import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+
 
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
 export default function Game02() {
   const navigate = useNavigate();
-  useWebSocketNavigation(navigate, { nextPagePath: '/game03', infoPath: '/game03' });
+
+  const { isConnected, sessionId, sendMessage } = useWebSocket();
+  const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
+  useWebSocketNavigation(navigate, { nextPagePath: '/game03', infoPath: '/game03' });
+   const [connectionStatus, setConnectionStatus] = useState({
+    websocket: false,
+    webrtc: false,
+    ready: false
+  });
+
 
   // 로컬 설정
   const category = localStorage.getItem('category') ?? '안드로이드';
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
   const mode = localStorage.getItem('mode') ?? 'neutral';
-  const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') || 0);
+  const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex')) || 0;  
   const roomCode = localStorage.getItem('room_code');
 
   const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
@@ -44,21 +53,19 @@ export default function Game02() {
   const [round, setRound] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openProfile, setOpenProfile] = useState(null);
-
-  // WebRTC 음성 상태
-  const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  const getVoiceState = (role) => {
-    if (String(role) === rtcRole) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on: voiceSessionStatus.isConnected,
-        nickname: voiceSessionStatus.nickname || ''
-      };
-    }
-    return getVoiceStateForRole(role);
-  };
-
+  
+  useEffect(() => {
+    const newStatus = {
+      websocket: isConnected,
+      webrtc: webrtcInitialized,
+      ready: isConnected && webrtcInitialized
+    };
+    setConnectionStatus(newStatus);
+  
+    console.log('🔧 [Game02] 연결 상태 업데이트:', newStatus);
+  }, [isConnected, webrtcInitialized]);
+  
+  
   // 라운드 설정 및 AI 이름 조회
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -83,11 +90,27 @@ export default function Game02() {
     if (mateName) setParagraphs(resolveParagraphs(rawParagraphs, mateName));
   }, [mateName, rawParagraphs]);
 
-  // Continue
   const handleContinue = () => {
-    if (isHost) sendNextPage();
-    else alert('⚠️ 방장만 진행할 수 있습니다.');
+    if (!connectionStatus.ready) {
+      console.warn('⚠️ [Game02] 연결이 완전하지 않음:', connectionStatus);
+      alert('연결 상태를 확인하고 다시 시도해주세요.');
+      return;
+    }
+  
+    if (!isHost) {
+      alert('⚠️ 방장만 진행할 수 있습니다.');
+      return;
+    }
+  
+    const success = sendNextPage();
+    if (success) {
+      console.log('📤 [Game02] next_page 브로드캐스트 전송 성공');
+    } else {
+      console.error('❌ [Game02] next_page 브로드캐스트 전송 실패');
+      alert('페이지 이동 신호 전송에 실패했습니다.');
+    }
   };
+  
 
   return (
     <>
@@ -113,7 +136,24 @@ export default function Game02() {
       )}
 
       <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
-       
+      <div style={{
+          position: 'absolute',
+          top: '10px',
+          right: '10px',
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          padding: '12px',
+          borderRadius: '6px',
+          fontSize: '11px',
+          zIndex: 1000,
+          fontFamily: 'monospace'
+        }}>
+          <div>🔍 연결 상태</div>
+          <div>WebSocket: {connectionStatus.websocket ? '✅' : '❌'}</div>
+          <div>WebRTC: {connectionStatus.webrtc ? '✅' : '❌'}</div>
+          <div>전체: {connectionStatus.ready ? '✅ Ready' : '⚠️ Not Ready'}</div>
+        </div>
+
         {/* 본문 */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <img
@@ -125,6 +165,7 @@ export default function Game02() {
             <ContentTextBox
               paragraphs={paragraphs}
               currentIndex={currentIndex}
+              disabled={!isHost}
               setCurrentIndex={setCurrentIndex}
               onContinue={handleContinue}
             />

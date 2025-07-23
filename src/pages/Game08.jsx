@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';      
@@ -18,11 +18,11 @@ import profile1Img from '../assets/images/CharacterPopUp1.png';
 import profile2Img from '../assets/images/CharacterPopUp2.png';
 import profile3Img from '../assets/images/CharacterPopUp3.png';
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
-
-// 🆕 WebRTC integration
+import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import UserProfile from '../components/Userprofile';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+
+
 
 const paragraphs = [
   { main:
@@ -40,31 +40,63 @@ const paragraphs = [
 ];
 
 export default function Game08() {
-  const navigate = useNavigate();
-  const subtopic = '결과: 우리들의 선택';
-
-  // 🆕 WebRTC audio state
-  const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  const getVoiceState = (role) => {
-    if (String(role) === myRoleId) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on:    voiceSessionStatus.isConnected,
-        nickname:     voiceSessionStatus.nickname || ''
-      };
-    }
-    return getVoiceStateForRole(role);
-  };
-
+const navigate = useNavigate();
+ 
+   const { isConnected, sessionId, sendMessage } = useWebSocket();
+   const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
+   const { isHost } = useHostActions();
+    const [connectionStatus, setConnectionStatus] = useState({
+     websocket: false,
+     webrtc: false,
+     ready: false
+   });
+ useWebSocketNavigation(navigate, {
+    infoPath: `/game09`,
+    nextPagePath: `/game09`
+  });
+  useEffect(() => {
+     const newStatus = {
+       websocket: isConnected,
+       webrtc: webrtcInitialized,
+       ready: isConnected && webrtcInitialized
+     };
+     setConnectionStatus(newStatus);
+   
+     console.log('🔧 [Game09] 연결 상태 업데이트:', newStatus);
+   }, [isConnected, webrtcInitialized]);  
+   
+  
+   const subtopic = '결과: 우리들의 선택';
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openProfile, setOpenProfile] = useState(null);
 
-  const handleContinue = () => {
-    navigate('/game09', {
-      state: { agreement: null, confidence: 0 }, 
-    });
-  };
+ // Continue
+ const handleContinue = () => {
+  //  연결 상태 확인
+  if (!connectionStatus.ready) {
+    console.warn('⚠️ [game08] 연결이 완전하지 않음:', connectionStatus);
+    alert('연결 상태를 확인하고 다시 시도해주세요.');
+    return;
+  }
+
+  //  방장이 아닌 경우 차단
+  if (!isHost) {
+    console.log('⚠️ [game08] 방장이 아니므로 진행 불가');
+    alert('방장만 게임을 진행할 수 있습니다.');
+    return;
+  }
+  const success = sendNextPage();
+    if (success) {
+      console.log('📤 [game08] next_page 브로드캐스트 전송 성공');
+      console.log('📡 [game08] 서버가 모든 클라이언트에게 브로드캐스트 중...');
+      console.log('🎯 [game08] useWebSocketNavigation이 브로드캐스트를 받아서 자동으로 페이지 이동 처리');
+    } else {
+      console.error('❌ [game08] next_page 브로드캐스트 전송 실패');
+      alert('페이지 이동 신호 전송에 실패했습니다. 다시 시도해주세요.');
+    }
+
+};
+
 
   return (
     <>

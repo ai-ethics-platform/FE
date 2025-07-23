@@ -1,4 +1,3 @@
-// pages/MateName.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -12,7 +11,14 @@ import character3 from '../assets/images/character3.png';
 
 import axiosInstance from '../api/axiosInstance';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import { useWebRTC } from '../WebRTCProvider'; // WebRTC Hook
+import { useWebRTC } from '../WebRTCProvider';
+import { useWebSocket } from '../WebSocketProvider';
+
+// 🔥 커스텀 훅 임포트 (SelectHomeMate와 동일)
+import { 
+  useWebSocketNavigation, 
+  useHostActions 
+} from '../hooks/useWebSocketMessage';
 
 export default function MateName() {
   const navigate = useNavigate();
@@ -24,8 +30,24 @@ export default function MateName() {
   const [hostId, setHostId] = useState(null);
   const [myRoleId, setMyRoleId] = useState(null);
 
-  // WebRTC 음성 세션 상태 가져오기
-  const { voiceSessionStatus } = useWebRTC();
+  // WebSocket과 WebRTC 상태 가져오기
+  const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
+  const { isConnected: websocketConnected } = useWebSocket();
+
+  // 🔥 커스텀 훅들 사용 (SelectHomeMate와 동일)
+  const { isHost, sendNextPage } = useHostActions();
+  
+  // 🔥 페이지 이동 메시지 핸들러 (useWebSocketNavigation 사용)
+  useWebSocketNavigation(navigate, {
+    nextPagePath: '/gamemap'  // 다음 페이지 경로
+  });
+
+  // 🔧 연결 상태 모니터링
+  const [connectionStatus, setConnectionStatus] = useState({
+    websocket: false,
+    webrtc: false,
+    ready: false
+  });
 
   // 역할별 사용자 ID 매핑
   const [roleUserMapping, setRoleUserMapping] = useState({
@@ -35,7 +57,7 @@ export default function MateName() {
   });
 
   // WebSocket 음성 상태 가져오기 (다른 참가자)
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
+const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
 
   // 컴포넌트 초기화
   useEffect(() => {
@@ -52,7 +74,27 @@ export default function MateName() {
       role2_user_id: role2,
       role3_user_id: role3,
     });
+
+    console.log('🔧 [MateName] 초기화 완료:', {
+      hostId: storedHost,
+      myRoleId: storedMyRole,
+      roleMapping: { role1, role2, role3 },
+      isHost: storedHost === storedMyRole
+    });
   }, []);
+
+  // 🔧 연결 상태 모니터링
+  useEffect(() => {
+    const newStatus = {
+      websocket: websocketConnected,
+      webrtc: webrtcInitialized,
+      ready: websocketConnected && webrtcInitialized
+    };
+
+    setConnectionStatus(newStatus);
+
+    console.log('🔧 [MateName] 연결 상태 업데이트:', newStatus);
+  }, [websocketConnected, webrtcInitialized]);
 
   // 선택된 AI 타입 불러오기
   useEffect(() => {
@@ -63,53 +105,167 @@ export default function MateName() {
         });
         const aiType = response.data.ai_type;
         setSelectedIndex(aiType - 1);
+        console.log('✅ [MateName] AI 선택 정보 로드:', aiType);
       } catch (err) {
-        console.error('❌ AI 정보 불러오기 실패:', err);
+        console.error('❌ [MateName] AI 정보 불러오기 실패:', err);
       }
     };
     fetchAiSelection();
-  }, []);
+  }, [roomCode]);
+
+// selectedIndex가 설정되면 localStorage에 저장
+useEffect(() => {
+  if (selectedIndex !== null) {
+    localStorage.setItem('selectedCharacterIndex', selectedIndex);
+    console.log('✅ [MateName] selectedCharacterIndex 저장됨:', selectedIndex);
+  }
+}, [selectedIndex]);
 
   // 내 음성 상태 대신 WebRTC, 다른 사람은 WebSocket
-  const getVoiceState = (roleId) => {
-    if (String(roleId) === myRoleId) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on: voiceSessionStatus.isConnected,
-        nickname: voiceSessionStatus.nickname || ''
-      };
-    }
-    return getVoiceStateForRole(roleId);
-  };
+  // const getVoiceState = (roleId) => {
+  //   if (String(roleId) === myRoleId) {
+  //     return {
+  //       is_speaking: voiceSessionStatus.isSpeaking,
+  //       is_mic_on: voiceSessionStatus.isConnected,
+  //       nickname: voiceSessionStatus.nickname || ''
+  //     };
+  //   }
+  //   return getVoiceStateForRole(roleId);
+  // };
 
   const paragraphs = [
     {
       main: '     여러분이 사용자라면 HomeMate를 어떻게 부를까요?',
-      sub: '(함께 토론한 후 1P가 입력하고 "다음" 버튼을 클릭해 주세요)',
+      sub: isHost 
+        ? '(함께 토론한 후 방장이 입력하고 "다음" 버튼을 클릭해 주세요)'
+        : '(방장이 이름을 입력할 때까지 기다려주세요)',
     },
   ];
 
+  // 🔥 방장 전용 이름 입력 핸들러
+  const handleNameChange = (e) => {
+    if (!isHost) {
+      console.log('⚠️ [MateName] 방장이 아니므로 이름 입력 불가');
+      return;
+    }
+    
+    setName(e.target.value);
+    console.log(`✏️ [MateName] 방장이 이름 입력: "${e.target.value}"`);
+  };
+
+  // 🔥 방장 전용 다음 버튼 핸들러 (브로드캐스트 전용)
   const handleContinue = async () => {
+    console.log('➡️ [MateName] 다음 버튼 클릭');
+
+    // 🚫 방장이 아닌 경우 차단
+    if (!isHost) {
+      console.log('⚠️ [MateName] 방장이 아니므로 진행 불가');
+      alert('방장만 게임을 진행할 수 있습니다.');
+      return;
+    }
+
+    // 🚫 이름 입력 확인
     if (!name.trim()) {
       alert('이름을 입력해주세요!');
       return;
     }
+
+    // 🚫 연결 상태 확인
+    if (!connectionStatus.ready) {
+      console.warn('⚠️ [MateName] 연결이 완전하지 않음:', connectionStatus);
+      alert('연결 상태를 확인하고 다시 시도해주세요.');
+      return;
+    }
+
     try {
+      console.log('🚀 [MateName] AI 이름 저장 요청:', {
+        roomCode,
+        aiName: name.trim(),
+        connectionStatus
+      });
+
+      // 1. 먼저 AI 이름 저장 API 호출
       await axiosInstance.post('/rooms/ai-name', {
         room_code: roomCode,
         ai_name: name.trim(),
       });
+      
+      console.log('✅ [MateName] AI 이름 저장 완료:', name.trim());
       localStorage.setItem('mateName', name.trim());
-      navigate('/gamemap', { state: { selectedIndex } });
+
+      // 2. AI 이름 저장 성공 후 next_page 브로드캐스트 전송
+      console.log('👑 [MateName] 방장이므로 next_page 브로드캐스트 전송');
+      
+      const success = sendNextPage();
+      if (success) {
+        console.log('📤 [MateName] next_page 브로드캐스트 전송 성공');
+        console.log('📡 [MateName] 서버가 모든 클라이언트에게 브로드캐스트 중...');
+        console.log('🎯 [MateName] useWebSocketNavigation이 브로드캐스트를 받아서 자동으로 페이지 이동 처리');
+      } else {
+        console.error('❌ [MateName] next_page 브로드캐스트 전송 실패');
+        alert('페이지 이동 신호 전송에 실패했습니다. 다시 시도해주세요.');
+      }
+
+      // 🚫 직접 navigate 호출 제거 - 오직 브로드캐스트를 통해서만 페이지 이동
+      // navigate('/gamemap', { state: { selectedIndex } });
+
     } catch (err) {
-      console.error('❌ AI 이름 저장 실패:', err);
+      console.error('❌ [MateName] AI 이름 저장 실패:', err);
       alert(err.response?.data?.detail || '오류가 발생했습니다');
-      navigate('/gamemap', { state: { selectedIndex } });
+      
+      // API 실패 시에만 직접 페이지 이동 (예외적 상황)
+      // navigate('/gamemap', { state: { selectedIndex } });
     }
   };
 
   return (
     <Background bgIndex={2}>
+      {/* 🔧 연결 상태 디버깅 정보 */}
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        background: 'rgba(0,0,0,0.8)',
+        color: 'white',
+        padding: '12px',
+        borderRadius: '6px',
+        fontSize: '11px',
+        zIndex: 1000,
+        maxWidth: '350px',
+        fontFamily: 'monospace'
+      }}>
+        <div style={{color: '#00ff00'}}>🔍 [MateName] 연결 상태</div>
+        <div style={{color: connectionStatus.websocket ? '#00ff00' : '#ff0000'}}>
+          WebSocket: {connectionStatus.websocket ? '✅ Connected' : '❌ Disconnected'}
+        </div>
+        <div style={{color: connectionStatus.webrtc ? '#00ff00' : '#ff0000'}}>
+          WebRTC: {connectionStatus.webrtc ? '✅ Initialized' : '❌ Not Ready'}
+        </div>
+        <div style={{color: connectionStatus.ready ? '#00ff00' : '#ff0000'}}>
+          Overall: {connectionStatus.ready ? '✅ Ready' : '⚠️ Not Ready'}
+        </div>
+        <div style={{color: '#ffff00'}}>
+          내 역할: {myRoleId || 'NULL'}
+        </div>
+        <div style={{color: '#ff00ff'}}>
+          호스트 역할: {hostId || 'NULL'} {isHost ? '👑' : ''}
+        </div>
+        <div style={{color: voiceSessionStatus.isSpeaking ? '#00ff00' : '#888888'}}>
+          내 음성: {voiceSessionStatus.isSpeaking ? '🗣️ 말하는 중' : '🤐 조용함'}
+        </div>
+        <div style={{color: '#ffdddd'}}>
+          🔧 방장 전용 + 브로드캐스트 적용됨
+        </div>
+        {!isHost && (
+          <div style={{color: '#ffaa00'}}>
+            ⏳ 방장의 입력을 기다리는 중...
+          </div>
+        )}
+        <div style={{color: '#00ffff'}}>
+          입력된 이름: "{name || '없음'}"
+        </div>
+      </div>
+
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
         {/* 사이드 프로필 */}
         <div style={{
@@ -117,16 +273,16 @@ export default function MateName() {
           width: 220, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start'
         }}>
           {[1,2,3].map(role => {
-            const vs = getVoiceState(role);
+           // const vs = getVoiceState(role);
             return (
               <UserProfile
                 key={role}
                 player={`${role}P`}
                 isLeader={hostId === String(role)}
                 isMe={myRoleId === String(role)}
-                isSpeaking={vs.is_speaking}
-                isMicOn={vs.is_mic_on}
-                nickname={vs.nickname}
+                // isSpeaking={vs.is_speaking}
+                // isMicOn={vs.is_mic_on}
+                // nickname={vs.nickname}
               />
             );
           })}
@@ -141,17 +297,38 @@ export default function MateName() {
             <img
               src={images[selectedIndex]}
               alt="Selected Character"
-              style={{ width: 264, height: 350, objectFit: 'cover', borderRadius: 4, border: '2px solid #354750' }}
+              style={{ 
+                width: 264, 
+                height: 350, 
+                objectFit: 'cover', 
+                borderRadius: 4, 
+                border: '2px solid #354750',
+                opacity: isHost ? 1 : 0.8 // 🔥 방장이 아니면 약간 흐리게
+              }}
             />
           )}
           <div style={{ height: 20 }} />
+          
+          {/* 🔥 방장 전용 입력창 */}
           <InputBoxSmall
-            placeholder="HomeMate 이름을 입력하세요"
-            width={520} height={64}
-            value={name} onChange={e => setName(e.target.value)}
+            placeholder={isHost ? "HomeMate 이름을 입력하세요" : "방장이 이름을 입력 중입니다..."}
+            width={520} 
+            height={64}
+            value={name} 
+            onChange={handleNameChange} // 🔥 방장 전용 핸들러
+            style={{
+              opacity: isHost ? 1 : 0.6, // 🔥 방장이 아니면 반투명
+              cursor: isHost ? 'text' : 'not-allowed', // 🔥 방장이 아니면 커서 변경
+              backgroundColor: isHost ? undefined : '#f5f5f5' // 🔥 방장이 아니면 회색 배경
+            }}
           />
+          
           <div style={{ width: '100%', maxWidth: 936 }}>
-            <ContentTextBox2 paragraphs={paragraphs} onContinue={handleContinue} />
+            <ContentTextBox2 
+              paragraphs={paragraphs} 
+              onContinue={handleContinue}
+              // 🔥 방장이 아닌 경우 버튼 비활성화 스타일 추가 가능
+            />
           </div>
         </div>
       </div>

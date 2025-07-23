@@ -8,7 +8,7 @@ import Continue from '../components/Continue';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import voiceManager from '../utils/voiceManager';
-
+import { Colors,FontStyles } from '../components/styleConstants';
 import { 
   useWebSocketMessage, 
   useWebSocketNavigation, 
@@ -79,18 +79,18 @@ export default function GameIntro() {
   
 
   // 🔥 next_page 메시지 핸들러 (간단한 방식)
-  useEffect(() => {
-    const handlerId = "on-next-page";
-    const onMessage = (msg) => {
-      if (msg.type === "next_page") {
-        console.log(`➡️ [GameIntro-${clientId}] next_page 수신 → 페이지 이동`);
-        navigate("/selecthomemate");
-      }
-    };
+  // useEffect(() => {
+  //   const handlerId = "on-next-page";
+  //   const onMessage = (msg) => {
+  //     if (msg.type === "next_page") {
+  //       console.log(`➡️ [GameIntro-${clientId}] next_page 수신 → 페이지 이동`);
+  //       navigate("/selecthomemate");
+  //     }
+  //   };
   
-    addMessageHandler(handlerId, onMessage);
-    return () => removeMessageHandler(handlerId);
-  }, [addMessageHandler, removeMessageHandler, navigate, clientId]);
+  //   addMessageHandler(handlerId, onMessage);
+  //   return () => removeMessageHandler(handlerId);
+  // }, [addMessageHandler, removeMessageHandler, navigate, clientId]);
   
   // ref 업데이트
   useEffect(() => {
@@ -304,22 +304,22 @@ export default function GameIntro() {
   const handleContinue = useCallback(() => {
     console.log("🟢 handleContinue 실행됨");
     
-    // 음성 감지 일시중지 (연결은 유지)
-    if (voiceInitialized) {
-      try {
-        if (typeof voiceManager.pauseSpeechDetection === 'function') {
-          voiceManager.pauseSpeechDetection();
-          console.log(`⏸️ [GameIntro-${clientId}] 음성 감지 일시중지`);
-        } else if (typeof voiceManager.stopSpeechDetection === 'function') {
-          voiceManager.stopSpeechDetection();
-          console.log(`⏹️ [GameIntro-${clientId}] 음성 감지 중지`);
-        } else {
-          console.log(`⚠️ [GameIntro-${clientId}] 음성 일시중지/중지 함수 없음`);
-        }
-      } catch (err) {
-        console.error(`❌ [GameIntro-${clientId}] 음성 일시중지 에러:`, err);
-      }
-    }
+    // // 음성 감지 일시중지 (연결은 유지)
+    // if (voiceInitialized) {
+    //   try {
+    //     if (typeof voiceManager.pauseSpeechDetection === 'function') {
+    //       voiceManager.pauseSpeechDetection();
+    //       console.log(`⏸️ [GameIntro-${clientId}] 음성 감지 일시중지`);
+    //     } else if (typeof voiceManager.stopSpeechDetection === 'function') {
+    //       voiceManager.stopSpeechDetection();
+    //       console.log(`⏹️ [GameIntro-${clientId}] 음성 감지 중지`);
+    //     } else {
+    //       console.log(`⚠️ [GameIntro-${clientId}] 음성 일시중지/중지 함수 없음`);
+    //     }
+    //   } catch (err) {
+    //     console.error(`❌ [GameIntro-${clientId}] 음성 일시중지 에러:`, err);
+    //   }
+    // }
     
     // 🔥 방장인 경우 next_page 브로드캐스트 전송 (useHostActions 사용)
     if (isHost && connectionEstablishedRef.current) {
@@ -421,17 +421,20 @@ export default function GameIntro() {
               player="1P"
               isLeader={hostId === '1'}
               isMe={currentMyRoleId === '1'}
+              nodescription={true}
               // ⚠️ 음성 상태 props 제거 - 로컬에서만 확인
                 />
             <UserProfile
               player="2P"
               isLeader={hostId === '2'}
               isMe={currentMyRoleId === '2'}
+              nodescription={true}
                />
             <UserProfile
               player="3P"
               isLeader={hostId === '3'}
               isMe={currentMyRoleId === '3'}
+              nodescription={true}
                 />
           </div>
         </div>

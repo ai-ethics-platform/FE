@@ -9,12 +9,9 @@ import { Colors, FontStyles } from '../components/styleConstants';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
 import axiosInstance from '../api/axiosInstance';
-import { useHostActions } from '../hooks/useWebSocketMessage';
-
-// 🆕 WebRTC Hooks
+import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import UserProfile from '../components/Userprofile';
+import { useHostActions,useWebSocketMessage } from '../hooks/useWebSocketMessage';
 
 const CARD_W = 640;
 const CARD_H = 170;
@@ -26,29 +23,55 @@ export default function Game05_01() {
   const nav = useNavigate();
   const pollingRef = useRef(null);
 
-  // WebSocket host actions
-  const { isHost } = useHostActions();
-
-  // WebRTC 음성 상태
-  const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  const getVoiceState = (role) => {
-    if (String(role) === rtcRole) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on:    voiceSessionStatus.isConnected,
-        nickname:     voiceSessionStatus.nickname || ''
+    const { isConnected, sessionId, sendMessage } = useWebSocket();
+    const { isInitialized: webrtcInitialized } = useWebRTC();
+    const { isHost,sendNextPage } = useHostActions();
+    
+    const [connectionStatus, setConnectionStatus] = useState({
+      websocket: false,
+      webrtc: false,
+      ready: false
+    });
+    
+    useEffect(() => {
+      const newStatus = {
+        websocket: isConnected,
+        webrtc: webrtcInitialized,
+        ready: isConnected && webrtcInitialized
       };
-    }
-    return getVoiceStateForRole(role);
-  };
+      setConnectionStatus(newStatus);
+      console.log('🔧 [Game04] 연결 상태 업데이트:', newStatus);
+    }, [isConnected, webrtcInitialized]);
 
   // 로컬 저장값
   const roleId        = Number(localStorage.getItem('myrole_id'));
   const roomCode      = localStorage.getItem('room_code') ?? '';
-  const mainTopic     = localStorage.getItem('category') ?? '안드로이드';
-  const subtopic      = localStorage.getItem('subtopic') ?? '가정 1';
+  const mainTopic     = localStorage.getItem('category');
+  const subtopic      = localStorage.getItem('subtopic');
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
+
+  
+  // 역할 이름 가져오기
+  const getRoleNameBySubtopic = (subtopic, roleId) => {
+    switch (subtopic) {
+      case '가정 1':
+      case '가정 2':
+        return roleId === 1 ? '요양보호사 K' : roleId === 2 ? '노모 L' : '자녀 J';
+      case '국가 인공지능 위원회 1':
+      case '국가 인공지능 위원회 2':
+        return roleId === 1 ? '로봇 제조사 연합회 대표'
+             : roleId === 2 ? '소비자 대표'
+             : '국가 인공지능 위원회 대표';
+      case '국제 인류 발전 위원회 1':
+        return roleId === 1 ? '기업 연합체 대표'
+             : roleId === 2 ? '국제 환경단체 대표'
+             : '소비자 대표';
+      default:
+        return '';
+    }
+  };
+  
+  const roleName = getRoleNameBySubtopic(subtopic, roleId);
 
   // 라운드 계산
   const [round, setRound] = useState(1);
@@ -60,10 +83,7 @@ export default function Game05_01() {
     return () => clearTimeout(pollingRef.current);
   }, []);
 
-  // 역할명
-  const roleNames = { 1: '요양보호사 K', 2: '노모 L', 3: '자녀 J' };
   
-  const roleName  = roleNames[roleId] || '참여자';
 
   // 이미지 불러오기
   const neutralImgs = getDilemmaImages(mainTopic, subtopic, 'neutral', selectedIndex);
@@ -116,13 +136,27 @@ export default function Game05_01() {
     }
   };
 
+  useWebSocketMessage("next_page", () => {
+    console.log("📩 next_page 수신됨");
+  
+    if (step === 1) {
+      // Step 1 상태면 → step 2로 진행
+      setStep(2);
+    } else if (step === 2) {
+      // Step 2 상태면 → 동의/비동의에 따라 navigate
+      const nextRoute = consensusChoice === 'agree' ? '/game06' : '/game07';
+      nav(nextRoute, { state: { consensus: consensusChoice } });
+    }
+  });
+
+  
   // Step1 Continue (다음 단계)
   const handleStep1Continue = () => {
     if (!isHost) {
       alert('⚠️ 호스트만 다음 단계로 진행할 수 있습니다.');
       return;
     }
-    setStep(2);
+    sendNextPage();
   };
 
   // Step2: 합의 확신도
@@ -136,8 +170,9 @@ export default function Game05_01() {
         `/rooms/rooms/round/${roomCode}/consensus/confidence`,
         { round_number: round, confidence: conf }
       );
-      const nextRoute = consensusChoice === 'agree' ? '/game06' : '/game07';
-      nav(nextRoute, { state: { consensus: consensusChoice } });
+      // const nextRoute = consensusChoice === 'agree' ? '/game06' : '/game07';
+      // nav(nextRoute, { state: { consensus: consensusChoice } });
+      sendNextPage(); // 모든 유저가 game06 또는 game07로 navigate
     } catch (err) {
       console.error('확신 전송 중 오류:', err);
     }

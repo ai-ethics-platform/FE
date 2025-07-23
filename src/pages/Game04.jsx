@@ -12,36 +12,36 @@ import profile3    from '../assets/3playerprofile.svg';
 import { Colors, FontStyles } from '../components/styleConstants';
 
 import axiosInstance from '../api/axiosInstance';
-import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
-
-// 🆕 WebRTC Hooks
+import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import UserProfile from '../components/Userprofile';
-
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 const avatarOf = { '1P': profile1, '2P': profile2, '3P': profile3 };
 
 export default function Game04() {
   const { state } = useLocation();
   const navigate   = useNavigate();
 
-  // WebSocket: 다음 페이지(Game05)로 이동
-  useWebSocketNavigation(navigate, { nextPagePath: '/game05', infoPath: '/game05' });
-  const { isHost, sendNextPage } = useHostActions();
 
-  // WebRTC 음성 상태
-  const { voiceSessionStatus, roleUserMapping, myRoleId: rtcRole } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  const getVoiceState = (role) => {
-    if (String(role) === rtcRole) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on:    voiceSessionStatus.isConnected,
-        nickname:     voiceSessionStatus.nickname || ''
+    const { isConnected, sessionId, sendMessage } = useWebSocket();
+    const { isInitialized: webrtcInitialized } = useWebRTC();
+    const { isHost, sendNextPage } = useHostActions();
+    useWebSocketNavigation(navigate, { nextPagePath: '/game05', infoPath: '/game05' });
+    
+    const [connectionStatus, setConnectionStatus] = useState({
+      websocket: false,
+      webrtc: false,
+      ready: false
+    });
+    
+    useEffect(() => {
+      const newStatus = {
+        websocket: isConnected,
+        webrtc: webrtcInitialized,
+        ready: isConnected && webrtcInitialized
       };
-    }
-    return getVoiceStateForRole(role);
-  };
+      setConnectionStatus(newStatus);
+      console.log('🔧 [Game04] 연결 상태 업데이트:', newStatus);
+    }, [isConnected, webrtcInitialized]);
 
   const myVote   = state?.agreement ?? null;
   const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
@@ -55,26 +55,64 @@ export default function Game04() {
     localStorage.setItem('currentRound', calculatedRound.toString());
   }, []);
 
-  // participants 상태 확인 및 mode 저장
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await axiosInstance.get(
-          `/rooms/${roomCode}/rounds/${round}/status`
-        );
-        const parts = res.data.participants;
-        const agreeCount    = parts.filter(p => p.choice === 1).length;
-        const disagreeCount = parts.filter(p => p.choice === 2).length;
-        const majorityMode = agreeCount >= disagreeCount ? 'agree' : 'disagree';
-        localStorage.setItem('mode', majorityMode);
-      } catch (err) {
-        console.error('참여자 상태 조회 오류:', err);
-      }
-    })();
-  }, [roomCode, round]);
+  const [agreedList, setAgreedList] = useState([]);
+  const [disagreedList, setDisagreedList] = useState([]);
 
-  const agreedList    = state?.agreement === 'agree'    ? ['1P','2P'] : [];
-  const disagreedList = state?.agreement === 'disagree' ? ['3P']      : [];
+useEffect(() => {
+  let attempt = 0;
+  const maxAttempts = 5;
+  const interval = 3000; // 3초
+
+  const fetchAgreementStatus = async () => {
+    try {
+      const res = await axiosInstance.get(
+        `/rooms/${roomCode}/rounds/${round}/status`
+      );
+      const participants = res.data.participants;
+
+      // choice = 1: 동의, choice = 2: 비동의
+      const agreeList = participants
+        .filter(p => p.choice === 1)
+        .map(p => `${p.role_id}P`);
+      const disagreeList = participants
+        .filter(p => p.choice === 2)
+        .map(p => `${p.role_id}P`);
+
+      setAgreedList(agreeList);
+      setDisagreedList(disagreeList);
+
+      console.log(`🌀 [Game04] ${attempt + 1}번째 동의 상태 확인:`, {
+        agreeList,
+        disagreeList,
+      });
+      // ✅ 여기에 mode 저장
+      if (agreeList.length > disagreeList.length) {
+        localStorage.setItem('mode', 'agree');
+      }else{
+        localStorage.setItem('mode','disagree');
+      }
+
+    } catch (err) {
+      console.error('❌ [Game04] 동의 상태 조회 실패:', err);
+    }
+  };
+
+  // 최초 1회 실행
+  fetchAgreementStatus();
+
+  const intervalId = setInterval(() => {
+    attempt += 1;
+    if (attempt >= maxAttempts) {
+      clearInterval(intervalId);
+      console.log('⏹️ [Game04] 동의 상태 폴링 종료 (최대 횟수 도달)');
+    } else {
+      fetchAgreementStatus();
+    }
+  }, interval);
+
+  return () => clearInterval(intervalId);
+}, [roomCode, round]);
+
 
   const [secsLeft, setSecsLeft] = useState(10);
   useEffect(() => {

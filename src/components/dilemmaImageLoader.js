@@ -9,9 +9,9 @@ const topicPrefixes = {
 const subtopicToBaseIndex = {
   '가정 1': 1,
   '가정 2': 4,
-  '국가 1': 7,
-  '국가 2': 10,
-  '국제 1': 13,
+  '국가 인공지능 위원회 1': 7,
+  '국가 인공지능 위원회 2': 10,
+  '국제 인류 발전 위원회 1': 13,
 };
 
 const modeToOffset = {

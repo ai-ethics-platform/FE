@@ -1,6 +1,5 @@
-import React, { useEffect, useState,useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
 import Layout from '../components/Layout';
 import ContentBox2 from '../components/ContentBox2';
@@ -10,49 +9,46 @@ import ResultPopup from '../components/Results';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 import { paragraphsData } from '../components/paragraphs';
 
-// 🆕 WebRTC integration
+//  WebRTC integration
 import axiosInstance from '../api/axiosInstance';
-
+import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+
 
 export default function Game07() {
   const navigate = useNavigate();
+const { isConnected, sessionId, sendMessage } = useWebSocket();
+   const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
+   const { isHost } = useHostActions();
+    const [connectionStatus, setConnectionStatus] = useState({
+     websocket: false,
+     webrtc: false,
+     ready: false
+   });
 
-  // Host-driven navigation via WebSocket
-  useWebSocketNavigation(navigate, { nextPagePath: '/gamemap', infoPath: '/gamemap' });
-  useWebSocketNavigation(navigate, { nextPagePath: '/game08', infoPath: '/game08' });
+  useEffect(() => {
+     const newStatus = {
+       websocket: isConnected,
+       webrtc: webrtcInitialized,
+       ready: isConnected && webrtcInitialized
+     };
+     setConnectionStatus(newStatus);
+   
+     console.log('🔧 [Game02] 연결 상태 업데이트:', newStatus);
+   }, [isConnected, webrtcInitialized]);
 
-  const { isHost, sendNextPage } = useHostActions();
 
-
-  // const subtopic = "국가 인공지능 위원회 2";
-  // const category = "안드로이드";
-  
   const subtopic = localStorage.getItem('subtopic');
   const category = localStorage.getItem('category');
   const roomCode = localStorage.getItem('room_code');
   const mode      = 'ending2';
-
-  
-  // 🆕 WebRTC audio state
-  const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  const getVoiceState = (role) => {
-    if (String(role) === myRoleId) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on:    voiceSessionStatus.isConnected,
-        nickname:     voiceSessionStatus.nickname || ''
-      };
-    }
-    return getVoiceStateForRole(role);
-  };
   const [mateName, setMateName] = useState('HomeMate');
   const [paragraphs, setParagraphs]   = useState([]); 
   const [completedTopics, setCompletedTopics] = useState([]);
   const [currentRound, setCurrentRound] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
+
   // Load completed topics
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -107,20 +103,22 @@ export default function Game07() {
     localStorage.removeItem('category');
     localStorage.removeItem('subtopic');
     localStorage.removeItem('mode');
-    if (!isHost) {
-      alert('⚠️ 방장만 다음 라운드로 진행할 수 있습니다.');
-      return;
-    }
-    sendNextPage();
+    // if (!isHost) {
+    //   alert('⚠️ 방장만 다음 라운드로 진행할 수 있습니다.');
+    //   return;
+    // }
+    navigate('/gamemap');
   };
 
   const handleViewResult = () => {
     saveCompletedTopic();
-    if (!isHost) {
-      alert('⚠️ 방장만 결과 보기로 진행할 수 있습니다.');
-      return;
-    }
-    sendNextPage();
+    // if (!isHost) {
+    //   alert('⚠️ 방장만 결과 보기로 진행할 수 있습니다.');
+    //   return;
+    // }
+    // sendNextPage();
+    if (completedTopics.length >= 5) navigate('/game08');
+    else setShowPopup(true);
   };
 
   const isResultAvailable = completedTopics.length >= 3;
@@ -129,26 +127,23 @@ export default function Game07() {
     <>
       <Layout round={currentRound} subtopic={subtopic}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
-          <ContentBox2 text={paragraphs[currentRound - 1]?.main || ''} width={936} height={407} />
+          <ContentBox2 text={paragraphs.main} width={936} height={407} />
           {isResultAvailable ? (
             <div style={{ display: 'flex', gap: 24 }}>
               <Continue
                 label="라운드 선택으로"
                 onClick={handleNextRound}
-                disabled={!isHost}
                 style={{ width: 264, height: 72 }}
               />
               <Continue3
                 label="결과 보기"
                 onClick={handleViewResult}
-                disabled={!isHost}
               />
             </div>
           ) : (
             <Continue
               label="라운드 선택으로"
               onClick={handleNextRound}
-              disabled={!isHost}
               style={{ width: 264, height: 72 }}
             />
           )}

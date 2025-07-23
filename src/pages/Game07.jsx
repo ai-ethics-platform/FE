@@ -127,7 +127,7 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
     <>
       <Layout round={currentRound} subtopic={subtopic}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
-          <ContentBox2 text={paragraphs.main} width={936} height={407} />
+          <ContentBox2 text={paragraphs[0]?.main || ''} width={936} height={407} />
           {isResultAvailable ? (
             <div style={{ display: 'flex', gap: 24 }}>
               <Continue

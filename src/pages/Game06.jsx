@@ -39,7 +39,7 @@ export default function Game06() {
   
 
   const category = localStorage.getItem('category');
-  const subtopic = localStorage.getItem('subtopic');
+   const subtopic = localStorage.getItem('subtopic');
   const roomCode = localStorage.getItem('room_code');
   const mode      = 'ending1';
 
@@ -122,7 +122,7 @@ export default function Game06() {
     <>
       <Layout round={currentRound} subtopic={subtopic} >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
-          <ContentBox2 text={paragraphs} width={936} height={407} />
+          <ContentBox2 text={paragraphs[0]?.main || ''} width={936} height={407} />
           {completedTopics.length >= 3 ? (
             <div style={{ display: 'flex', gap: 24 }}>
               <Continue

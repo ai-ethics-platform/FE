@@ -80,7 +80,7 @@ export default function Login() {
         </div>
           </div>
           <InputBoxLarge
-            placeholder="아이디(이메일)을 입력해 주세요."
+            placeholder="아이디을 입력해 주세요."
             leftIcon={profileIcon}
             bgColor={Colors.componentBackgroundFloat}
             value={username}

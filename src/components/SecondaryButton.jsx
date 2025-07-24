@@ -46,7 +46,7 @@ export default function SecondaryButton({ onClick, disabled = false, children, s
       onMouseDown={() => setIsActive(true)}
       onMouseUp={() => setIsActive(false)}
     >
-      {children}
+      {/* {children} */}
     </button>
   );
 }

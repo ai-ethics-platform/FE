@@ -78,7 +78,6 @@ const navigate = useNavigate();
     alert('연결 상태를 확인하고 다시 시도해주세요.');
     return;
   }
-
   //  방장이 아닌 경우 차단
   if (!isHost) {
     console.log('[game08] 방장이 아니므로 진행 불가');

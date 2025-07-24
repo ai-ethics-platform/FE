@@ -199,7 +199,7 @@ export default function Game01() {
         ))}
       </div>
       <div style={{width:'100%',marginTop: 10, maxWidth:900}}>
-        <ContentTextBox  disabled={!isHost} paragraphs={paragraphs} onContinue={handleContinue} />
+        <ContentTextBox  disabled={!isHost} paragraphs={paragraphs} onContinue = {navigate('/game02')} />
       </div>
     </Layout>
   );

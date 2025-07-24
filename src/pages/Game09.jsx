@@ -5,8 +5,10 @@ import Layout      from '../components/Layout';
 import ContentBox2 from '../components/ContentBox2';
 import UserProfile from '../components/Userprofile';
 
+import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+
 import voiceManager from '../utils/voiceManager';
 
 const fullText =
@@ -16,23 +18,59 @@ export default function Game09() {
   const navigate = useNavigate();
   const subtopic = '다른 사람들이 선택한 미래';
 
-  // WebRTC audio state
-  const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  const getVoiceState = (role) => {
-    if (String(role) === myRoleId) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on:    voiceSessionStatus.isConnected,
-        nickname:     voiceSessionStatus.nickname || ''
-      };
-    }
-    return getVoiceStateForRole(role);
-  };
+   const { isConnected, sessionId, sendMessage } = useWebSocket();
+   const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
+   const { isHost } = useHostActions();
+    const [connectionStatus, setConnectionStatus] = useState({
+     websocket: false,
+     webrtc: false,
+     ready: false
+   });
+ useWebSocketNavigation(navigate, {
+    infoPath: `/game09`,
+    nextPagePath: `/game09`
+  });
+  useEffect(() => {
+     const newStatus = {
+       websocket: isConnected,
+       webrtc: webrtcInitialized,
+       ready: isConnected && webrtcInitialized
+     };
+     setConnectionStatus(newStatus);
+   
+     console.log(' [Game09] 연결 상태 업데이트:', newStatus);
+   }, [isConnected, webrtcInitialized]);  
+  
+   function clearGameSession() {
+    [
+      'myrole_id',
+      'host_id',
+      'user_id',
+      'role1_user_id',
+      'role2_user_id',
+      'role3_user_id',
+      'room_code',
+      'category',
+      'subtopic',
+      'mode',
+      'access_token',
+      'refresh_token',
+      'mataName',
+      'nickname',
+      'title',
+      'completedTopics',
+      'session_id',
+      'selectedCharacterIndex',
+      'currentRound',
+      'completedTopics'
+    ].forEach(key => localStorage.removeItem(key));
+  }
 
+  
   // leave WebRTC session on unmount
   useEffect(() => {
     return () => {
+      clearGameSession();
       voiceManager.leaveSession()
         .then(success => {
           if (success) console.log('🛑 음성 세션에서 나감 완료');

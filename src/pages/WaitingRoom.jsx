@@ -564,7 +564,7 @@ export default function WaitingRoom() {
           paddingTop: '5px',
           color: '#cccccc'
         }}>
-          <div>📦 LocalStorage:</div>
+          <div> LocalStorage:</div>
           <div>role1: {localStorage.getItem('role1_user_id') || 'NULL'}</div>
           <div>role2: {localStorage.getItem('role2_user_id') || 'NULL'}</div>
           <div>role3: {localStorage.getItem('role3_user_id') || 'NULL'}</div>

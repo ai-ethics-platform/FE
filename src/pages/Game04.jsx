@@ -126,39 +126,57 @@ useEffect(() => {
     }
     sendNextPage();
   };
+  
+  const selectedMode = localStorage.getItem('mode');
 
   return (
     <Layout subtopic={subtopic} round={round} >
 
       <div style={{ marginTop:50, display: 'flex', gap: 48 }}>
+
         {[
-          { label: '동의',   list: agreedList,    key: 'agree',  icon :agreeIcon },
-          { label: '비동의', list: disagreedList, key: 'disagree', icon:disagreeIcon },
-        ].map(({ label, list, key,icon }) => (
+          { label: '동의', list: agreedList, key: 'agree', icon: agreeIcon },
+          { label: '비동의', list: disagreedList, key: 'disagree', icon: disagreeIcon },
+        ].map(({ label, list, key, icon }) => (
           <div key={key} style={{ position: 'relative', width: 360, height: 391 }}>
             <img
-              src={list.length && state.agreement===key ? boxSelected : boxUnselect}
+              src={key === selectedMode ? boxSelected : boxUnselect}
               alt=""
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'fill',
+              }}
             />
-            <div style={{
-              position: 'relative', zIndex: 1, height: '100%',
-              display: 'flex', flexDirection: 'column',
-              justifyContent: 'center', alignItems: 'center', textAlign: 'center',
-            }}>
-               <img
+            <div
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <img
                 src={icon}
                 alt={`${label} 아이콘`}
                 style={{ width: 160, height: 160, marginTop: 40, marginBottom: -10 }}
               />
-              <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary }}>{label}</p>
+              <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary }}>
+                {label}
+              </p>
               <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, margin: '16px 0' }}>
                 {list.length}명
               </p>
-              
             </div>
           </div>
         ))}
+
       </div>
 
       <div style={{ textAlign: 'center', marginTop: 40}}>

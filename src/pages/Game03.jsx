@@ -137,8 +137,8 @@ export default function Game03() {
         `/rooms/rooms/round/${roomCode}/choice/confidence`,
         { round_number: round, confidence: conf }
       );
-      nav('/game04', { state: { agreement: agree, confidence: conf } });
-    } catch (err) {
+      nav('/game04');
+      } catch (err) {
       console.error('확신 전송 중 오류:', err);
     }
   };

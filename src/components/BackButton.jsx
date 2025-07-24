@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import back from '../assets/back.svg';
 import { Colors, FontStyles } from './styleConstants';
 
-export default function BackButton({ disabled = false }) {
+export default function BackButton({ disabled = false , onClick}) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
 
@@ -15,6 +15,7 @@ export default function BackButton({ disabled = false }) {
   return (
     <button
       disabled={disabled}
+      onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
         setIsHovered(false);

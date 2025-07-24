@@ -100,8 +100,8 @@ export default function Game05() {
         setParagraphs(resolveParagraphs(rawParagraphs, fallback));
       }
     };
-    fetchMateName();
-  }, [mainTopic, subtopic, mode, roomCode, rawParagraphs]);
+    fetchMateName();  
+  }, [roomCode]);  
 
  
 

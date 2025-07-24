@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';
-import ContentTextBox from '../components/ContentTextBox';
+import ContentTextBox from '../components/ContentTextBox2';
 import UserProfile from '../components/Userprofile';
 
 import { useWebRTC } from '../WebRTCProvider';

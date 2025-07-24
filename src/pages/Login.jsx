@@ -29,7 +29,7 @@ export default function Login() {
   }, []);
 
   return (
-    <Background bgIndex={2}>
+    <Background bgIndex={1}>
       <div
         style={{
           position: 'absolute',
@@ -54,14 +54,12 @@ export default function Login() {
             boxSizing: 'border-box',
           }}
         >
-          <p
-            style={{
-              fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
-              margin: 0,
-              fontWeight: 600,
-              color: Colors.grey09,
-            }}
-          >
+         <p style={{
+            fontFamily: 'Cafe24Ohsquareair, Pretendard, sans-serif',
+            fontSize: '24px',
+            color: '#000',
+            margin: 10,
+          }}>
             AI 윤리 딜레마 게임
           </p>
           <div
@@ -74,7 +72,7 @@ export default function Login() {
             <div
               style={{
                 width: '100%',
-                maxWidth: 400,
+                maxWidth: 500,
               }}
             >
         <Frame1 style={{ width: '100%', display: 'block', margin: '0 auto' }} />

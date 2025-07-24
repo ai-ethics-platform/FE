@@ -31,6 +31,10 @@ export default function ContentBox2({ text, typingSpeed = 70 }) {
         lineHeight: '28px',
         color:Colors.grey06,
         ...FontStyles.headlineSmall,
+        //display: 'flex',            // 🔹 Flex 사용
+        alignItems: 'center',       // 🔹 수직 중앙 정렬
+        //justifyContent: 'center',   // 🔹 수평 중앙 정렬
+        textAlign: 'center',
         whiteSpace: 'pre-line',
         maxWidth: 640,
         padding: '40px 60px',

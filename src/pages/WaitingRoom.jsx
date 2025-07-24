@@ -523,7 +523,7 @@ export default function WaitingRoom() {
 
 
   return (
-    <Background bgIndex={3}>
+    <Background bgIndex={2}>
       {/* 디버깅 정보 */}
       <div style={{
         position: 'absolute',
@@ -583,10 +583,9 @@ export default function WaitingRoom() {
           zIndex: 1000,
           cursor: 'pointer',
         }}
-        onClick={() => setShowOutPopup(true)}
-      >
+        >
         <div style={{ position: 'relative', zIndex: 2 }}>
-          <BackButton />
+        <BackButton onClick={() => setShowOutPopup(true)} /> 
         </div>
         <div
           style={{

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';
-import ContentTextBox2 from '../components/ContentTextBox2';
+import ContentTextBox2 from '../components/ContentTextBox';
 import closeIcon from '../assets/close.svg';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';

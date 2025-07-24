@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import ContentTextBox from '../components/ContentTextBox';
+import ContentTextBox from '../components/ContentTextBox2';
 // Player1 description images for different subtopics
 import player1DescImg_title1 from '../assets/1player_des1.svg';
 import player1DescImg_title2 from '../assets/1player_des2.svg';

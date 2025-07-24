@@ -25,9 +25,7 @@ export default function ResultPopup({ onClose }) {
   );
 
   const handleGoToSubtopic = (subtopic) => {
-    const category = subtopic.split(' ')[0];
     localStorage.setItem('subtopic', subtopic);
-    localStorage.setItem('category', category);
     localStorage.setItem('mode', 'neutral');
     navigate('/game02');
   };

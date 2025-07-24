@@ -56,6 +56,7 @@ export default function InputBoxSmall({
           style={{
             flex: 1,
             height: '100%',
+            textAlign: 'center', 
             border: 'none',
             outline: 'none',
             background: 'transparent',

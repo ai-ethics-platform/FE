@@ -83,8 +83,6 @@ export default function Game05_01() {
     return () => clearTimeout(pollingRef.current);
   }, []);
 
-  
-
   // 이미지 불러오기
   const neutralImgs = getDilemmaImages(mainTopic, subtopic, 'neutral', selectedIndex);
   const agreeImgs   = getDilemmaImages(mainTopic, subtopic, 'agree', selectedIndex);
@@ -121,7 +119,7 @@ export default function Game05_01() {
   // Step1: 합의 선택
   const handleConsensus = async (choice) => {
     if (!isHost) {
-      alert('⚠️ 합의 선택은 호스트만 가능합니다.');
+      alert(' 합의 선택은 호스트만 가능합니다.');
       return;
     }
     const intChoice = choice === 'agree' ? 1 : 2;
@@ -137,7 +135,7 @@ export default function Game05_01() {
   };
 
   useWebSocketMessage("next_page", () => {
-    console.log("📩 next_page 수신됨");
+    console.log(" next_page 수신됨");
   
     if (step === 1) {
       // Step 1 상태면 → step 2로 진행
@@ -150,7 +148,7 @@ export default function Game05_01() {
   });
 
   
-  // Step1 Continue (다음 단계)
+  // Step1 Continue
   const handleStep1Continue = () => {
     if (!isHost) {
       alert('⚠️ 호스트만 다음 단계로 진행할 수 있습니다.');

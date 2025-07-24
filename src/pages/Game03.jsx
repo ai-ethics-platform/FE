@@ -155,8 +155,7 @@ export default function Game03() {
 
           <Card width={936} height={216} extraTop={60} >
             <p style={title}>
-              당신은 <strong>{roleName}</strong>입니다.<br/>
-              24시간 개인정보 수집 업데이트에 동의하시겠습니까?
+              당신은 {roleName}입니다. 24시간 개인정보 수집 업데이트에 동의하시겠습니까?
             </p>
             <div style={{ display:'flex', gap:24 }}>
               <SelectCardToggle label="동의" selected={agree==='agree'} onClick={()=>setAgree('agree')} width={220} height={56} />

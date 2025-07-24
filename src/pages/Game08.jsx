@@ -62,7 +62,7 @@ const navigate = useNavigate();
      };
      setConnectionStatus(newStatus);
    
-     console.log('🔧 [Game09] 연결 상태 업데이트:', newStatus);
+     console.log(' [Game09] 연결 상태 업데이트:', newStatus);
    }, [isConnected, webrtcInitialized]);  
    
   
@@ -74,27 +74,18 @@ const navigate = useNavigate();
  const handleContinue = () => {
   //  연결 상태 확인
   if (!connectionStatus.ready) {
-    console.warn('⚠️ [game08] 연결이 완전하지 않음:', connectionStatus);
+    console.warn(' [game08] 연결이 완전하지 않음:', connectionStatus);
     alert('연결 상태를 확인하고 다시 시도해주세요.');
     return;
   }
 
   //  방장이 아닌 경우 차단
   if (!isHost) {
-    console.log('⚠️ [game08] 방장이 아니므로 진행 불가');
-    alert('방장만 게임을 진행할 수 있습니다.');
+    console.log('[game08] 방장이 아니므로 진행 불가');
+    alert('방장만 페이지를 넘길 수 있습니다.');
     return;
   }
-  const success = sendNextPage();
-    if (success) {
-      console.log('📤 [game08] next_page 브로드캐스트 전송 성공');
-      console.log('📡 [game08] 서버가 모든 클라이언트에게 브로드캐스트 중...');
-      console.log('🎯 [game08] useWebSocketNavigation이 브로드캐스트를 받아서 자동으로 페이지 이동 처리');
-    } else {
-      console.error('❌ [game08] next_page 브로드캐스트 전송 실패');
-      alert('페이지 이동 신호 전송에 실패했습니다. 다시 시도해주세요.');
-    }
-
+  sendNextPage();
 };
 
 

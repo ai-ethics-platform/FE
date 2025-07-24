@@ -22,6 +22,7 @@ import joinviacode from "../assets/joinviacode.svg";
 import joinrandom from "../assets/joinrandom.svg";
 import cardframe from "../assets/cardframe.svg";
 import next2 from "../assets/next2.svg";
+import Next2 from "../components/Next2";
 import CreateRoom from '../components/CreateRoom';
 import CreateRoom2 from '../components/CreateRoom2';
 import PrimaryButton from '../components/PrimaryButton';  
@@ -96,6 +97,8 @@ export default function Componentcheck() {
      {/* <div style={{ marginTop: 32, position: 'relative', zIndex: 10 }}>
         <CreateRoom />
       </div> */}
+      <Next2 onClick={() => console.log('다음 클릭')} disabled={false} />
+
 <UserProfile
   player="1P"
   isLeader={true}    // 방장이면 crown

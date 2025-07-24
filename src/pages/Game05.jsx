@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';
-import ContentTextBox from '../components/ContentTextBox';
+import ContentTextBox2 from '../components/ContentTextBox2';
 import closeIcon from '../assets/close.svg';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
@@ -40,13 +40,13 @@ export default function Game05() {
       ready: isConnected && webrtcInitialized
     };
     setConnectionStatus(newStatus);
-    console.log('🔧 [Game05] 연결 상태 업데이트:', newStatus);
+    console.log(' [Game05] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
   
 
   const handleContinue = () => {
     if (!connectionStatus.ready) {
-      console.warn('⚠️ [Game05] 연결이 완전하지 않음:', connectionStatus);
+      console.warn(' [Game05] 연결이 완전하지 않음:', connectionStatus);
       alert('연결 상태를 확인하고 다시 시도해주세요.');
       return;
     }
@@ -58,9 +58,9 @@ export default function Game05() {
   
     const success = sendNextPage();
     if (success) {
-      console.log('📤 [Game05] next_page 브로드캐스트 전송 성공');
+      console.log('[Game05] next_page 브로드캐스트 전송 성공');
     } else {
-      console.error('❌ [Game05] next_page 브로드캐스트 전송 실패');
+      console.error(' [Game05] next_page 브로드캐스트 전송 실패');
       alert('페이지 이동 신호 전송에 실패했습니다.');
     }
   };
@@ -120,10 +120,10 @@ export default function Game05() {
       )}
 
       <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
-          <img src={comicImages[currentIndex]} alt={`comic ${currentIndex + 1}`} style={{ width: 760, height: 'auto', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+          <img src={comicImages[currentIndex]} alt={`comic ${currentIndex + 1}`} style={{ width: 744, height:360,borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />  
           <div style={{ width: '100%', maxWidth: 900 }}>
-            <ContentTextBox disabled={!isHost} paragraphs={paragraphs} currentIndex={currentIndex} setCurrentIndex={setCurrentIndex} onContinue={handleContinue} />
+            <ContentTextBox2 paragraphs={paragraphs} currentIndex={currentIndex} setCurrentIndex={setCurrentIndex} onContinue={handleContinue} />
           </div>
         </div>
       </Layout>

@@ -57,7 +57,6 @@ export default function Continue({
           pointerEvents: 'none',
         }}
       />
-
       <div
         style={{
           position: 'relative',

@@ -11,8 +11,6 @@ import aiIcon from '../assets/aiIcon.svg';
 import internationalIcon from '../assets/internationalIcon.svg';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocket } from '../WebSocketProvider';
-
-// 🔥 커스텀 훅 임포트 (SelectHomeMate와 동일)
 import { 
   useWebSocketNavigation, 
   useHostActions 
@@ -25,13 +23,8 @@ export default function GameMap() {
   // WebSocket과 WebRTC 상태 가져오기
   const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
   const { isConnected: websocketConnected } = useWebSocket();
-
-
-    // 🔥 커스텀 훅들 사용 (SelectHomeMate와 동일)
-    const { isHost, sendNextPage } = useHostActions();
-    
-    // 🔥 페이지 이동 메시지 핸들러 (useWebSocketNavigation 사용)
-    useWebSocketNavigation(navigate, {
+  const { isHost, sendNextPage } = useHostActions();
+  useWebSocketNavigation(navigate, {
       nextPagePath: '/game01'  // 다음 페이지 경로
     });
     
@@ -75,15 +68,20 @@ export default function GameMap() {
   }, []);
 
   const handleSelect = (topic,title) => {
+    const prevTitle = localStorage.getItem('title');
     const category = localStorage.getItem('category') || '안드로이드';
     const mode = 'neutral';
     localStorage.setItem('title', title);
     localStorage.setItem('category', category);
     localStorage.setItem('subtopic', topic);
     localStorage.setItem('mode', mode);
-    // 2. AI 이름 저장 성공 후 next_page 브로드캐스트 전송
-    console.log('👑 [GameMap] 방장이므로 next_page 브로드캐스트 전송');
-    navigate('/game01');
+   
+      //  이전 title과 같으면 game02, 다르면 game01
+    const nextPage = prevTitle === title ? '/game02' : '/game01';
+
+    console.log(`👑 [GameMap] ${prevTitle === title ? '같은 주제 재선택' : '새 주제 선택'} → ${nextPage}로 이동`);
+    navigate(nextPage);
+
   };
 
   const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');

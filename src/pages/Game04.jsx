@@ -6,22 +6,18 @@ import Layout      from '../components/Layout';
 import Continue    from '../components/Continue';
 import boxSelected from '../assets/contentBox5.svg';
 import boxUnselect from '../assets/contentBox6.svg';
-import profile1    from '../assets/1playerprofile.svg';
-import profile2    from '../assets/2playerprofile.svg';
-import profile3    from '../assets/3playerprofile.svg';
 import { Colors, FontStyles } from '../components/styleConstants';
+import agreeIcon from '../assets/agree.svg';
+import disagreeIcon from '../assets/disagree.svg';
 
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
-const avatarOf = { '1P': profile1, '2P': profile2, '3P': profile3 };
 
 export default function Game04() {
   const { state } = useLocation();
   const navigate   = useNavigate();
-
-
     const { isConnected, sessionId, sendMessage } = useWebSocket();
     const { isInitialized: webrtcInitialized } = useWebRTC();
     const { isHost, sendNextPage } = useHostActions();
@@ -40,7 +36,7 @@ export default function Game04() {
         ready: isConnected && webrtcInitialized
       };
       setConnectionStatus(newStatus);
-      console.log('🔧 [Game04] 연결 상태 업데이트:', newStatus);
+      console.log('[Game04] 연결 상태 업데이트:', newStatus);
     }, [isConnected, webrtcInitialized]);
 
   const myVote   = state?.agreement ?? null;
@@ -81,11 +77,10 @@ useEffect(() => {
       setAgreedList(agreeList);
       setDisagreedList(disagreeList);
 
-      console.log(`🌀 [Game04] ${attempt + 1}번째 동의 상태 확인:`, {
+      console.log(` [Game04] ${attempt + 1}번째 동의 상태 확인:`, {
         agreeList,
         disagreeList,
       });
-      // ✅ 여기에 mode 저장
       if (agreeList.length > disagreeList.length) {
         localStorage.setItem('mode', 'agree');
       }else{
@@ -93,7 +88,7 @@ useEffect(() => {
       }
 
     } catch (err) {
-      console.error('❌ [Game04] 동의 상태 조회 실패:', err);
+      console.error(' [Game04] 동의 상태 조회 실패:', err);
     }
   };
 
@@ -135,11 +130,11 @@ useEffect(() => {
   return (
     <Layout subtopic={subtopic} round={round} >
 
-      <div style={{ display: 'flex', gap: 48 }}>
+      <div style={{ marginTop:50, display: 'flex', gap: 48 }}>
         {[
-          { label: '동의',   list: agreedList,    key: 'agree'    },
-          { label: '비동의', list: disagreedList, key: 'disagree' },
-        ].map(({ label, list, key }) => (
+          { label: '동의',   list: agreedList,    key: 'agree',  icon :agreeIcon },
+          { label: '비동의', list: disagreedList, key: 'disagree', icon:disagreeIcon },
+        ].map(({ label, list, key,icon }) => (
           <div key={key} style={{ position: 'relative', width: 360, height: 391 }}>
             <img
               src={list.length && state.agreement===key ? boxSelected : boxUnselect}
@@ -151,7 +146,12 @@ useEffect(() => {
               display: 'flex', flexDirection: 'column',
               justifyContent: 'center', alignItems: 'center', textAlign: 'center',
             }}>
-              <p style={{ ...FontStyles.headlineSmall, color: Colors.grey06 }}>{label}</p>
+               <img
+                src={icon}
+                alt={`${label} 아이콘`}
+                style={{ width: 160, height: 160, marginTop: 40, marginBottom: -10 }}
+              />
+              <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary }}>{label}</p>
               <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, margin: '16px 0' }}>
                 {list.length}명
               </p>
@@ -161,7 +161,7 @@ useEffect(() => {
         ))}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: 26}}>
+      <div style={{ textAlign: 'center', marginTop: 40}}>
         {secsLeft > 0 ? (
           <>
             <p style={{ ...FontStyles.headlineSmall, color: Colors.grey06 }}>

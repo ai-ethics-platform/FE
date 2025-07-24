@@ -10,9 +10,9 @@ import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import voiceManager from '../utils/voiceManager';
 import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
 // Player2 description images for different subtopics
-import player2DescImg_title1 from '../assets/2player_des.svg';
-import player2DescImg_title2 from '../assets/2player_des.svg';
-import player2DescImg_title3 from '../assets/2player_des.svg';
+import player2DescImg_title1 from '../assets/2player_des1.svg';
+import player2DescImg_title2 from '../assets/2player_des2.svg';
+import player2DescImg_title3 from '../assets/2player_des3.svg';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 
 
@@ -49,16 +49,16 @@ export default function CD2() {
   // Determine description image and main text based on subtopic
   let descImg = player2DescImg_title1;
   let mainText =
-    `당신은 자녀 J씨의 노모입니다. 가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다.`
+    `당신은 자녀 J씨의 노모입니다.\n 가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다.`
 
   if (subtopic === '국가 인공지능 위원회 1' || subtopic === '국가 인공지능 위원회 2') {
     descImg = player2DescImg_title2;
     mainText =
-      `당신은 ${mateName}를 사용해 온 소비자 대표입니다. 당신은 사용자로서 HomeMate 규제 여부와 관련한 목소리를 내고자 참여하였습니다.`;
+      `당신은 ${mateName}를 사용해 온 소비자 대표입니다. \n 당신은 사용자로서 HomeMate 규제 여부와 관련한 목소리를 내고자 참여하였습니다.`;
   } else if (subtopic === '국제 인류 발전 위원회 1') {
     descImg = player2DescImg_title3;
     mainText =
-      `당신은 국제적인 환경단체의 대표로 온 환경운동가입니다. AI의 발전이 환경에 도움이 될지, 문제가 될지 고민 중입니다.`;
+      `당신은 국제적인 환경단체의 대표로 온 환경운동가입니다.\n AI의 발전이 환경에 도움이 될지, 문제가 될지 고민 중입니다.`;
   }
   const rawParagraphs = [{ main: mainText }];
   const paragraphs = resolveParagraphs(rawParagraphs, mateName);
@@ -84,7 +84,7 @@ export default function CD2() {
           <img
             src={descImg}
             alt="Player 2 설명 이미지"
-            style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: 0 }}
+            style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: -20 }}
           />
           <div style={{ width: '100%', maxWidth: 900 }}>
             <ContentTextBox

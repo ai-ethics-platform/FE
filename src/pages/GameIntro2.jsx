@@ -26,7 +26,6 @@ export default function GameIntro2() {
     webRTC: false
   });
 
-  // 🔧 GPT 피드백: useWebSocket 훅을 한 번만 호출
   const { 
     isConnected: wsConnected, 
     sessionId, 
@@ -60,7 +59,6 @@ export default function GameIntro2() {
   // 음성 상태 관리
   const { voiceStates, getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
 
-  // 🔧 ① WS가 연결됐으면 세션 재연결 (GPT 방식)
   useEffect(() => {
     if (!wsConnected) return;
 
@@ -68,20 +66,17 @@ export default function GameIntro2() {
     const storedHostRole = localStorage.getItem('host_id');
     const isHost = storedMyRole === storedHostRole;
 
-    console.log('🔌 WS 연결됨, 세션 재연결 시작. isHost:', isHost);
 
     initializeVoiceWebSocket(isHost)
       .then(() => {
-        console.log('✅ WS 재연결 OK, session_id=', localStorage.getItem('session_id'));
         setInitStatus(s => ({ ...s, webSocket: true }));
       })
       .catch(err => {
-        console.error('❌ WS 재연결 실패:', err);
+        console.error('WS 재연결 실패:', err);
       });
 
   }, [wsConnected, initializeVoiceWebSocket]);
 
-  // 🔧 ② session_id가 생기면 음성 + WebRTC 초기화 (GPT 방식)
   useEffect(() => {
     if (!wsConnected || !sessionId) return;
 
@@ -91,17 +86,16 @@ export default function GameIntro2() {
     voiceManager.initializeVoiceSession()
       .then(ok => {
         if (!ok) throw new Error('Voice init fail');
-        console.log('✅ 음성 세션 초기화 완료');
         return voiceManager.connectMicrophone();
       })
       .then(() => {
-        console.log('✅ 마이크 연결 완료');
+        console.log(' 마이크 연결 완료');
         voiceManager.startSpeechDetection();
-        console.log('✅ 음성 감지 시작 완료');
+        console.log(' 음성 감지 시작 완료');
         setInitStatus(s => ({ ...s, voiceManager: true }));
       })
       .catch(err => {
-        console.error('❌ 음성 초기화 실패:', err);
+        console.error(' 음성 초기화 실패:', err);
       });
 
     // WebRTC 초기화
@@ -115,13 +109,12 @@ export default function GameIntro2() {
           setTimeout(() => {
             if (!voiceManager.animationFrame) {
               voiceManager.startSpeechDetection();
-              console.log('🎤 WebRTC 후 음성 감지 안정화');
             }
           }, 2000);
         }
       })
       .catch(err => {
-        console.error('❌ WebRTC 초기화 실패:', err);
+        console.error('WebRTC 초기화 실패:', err);
       });
 
   }, [wsConnected, sessionId, initializeWebRTC]);
@@ -136,7 +129,7 @@ export default function GameIntro2() {
     setMyRoleId(storedMyRole);
     setHostId(storedHost);
 
-    console.log('📋 GameIntro2 기본 정보 로드:', {
+    console.log(' GameIntro2 기본 정보 로드:', {
       mateName: storedName,
       myRoleId: storedMyRole,
       hostId: storedHost
@@ -150,7 +143,7 @@ export default function GameIntro2() {
     const handlerId = 'gameintro2-handler';
     
     const messageHandler = (message) => {
-      console.log('📨 GameIntro2 메시지 수신:', message.type);
+      console.log(' GameIntro2 메시지 수신:', message.type);
     };
     
     addMessageHandler(handlerId, messageHandler);
@@ -163,10 +156,10 @@ export default function GameIntro2() {
   // Continue 버튼 클릭 핸들러
   const handleContinue = () => {
     if (isHost) {
-      console.log('👑 방장: next_page 메시지 전송');
+      console.log('방장: next_page 메시지 전송');
       sendNextPage();
     } else {
-      alert('⚠️ 방장만 진행할 수 있습니다.');
+      alert(' 방장만 진행할 수 있습니다.');
     }
   };
 
@@ -220,9 +213,7 @@ export default function GameIntro2() {
         maxWidth: '350px',
         border: '1px solid #333'
       }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#00ff00' }}>
-          🔍 GameIntro2 (GPT 완벽 반영)
-        </div>
+     
         
         {/* 초기화 상태 */}
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #444' }}>
@@ -308,7 +299,7 @@ export default function GameIntro2() {
               fontSize: '10px'
             }}>
               <div style={{ color: '#00ff00', fontWeight: 'bold' }}>
-                📨 최근 메시지 ({lastMessage.timestamp})
+                 최근 메시지 ({lastMessage.timestamp})
               </div>
               <div>타입: {lastMessage.type}</div>
             </div>

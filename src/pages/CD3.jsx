@@ -3,15 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox';
 import UserProfile from '../components/Userprofile';
-import player3DescImg from '../assets/images/Player3_description.png';
 import { useWebRTC } from '../WebRTCProvider';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 
 // Player3 description images for different subtopics
-import player3DescImg_title1 from '../assets/3player_des.svg';
-import player3DescImg_title2 from '../assets/3player_des.svg';
-import player3DescImg_title3 from '../assets/3player_des.svg';
+import player3DescImg_title1 from '../assets/3player_des1.svg';
+import player3DescImg_title2 from '../assets/3player_des2.svg';
+import player3DescImg_title3 from '../assets/3player_des3.svg';
 
 export default function CD3() {
   const navigate = useNavigate();
@@ -63,7 +62,7 @@ export default function CD3() {
         <img
           src={descImg}
           alt="Player 3 설명 이미지"
-          style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: 0 }}
+          style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: -20 }}
         />
         <div style={{ width: '100%', maxWidth: 900 }}>
           <ContentTextBox

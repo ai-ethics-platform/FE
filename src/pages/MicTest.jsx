@@ -44,7 +44,7 @@ export default function MicTest() {
       const dataArray = new Uint8Array(bufferLength);
       
       setIsConnected(true);
-      console.log('✅ 마이크 연결 성공!');
+      console.log(' 마이크 연결 성공!');
       
       // 음성 레벨 감지 시작
       const detectSpeech = () => {
@@ -62,7 +62,7 @@ export default function MicTest() {
         
         if (currentlySpeaking !== isSpeaking) {
           setIsSpeaking(currentlySpeaking);
-          console.log('🗣️ 음성 상태:', currentlySpeaking ? '말하는 중' : '조용함', 
+          console.log(' 음성 상태:', currentlySpeaking ? '말하는 중' : '조용함', 
                      `(레벨: ${average.toFixed(1)})`);
         }
         
@@ -72,7 +72,7 @@ export default function MicTest() {
       detectSpeech();
       
     } catch (error) {
-      console.error('❌ 마이크 접근 실패:', error);
+      console.error('마이크 접근 실패:', error);
       setError(error.message);
       
       if (error.name === 'NotAllowedError') {
@@ -106,7 +106,7 @@ export default function MicTest() {
     setMicLevel(0);
     setError(null);
     
-    console.log('🔇 마이크 연결 중지');
+    console.log(' 마이크 연결 중지');
   };
 
   // 컴포넌트 언마운트 시 정리
@@ -123,7 +123,7 @@ export default function MicTest() {
       maxWidth: '600px',
       margin: '0 auto'
     }}>
-      <h2>🎤 마이크 연결 테스트</h2>
+      <h2> 마이크 연결 테스트</h2>
       
       {/* 연결 상태 */}
       <div style={{ 
@@ -139,7 +139,7 @@ export default function MicTest() {
             marginLeft: '10px',
             fontWeight: 'bold'
           }}>
-            {isConnected ? '✅ 연결됨' : '❌ 연결 안됨'}
+            {isConnected ? ' 연결됨' : '연결 안됨'}
           </span>
         </div>
         

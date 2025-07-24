@@ -8,8 +8,6 @@ import Continue3 from '../components/Continue3';
 import ResultPopup from '../components/Results';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 import { paragraphsData } from '../components/paragraphs';
-
-//  WebRTC integration
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
@@ -49,7 +47,6 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
   const [currentRound, setCurrentRound] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
 
-  // Load completed topics
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     setCompletedTopics(saved);
@@ -104,7 +101,7 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
     localStorage.removeItem('subtopic');
     localStorage.removeItem('mode');
     // if (!isHost) {
-    //   alert('⚠️ 방장만 다음 라운드로 진행할 수 있습니다.');
+    //   alert(' 방장만 다음 라운드로 진행할 수 있습니다.');
     //   return;
     // }
     navigate('/gamemap');
@@ -113,7 +110,7 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
   const handleViewResult = () => {
     saveCompletedTopic();
     // if (!isHost) {
-    //   alert('⚠️ 방장만 결과 보기로 진행할 수 있습니다.');
+    //   alert(' 방장만 결과 보기로 진행할 수 있습니다.');
     //   return;
     // }
     // sendNextPage();

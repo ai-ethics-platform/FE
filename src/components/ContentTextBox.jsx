@@ -7,6 +7,7 @@ import paginationBothR from '../assets/paginationBothR.svg';
 import { Colors, FontStyles } from './styleConstants';
 import Continue from './Continue';
 import useTypingEffect from '../hooks/useTypingEffect';
+import Next2 from './Next2'; // ⬅️ 새로 추가
 
 export default function ContentTextBox({
   paragraphs = [],
@@ -63,8 +64,8 @@ export default function ContentTextBox({
         style={{
           position: 'absolute',
           inset: 0,
-          width: '100%',
-          height: '100%',
+          // width: '100%',
+          // height: '100%',
           objectFit: 'contain',
           zIndex: 0,
         }}
@@ -72,7 +73,7 @@ export default function ContentTextBox({
       <div
         style={{
           position: 'absolute',
-          top: 50,
+          top: 30,
           left: 32,
           right: 32,
           bottom: 24,
@@ -84,7 +85,7 @@ export default function ContentTextBox({
         }}
       >
         <div>
-          <div style={{ ...FontStyles.bodyBold, marginBottom: 3 }}>
+          <div style={{ ...FontStyles.headlineSmall, marginBottom: 3 }}>
             {typedMain.split('\n').map((line, idx) => (
               <React.Fragment key={idx}>
                 {line}
@@ -104,7 +105,7 @@ export default function ContentTextBox({
                 src={showRight ? paginationBothL : paginationLeft}
                 alt="prev"
                 style={{
-                  marginBottom: 20,
+                  marginBottom: -80,
                   height: 24,
                   cursor: typingDone ? 'pointer' : 'default',
                   opacity: typingDone ? 1 : 0.3,
@@ -117,7 +118,7 @@ export default function ContentTextBox({
                 src={showLeft ? paginationBothR : paginationRight}
                 alt="next"
                 style={{
-                  marginBottom: 40,
+                  marginBottom: -80,
                   height: 24,
                   cursor: typingDone ? 'pointer' : 'default',
                   opacity: typingDone ? 1 : 0.3,
@@ -126,19 +127,24 @@ export default function ContentTextBox({
               />
             )}
           </div>
-          {typingDone && currentIndex === paragraphs.length - 1 && (
-            <div style={{ marginBottom: 20 }}>
-              <Continue
-                width={264}
-                height={72}
-                step={2}
-                disabled={disabled} 
-                onClick={onContinue}
-                label={continueLabel}
-              />
-            </div>
-          )}
+         
+          <div
+            style={{
+              position: 'absolute',
+              right: -67,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 2,
+            }}
+          >
+            <Next2 
+            onClick={handleNext} 
+            disabled={disabled}
+            visuallyDisabled={!(typingDone && currentIndex === paragraphs.length - 1)}  
+            />
+          </div>
         </div>
+  
       </div>
     </div>
   );

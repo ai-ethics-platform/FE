@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';
-import ContentTextBox from '../components/ContentTextBox';
-import UserProfile from '../components/Userprofile';
+import ContentTextBox2 from '../components/ContentTextBox2';
 import closeIcon from '../assets/close.svg';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
@@ -92,21 +91,21 @@ export default function Game02() {
 
   const handleContinue = () => {
     if (!connectionStatus.ready) {
-      console.warn('⚠️ [Game02] 연결이 완전하지 않음:', connectionStatus);
+      console.warn(' [Game02] 연결이 완전하지 않음:', connectionStatus);
       alert('연결 상태를 확인하고 다시 시도해주세요.');
       return;
     }
   
     if (!isHost) {
-      alert('⚠️ 방장만 진행할 수 있습니다.');
+      alert('방장만 진행할 수 있습니다.');
       return;
     }
   
     const success = sendNextPage();
     if (success) {
-      console.log('📤 [Game02] next_page 브로드캐스트 전송 성공');
+      console.log(' [Game02] next_page 브로드캐스트 전송 성공');
     } else {
-      console.error('❌ [Game02] next_page 브로드캐스트 전송 실패');
+      console.error(' [Game02] next_page 브로드캐스트 전송 실패');
       alert('페이지 이동 신호 전송에 실패했습니다.');
     }
   };
@@ -155,17 +154,16 @@ export default function Game02() {
         </div>
 
         {/* 본문 */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <img
             src={comicImages[currentIndex]}
             alt={`comic ${currentIndex + 1}`}
-            style={{ width: 760, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            style={{ width: 744, height:360, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
           />
           <div style={{ width: '100%', maxWidth: 900 }}>
-            <ContentTextBox
+            <ContentTextBox2
               paragraphs={paragraphs}
               currentIndex={currentIndex}
-              disabled={!isHost}
               setCurrentIndex={setCurrentIndex}
               onContinue={handleContinue}
             />

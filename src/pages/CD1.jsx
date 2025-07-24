@@ -39,7 +39,7 @@ export default function CD1() {
   // Determine description image and main text based on subtopic
   let descImg = player1DescImg_title1;
   let mainText = 
-    `당신은 어머니를 10년 이상 돌본 요양보호사 K입니다.` +
+    `당신은 어머니를 10년 이상 돌본 요양보호사 K입니다.\n` +
     ` 최근 ${mateName}를 도입한 후 전일제에서 하루 2시간 근무로 전환되었습니다.\n` +
     ` 당신은 로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}와 협업해야 하는 상황이 많습니다.`;
 
@@ -80,7 +80,7 @@ export default function CD1() {
             width: 264,
             height: 336,
             objectFit: 'contain',
-            marginBottom: 0,
+            marginBottom: -20,
           }}
         />
         <div style={{ width: '100%', maxWidth: 900 }}>

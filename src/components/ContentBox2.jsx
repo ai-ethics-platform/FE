@@ -30,7 +30,7 @@ export default function ContentBox2({ text, typingSpeed = 70 }) {
         position: 'relative',
         lineHeight: '28px',
         color:Colors.grey06,
-        ...FontStyles.title,
+        ...FontStyles.headlineSmall,
         whiteSpace: 'pre-line',
         maxWidth: 640,
         padding: '40px 60px',

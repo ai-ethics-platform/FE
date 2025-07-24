@@ -34,7 +34,7 @@ export default function Game06() {
      };
      setConnectionStatus(newStatus);
    
-     console.log('🔧 [Game02] 연결 상태 업데이트:', newStatus);
+     console.log(' [Game06] 연결 상태 업데이트:', newStatus);
    }, [isConnected, webrtcInitialized]);
   
 
@@ -111,7 +111,7 @@ export default function Game06() {
 
   const handleViewResult = () => {
     // if (!isHost) {
-    //   alert('⚠️ 방장만 결과 보기로 진행할 수 있습니다.');
+    //   alert('방장만 결과 보기로 진행할 수 있습니다.');
     //   return;
     // }
     if (completedTopics.length >= 5) navigate('/game08');

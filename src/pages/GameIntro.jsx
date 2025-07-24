@@ -69,17 +69,12 @@ export default function GameIntro() {
   `    이 로봇의 기능은 아래와 같습니다.\n` +
   `     • 가족의 감정, 건강 상태, 생활 습관 등을 입력하면 맞춤형 알림, 식단 제안 등의 서비스를 제공\n` +
   `     • 기타 업데이트 시 정교화된 서비스 추가 가능`;
-// 🔥 커스텀 훅들 사용
   const { isHost, sendNextPage } = useHostActions();
   
-  // 🔥 페이지 이동 메시지 핸들러 (useWebSocketNavigation 사용)
   useWebSocketNavigation(navigate, {
     nextPagePath: '/selecthomemate'
   });
-  
-
-  // 🔥 next_page 메시지 핸들러 (간단한 방식)
-  // useEffect(() => {
+    // useEffect(() => {
   //   const handlerId = "on-next-page";
   //   const onMessage = (msg) => {
   //     if (msg.type === "next_page") {
@@ -92,7 +87,6 @@ export default function GameIntro() {
   //   return () => removeMessageHandler(handlerId);
   // }, [addMessageHandler, removeMessageHandler, navigate, clientId]);
   
-  // ref 업데이트
   useEffect(() => {
     sendMessageRef.current = sendMessage;
   }, [sendMessage]);
@@ -105,13 +99,13 @@ export default function GameIntro() {
     setHostId(storedHost);
     setCurrentMyRoleId(storedMyRole);
 
-    console.log(`📋 [GameIntro-${clientId}] 역할 정보 로드:`, {
+    console.log(`역할 정보 로드:`, {
       hostId: storedHost,
       myRoleId: storedMyRole,
     });
   }, [clientId]);
 
-  // 내 음성 세션 상태 업데이트 (실시간) - 로컬에서만 사용
+  // 내 음성 세션 상태 업데이트 
   useEffect(() => {
     const statusInterval = setInterval(() => {
       const currentStatus = voiceManager.getStatus();
@@ -124,7 +118,7 @@ export default function GameIntro() {
   // init 메시지 전송 함수
   const sendInitMessage = useCallback(() => {
     if (initMessageSentRef.current) {
-      console.log(`⚠️ [GameIntro-${clientId}] init 메시지 이미 전송됨`);
+      console.log(`init 메시지 이미 전송됨`);
       return false;
     }
     
@@ -132,7 +126,7 @@ export default function GameIntro() {
     const nickname = localStorage.getItem('nickname');
     
     if (!userId || !nickname) {
-      console.warn(`⚠️ [GameIntro-${clientId}] 사용자 정보가 없어서 init 메시지 전송 불가`);
+      console.warn(`사용자 정보가 없어서 init 메시지 전송 불가`);
       return false;
     }
     
@@ -147,45 +141,45 @@ export default function GameIntro() {
     const success = sendMessageRef.current?.(initMessage);
     if (success) {
       initMessageSentRef.current = true;
-      console.log(`📤 [GameIntro-${clientId}] WebSocket init 메시지 전송 완료:`, initMessage);
+      console.log(`WebSocket init 메시지 전송 완료:`, initMessage);
       return true;
     } else {
-      console.error(`❌ [GameIntro-${clientId}] init 메시지 전송 실패`);
+      console.error(`init 메시지 전송 실패`);
       return false;
     }
   }, [clientId]);
 
-  // 🔧 1) WebSocket 연결 + connection_established 핸들러
+  //  1) WebSocket 연결 
   useEffect(() => {
     const userId = localStorage.getItem('user_id');
     const hostId = localStorage.getItem('host_id');
     const myRoleId = localStorage.getItem('myrole_id');
     
     if (!userId || !hostId || !myRoleId) {
-      console.error(`❌ [GameIntro-${clientId}] 필수 정보 부족:`, { userId, hostId, myRoleId });
+      console.error(`필수 정보 부족:`, { userId, hostId, myRoleId });
       return;
     }
 
     const isHost = hostId === myRoleId;
-    console.log(`🔌 [GameIntro-${clientId}] WebSocket 연결 시작:`, { userId, myRoleId, hostId, isHost });
+    console.log(`ebSocket 연결 시작:`, { userId, myRoleId, hostId, isHost });
 
     // connection_established 메시지 핸들러 등록
     const handlerId = "connection-established";
     const messageHandler = (message) => {
       if (message.type === 'connection_established') {
-        console.log(`📨 [GameIntro-${clientId}] connection_established 수신:`, message);
+        console.log(`connection_established 수신:`, message);
         
         if (!connectionEstablishedRef.current && !initMessageSentRef.current) {
-          console.log(`🔗 [GameIntro-${clientId}] 연결 확립 완료! (최초)`);
+          console.log(`연결완료`);
           connectionEstablishedRef.current = true;
           
           // init 메시지 전송
           const success = sendInitMessage();
           if (success) {
-            console.log(`✅ [GameIntro-${clientId}] init 메시지 전송 성공`);
+            console.log(` init 메시지 전송 성공`);
           }
         } else {
-          console.log(`🔗 [GameIntro-${clientId}] 연결 확립 재수신 (무시) - 이미 처리됨`);
+          console.log(` 연결 확립 재수신 - 이미 처리됨`);
         }
       }
     };
@@ -196,19 +190,19 @@ export default function GameIntro() {
     const connectWithRetry = async (attempt = 1, maxAttempts = 3) => {
       try {
         await initializeVoiceWebSocket(isHost);
-        console.log(`✅ [GameIntro-${clientId}] WebSocket 연결 완료 (시도 ${attempt}/${maxAttempts})`);
+        console.log(` WebSocket 연결 완료 (시도 ${attempt}/${maxAttempts})`);
       } catch (err) {
-        console.error(`❌ [GameIntro-${clientId}] WebSocket 연결 실패 (시도 ${attempt}/${maxAttempts}):`, err);
+        console.error(`WebSocket 연결 실패 (시도 ${attempt}/${maxAttempts}):`, err);
         
         if (attempt < maxAttempts) {
           const retryDelay = Math.min(1000 * attempt, 5000);
-          console.log(`🔄 [GameIntro-${clientId}] ${retryDelay}ms 후 재시도 (${attempt + 1}/${maxAttempts})`);
+          console.log(`${retryDelay}ms 후 재시도 (${attempt + 1}/${maxAttempts})`);
           
           setTimeout(() => {
             connectWithRetry(attempt + 1, maxAttempts);
           }, retryDelay);
         } else {
-          console.error(`❌ [GameIntro-${clientId}] WebSocket 연결 최종 실패 (${maxAttempts}회 시도 완료)`);
+          console.error(`WebSocket 연결 최종 실패 (${maxAttempts}회 시도 완료)`);
         }
       }
     };
@@ -226,64 +220,59 @@ export default function GameIntro() {
   // 🔧 2) WebRTC 초기화 - WebSocket 연결 후
   useEffect(() => {
     if (!webrtcInitialized && isConnected && connectionEstablishedRef.current) {
-      console.log(`🚀 [GameIntro-${clientId}] WebRTC 초기화 시작`);
+      console.log(` WebRTC 초기화 시작`);
       initializeWebRTC()
         .then(() => {
-          console.log(`✅ [GameIntro-${clientId}] WebRTC 초기화 완료`);
+          console.log(`WebRTC 초기화 완료`);
           setConnectionStatus(prev => ({ ...prev, webrtc: true }));
         })
         .catch(err => {
-          console.error(`❌ [GameIntro-${clientId}] WebRTC 초기화 실패:`, err);
+          console.error(`WebRTC 초기화 실패:`, err);
         });
     }
   }, [webrtcInitialized, isConnected, connectionEstablishedRef.current, initializeWebRTC, clientId]);
 
-  // 🔧 3) 음성 세션 초기화 - WebRTC 초기화 후 (voice_status_update 전송 제거)
+  //  3) 음성 세션 초기화 
   const initializeVoice = useCallback(async () => {
     if (voiceInitialized) {
-      console.log(`⚠️ [GameIntro-${clientId}] 음성이 이미 초기화됨`);
+      console.log(`음성이 이미 초기화됨`);
       return;
     }
 
     const sessionId = localStorage.getItem('session_id');
     if (!connectionEstablishedRef.current || !sessionId || !webrtcInitialized) {
-      console.log(`⏳ [GameIntro-${clientId}] 연결 확립, 세션, WebRTC 대기 중...`);
+      console.log(`연결 확립, 세션, WebRTC 대기 중 `);
       return;
     }
 
     try {
-      console.log(`🎤 [GameIntro-${clientId}] 음성 세션 초기화 시작`);
-      
-      // ⚠️ voice_status_update 전송 제거 - voiceManager에 WebSocket 인스턴스 제공하지 않음
-      // window.webSocketInstance = { sendMessage }; // 이 부분 제거
-      
-      const success = await voiceManager.initializeVoiceSession();
+      console.log(`음성 세션 초기화 시작`);
+         const success = await voiceManager.initializeVoiceSession();
       
       if (success) {
         setVoiceInitialized(true);
         setMicPermissionGranted(true);
         setConnectionStatus(prev => ({ ...prev, voice: true }));
-        console.log(`✅ [GameIntro-${clientId}] 음성 세션 초기화 완료`);
+        console.log(`음성 세션 초기화 완료`);
         
-        // 음성 감지 시작 (하지만 서버로 상태 전송하지 않음)
         setTimeout(() => {
           voiceManager.startSpeechDetection();
-          console.log(`🎤 [GameIntro-${clientId}] 음성 감지 시작 (로컬 전용)`);
+          console.log(`음성 감지 시작 `);
         }, 1000);
         
       } else {
-        console.error(`❌ [GameIntro-${clientId}] 음성 세션 초기화 실패`);
+        console.error(`음성 세션 초기화 실패`);
         setMicPermissionGranted(false);
       }
     } catch (err) {
-      console.error(`❌ [GameIntro-${clientId}] 음성 초기화 에러:`, err);
+      console.error(`음성 초기화 에러:`, err);
       setMicPermissionGranted(false);
     }
   }, [voiceInitialized, webrtcInitialized, clientId]);
 
   useEffect(() => {
     if (connectionEstablishedRef.current && webrtcInitialized && !voiceInitialized) {
-      console.log(`🎤 [GameIntro-${clientId}] 음성 초기화 조건 충족`);
+      console.log(`음성 초기화 조건 충족`);
       const timer = setTimeout(() => {
         initializeVoice();
       }, 1000);
@@ -302,44 +291,42 @@ export default function GameIntro() {
   }, [isConnected, webrtcInitialized, signalingConnected, voiceInitialized, micPermissionGranted]);
 
   const handleContinue = useCallback(() => {
-    console.log("🟢 handleContinue 실행됨");
+    console.log(" handleContinue 실행됨");
     
     // // 음성 감지 일시중지 (연결은 유지)
     // if (voiceInitialized) {
     //   try {
     //     if (typeof voiceManager.pauseSpeechDetection === 'function') {
     //       voiceManager.pauseSpeechDetection();
-    //       console.log(`⏸️ [GameIntro-${clientId}] 음성 감지 일시중지`);
+    //       console.log(`음성 감지 일시중지`);
     //     } else if (typeof voiceManager.stopSpeechDetection === 'function') {
     //       voiceManager.stopSpeechDetection();
-    //       console.log(`⏹️ [GameIntro-${clientId}] 음성 감지 중지`);
+    //       console.log(`음성 감지 중지`);
     //     } else {
-    //       console.log(`⚠️ [GameIntro-${clientId}] 음성 일시중지/중지 함수 없음`);
+    //       console.log(`음성 일시중지/중지 함수 없음`);
     //     }
     //   } catch (err) {
-    //     console.error(`❌ [GameIntro-${clientId}] 음성 일시중지 에러:`, err);
+    //     console.error( 음성 일시중지 에러:`, err);
     //   }
     // }
     
-    // 🔥 방장인 경우 next_page 브로드캐스트 전송 (useHostActions 사용)
+    //  방장인 경우 next_page 브로드캐스트 전송
     if (isHost && connectionEstablishedRef.current) {
-      console.log(`👑 [GameIntro-${clientId}] 방장이므로 next_page 브로드캐스트 전송`);
+      console.log(`방장 next_page 브로드캐스트 전송`);
       
       const success = sendNextPage();
       if (success) {
-        console.log(`📤 [GameIntro-${clientId}] next_page 브로드캐스트 전송 성공`);
-        console.log(`📡 [GameIntro-${clientId}] 서버가 모든 클라이언트에게 브로드캐스트 중...`);
-        // 브로드캐스트가 전송되면 useWebSocketNavigation에서 자동으로 페이지 이동 처리
+        console.log(`next_page 브로드캐스트 전송 성공`);
       } else {
-        console.error(`❌ [GameIntro-${clientId}] next_page 브로드캐스트 전송 실패`);
+        console.error(`next_page 브로드캐스트 전송 실패`);
         alert('페이지 이동 신호 전송에 실패했습니다. 다시 시도해주세요.');
       }
     } else if (!isHost) {
       // 방장이 아닌 경우 경고 메시지
-      console.log(`⚠️ [GameIntro-${clientId}] 방장이 아니므로 페이지 이동 불가`);
-      alert('방장만 게임을 진행할 수 있습니다.');
+      console.log(`방장이 아니므로 페이지 이동 불가`);
+      alert('방장만 페이지를 넘어갈 수 있습니다. ');
     } else {
-      console.log(`⚠️ [GameIntro-${clientId}] WebSocket 연결이 확립되지 않음`);
+      console.log(`WebSocket 연결이 확립되지 않음`);
       alert('서버 연결을 확인해주세요.');
     }
   }, [clientId, voiceInitialized, isHost, sendNextPage]);
@@ -422,7 +409,6 @@ export default function GameIntro() {
               isLeader={hostId === '1'}
               isMe={currentMyRoleId === '1'}
               nodescription={true}
-              // ⚠️ 음성 상태 props 제거 - 로컬에서만 확인
                 />
             <UserProfile
               player="2P"

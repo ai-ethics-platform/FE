@@ -19,15 +19,9 @@ export default function WaitingRoom() {
   const allTopics = ['안드로이드', '자율 무기 시스템'];
   const initialTopic = location.state?.topic || '안드로이드';
   const initialIndex = allTopics.indexOf(initialTopic);
-  
-  // 디버깅을 위한 고유 클라이언트 ID 생성
-  const [clientId] = useState(() => {
-    const id = Math.random().toString(36).substr(2, 9);
-    console.log(`🔍 클라이언트 ID: ${id}`);
-    return id;
-  });
+ 
 
-  // ■ ❶ useRef로 폴링 타이머 ID 관리
+  //  useRef로 폴링 타이머 ID 관리
   const pollingIntervalRef = useRef(null);
 
   // 1) UI 상태
@@ -46,7 +40,7 @@ export default function WaitingRoom() {
   const [statusIndexMap, setStatusIndexMap] = useState({});
   const [hasAssignedRoles, setHasAssignedRoles] = useState(false);
 
-  // 4) 폴링 관련 상태 (표시용)
+  // 4) 폴링 관련 상태
   const [isPolling, setIsPolling] = useState(false);
 
   // 업데이트 중복 방지 플래그
@@ -68,7 +62,7 @@ export default function WaitingRoom() {
       
       return myUserId;
     } catch (err) {
-      console.error(`❌ [${clientId}] 내 정보 로드 실패:`, err);
+      console.error(`내 정보 로드 실패:`, err);
       return null;
     }
   };
@@ -76,9 +70,8 @@ export default function WaitingRoom() {
   // B) participants 로드 및 역할 배정 확인
   const loadParticipants = async () => {
     try {
-      console.log(`🔄 [${clientId}] API 호출: /rooms/code/${room_code}`);
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
-      console.log(`📊 [${clientId}] API 응답:`, room);
+      console.log(`API 응답:`, room);
       
       setParticipants(room.participants);
       
@@ -92,22 +85,9 @@ export default function WaitingRoom() {
       setStatusIndexMap(readyMap);
 
       const hasRoleAssignments = room.participants.length === 3 && 
-                                room.participants.every(p => p.role_id != null);
+      room.participants.every(p => p.role_id != null);
       
-      console.log(`🎭 [${clientId}] 역할 배정 상태:`, {
-        participantCount: room.participants.length,
-        hasRoleAssignments,
-        participants: room.participants.map(p => ({
-          user_id: p.user_id,
-          nickname: p.nickname,
-          role_id: p.role_id,
-          is_ready: p.is_ready
-        }))
-      });
-      
-      if (hasRoleAssignments && !hasAssignedRoles) {
-        console.log(`🎭 [${clientId}] API에서 역할 배정 발견!`);
-        
+      if (hasRoleAssignments && !hasAssignedRoles) {        
         const roleUserMap = {};
         room.participants.forEach(p => {
           roleUserMap[p.role_id] = String(p.user_id);
@@ -121,13 +101,11 @@ export default function WaitingRoom() {
         const myParticipant = room.participants.find(p => String(p.user_id) === String(myUserId));
         if (myParticipant && myParticipant.role_id) {
           localStorage.setItem('myrole_id', String(myParticipant.role_id));
-          console.log(`💾 [${clientId}] 내 역할 저장: ${myParticipant.role_id}`);
         }
         
         const hostParticipant = room.participants.find(p => String(p.user_id) === String(hostUserId));
         if (hostParticipant && hostParticipant.role_id) {
           localStorage.setItem('host_id', String(hostParticipant.role_id));
-          console.log(`💾 [${clientId}] 호스트 역할 저장: ${hostParticipant.role_id}`);
         }
         
         setHasAssignedRoles(true);
@@ -139,7 +117,7 @@ export default function WaitingRoom() {
 
       return { participants: room.participants, hostUserId };
     } catch (err) {
-      console.error(`❌ [${clientId}] participants 로드 실패:`, err);
+      console.error(`participants 로드 실패:`, err);
       return { participants: [], hostUserId: null };
     }
   };
@@ -149,9 +127,7 @@ export default function WaitingRoom() {
     
     setIsUpdating(true);
 
-    try {
-      console.log(`🔄 [${clientId}] assignments 업데이트 시작`, { participantsCount: participants.length });
-      
+    try {      
       const updatedAssignments = participants.map(p => {
         let userRoleId = null;
         for (let roleId = 1; roleId <= 3; roleId++) {
@@ -168,8 +144,6 @@ export default function WaitingRoom() {
           role_id: userRoleId,
         };
       });
-
-      console.log(`📋 [${clientId}] 업데이트된 assignments:`, updatedAssignments);
       setAssignments(updatedAssignments);
       
       if (myPlayerId) {
@@ -178,7 +152,6 @@ export default function WaitingRoom() {
           const currentMyRole = localStorage.getItem('myrole_id');
           if (currentMyRole !== String(myAssign.role_id)) {
             localStorage.setItem('myrole_id', String(myAssign.role_id));
-            console.log(`💾 [${clientId}] 내 역할 업데이트: ${myAssign.role_id}`);
           }
         }
       }
@@ -189,7 +162,6 @@ export default function WaitingRoom() {
           const currentHostId = localStorage.getItem('host_id');
           if (currentHostId !== String(hostAssign.role_id)) {
             localStorage.setItem('host_id', String(hostAssign.role_id));
-            console.log(`💾 [${clientId}] 호스트 역할 업데이트: ${hostAssign.role_id}`);
           }
         }
       }
@@ -214,19 +186,19 @@ export default function WaitingRoom() {
 
   const assignRoles = async () => {
     if (myPlayerId !== hostUserId) {
-      console.log(`👤 [${clientId}] 방장이 아니므로 역할 배정 스킵`);
+      console.log(`방장이 아니므로 역할 배정 스킵`);
       return;
     }
 
     if (hasAssignedRoles || checkIfRolesAlreadyAssigned()) {
-      console.log(`✅ [${clientId}] 역할이 이미 배정되어 있음`);
+      console.log(`역할이 이미 배정되어 있음`);
       setHasAssignedRoles(true);
       return;
     }
 
     try {
       setHasAssignedRoles(true);
-      console.log(`🚀 [${clientId}] 👑 방장: 역할 배정 API 호출 시작`);
+      console.log(` 방장: 역할 배정 API 호출 시작`);
       
       const { data: roleAssignmentResult } = await axiosInstance.post(`/rooms/assign-roles/${room_code}`);
       
@@ -253,7 +225,7 @@ export default function WaitingRoom() {
           localStorage.setItem('host_id', String(hostAssignment.role_id));
         }
         
-        console.log(`💾 [${clientId}] 👑 방장: 로컬스토리지 저장 완료`);
+        console.log(` 방장: 로컬스토리지 저장 완료`);
       }
       
       setTimeout(() => {
@@ -261,27 +233,15 @@ export default function WaitingRoom() {
       }, 300);
       
     } catch (err) {
-      console.error(`❌ [${clientId}] 👑 방장: 역할 배정 실패:`, err);
+      console.error(` 방장: 역할 배정 실패:`, err);
       setHasAssignedRoles(false);
     }
   };
 
-  // ■ ❷ 폴링 함수 - 방 상태를 주기적으로 확인
+  //  폴링 함수 - 방 상태를 주기적으로 확인
   const pollRoomStatus = async () => {
     try {
-      console.log(`🔄 [${clientId}] 폴링 실행 중...`);
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
-      console.log(`📊 [${clientId}] 폴링 응답:`, {
-        participantCount: room.participants.length,
-        participants: room.participants.map(p => ({
-          user_id: p.user_id,
-          nickname: p.nickname,
-          role_id: p.role_id,
-          is_ready: p.is_ready,
-          is_host: p.is_host
-        }))
-      });
-      
       // 1. 참가자 업데이트
       setParticipants(room.participants);
       
@@ -291,7 +251,6 @@ export default function WaitingRoom() {
         readyMap[String(p.user_id)] = p.is_ready ? 1 : 0;
       });
       setStatusIndexMap(readyMap);
-      console.log(`📊 [${clientId}] 준비 상태 맵:`, readyMap);
       
       // 3. 내 준비 상태 업데이트
       if (myPlayerId) {
@@ -299,7 +258,6 @@ export default function WaitingRoom() {
         if (myParticipant) {
           const newStatusIndex = myParticipant.is_ready ? 1 : 0;
           if (newStatusIndex !== myStatusIndex) {
-            console.log(`🔄 [${clientId}] 내 준비 상태 업데이트: ${myStatusIndex} → ${newStatusIndex}`);
             setMyStatusIndex(newStatusIndex);
           }
         }
@@ -307,11 +265,9 @@ export default function WaitingRoom() {
       
       // 4. 역할 배정 확인 및 적용
       const hasApiRoles = room.participants.length === 3 && 
-                         room.participants.every(p => p.role_id != null);
+      room.participants.every(p => p.role_id != null);
       
       if (hasApiRoles) {
-        console.log(`🎭 [${clientId}] 폴링에서 역할 배정 발견!`);
-        
         const roleUserMap = {};
         room.participants.forEach(p => {
           if (p.role_id) {
@@ -328,7 +284,6 @@ export default function WaitingRoom() {
             currentRole2 !== (roleUserMap[2] || '') ||
             currentRole3 !== (roleUserMap[3] || '')) {
           
-          console.log(`💾 [${clientId}] 역할 매핑 업데이트:`, roleUserMap);
           localStorage.setItem('role1_user_id', roleUserMap[1] || '');
           localStorage.setItem('role2_user_id', roleUserMap[2] || '');
           localStorage.setItem('role3_user_id', roleUserMap[3] || '');
@@ -338,7 +293,6 @@ export default function WaitingRoom() {
           const myParticipant = room.participants.find(p => String(p.user_id) === String(myUserId));
           if (myParticipant && myParticipant.role_id) {
             localStorage.setItem('myrole_id', String(myParticipant.role_id));
-            console.log(`💾 [${clientId}] 내 역할 업데이트: ${myParticipant.role_id}`);
           }
           
           // 호스트 역할 업데이트
@@ -346,7 +300,6 @@ export default function WaitingRoom() {
           const hostParticipant = room.participants.find(p => String(p.user_id) === hostUserId);
           if (hostParticipant && hostParticipant.role_id) {
             localStorage.setItem('host_id', String(hostParticipant.role_id));
-            console.log(`💾 [${clientId}] 호스트 역할 업데이트: ${hostParticipant.role_id}`);
           }
           
           setHasAssignedRoles(true);
@@ -360,33 +313,28 @@ export default function WaitingRoom() {
       
       // 5. 모든 유저가 준비 완료되었는지 확인 - 최우선 체크
       const readyCount = room.participants.filter(p => p.is_ready).length;
-      console.log(`✅ [${clientId}] 준비 완료 현황: ${readyCount}/${room.participants.length}`);
+      console.log(`준비 완료 현황: ${readyCount}/${room.participants.length}`);
       
       if (readyCount === room.participants.length && room.participants.length === 3) {
-        console.log(`🚀 [${clientId}] 모두 준비 완료 → 게임 시작`);
-        
-        // 🔥 폴링을 즉시 중지
+        console.log(`모두 준비 완료`);
         stopPolling();
         
         // 게임 화면으로 이동
         navigate('/gameintro');
-        return; // 함수 조기 종료
+        return; 
       }
       
     } catch (err) {
-      console.error(`❌ [${clientId}] 폴링 실패:`, err);
+      console.error(`폴링 실패:`, err);
     }
   };
 
-  // ■ ❸ 폴링 시작 함수
+  // 폴링 시작 함수
   const startPolling = () => {
     // 이미 폴링 중이면 중복 시작 방지
     if (pollingIntervalRef.current) {
-      console.log(`⚠️ [${clientId}] 폴링이 이미 실행 중`);
       return;
     }
-    
-    console.log(`🔄 [${clientId}] 폴링 시작 (5초 간격)`);
     setIsPolling(true);
     
     // 즉시 한 번 실행
@@ -398,39 +346,34 @@ export default function WaitingRoom() {
     }, 5000);
   };
 
-  // ■ ❹ 폴링 중지 함수
+  // 폴링 중지 함수
   const stopPolling = () => {
-    console.log(`⏹️ [${clientId}] stopPolling 호출됨`);
     
     if (pollingIntervalRef.current) {
-      console.log(`⏹️ [${clientId}] 폴링 인터벌 클리어: ${pollingIntervalRef.current}`);
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
     
     setIsPolling(false);
-    console.log(`⏹️ [${clientId}] 폴링 상태 업데이트 완료`);
   };
 
-  // ■ ❺ 초기화 useEffect
+  // 초기화 useEffect
   useEffect(() => {
-    const initializeRoom = async () => {
-      console.log(`🚀 [${clientId}] 초기화 시작`);
-      
+    const initializeRoom = async () => {      
       const myUserId = await loadMyInfo();
       if (!myUserId) {
-        console.error(`❌ [${clientId}] 사용자 정보 로드 실패`);
+        console.error(`사용자 정보 로드 실패`);
         return;
       }
       
       const { hostUserId: loadedHostUserId } = await loadParticipants();
       if (!loadedHostUserId) {
-        console.error(`❌ [${clientId}] 호스트 정보 로드 실패`);
+        console.error(`호스트 정보 로드 실패`);
         return;
       }
       
       const isHost = String(myUserId) === String(loadedHostUserId);
-      console.log(`👤 [${clientId}] 사용자 역할 확인:`, { 
+      console.log(`사용자 역할 확인:`, { 
         myUserId, 
         hostUserId: loadedHostUserId, 
         isHost: isHost ? '방장' : '일반 유저' 
@@ -452,9 +395,8 @@ export default function WaitingRoom() {
     
     initializeRoom();
     
-    // ■ ❻ 컴포넌트 언마운트 시 또는 room_code 변경 시 폴링 중지
+    // 컴포넌트 언마운트 시 또는 room_code 변경 시 폴링 중지
     return () => {
-      console.log(`🧹 [${clientId}] 컴포넌트 cleanup - 폴링 중지`);
       stopPolling();
     };
   }, [room_code]);
@@ -483,19 +425,19 @@ export default function WaitingRoom() {
 
   const handleMicConfirm = async () => {
     try {
-      console.log(`🎤 [${clientId}] 준비하기 API 호출`);
+      console.log(`준비하기 API 호출`);
       const { data } = await axiosInstance.post('/rooms/ready', { room_code });
       
       setMyStatusIndex(1);
       setShowMicPopup(false);
       
-      // 준비 완료 후 즉시 폴링으로 상태 확인 (한 번만)
+      // 준비 완료 후 즉시 폴링으로 상태 확인 
       setTimeout(() => {
         pollRoomStatus();
       }, 500);
       
     } catch (err) {
-      console.error(`❌ [${clientId}] ready 실패:`, err);
+      console.error(`ready 실패:`, err);
     }
   };
 
@@ -509,7 +451,7 @@ export default function WaitingRoom() {
   };
 
   const getOrderedPlayers = () => {
-    console.log(`🎯 [${clientId}] getOrderedPlayers 호출:`, {
+    console.log(`getOrderedPlayers 호출:`, {
       myPlayerId,
       participantsLength: participants.length,
       assignmentsLength: assignments.length,
@@ -520,7 +462,7 @@ export default function WaitingRoom() {
     // participants가 있으면 항상 3명을 표시 (assignments가 없어도)
     if (!myPlayerId || participants.length !== 3) {
       const playerIds = participants.map(p => p.user_id);
-      console.log(`⚠️ [${clientId}] 조건 미충족, 기본 순서 반환:`, playerIds);
+      console.log(`조건 미충족, 기본 순서 반환:`, playerIds);
       return playerIds;
     }
 
@@ -534,7 +476,7 @@ export default function WaitingRoom() {
       otherPlayerIds[1]  // 오른쪽
     ].filter(Boolean);
     
-    console.log(`✅ [${clientId}] 최종 플레이어 순서:`, {
+    console.log(`최종 플레이어 순서:`, {
       left: otherPlayerIds[0],
       center: myPlayerId,
       right: otherPlayerIds[1],
@@ -548,7 +490,6 @@ export default function WaitingRoom() {
   useEffect(() => {
     window.debugWaitingRoom = {
       getStatus: () => ({
-        clientId,
         isPolling,
         pollingIntervalRef: pollingIntervalRef.current,
         myPlayerId,
@@ -560,17 +501,17 @@ export default function WaitingRoom() {
       }),
       
       forcePoll: () => {
-        console.log('🔧 강제 폴링 실행');
+        console.log('폴링 실행');
         pollRoomStatus();
       },
       
       startPolling: () => {
-        console.log('🔧 폴링 시작');
+        console.log(' 폴링 시작');
         startPolling();
       },
       
       stopPolling: () => {
-        console.log('🔧 폴링 중지');
+        console.log(' 폴링 중지');
         stopPolling();
       }
     };
@@ -597,7 +538,6 @@ export default function WaitingRoom() {
         maxWidth: '350px',
         fontFamily: 'monospace'
       }}>
-        <div style={{color: '#00ff00'}}>🔍 Client: {clientId}</div>
         <div style={{color: isPolling ? '#00ff00' : '#ff0000'}}>
           폴링: {isPolling ? '✅ 실행중' : '❌ 중지'}
         </div>
@@ -703,7 +643,6 @@ export default function WaitingRoom() {
         </div>
       )}
 
-      {/* 주제 프레임 */}
       <div style={{
         position: 'absolute', top: '6%', left: '50%',
         transform: 'translateX(-50%)'
@@ -726,7 +665,6 @@ export default function WaitingRoom() {
         />
       </div>
 
-      {/* 플레이어 카드 */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
@@ -737,7 +675,7 @@ export default function WaitingRoom() {
         boxSizing: 'border-box'
       }}>
         {getOrderedPlayers().map((id, idx) => {
-          console.log(`🎨 [${clientId}] StatusCard 렌더링:`, {
+          console.log(`StatusCard 렌더링:`, {
             id,
             idx,
             myPlayerId,
@@ -749,7 +687,7 @@ export default function WaitingRoom() {
           const isOwner = String(id) === String(hostUserId);
           const isMe = String(id) === String(myPlayerId);
           
-          console.log(`🎨 [${clientId}] StatusCard ${idx} 상세:`, {
+          console.log(`StatusCard ${idx} 상세:`, {
             id,
             assign,
             isOwner,

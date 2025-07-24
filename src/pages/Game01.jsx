@@ -153,7 +153,7 @@ export default function Game01() {
 
   return (
     <Layout round={round} subtopic={subtopic} nodescription={true}  >
-       <div style={{
+       {/* <div style={{
         position: 'absolute',
         top: '10px',
         right: '10px',
@@ -190,7 +190,7 @@ export default function Game01() {
             ⏳ 방장의 선택을 기다리는 중...
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* 본문 */}
       <div style={{display:'flex',gap:24,flexWrap:'wrap',justifyContent:'center'}}>

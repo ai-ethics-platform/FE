@@ -184,7 +184,7 @@ export default function SelectHomeMate() {
   return (
     <Background bgIndex={2}>
       {/* 🔧 연결 상태 디버깅 정보 */}
-      <div style={{
+      {/* <div style={{
         position: 'absolute',
         top: '10px',
         right: '10px',
@@ -224,7 +224,7 @@ export default function SelectHomeMate() {
             ⏳ 방장의 선택을 기다리는 중...
           </div>
         )}
-      </div>
+      </div> */}
 
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
         <div style={{

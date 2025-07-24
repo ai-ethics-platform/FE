@@ -72,11 +72,12 @@ export default function Login() {
             <div
               style={{
                 width: '100%',
-                maxWidth: 500,
+                maxWidth: 552,
+                maxHeight: 200,
               }}
             >
         <Frame1 style={{ width: '100%', display: 'block', margin: '0 auto' }} />
-  </div>
+        </div>
           </div>
           <InputBoxLarge
             placeholder="아이디(이메일)을 입력해 주세요."

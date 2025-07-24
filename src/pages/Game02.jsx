@@ -135,7 +135,7 @@ export default function Game02() {
       )}
 
       <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
-      <div style={{
+      {/* <div style={{
           position: 'absolute',
           top: '10px',
           right: '10px',
@@ -151,7 +151,7 @@ export default function Game02() {
           <div>WebSocket: {connectionStatus.websocket ? '✅' : '❌'}</div>
           <div>WebRTC: {connectionStatus.webrtc ? '✅' : '❌'}</div>
           <div>전체: {connectionStatus.ready ? '✅ Ready' : '⚠️ Not Ready'}</div>
-        </div>
+        </div> */}
 
         {/* 본문 */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>

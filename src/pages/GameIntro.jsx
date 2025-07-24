@@ -334,7 +334,7 @@ export default function GameIntro() {
   return (
     <Background bgIndex={2}>
       {/* 연결 상태 디버깅 정보 */}
-      <div style={{
+      {/* <div style={{
         position: 'absolute',
         top: '10px',
         right: '10px',
@@ -376,10 +376,10 @@ export default function GameIntro() {
           🔧 voice_status_update 전송 제거됨
         </div>
         {/* 🎤 내 음성 상태 (로컬 전용) */}
-        <div style={{color: myVoiceSessionStatus.isSpeaking ? '#00ff00' : '#888888'}}>
+        {/* <div style={{color: myVoiceSessionStatus.isSpeaking ? '#00ff00' : '#888888'}}>
           내 음성: {myVoiceSessionStatus.isSpeaking ? '🗣️ 말하는 중' : '🤐 조용함'}
         </div>
-      </div>
+      </div> */}
 
       <div
         style={{

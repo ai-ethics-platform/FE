@@ -525,7 +525,7 @@ export default function WaitingRoom() {
   return (
     <Background bgIndex={2}>
       {/* 디버깅 정보 */}
-      <div style={{
+      {/* <div style={{
         position: 'absolute',
         top: '10px',
         right: '10px',
@@ -569,7 +569,7 @@ export default function WaitingRoom() {
           <div>role2: {localStorage.getItem('role2_user_id') || 'NULL'}</div>
           <div>role3: {localStorage.getItem('role3_user_id') || 'NULL'}</div>
         </div>
-      </div>
+      </div> */}
 
       {/* 뒤로 가기 */}
       <div

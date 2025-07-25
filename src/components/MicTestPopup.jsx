@@ -461,7 +461,7 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         color: Colors.textSecondary,
         textAlign: 'center'
       }}>
-        마이크 없이도 시작할 수 있습니다
+        마이크 없이 시작합니다.
       </div>
 
       {/* 준비하기 버튼 항상 활성화 */}

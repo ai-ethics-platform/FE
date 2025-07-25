@@ -18,6 +18,7 @@ export default function GameMapOptionBox({
             position: 'relative',
             width: '15vw',
             display: 'inline-block',
+            pointerEvents: option.disabled ? 'none' : 'auto', // ✅ 추가
             cursor: option.disabled ? 'not-allowed' : 'pointer',
             opacity: option.disabled ? 0.5 : 1,
             marginTop: isSecond ? '-4.5vh' : '0',

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import ContentTextBox from '../components/ContentTextBox';
+import ContentTextBox2 from '../components/ContentTextBox2';
 import character1 from '../assets/images/Char1.jpg';
 import character2 from '../assets/images/Char2.jpg';
 import character3 from '../assets/images/Char3.jpg';
@@ -95,31 +95,38 @@ export default function Game01() {
       console.log('[SelectHomeMate] 연결 상태 업데이트:', newStatus);
     }, [isConnected, webrtcInitialized]);
 
-  // Continue
+  // // Continue
+  // const handleContinue = () => {
+  //   //  연결 상태 확인
+  //   if (!connectionStatus.ready) {
+  //     console.warn('[SelectHomeMate] 연결이 완전하지 않음:', connectionStatus);
+  //     alert('연결 상태를 확인하고 다시 시도해주세요.');
+  //     return;
+  //   }
+
+  //   //  방장이 아닌 경우 차단
+  //   if (!isHost) {
+  //     console.log(' [SelectHomeMate] 방장이 아니므로 진행 불가');
+  //     alert('방장만 게임을 진행할 수 있습니다.');
+  //     return;
+  //   }
+  //   const success = sendNextPage();
+  //     if (success) {
+  //       console.log(' [game01] next_page 브로드캐스트 전송 성공');
+  //       console.log(' [game01] 서버가 모든 클라이언트에게 브로드캐스트 중...');
+  //       console.log(' [game01] useWebSocketNavigation이 브로드캐스트를 받아서 자동으로 페이지 이동 처리');
+  //     } else {
+  //       console.error(' [game01] next_page 브로드캐스트 전송 실패');
+  //       alert('페이지 이동 신호 전송에 실패했습니다. 다시 시도해주세요.');
+  //     }
+
+  // };
   const handleContinue = () => {
-    //  연결 상태 확인
-    if (!connectionStatus.ready) {
-      console.warn('[SelectHomeMate] 연결이 완전하지 않음:', connectionStatus);
-      alert('연결 상태를 확인하고 다시 시도해주세요.');
-      return;
+    if (myRoleId) {
+      navigate(`/character_description${myRoleId}`);
+    } else {
+      console.warn('myRoleId가 존재하지 않습니다.');
     }
-
-    //  방장이 아닌 경우 차단
-    if (!isHost) {
-      console.log(' [SelectHomeMate] 방장이 아니므로 진행 불가');
-      alert('방장만 게임을 진행할 수 있습니다.');
-      return;
-    }
-    const success = sendNextPage();
-      if (success) {
-        console.log(' [game01] next_page 브로드캐스트 전송 성공');
-        console.log(' [game01] 서버가 모든 클라이언트에게 브로드캐스트 중...');
-        console.log(' [game01] useWebSocketNavigation이 브로드캐스트를 받아서 자동으로 페이지 이동 처리');
-      } else {
-        console.error(' [game01] next_page 브로드캐스트 전송 실패');
-        alert('페이지 이동 신호 전송에 실패했습니다. 다시 시도해주세요.');
-      }
-
   };
 
   const title = localStorage.getItem('title');
@@ -199,7 +206,9 @@ export default function Game01() {
         ))}
       </div>
       <div style={{width:'100%',marginTop: 10, maxWidth:900}}>
-        <ContentTextBox  disabled={!isHost} paragraphs={paragraphs} onContinue = {navigate('/game02')} />
+        {/* <ContentTextBox  disabled={!isHost} paragraphs={paragraphs} onContinue={handleContinue} /> */}
+        <ContentTextBox2 paragraphs={paragraphs} onContinue={handleContinue} />
+
       </div>
     </Layout>
   );

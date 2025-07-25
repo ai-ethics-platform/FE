@@ -73,9 +73,7 @@ export default function Continue({
         <span style={{ ...FontStyles.headlineSmall, color: textColor }}>
         {label}
         </span>
-        <span style={{ ...FontStyles.title, color: Colors.grey04 }}>
-          {step}/3
-        </span>
+      
       </div>
     </div>
   );

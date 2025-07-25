@@ -75,19 +75,28 @@ export default function SelectHomeMate() {
     });
   }, []);
 
-  //  연결 상태 모니터링
+  // //  연결 상태 모니터링
+  // useEffect(() => {
+  //   const newStatus = {
+  //     websocket: websocketConnected,
+  //     // webrtc: webrtcInitialized,
+  //     // ready: websocketConnected && webrtcInitialized
+  //       };
+
+  //   setConnectionStatus(newStatus);
+
+  //   console.log('🔧 [SelectHomeMate] 연결 상태 업데이트:', newStatus);
+  // }, [websocketConnected, webrtcInitialized]);
+
   useEffect(() => {
     const newStatus = {
       websocket: websocketConnected,
-      webrtc: webrtcInitialized,
-      ready: websocketConnected && webrtcInitialized
+      webrtc: true,
+      ready: true,
     };
-
     setConnectionStatus(newStatus);
-
-    console.log('🔧 [SelectHomeMate] 연결 상태 업데이트:', newStatus);
-  }, [websocketConnected, webrtcInitialized]);
-
+  }, [websocketConnected])
+  
   // 특정 역할의 음성 상태 (내 것은 WebRTC, 다른 사람은 WebSocket)
   // const getVoiceStateForRoleWithMyStatus = (roleId) => {
   //   if (String(roleId) === myRoleId) {
@@ -183,6 +192,7 @@ export default function SelectHomeMate() {
 
   return (
     <Background bgIndex={2}>
+      
       {/* 🔧 연결 상태 디버깅 정보 */}
       {/* <div style={{
         position: 'absolute',
@@ -258,7 +268,7 @@ export default function SelectHomeMate() {
 
         <div style={{
           position: 'absolute',
-          top: '50%',
+          top: '46%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '80vw',

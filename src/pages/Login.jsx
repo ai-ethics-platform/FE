@@ -6,6 +6,7 @@ import InputBoxLarge from '../components/InputBoxLarge';
 import PrimaryButton from '../components/PrimaryButton';
 import SecondaryButton from '../components/SecondaryButton';
 import TextButton from '../components/TextButton';
+import VoiceToggle from '../components/VoiceToggle';
 
 import profileIcon from '../assets/login.svg';
 import lockIcon from '../assets/password.svg';
@@ -27,7 +28,10 @@ export default function Login() {
       document.body.style.overflow = original;
     };
   }, []);
-
+  const handleVoiceChange = (enabled) => {
+    console.log('Voice enabled changed to:', enabled);
+    // 필요시 상태 업데이트 or 안내
+  };
   return (
     <Background bgIndex={1}>
       <div
@@ -185,8 +189,12 @@ export default function Login() {
           >
             Guest로 로그인
           </SecondaryButton>
+
         </div>
+
       </div>
+
+
     </Background>
   );
 }

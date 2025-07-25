@@ -54,6 +54,28 @@ export default function Game03() {
         return '';
     }
   };
+  const subtopicMap = {
+    '가정 1': {
+      question: ' 24시간 개인정보 수집 업데이트에 동의하시겠습니까?',
+      labels: { agree: '동의', disagree: '비동의' }
+    },
+    '가정 2': {
+      question: ' 감정 엔진 업데이트에 동의하시겠습니까?',
+      labels: { agree: '동의', disagree: '비동의' }
+    },
+    '국가 인공지능 위원회 1': {
+      question: ' 가정용 로봇 사용에 대한 연령 규제가 필요할까요?',
+      labels: { agree: '규제 필요', disagree: '규제 불필요' }
+    },
+    '국가 인공지능 위원회 2': {
+      question: " '설명 가능한 AI' 개발을 기업에 의무화해야 할까요?",
+      labels: { agree: '의무화 필요', disagree: '의무화 불필요' }
+    },
+    '국제 인류 발전 위원회 1': {
+      question: '   세계적으로 가정용 로봇의 업그레이드 혹은 사용에 제한이 필요할까요?',
+      labels: { agree: '제한 필요', disagree: '제한 불필요' }
+    }
+  };
   
   const roleName = getRoleNameBySubtopic(subtopic, roleId);
   const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
@@ -155,11 +177,11 @@ export default function Game03() {
 
           <Card width={936} height={216} extraTop={60} >
             <p style={title}>
-              당신은 {roleName}입니다. 24시간 개인정보 수집 업데이트에 동의하시겠습니까?
+            당신은 {roleName}입니다. {subtopicMap[subtopic]?.question || ''}
             </p>
             <div style={{ display:'flex', gap:24 }}>
-              <SelectCardToggle label="동의" selected={agree==='agree'} onClick={()=>setAgree('agree')} width={220} height={56} />
-              <SelectCardToggle label="비동의" selected={agree==='disagree'} onClick={()=>setAgree('disagree')} width={220} height={56} />
+              <SelectCardToggle   label={subtopicMap[subtopic]?.labels.agree || '동의'}  selected={agree==='agree'} onClick={()=>setAgree('agree')} width={220} height={56} />
+              <SelectCardToggle   label={subtopicMap[subtopic]?.labels.disagree || '비동의'} selected={agree==='disagree'} onClick={()=>setAgree('disagree')} width={220} height={56} />
             </div>
           </Card>
           <div style={{ marginTop:40, textAlign:'center' }}>
@@ -174,7 +196,7 @@ export default function Game03() {
       {step === 2 && (
         <>
           <Card width={936} height={216} extraTop={150} >
-            <p style={title}>당신의 선택에 얼마나 확신이 있나요?</p>
+            <p style={title}>당신의 선택에 얼마나 확신을 가지고 있나요?</p>
             <div style={{ position:'relative', width:'80%', minWidth:300 }}>
               <div style={{ position:'absolute', top:12, left:0, right:0, height:LINE, background:Colors.grey03 }} />
               <div style={{ position:'absolute', top:12, left:0, width:`${pct}%`, height:LINE, background:Colors.brandPrimary }} />

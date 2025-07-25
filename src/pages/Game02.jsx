@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';
-import ContentTextBox2 from '../components/ContentTextBox';
+import ContentTextBox2 from '../components/ContentTextBox2';
 import closeIcon from '../assets/close.svg';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
@@ -89,26 +89,29 @@ export default function Game02() {
     if (mateName) setParagraphs(resolveParagraphs(rawParagraphs, mateName));
   }, [mateName, rawParagraphs]);
 
+  // const handleContinue = () => {
+  //   if (!connectionStatus.ready) {
+  //     console.warn(' [Game02] 연결이 완전하지 않음:', connectionStatus);
+  //     alert('연결 상태를 확인하고 다시 시도해주세요.');
+  //     return;
+  //   }
+  
+  //   if (!isHost) {
+  //     alert('방장만 진행할 수 있습니다.');
+  //     return;
+  //   }
+  
+  //   const success = sendNextPage();
+  //   if (success) {
+  //     console.log(' [Game02] next_page 브로드캐스트 전송 성공');
+  //   } else {
+  //     console.error(' [Game02] next_page 브로드캐스트 전송 실패');
+  //     alert('페이지 이동 신호 전송에 실패했습니다.');
+  //   }
+  // };
   const handleContinue = () => {
-    if (!connectionStatus.ready) {
-      console.warn(' [Game02] 연결이 완전하지 않음:', connectionStatus);
-      alert('연결 상태를 확인하고 다시 시도해주세요.');
-      return;
-    }
-  
-    if (!isHost) {
-      alert('방장만 진행할 수 있습니다.');
-      return;
-    }
-  
-    const success = sendNextPage();
-    if (success) {
-      console.log(' [Game02] next_page 브로드캐스트 전송 성공');
-    } else {
-      console.error(' [Game02] next_page 브로드캐스트 전송 실패');
-      alert('페이지 이동 신호 전송에 실패했습니다.');
-    }
-  };
+    navigate(`/game03`);
+  }
   
 
   return (

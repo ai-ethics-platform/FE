@@ -58,7 +58,6 @@ export default function Game09() {
       'mataName',
       'nickname',
       'title',
-      'completedTopics',
       'session_id',
       'selectedCharacterIndex',
       'currentRound',

@@ -2,7 +2,7 @@ import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';      
-import ContentTextBox from '../components/ContentTextBox';
+import ContentBox3 from '../components/ContentBox3';
 import Continue from '../components/Continue';
 import GameFrame from '../components/GameFrame';
 
@@ -71,21 +71,25 @@ const navigate = useNavigate();
   const [openProfile, setOpenProfile] = useState(null);
 
  // Continue
- const handleContinue = () => {
-  //  연결 상태 확인
-  if (!connectionStatus.ready) {
-    console.warn(' [game08] 연결이 완전하지 않음:', connectionStatus);
-    alert('연결 상태를 확인하고 다시 시도해주세요.');
-    return;
-  }
-  //  방장이 아닌 경우 차단
-  if (!isHost) {
-    console.log('[game08] 방장이 아니므로 진행 불가');
-    alert('방장만 페이지를 넘길 수 있습니다.');
-    return;
-  }
-  sendNextPage();
-};
+//  const handleContinue = () => {
+//   //  연결 상태 확인
+//   if (!connectionStatus.ready) {
+//     console.warn(' [game08] 연결이 완전하지 않음:', connectionStatus);
+//     alert('연결 상태를 확인하고 다시 시도해주세요.');
+//     return;
+//   }
+//   //  방장이 아닌 경우 차단
+//   if (!isHost) {
+//     console.log('[game08] 방장이 아니므로 진행 불가');
+//     alert('방장만 페이지를 넘길 수 있습니다.');
+//     return;
+//   }
+//   sendNextPage();
+// };
+const handleContinue = () =>{
+  navigate('/game09');
+}
+
 
 
   return (
@@ -123,15 +127,15 @@ const navigate = useNavigate();
         onProfileClick={(playerId) => setOpenProfile(playerId)}
       >
         
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <img
             src={comicImages[currentIndex]}
             alt={`comic ${currentIndex + 1}`}
             style={{ width: 760, height: 'auto', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
           />
 
-          <div style={{ width: '100%', maxWidth: 900 }}>
-            <ContentTextBox
+          <div style={{ width: '100%', maxWidth: 900, }}>
+            <ContentBox3
               paragraphs={paragraphs}
               currentIndex={currentIndex}
               setCurrentIndex={setCurrentIndex}

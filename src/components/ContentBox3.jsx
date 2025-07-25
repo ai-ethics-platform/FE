@@ -8,7 +8,7 @@ import NextGreen from './NextGreen'; // ⬅️ 새로 추가
 import arrowLdisabled from '../assets/arrowLdisabled.svg';
 import arrowRdisabled from '../assets/arrowRdisabled.svg';
 
-export default function ContentTextBox2({
+export default function ContentTextBox3({
   paragraphs = [],
   currentIndex = 0,
   setCurrentIndex = () => {},
@@ -131,22 +131,6 @@ const handleContinueClick = () => {
             )}
           </div>
 
-          </div>
-         
-          <div
-            style={{
-              position: 'absolute',
-              right: -67,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 2,
-            }}
-          >
-            <NextGreen 
-            onClick={handleContinueClick} 
-            disabled={disabled}
-            visuallyDisabled={!(typingDone && currentIndex === paragraphs.length - 1)}  
-            />
           </div>
         </div>
   

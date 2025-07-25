@@ -120,13 +120,15 @@ useEffect(() => {
                   `:${String(secsLeft%60).padStart(2,'0')}`;
 
   const handleContinue = () => {
-    if (!isHost) {
-      alert('⚠️ 방장만 진행할 수 있습니다.');
-      return;
-    }
-    sendNextPage();
+    // if (!isHost) {
+    //   alert('⚠️ 방장만 진행할 수 있습니다.');
+    //   return;
+    // }
+    // sendNextPage();
+    navigate('/game05');
+
   };
-  
+
   const selectedMode = localStorage.getItem('mode');
 
   return (
@@ -183,7 +185,7 @@ useEffect(() => {
         {secsLeft > 0 ? (
           <>
             <p style={{ ...FontStyles.headlineSmall, color: Colors.grey06 }}>
-              선택의 이유를 공유해 주세요.
+              선택의 이유를 한 분씩 공유해 주세요.
             </p>
             <div style={{
               width: 264, height: 72, margin: '16px auto 0',
@@ -199,7 +201,6 @@ useEffect(() => {
             width={264}
             height={72}
             step={1}
-            disabled={!isHost}
             onClick={handleContinue}
           />
         )}

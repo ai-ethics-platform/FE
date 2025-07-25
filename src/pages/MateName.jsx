@@ -80,18 +80,28 @@ const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
     });
   }, []);
 
-  //  연결 상태 모니터링
-  useEffect(() => {
-    const newStatus = {
-      websocket: websocketConnected,
-      webrtc: webrtcInitialized,
-      ready: websocketConnected && webrtcInitialized
-    };
+  // //  연결 상태 모니터링
+  // useEffect(() => {
+  //   const newStatus = {
+  //     websocket: websocketConnected,
+  //     webrtc: webrtcInitialized,
+  //     ready: websocketConnected && webrtcInitialized
+  //   };
 
-    setConnectionStatus(newStatus);
+  //   setConnectionStatus(newStatus);
 
-    console.log('🔧 [MateName] 연결 상태 업데이트:', newStatus);
-  }, [websocketConnected, webrtcInitialized]);
+  //   console.log('🔧 [MateName] 연결 상태 업데이트:', newStatus);
+  // }, [websocketConnected, webrtcInitialized]);
+
+//음성 빼기 
+    useEffect(() => {
+      const newStatus = {
+        websocket: websocketConnected,
+        webrtc: true,
+        ready: true,
+      };
+      setConnectionStatus(newStatus);
+    }, [websocketConnected])
 
   // 선택된 AI 타입 불러오기
   useEffect(() => {
@@ -133,9 +143,8 @@ useEffect(() => {
   const paragraphs = [
     {
       main: '     여러분이 사용자라면 HomeMate를 어떻게 부를까요?',
-      sub: isHost 
-        ? '(함께 토론한 후 방장이 입력하고 "다음" 버튼을 클릭해 주세요)'
-        : '(방장이 이름을 입력할 때까지 기다려주세요)',
+      sub: 
+         '합의 후에 방장이 이름을 작성해주세요'
     },
   ];
 

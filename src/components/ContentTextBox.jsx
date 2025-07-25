@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import contentbox from '../assets/contentBox1.svg';
-import paginationLeft from '../assets/paginationleft.svg';
-import paginationRight from '../assets/paginationright.svg';
 import paginationBothL from '../assets/paginationBothL.svg';
 import paginationBothR from '../assets/paginationBothR.svg';
 import { Colors, FontStyles } from './styleConstants';
-import Continue from './Continue';
 import useTypingEffect from '../hooks/useTypingEffect';
 import Next2 from './Next2'; // ⬅️ 새로 추가
+import arrowLdisabled from '../assets/arrowLdisabled.svg';
+import arrowRdisabled from '../assets/arrowRdisabled.svg';
 
 export default function ContentTextBox({
   paragraphs = [],
@@ -20,13 +19,11 @@ export default function ContentTextBox({
   const [typingDone, setTypingDone] = useState(false);
   const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };
   const isTextReady = currentParagraph.main && currentParagraph.main.length > 0;
+  const shouldShowArrows = paragraphs.length > 1;
 
   useEffect(() => {
     setTypingDone(false);
   }, [currentIndex]);
-  // disabled 상태의 스타일
-  const containerOpacity = disabled ? 0.5 : 1;
-  const interactionEnabled = !disabled && typingDone;
 
   const typedMain = useTypingEffect(
     isTextReady ? currentParagraph.main : '',
@@ -42,19 +39,25 @@ export default function ContentTextBox({
       setTypingDone(false);
     }
   };
-
+  
   const handleNext = () => {
     if (!typingDone) return;
     if (currentIndex < paragraphs.length - 1) {
       setCurrentIndex(currentIndex + 1);
       setTypingDone(false);
-    } else {
-      onContinue();
-    }
+    } 
   };
+  const isFirst = currentIndex === 0;
+const isLast = currentIndex === paragraphs.length - 1;
 
-  const showLeft = currentIndex > 0;
-  const showRight = currentIndex < paragraphs.length - 1;
+const leftArrowImage = isFirst ? arrowLdisabled : paginationBothL;
+const rightArrowImage = isLast ? arrowRdisabled : paginationBothR;
+const handleContinueClick = () => {
+  if (!typingDone) return;
+  if (currentIndex === paragraphs.length - 1) {
+    onContinue?.();
+  }
+};
 
   return (
     <div style={{ position: 'relative', width: 960, minHeight: 200 }}>
@@ -93,39 +96,41 @@ export default function ContentTextBox({
               </React.Fragment>
             ))}
           </div>
-          <div style={{ ...FontStyles.caption, color: Colors.grey04 }}>
+          <div style={{ ...FontStyles.headlineSmall, color: Colors.grey04 }}>
             {typedSub}
           </div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 16 }}>
-            {showLeft && (
-              <img
-                src={showRight ? paginationBothL : paginationLeft}
-                alt="prev"
-                style={{
-                  marginBottom: -80,
-                  height: 24,
-                  cursor: typingDone ? 'pointer' : 'default',
-                  opacity: typingDone ? 1 : 0.3,
-                }}
-                onClick={handlePrev}
-              />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {paragraphs.length > 1 && (
+              <div style={{ display: 'flex', gap: 16 }}>
+                <img
+                  src={leftArrowImage}
+                  alt="prev"
+                  style={{
+                    marginBottom: -80,
+                    height: 24,
+                    cursor: typingDone && !isFirst ? 'pointer' : 'default',
+                    opacity: typingDone ? 1 : 0.3,
+                  }}
+                  onClick={handlePrev}
+                />
+                <img
+                  src={rightArrowImage}
+                  alt="next"
+                  style={{
+                    marginBottom: -80,
+                    height: 24,
+                    cursor: typingDone && !isLast ? 'pointer' : 'default',
+                    opacity: typingDone ? 1 : 0.3,
+                  }}
+                  onClick={handleNext}
+                />
+              </div>
             )}
-            {showRight && (
-              <img
-                src={showLeft ? paginationBothR : paginationRight}
-                alt="next"
-                style={{
-                  marginBottom: -80,
-                  height: 24,
-                  cursor: typingDone ? 'pointer' : 'default',
-                  opacity: typingDone ? 1 : 0.3,
-                }}
-                onClick={handleNext}
-              />
-            )}
+          </div>
+
           </div>
          
           <div
@@ -138,7 +143,7 @@ export default function ContentTextBox({
             }}
           >
             <Next2 
-            onClick={handleNext} 
+            onClick={handleContinueClick} 
             disabled={disabled}
             visuallyDisabled={!(typingDone && currentIndex === paragraphs.length - 1)}  
             />
@@ -146,6 +151,5 @@ export default function ContentTextBox({
         </div>
   
       </div>
-    </div>
   );
 }

@@ -106,7 +106,10 @@ export default function GameMap() {
     disabled: !unlockedOptions.has(text),
     onClick: () => handleSelect(text,title)
   });
-
+// ✅ GameMapFrame 해금 조건
+const isHomeUnlocked = true;
+const isNationalUnlocked = isCompleted('가정 1');
+const isInternationalUnlocked = isCompleted('국가 인공지능 위원회 1');
   return (
     <Layout subtopic={subtopic} nodescription={true}>
 
@@ -115,18 +118,21 @@ export default function GameMap() {
         <GameMapFrame
           icon={homeIcon}
           title="가정"
+          disabled={!isHomeUnlocked} // 항상 false
           option1={createOption('가정 1','가정')}
           option2={createOption('가정 2','가정')}
         />
         <GameMapFrame
           icon={aiIcon}
           title="국가 인공지능 위원회"
+          disabled={!isNationalUnlocked} // '가정 1'이 끝나야 true
           option1={createOption('국가 인공지능 위원회 1','국가 인공지능 위원회')}
           option2={createOption('국가 인공지능 위원회 2','국가 인공지능 위원회')}
         />
         <GameMapFrame
           icon={internationalIcon}
-          title="국제 인류발전 위원회"
+          disabled={!isInternationalUnlocked} // '국가 인공지능 위원회 1'이 끝나야 true
+          title="국제 인류 발전 위원회"
           option1={createOption('국제 인류 발전 위원회 1','국제 인류 발전 위원회')}
         />
       </div>

@@ -96,7 +96,7 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
   };
 
   const handleNextRound = () => {
-    saveCompletedTopic();
+    //saveCompletedTopic();
     localStorage.removeItem('category');
     localStorage.removeItem('subtopic');
     localStorage.removeItem('mode');
@@ -108,7 +108,7 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
   };
 
   const handleViewResult = () => {
-    saveCompletedTopic();
+    //saveCompletedTopic();
     // if (!isHost) {
     //   alert(' 방장만 결과 보기로 진행할 수 있습니다.');
     //   return;
@@ -118,14 +118,19 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
     else setShowPopup(true);
   };
 
-  const isResultAvailable = completedTopics.length >= 3;
+  //const isResultAvailable = completedTopics.length >= 3;
+ // 결과보기 조건 수정 
+ const hasMinimumRounds = completedTopics.length >= 3;
+ const hasCompletedInternational = completedTopics.includes('국제 인류 발전 위원회 1');
+ const showResultButton = hasMinimumRounds || hasCompletedInternational;
 
   return (
     <>
-      <Layout round={currentRound} subtopic={subtopic}>
+      <Layout round={currentRound-1} subtopic={subtopic}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={paragraphs[0]?.main || ''} width={936} height={407} />
-          {isResultAvailable ? (
+          {/* {isResultAvailable ? ( */}
+          {/* {showResultButton ? (
             <div style={{ display: 'flex', gap: 24 }}>
               <Continue
                 label="라운드 선택으로"
@@ -143,7 +148,19 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
               onClick={handleNextRound}
               style={{ width: 264, height: 72 }}
             />
-          )}
+          )} */}
+           {showResultButton ? (
+                      <Continue3
+                        label="결과 보기"
+                        onClick={handleViewResult}
+                      />
+                    ) : (
+                      <Continue
+                        label="라운드 선택으로"
+                        onClick={handleNextRound}
+                        style={{ width: 264, height: 72 }}
+                      />
+                    )}
         </div>
       </Layout>
 

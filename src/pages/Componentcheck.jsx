@@ -209,7 +209,19 @@ export default function Componentcheck() {
 <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
 <CreateRoom2/>
 <RoomCode roomCode="154152" />
-
+   <div style={{ marginTop: 20 }}>
+        <SecondaryButton
+          style={{
+            width: 168,
+            height: 72,
+            justifyContent: 'center',
+            marginBottom: 12,
+          }}
+          onClick={() => navigate('/game08')}
+        >
+          결과 보기
+        </SecondaryButton>
+      </div>
   </div>
     </Background>
     );

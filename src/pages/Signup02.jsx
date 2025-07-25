@@ -209,7 +209,7 @@ useEffect(() => {
         headers: { 'Content-Type': 'application/json' },
       });
       console.log('회원가입 성공:', response.data);
-      navigate('/selectroom');
+      navigate('/');
     } catch (error) {
       console.error('회원가입 실패:', error.response?.data || error.message);
       alert(`회원가입 오류: ${JSON.stringify(error.response?.data?.detail || '')}`);

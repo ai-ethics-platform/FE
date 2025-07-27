@@ -38,7 +38,7 @@ export default function Game02() {
 
   // 로컬 설정
   const category = localStorage.getItem('category') ?? '안드로이드';
-  const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
+  const subtopic = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
   const mode = localStorage.getItem('mode') ?? 'neutral';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex')) || 0;  
   const roomCode = localStorage.getItem('room_code');
@@ -116,27 +116,7 @@ export default function Game02() {
 
   return (
     <>
-      {/* 프로필 팝업 */}
-      {openProfile && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}
-          onClick={() => setOpenProfile(null)}
-        >
-          <div
-            style={{ position: 'relative', background: '#fff', padding: 32, borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.25)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <img src={profileImages[openProfile]} alt={`Profile ${openProfile}`} style={{ width: 360 }} />
-            <img
-              src={closeIcon}
-              alt="close"
-              style={{ position: 'absolute', top: 24, right: 24, width: 40, height: 40, cursor: 'pointer' }}
-              onClick={() => setOpenProfile(null)}
-            />
-          </div>
-        </div>
-      )}
-
+   
       <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
       {/* <div style={{
           position: 'absolute',

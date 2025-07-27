@@ -1,3 +1,4 @@
+// 수정할 것 - 마이크 팝업 페이지 음성 키기, category, 비공개, 공개 수정하기 
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -12,15 +13,27 @@ import player3 from "../assets/3player_withnum.svg";
 import axiosInstance from '../api/axiosInstance';
 import { FontStyles, Colors } from '../components/styleConstants';
 import codeBg from '../assets/roomcodebackground.svg';
+import CancelReadyPopup from '../components/CancelReadyPopup';
 
 export default function WaitingRoom() {
   const location = useLocation();
   const navigate = useNavigate();
-  const allTopics = ['안드로이드', '자율 무기 시스템'];
+  // zoom 수정
+  // const allTopics = ['안드로이드', '자율 무기 시스템'];
+  const allTopics = ['안드로이드'];
+
   const initialTopic = location.state?.topic || '안드로이드';
   const initialIndex = allTopics.indexOf(initialTopic);
  
+  //룸코드 복사 
+  const [copied, setCopied] = useState(false);
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(room_code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1000); // 1초 후 사라짐
+    });
+  };
   //  useRef로 폴링 타이머 ID 관리
   const pollingIntervalRef = useRef(null);
 
@@ -29,6 +42,7 @@ export default function WaitingRoom() {
   const [showMicPopup, setShowMicPopup] = useState(false);
   const [showOutPopup, setShowOutPopup] = useState(false);
   const [myStatusIndex, setMyStatusIndex] = useState(0);
+  const [showCancelPopup, setShowCancelPopup] = useState(false);
 
   // 2) 유저 & 방 정보
   const [myPlayerId, setMyPlayerId] = useState(null);
@@ -237,9 +251,12 @@ export default function WaitingRoom() {
       setHasAssignedRoles(false);
     }
   };
-
+  useEffect(() => {
+    console.log('✅ myStatusIndex 변경됨:', myStatusIndex);
+  }, [myStatusIndex]);
   //  폴링 함수 - 방 상태를 주기적으로 확인
   const pollRoomStatus = async () => {
+
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
       // 1. 참가자 업데이트
@@ -343,7 +360,7 @@ export default function WaitingRoom() {
     // 5초마다 폴링
     pollingIntervalRef.current = setInterval(() => {
       pollRoomStatus();
-    }, 5000);
+    }, 2000);
   };
 
   // 폴링 중지 함수
@@ -373,11 +390,11 @@ export default function WaitingRoom() {
       }
       
       const isHost = String(myUserId) === String(loadedHostUserId);
-      console.log(`사용자 역할 확인:`, { 
-        myUserId, 
-        hostUserId: loadedHostUserId, 
-        isHost: isHost ? '방장' : '일반 유저' 
-      });
+      // console.log(`사용자 역할 확인:`, { 
+      //   myUserId, 
+      //   hostUserId: loadedHostUserId, 
+      //   isHost: isHost ? '방장' : '일반 유저' 
+      // });
       
       if (checkIfRolesAlreadyAssigned()) {
         setHasAssignedRoles(true);
@@ -427,7 +444,8 @@ export default function WaitingRoom() {
     try {
       console.log(`준비하기 API 호출`);
       const { data } = await axiosInstance.post('/rooms/ready', { room_code });
-      
+      console.log('✅ 준비 눌림 → 상태 1로 설정 시도');
+
       setMyStatusIndex(1);
       setShowMicPopup(false);
       
@@ -451,13 +469,13 @@ export default function WaitingRoom() {
   };
 
   const getOrderedPlayers = () => {
-    console.log(`getOrderedPlayers 호출:`, {
-      myPlayerId,
-      participantsLength: participants.length,
-      assignmentsLength: assignments.length,
-      participants: participants.map(p => ({ user_id: p.user_id, nickname: p.nickname })),
-      assignments: assignments.map(a => ({ player_id: a.player_id, role_id: a.role_id }))
-    });
+    // console.log(`getOrderedPlayers 호출:`, {
+    //   myPlayerId,
+    //   participantsLength: participants.length,
+    //   assignmentsLength: assignments.length,
+    //   participants: participants.map(p => ({ user_id: p.user_id, nickname: p.nickname })),
+    //   assignments: assignments.map(a => ({ player_id: a.player_id, role_id: a.role_id }))
+    // });
 
     // participants가 있으면 항상 3명을 표시 (assignments가 없어도)
     if (!myPlayerId || participants.length !== 3) {
@@ -476,15 +494,16 @@ export default function WaitingRoom() {
       otherPlayerIds[1]  // 오른쪽
     ].filter(Boolean);
     
-    console.log(`최종 플레이어 순서:`, {
-      left: otherPlayerIds[0],
-      center: myPlayerId,
-      right: otherPlayerIds[1],
-      result: orderedPlayers
-    });
+    // console.log(`최종 플레이어 순서:`, {
+    //   left: otherPlayerIds[0],
+    //   center: myPlayerId,
+    //   right: otherPlayerIds[1],
+    //   result: orderedPlayers
+    // });
 
     return orderedPlayers;
   };
+  const isReady = Boolean(statusIndexMap[myPlayerId] === 1);
 
   // 디버깅용 전역 함수
   useEffect(() => {
@@ -520,7 +539,12 @@ export default function WaitingRoom() {
       delete window.debugWaitingRoom;
     };
   }, [isPolling, myPlayerId, hostUserId, participants, hasAssignedRoles, statusIndexMap, assignments]);
-
+  const handleCancelConfirm = () => {
+    // 1) 로컬 인덱스 리셋
+    setMyStatusIndex(0);
+    // 2) 팝업 닫기
+    setShowCancelPopup(false);
+  };
 
   return (
     <Background bgIndex={2}>
@@ -612,6 +636,7 @@ export default function WaitingRoom() {
             }}
           />
           <span
+            onClick={handleCopy}
             style={{
               position: 'absolute',
               top: 0,
@@ -621,6 +646,7 @@ export default function WaitingRoom() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              cursor: 'pointer',
               ...FontStyles.title,
               color: Colors.brandPrimary,
               userSelect: 'none',
@@ -628,6 +654,28 @@ export default function WaitingRoom() {
           >
             CODE: {room_code}
           </span>
+                {/* 툴팁 */}
+            {copied && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '58px',
+                  left: '75%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(0,0,0,0.75)',
+                  color: 'white',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  whiteSpace: 'nowrap',
+                  pointerEvents: 'none',
+                  zIndex: 10,
+                  
+                }}
+              >
+                Copied!
+              </div>
+            )}
         </div>
       </div>
 
@@ -660,7 +708,10 @@ export default function WaitingRoom() {
           }}
           disableLeft={currentIndex === 0}
           disableRight={currentIndex === allTopics.length - 1}
-          hideArrows={false}
+          
+          hideArrows={true}
+         //zoom 수정  hideArrows={false}
+
         />
       </div>
 
@@ -674,26 +725,26 @@ export default function WaitingRoom() {
         boxSizing: 'border-box'
       }}>
         {getOrderedPlayers().map((id, idx) => {
-          console.log(`StatusCard 렌더링:`, {
-            id,
-            idx,
-            myPlayerId,
-            isMe: String(id) === String(myPlayerId),
-            hostUserId
-          });
+          // console.log(`StatusCard 렌더링:`, {
+          //   id,
+          //   idx,
+          //   myPlayerId,
+          //   isMe: String(id) === String(myPlayerId),
+          //   hostUserId
+          // });
           
           const assign = assignments.find(a => String(a.player_id) === String(id));
           const isOwner = String(id) === String(hostUserId);
           const isMe = String(id) === String(myPlayerId);
           
-          console.log(`StatusCard ${idx} 상세:`, {
-            id,
-            assign,
-            isOwner,
-            isMe,
-            roleId: assign?.role_id,
-            statusIndex: isMe ? myStatusIndex : statusIndexMap[String(id)] || 0
-          });
+          // console.log(`StatusCard ${idx} 상세:`, {
+          //   id,
+          //   assign,
+          //   isOwner,
+          //   isMe,
+          //   roleId: assign?.role_id,
+          //   statusIndex: isMe ? myStatusIndex : statusIndexMap[String(id)] || 0
+          // });
           
           return (
             <div key={id} style={{ transform: `scale(${idx === 1 ? 1 : 0.9})` }}>
@@ -702,11 +753,29 @@ export default function WaitingRoom() {
                 isOwner={isOwner}
                 isMe={isMe}
                 roleId={assign?.role_id}
-                statusIndex={isMe
-                  ? myStatusIndex
-                  : statusIndexMap[String(id)] || 0}
-                onContinueClick={() => setShowMicPopup(true)}
-                onStatusChange={isMe ? setMyStatusIndex : undefined}
+                // statusIndex={isMe
+                //   ? myStatusIndex
+                //   : statusIndexMap[String(id)] || 0}
+                // //onContinueClick={() => setShowMicPopup(true)}
+                // onContinueClick={() => {
+                //   console.log('버튼 눌림', { isReady, myStatusIndex });
+                //   if (!isMe) return;
+                //   if (isReady) {
+                //     console.log('➡ 준비 취소 팝업 띄우기');
+                //     setShowCancelPopup(true);
+                //   } else {
+                //     console.log('➡ 마이크 팝업 띄우기');
+                //     setShowMicPopup(true);
+                //   }
+                // }}
+                statusIndex={
+                  isMe
+                          ? myStatusIndex
+                          : statusIndexMap[String(id)] || 0
+                     }
+                  onContinueClick={() => setShowMicPopup(true)}
+                  onCancelClick={() => setShowCancelPopup(true)}  // 
+                  onStatusChange={isMe ? setMyStatusIndex : undefined}
               />
             </div>
           );
@@ -720,6 +789,19 @@ export default function WaitingRoom() {
           onConfirm={handleMicConfirm}
         />
       )}
+      {showCancelPopup && (
+          <div style={{
+            position: 'fixed', inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            zIndex: 1000
+          }}>
+              <CancelReadyPopup
+          onClose={() => setShowCancelPopup(false)}
+          onCancelConfirmed={handleCancelConfirm}  // ← 이제 정의된 함수를 넘김
+        />
+          </div>
+    )}
     </Background>
   );
 }

@@ -3,9 +3,9 @@ import frameDefault from '../assets/cardframe.svg';
 import frameHover from '../assets/cardframehover.svg';
 import frameActive from '../assets/cardframeactive.svg';
 
-import player1 from '../assets/1player.svg';
-import player2 from '../assets/2player.svg';
-import player3 from '../assets/3player.svg';
+import player1 from '../assets/1player_withnum.svg';
+import player2 from '../assets/2player_withnum.svg';
+import player3 from '../assets/3player_withnum.svg';
 
 import emptyPlayer from '../assets/emptyplayer.svg';
 import StatusWaitingforReady from '../assets/waitingforready.svg';
@@ -40,6 +40,9 @@ export default function StatusCard({
   onContinueClick,
   statusIndex: externalStatusIndex,
   onStatusChange,
+// 추가 
+onCancelClick
+
 }) {
   const [isHover, setIsHover] = useState(false);
   const [isActive, setIsActive] = useState(false);
@@ -64,16 +67,32 @@ export default function StatusCard({
     setStatusIndex((prev) => (prev + 1) % statusList.length);
   };
 
-  const handleStatusClick = () => {
-    if (!showPlayer) return;
-    if (isMe && status === 'continue' && typeof onContinueClick === 'function') {
-      onContinueClick();
-    } else {
-      cycleStatus();
-    }
-  };
+  // const handleStatusClick = () => {
+  //   if (!showPlayer) return;
+  //   if (isMe && status === 'continue' && typeof onContinueClick === 'function') {
+  //     onContinueClick();
+  //   } else {
+  //     cycleStatus();
+  //   }
+  // };
 
-  const frameSrc = isActive
+  const handleStatusClick = () => {
+        if (!showPlayer) return;
+        if (isMe) {
+          if (status === 'continue') {
+          // 1) 준비하기 클릭 → 마이크 팝업
+            onContinueClick?.();
+         } else if (status === 'meready') {
+            // 2) 준비완료 클릭 → 취소 팝업
+            onCancelClick?.();
+         }
+        } else if (!isControlled) {
+        // 비제어 모드 유저들만 토글 허용
+          cycleStatus();
+        }
+    };
+
+    const frameSrc = isActive
     ? frameActive
     : isHover
     ? frameHover

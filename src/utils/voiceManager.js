@@ -400,6 +400,8 @@
 
 // export default voiceManager;
 
+
+//줌을 위한 코드
 import axiosInstance from '../api/axiosInstance';
 
 class VoiceManager {

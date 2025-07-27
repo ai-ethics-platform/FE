@@ -51,7 +51,7 @@ export default function Game06() {
 
   // 결과보기 조건 수정 
   const hasMinimumRounds = completedTopics.length >= 3;
-const hasCompletedInternational = completedTopics.includes('국제 인류 발전 위원회 1');
+const hasCompletedInternational = completedTopics.includes('지구, 인간, AI');
 const showResultButton = hasCompletedInternational;
 
   useEffect(() => {
@@ -108,7 +108,7 @@ const showResultButton = hasCompletedInternational;
     //   return;
     // }
     //saveCompletedTopic();
-    localStorage.removeItem('category');
+    //localStorage.removeItem('category');
     localStorage.removeItem('subtopic');
     localStorage.removeItem('mode');
     navigate('/gamemap');
@@ -128,26 +128,7 @@ const showResultButton = hasCompletedInternational;
       <Layout round={currentRound-1} subtopic={subtopic} >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={paragraphs[0]?.main || ''} width={936} height={407} />
-          {/* {completedTopics.length >= 3 ? ( */}
-          {/* {showResultButton ? (
-            <div style={{ display: 'flex', gap: 24 }}>
-              <Continue
-                label="라운드 선택으로"
-                onClick={handleNextRound}
-                style={{ width: 264, height: 72 }}
-              />
-              <Continue3
-                label="결과 보기"
-                onClick={handleViewResult}
-              />
-            </div>
-          ) : (
-            <Continue
-              label="라운드 선택으로"
-              onClick={handleNextRound}
-              style={{ width: 264, height: 72 }}
-            />
-          )} */}
+      
           {showResultButton ? (
             <Continue3
               label="결과 보기"

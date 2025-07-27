@@ -10,14 +10,14 @@ export default function ResultPopup({ onClose }) {
   const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
 
   const allRequired = [
-    '가정 1',
-    '국가 인공지능 위원회 1',
-    '국제 인류발전 위원회 1',
+    'AI의 개인 정보 수집',
+    '아이들을 위한 서비스',
+    '지구, 인간, AI',
   ];
 
   const optionalTopics = [
-    { label: '가정 2', value: '가정 2' },
-    { label: '국가 인공지능 위원회 2', value: '국가 인공지능 위원회 2' },
+    { label: '안드로이드의 감정 표현', value: '안드로이드의 감정 표현' },
+    { label: '설명 가능한 AI', value: '설명 가능한 AI' },
   ];
 
   const unplayedOptions = optionalTopics.filter(

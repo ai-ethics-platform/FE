@@ -20,12 +20,34 @@ export default function GameMapFrame({
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
   
+  // const opt1 = option1 || (options[0]
+  //   ? { text: options[0], disabled: false, onClick: () => onSelectOption(options[0]) }
+  //   : null);
+  // const opt2 = option2 || (options[1]
+  //   ? { text: options[1], disabled: true, onClick: () => onSelectOption(options[1]) }
+  //   : null);
   const opt1 = option1 || (options[0]
-    ? { text: options[0], disabled: false, onClick: () => onSelectOption(options[0]) }
+    ? typeof options[0] === 'string'
+      ? { text: options[0], disabled: false, onClick: () => onSelectOption(options[0]) }
+      : {
+          text: options[0].text,
+          disabled: options[0].disabled ?? false,
+          locked: options[0].locked ?? false,
+          onClick: () => onSelectOption(options[0].text),
+        }
     : null);
+  
   const opt2 = option2 || (options[1]
-    ? { text: options[1], disabled: true, onClick: () => onSelectOption(options[1]) }
+    ? typeof options[1] === 'string'
+      ? { text: options[1], disabled: true, onClick: () => onSelectOption(options[1]) }
+      : {
+          text: options[1].text,
+          disabled: options[1].disabled ?? true,
+          locked: options[1].locked ?? false,
+          onClick: () => onSelectOption(options[1].text),
+        }
     : null);
+  
 
   const getFrameImage = () => {
     if (isActive) return frameActive;

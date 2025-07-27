@@ -11,7 +11,8 @@ import mainTopicActive from '../assets/maintopicframe.svg';
 
 import axiosInstance from '../api/axiosInstance';
 
-const topics = ['안드로이드', '자율 무기 시스템'];
+// 자율무기 시스템 뺐음 
+const topics = ['안드로이드'];
 
 export default function CreateRoom2({ onClose }) {
   const [isPublic, setIsPublic] = useState(false); // 기본은 비공개
@@ -101,7 +102,8 @@ export default function CreateRoom2({ onClose }) {
       <div style={{ color: Colors.grey05, marginBottom: 32 }}>
         이번 게임에서 플레이할 주제를 선택해 주세요.
       </div>
-      <RoomTypeToggle isPublic={isPublic} setIsPublic={setIsPublic} />
+      {/* Zoom 위한 코드 수정  */}
+      {/* <RoomTypeToggle isPublic={isPublic} setIsPublic={setIsPublic} /> */}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
         {topics.map((topic) => (

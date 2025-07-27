@@ -42,7 +42,7 @@ export default function Game05() {
     setConnectionStatus(newStatus);
     console.log(' [Game05] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
-  
+
 
   const handleContinue = () => {
     // if (!connectionStatus.ready) {
@@ -64,6 +64,7 @@ export default function Game05() {
     //   alert('페이지 이동 신호 전송에 실패했습니다.');
     // }
     navigate('/game05_1');
+
   };
 
   const [mateName, setMateName] = useState('');
@@ -108,18 +109,7 @@ export default function Game05() {
 
   return (
     <>
-      {openProfile && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}
-          onClick={() => setOpenProfile(null)}
-        >
-          <div style={{ position: 'relative', background: '#fff', padding: 32, borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
-            <img src={profileImages[openProfile]} alt={`Profile ${openProfile}`} style={{ width: 360, height: 'auto', display: 'block' }} />
-            <img src={closeIcon} alt="close" style={{ position: 'absolute', top: 24, right: 24, width: 40, height: 40, cursor: 'pointer' }} onClick={() => setOpenProfile(null)} />
-          </div>
-        </div>
-      )}
-
+     
       <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <img src={comicImages[currentIndex]} alt={`comic ${currentIndex + 1}`} style={{ width: 744, height:360,borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />  

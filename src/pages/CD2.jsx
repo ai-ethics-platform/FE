@@ -25,7 +25,7 @@ export default function CD2() {
     nextPagePath: '/game02'
   });
 
-  const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
+  const subtopic = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
   const round = Number(localStorage.getItem('currentRound') ?? '1');
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
 
@@ -51,11 +51,11 @@ export default function CD2() {
   let mainText =
     `당신은 자녀 J씨의 노모입니다.\n 가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다.`
 
-  if (subtopic === '국가 인공지능 위원회 1' || subtopic === '국가 인공지능 위원회 2') {
+  if (subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {
     descImg = player2DescImg_title2;
     mainText =
-      `당신은 ${mateName}를 사용해 온 소비자 대표입니다. \n 당신은 사용자로서 HomeMate 규제 여부와 관련한 목소리를 내고자 참여하였습니다.`;
-  } else if (subtopic === '국제 인류 발전 위원회 1') {
+      `당신은 HomeMate를 사용해 온 소비자 대표입니다. \n 당신은 사용자로서 HomeMate 규제 여부와 관련한 목소리를 내고자 참여하였습니다.`;
+  } else if (subtopic === '지구, 인간, AI') {
     descImg = player2DescImg_title3;
     mainText =
       `당신은 국제적인 환경단체의 대표로 온 환경운동가입니다.\n AI의 발전이 환경에 도움이 될지, 문제가 될지 고민 중입니다.`;

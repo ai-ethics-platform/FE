@@ -6,12 +6,13 @@ import { useVoiceRoleStates } from '../hooks/useVoiceRoleStates';
 import voiceManager from '../utils/voiceManager';
 
 // Character popup components
-// import CharacterPopup1 from '../components/CharacterPopup1';
-// import CharacterPopup2 from '../components/CharacterPopup2';
-// import CharacterPopup3 from '../components/CharacterPopup3';
+import CharacterPopup1 from '../components/CharacterPopUp';
+import CharacterPopup2 from '../components/CharacterPopUp';
+import CharacterPopup3 from '../components/CharacterPopUp';
+import closeIcon from "../assets/close.svg";
 
 export default function Layout({
-  subtopic = '가정 1',
+  subtopic ,
   onProfileClick,
   children,
   round,
@@ -47,7 +48,8 @@ export default function Layout({
 
   // 팝업 상태 
   const [openProfile, setOpenProfile] = useState(null);
-
+  const roleIdMap = { '1P': 1, '2P': 2, '3P': 3 };
+  const mateName = localStorage.getItem('mateName') || 'HomeMate'; 
   useEffect(() => {
     // 로컬스토리지에서 데이터 불러오기
     const storedHost = localStorage.getItem('host_id');
@@ -136,9 +138,23 @@ export default function Layout({
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {openProfile === '1P' && <CharacterPopup1 />}
-            {openProfile === '2P' && <CharacterPopup2 />}
-            {openProfile === '3P' && <CharacterPopup3 />}
+            {openProfile === '1P' && 
+            <CharacterPopup1
+            subtopic={subtopic}
+            roleId={roleIdMap[openProfile]}
+            mateName={mateName}
+            />}
+            {openProfile === '2P' && 
+            <CharacterPopup2 
+            subtopic={subtopic}
+            roleId={roleIdMap[openProfile]}
+            mateName={mateName}
+            />}
+            {openProfile === '3P' &&
+            <CharacterPopup3 
+            subtopic={subtopic}
+            roleId={roleIdMap[openProfile]}
+            mateName={mateName}/>}
             <img
               src={closeIcon}
               alt="close"
@@ -232,7 +248,7 @@ export default function Layout({
               nickname={getVoiceStateForRoleWithMyStatus(1).nickname}
               nodescription={nodescription}
               {...(onProfileClick && {
-                onClick: () => onProfileClick('1P'),
+                onClick: () => setOpenProfile('1P'),
                 style: { cursor: 'pointer' },
               })}
             />
@@ -245,7 +261,7 @@ export default function Layout({
               nickname={getVoiceStateForRoleWithMyStatus(2).nickname}
               nodescription={nodescription}
               {...(onProfileClick && {
-                onClick: () => onProfileClick('2P'),
+                onClick: () => setOpenProfile('2P'),
                 style: { cursor: 'pointer' },
               })}
             />
@@ -259,7 +275,7 @@ export default function Layout({
               nickname={getVoiceStateForRoleWithMyStatus(3).nickname}
               nodescription={nodescription}
               {...(onProfileClick && {
-                onClick: () => onProfileClick('3P'),
+                onClick: () =>setOpenProfile('3P'),
                 style: { cursor: 'pointer' },
               })}
             />

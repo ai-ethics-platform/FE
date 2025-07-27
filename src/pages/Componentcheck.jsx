@@ -48,6 +48,10 @@ import GameFrame from '../components/GameFrame';
 import RoomCode from '../components/RoomCode';
 import GameMapFrame from '../components/GameMapFrame';
 import GameMapOptionBox from '../components/GameMapOptionBox';
+import CharacterPopup from '../components/CharacterPopUp';
+import { Colors } from '../components/styleConstants';
+
+
 const fullText = `지금은 20XX년,\n국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
   `이 로봇의 기능은 아래와 같습니다.\n` +
   `• 가족의 감정, 건강 상태, 생활 습관 등을 입력하면 맞춤형 알림, 식단 제안 등의 서비스를 제공\n` +
@@ -169,17 +173,17 @@ export default function Componentcheck() {
     </div>
     <ContentBox2 text={fullText} typingSpeed={50} />
     <GameMapOptionBox
-  option1={{
-    text: '가정 1',
-    disabled: false,
-    onClick: () => console.log('가정 1 클릭'),
-  }}
-  option2={{
-    text: '가정 2',
-    disabled: false,
-    onClick: () => console.log('가정 2 클릭'),
-  }}/>
-    
+        option1={{
+          text: '가정 1',
+          disabled: false,
+          onClick: () => console.log('가정 1 클릭'),
+        }}
+        option2={{
+          text: '가정 2',
+          disabled: false,
+          onClick: () => console.log('가정 2 클릭'),
+        }}/>
+          
 <ContentTextBox
   paragraphs={[
     { main: ' AI가 인간처럼 말할 수 있을까요?', sub: '(AI가 말하는 능력에 대한 의문)' },
@@ -205,6 +209,7 @@ export default function Componentcheck() {
     // 필요한 동작 추가
   }}
 />    </div>
+ 
 
 <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
 <CreateRoom2/>
@@ -223,6 +228,12 @@ export default function Componentcheck() {
         </SecondaryButton>
       </div>
   </div>
+
+  <CharacterPopup 
+  subtopic="AI의 개인 정보 수집"
+  roleId={3}
+  mateName="단밤이" 
+/>
     </Background>
     );
   }

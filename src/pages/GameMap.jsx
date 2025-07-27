@@ -15,7 +15,7 @@ import {
   useWebSocketNavigation, 
   useHostActions 
 } from '../hooks/useWebSocketMessage';
-
+import { FontStyles,Colors } from '../components/styleConstants';
 export default function GameMap() {
   const navigate = useNavigate();
   const subtopic = '라운드 선택';
@@ -79,7 +79,7 @@ export default function GameMap() {
       //  이전 title과 같으면 game02, 다르면 game01
     const nextPage = prevTitle === title ? '/game02' : '/game01';
 
-    console.log(`👑 [GameMap] ${prevTitle === title ? '같은 주제 재선택' : '새 주제 선택'} → ${nextPage}로 이동`);
+    console.log(` [GameMap] ${prevTitle === title ? '같은 주제 재선택' : '새 주제 선택'} → ${nextPage}로 이동`);
     navigate(nextPage);
 
   };
@@ -88,52 +88,78 @@ export default function GameMap() {
   const isCompleted = (name) => completedTopics.includes(name);
 
   const getUnlockedOptions = () => {
-    const unlocked = new Set(['가정 1']);
-    if (isCompleted('가정 1')) {
-      unlocked.add('가정 2');
-      unlocked.add('국가 인공지능 위원회 1');
+    const unlocked = new Set(['AI의 개인 정보 수집']);
+    if (isCompleted('AI의 개인 정보 수집')) {
+      unlocked.add('안드로이드의 감정 표현');
+      unlocked.add('아이들을 위한 서비스');
     }
-    if (isCompleted('국가 인공지능 위원회 1')) {
-      unlocked.add('국가 인공지능 위원회 2');
-      unlocked.add('국제 인류 발전 위원회 1');
+    if (isCompleted('아이들을 위한 서비스')) {
+      unlocked.add('설명 가능한 AI');
+      unlocked.add('지구, 인간, AI');
     }
     return unlocked;
   };
 
   const unlockedOptions = getUnlockedOptions();
-  const createOption = (text,title) => ({
-    text,
-    disabled: !unlockedOptions.has(text),
-    onClick: () => handleSelect(text,title)
-  });
-// ✅ GameMapFrame 해금 조건
+  // const createOption = (text,title) => ({
+  //   text,
+  //   disabled: !unlockedOptions.has(text),
+  //   onClick: () => handleSelect(text,title)
+  // });
+
+  const createOption = (text, title) => {
+    const isDone = completedTopics.includes(text);
+    const isUnlocked = unlockedOptions.has(text);
+  
+    return {
+      text,
+      disabled: isDone,
+      locked: !isUnlocked,
+      onClick: () => {
+        if (!isDone && isUnlocked) handleSelect(text, title);
+      },
+    };
+  };
+  
+//  GameMapFrame 해금 조건
 const isHomeUnlocked = true;
-const isNationalUnlocked = isCompleted('가정 1');
-const isInternationalUnlocked = isCompleted('국가 인공지능 위원회 1');
+const isNationalUnlocked = isCompleted('AI의 개인 정보 수집');
+const isInternationalUnlocked = isCompleted('아이들을 위한 서비스');
   return (
     <Layout subtopic={subtopic} nodescription={true}>
-
+        <div style={{
+            width: 500,
+            minHeight: 0,
+            ...FontStyles.headlineSmall,
+            color: Colors.systemRed,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            userSelect: 'none',
+          }}>
+          합의 후 같은 라운드를 선택하세요.
+            </div>
       {/* 메인 맵 프레임 */}
       <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginLeft: 60, marginTop: 12, zIndex: 1 }}>
         <GameMapFrame
           icon={homeIcon}
           title="가정"
           disabled={!isHomeUnlocked} // 항상 false
-          option1={createOption('가정 1','가정')}
-          option2={createOption('가정 2','가정')}
+          option1={createOption('AI의 개인 정보 수집','가정')}
+          option2={createOption('안드로이드의 감정 표현','가정')}
         />
         <GameMapFrame
           icon={aiIcon}
           title="국가 인공지능 위원회"
           disabled={!isNationalUnlocked} // '가정 1'이 끝나야 true
-          option1={createOption('국가 인공지능 위원회 1','국가 인공지능 위원회')}
-          option2={createOption('국가 인공지능 위원회 2','국가 인공지능 위원회')}
+          option1={createOption('아이들을 위한 서비스','국가 인공지능 위원회')}
+          option2={createOption('설명 가능한 AI','국가 인공지능 위원회')}
         />
         <GameMapFrame
           icon={internationalIcon}
           disabled={!isInternationalUnlocked} // '국가 인공지능 위원회 1'이 끝나야 true
           title="국제 인류 발전 위원회"
-          option1={createOption('국제 인류 발전 위원회 1','국제 인류 발전 위원회')}
+          option1={createOption('지구, 인간, AI','국제 인류 발전 위원회')}
         />
       </div>
     </Layout>

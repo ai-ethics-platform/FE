@@ -55,17 +55,17 @@ export default function UserProfile({
 
   if (hasSubtopic) {
     switch (subtopic) {
-      case '가정 1':
-      case '가정 2':
+      case 'AI의 개인 정보 수집':
+      case '안드로이드의 감정 표현':
         mappedDesc = roleNum === 1 ? '요양보호사 K' : roleNum === 2 ? '노모 L' : '자녀 J';
         break;
-      case '국가 인공지능 위원회 1':
-      case '국가 인공지능 위원회 2':
+      case '아이들을 위한 서비스':
+      case '설명 가능한 AI':
         mappedDesc = roleNum === 1 ? '로봇 제조사 연합회 대표'
           : roleNum === 2 ? '소비자 대표'
           : '국가 인공지능 위원회 대표';
         break;
-      case '국제 인류 발전 위원회 1':
+      case '지구, 인간, AI':
         mappedDesc = roleNum === 1 ? '기업 연합체 대표'
           : roleNum === 2 ? '국제 환경단체 대표'
           : '소비자 대표';
@@ -89,7 +89,7 @@ export default function UserProfile({
   const { style: externalStyle, ...divProps } = rest;
   const baseStyle = {
     position: 'relative',
-    width: 216,
+    width: 200,
     height: 96,
     backgroundColor: Colors.componentBackgroundFloat,
     padding: '12px 12px 12px 20px',
@@ -135,8 +135,10 @@ export default function UserProfile({
             ...FontStyles.body,
             color: colorMap[player],
             marginTop: 2,
-            maxWidth: 120,
-            whiteSpace: 'nowrap',
+            maxWidth: 180,
+            wordBreak: 'keep-all',
+            whiteSpace: 'normal',
+            //whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             lineHeight: 1.2,

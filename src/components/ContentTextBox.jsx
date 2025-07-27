@@ -77,9 +77,11 @@ const handleContinueClick = () => {
         style={{
           position: 'absolute',
           top: 30,
-          left: 32,
-          right: 32,
+          left: 40,
+          right: 50,
           bottom: 24,
+           // ← 여기 추가!
+
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',

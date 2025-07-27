@@ -5,8 +5,8 @@ export default function SelectButton({
   label = '버튼 텍스트',
   selected: controlledSelected,
   onClick,
-  width = 200,
-  height = 56,
+  width = 360,
+  height = 72,
 }) {
   const [internalSelected, setInternalSelected] = useState(false);
   const isControlled = controlledSelected !== undefined;
@@ -22,19 +22,25 @@ export default function SelectButton({
   };
 
   const getBorderColor = () => {
-    if (selected) return Colors.grey07; 
-    if (isHovered) return Colors.grey04; 
-    return 'transparent';
+    if (selected) return Colors.grey07;
+    if (isHovered) return Colors.brandLight;
+    return Colors.grey04;
+  };
+
+  const getBorderWidth = () => {
+    if (selected) return '1.2px';
+    if (isHovered) return '1.2px';
+    return '0.5px';
   };
 
   const getBackgroundColor = () => {
-    if (selected) return '#E2E8F0'; 
-    return Colors.componentBackground; 
+    if (selected) return '#ECF1F2'; 
+    return '#FFFFFF'; 
   };
 
   const style = {
     backgroundColor: getBackgroundColor(),
-    border: `1.5px solid ${getBorderColor()}`,
+    border: `${getBorderWidth()} solid ${getBorderColor()}`,
     ...FontStyles.body,
     color: Colors.grey07,
     display: 'flex',
@@ -45,6 +51,8 @@ export default function SelectButton({
     width,
     height,
     userSelect: 'none',
+    boxSizing: 'border-box',
+
   };
 
   return (

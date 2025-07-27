@@ -18,6 +18,14 @@ export default function SecondaryButton({ onClick, disabled = false, children, s
     color: Colors.grey06,
     border: `1px solid ${Colors.brandPrimary}`,
   };
+   //  클릭 시 disabled일 경우 무시
+   const handleClick = (e) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
+    onClick?.(e);
+  };
 
   if (disabled) {
     baseStyle.backgroundColor = Colors.componentBackground;
@@ -35,7 +43,7 @@ export default function SecondaryButton({ onClick, disabled = false, children, s
 
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       style={{ ...baseStyle, ...externalStyle }}
       disabled={disabled}
       onMouseEnter={() => setIsHover(true)}

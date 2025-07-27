@@ -77,9 +77,10 @@ const handleContinueClick = () => {
         style={{
           position: 'absolute',
           top: 30,
-          left: 32,
-          right: 32,
+          left: 40,
+          right: 40,
           bottom: 24,
+          paddingRight: 30,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',

@@ -334,7 +334,7 @@
 //   return (
 //     <Background bgIndex={2}>
 //       {/* 연결 상태 디버깅 정보 */}
-//       {/* <div style={{
+//       <div style={{
 //         position: 'absolute',
 //         top: '10px',
 //         right: '10px',
@@ -376,10 +376,10 @@
 //           🔧 voice_status_update 전송 제거됨
 //         </div>
 //         {/* 🎤 내 음성 상태 (로컬 전용) */}
-//         {/* <div style={{color: myVoiceSessionStatus.isSpeaking ? '#00ff00' : '#888888'}}>
+//          <div style={{color: myVoiceSessionStatus.isSpeaking ? '#00ff00' : '#888888'}}>
 //           내 음성: {myVoiceSessionStatus.isSpeaking ? '🗣️ 말하는 중' : '🤐 조용함'}
 //         </div>
-//       </div> */}
+//       </div>
 
 //       <div
 //         style={{
@@ -453,6 +453,7 @@
 //   );
 // } 
 
+// 아예 페이지 이전으로 바꿔야함 통으로! 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -486,25 +487,25 @@ export default function GameIntro() {
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(() => localStorage.getItem('voice_enabled') !== 'false');
   const [connectionStatus, setConnectionStatus] = useState({ websocket: false, webrtc: false, voice: false });
 
-  // ✅ ref 선언
+  // ref 선언
   const connectionEstablishedRef = useRef(false);
   const initMessageSentRef = useRef(false);
   const sendMessageRef = useRef(null);
 
-  // ✅ 웹소켓, WebRTC 관련 훅
+  //  웹소켓, WebRTC 관련 훅
   const { isConnected, addMessageHandler, removeMessageHandler, sendMessage, initializeVoiceWebSocket } = useWebSocket();
   const { isInitialized: webrtcInitialized, signalingConnected, initializeWebRTC } = useWebRTC();
   const { isHost } = useHostActions();
 
-  // ✅ 메시지 핸들링
+  //  메시지 핸들링
   useWebSocketNavigation(navigate, { nextPagePath: '/selecthomemate' });
 
-  // ✅ sendMessage 참조 저장
+  //  sendMessage 참조 저장
   useEffect(() => {
     sendMessageRef.current = sendMessage;
   }, [sendMessage]);
 
-  // ✅ 역할 정보 로드
+  //  역할 정보 로드
   useEffect(() => {
     const storedHost = localStorage.getItem('host_id');
     const storedMyRole = localStorage.getItem('myrole_id');
@@ -518,7 +519,7 @@ export default function GameIntro() {
     });
   }, [clientId]);
 
-  // ✅ init 메시지 전송
+  //  init 메시지 전송
   const sendInitMessage = useCallback(() => {
     if (initMessageSentRef.current) return;
 
@@ -535,7 +536,7 @@ export default function GameIntro() {
     if (success) initMessageSentRef.current = true;
   }, []);
 
-  // ✅ connection_established → init 메시지 전송
+  //  connection_established → init 메시지 전송
   useEffect(() => {
     const handlerId = 'connection-established';
     const messageHandler = (message) => {
@@ -552,7 +553,7 @@ export default function GameIntro() {
     return () => removeMessageHandler(handlerId);
   }, [addMessageHandler, removeMessageHandler, initializeVoiceWebSocket, isHost, sendInitMessage]);
 
-  // ✅ WebRTC 초기화
+  //  WebRTC 초기화
   useEffect(() => {
     if (!webrtcInitialized && isConnected && connectionEstablishedRef.current) {
       initializeWebRTC().then(() => {
@@ -561,7 +562,7 @@ export default function GameIntro() {
     }
   }, [isConnected, webrtcInitialized, initializeWebRTC]);
 
-  // ✅ voiceManager 초기화
+  //  voiceManager 초기화
   const initializeVoice = useCallback(async () => {
     if (!isVoiceEnabled || voiceInitialized) return;
 
@@ -579,7 +580,7 @@ export default function GameIntro() {
     }
   }, [voiceInitialized, webrtcInitialized, isVoiceEnabled]);
 
-  // ✅ voice 초기화 조건 검사
+  //  voice 초기화 조건 검사
   useEffect(() => {
     if (connectionEstablishedRef.current && webrtcInitialized && !voiceInitialized && isVoiceEnabled) {
       const timer = setTimeout(() => initializeVoice(), 1000);
@@ -587,7 +588,7 @@ export default function GameIntro() {
     }
   }, [webrtcInitialized, voiceInitialized, isVoiceEnabled, initializeVoice]);
 
-  // ✅ 상태 전체 업데이트
+  //  상태 전체 업데이트
   useEffect(() => {
     setConnectionStatus({
       websocket: isConnected,
@@ -598,7 +599,7 @@ export default function GameIntro() {
 const handleContinue = () => {
   navigate('/selecthomemate');
 }
-  // ✅ 화면에 출력될 텍스트 (예시)
+  //  화면에 출력될 텍스트 (예시)
   const fullText =
     `          지금은 20XX년, 국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
     `    이 로봇의 기능은 아래와 같습니다.\n\n` +

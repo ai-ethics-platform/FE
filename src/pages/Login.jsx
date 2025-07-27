@@ -1,3 +1,4 @@
+// 수정할 것 - 게스트 로그인 활성화 필요
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -186,6 +187,8 @@ export default function Login() {
             }}
             onClick={() => {
             }}
+           //실험에서 설계
+            disabled={true}
           >
             Guest로 로그인
           </SecondaryButton>

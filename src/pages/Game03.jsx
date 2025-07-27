@@ -30,7 +30,7 @@ export default function Game03() {
   const roleId        = Number(localStorage.getItem('myrole_id'));
   const roomCode      = localStorage.getItem('room_code') ?? '';
   const category      = localStorage.getItem('category') ?? '안드로이드';
-  const subtopic      = localStorage.getItem('subtopic') ?? '가정 1';
+  const subtopic      = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
   const mode          = 'neutral';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
 
@@ -38,15 +38,15 @@ export default function Game03() {
   // 역할 이름 가져오기
   const getRoleNameBySubtopic = (subtopic, roleId) => {
     switch (subtopic) {
-      case '가정 1':
-      case '가정 2':
+      case 'AI의 개인 정보 수집':
+      case '안드로이드의 감정 표현':
         return roleId === 1 ? '요양보호사 K' : roleId === 2 ? '노모 L' : '자녀 J';
-      case '국가 인공지능 위원회 1':
-      case '국가 인공지능 위원회 2':
+      case '아이들을 위한 서비스':
+      case '설명 가능한 AI':
         return roleId === 1 ? '로봇 제조사 연합회 대표'
              : roleId === 2 ? '소비자 대표'
              : '국가 인공지능 위원회 대표';
-      case '국제 인류 발전 위원회 1':
+      case '지구, 인간, AI':
         return roleId === 1 ? '기업 연합체 대표'
              : roleId === 2 ? '국제 환경단체 대표'
              : '소비자 대표';
@@ -55,24 +55,24 @@ export default function Game03() {
     }
   };
   const subtopicMap = {
-    '가정 1': {
-      question: ' 24시간 개인정보 수집 업데이트에 동의하시겠습니까?',
+    'AI의 개인 정보 수집': {
+      question: '24시간 개인정보 수집 업데이트에 동의하시겠습니까?',
       labels: { agree: '동의', disagree: '비동의' }
     },
-    '가정 2': {
-      question: ' 감정 엔진 업데이트에 동의하시겠습니까?',
+    '안드로이드의 감정 표현': {
+      question: '감정 엔진 업데이트에 동의하시겠습니까?',
       labels: { agree: '동의', disagree: '비동의' }
     },
-    '국가 인공지능 위원회 1': {
-      question: ' 가정용 로봇 사용에 대한 연령 규제가 필요할까요?',
+    '아이들을 위한 서비스': {
+      question: '가정용 로봇 사용에 대한 연령 규제가 필요할까요?',
       labels: { agree: '규제 필요', disagree: '규제 불필요' }
     },
-    '국가 인공지능 위원회 2': {
-      question: " '설명 가능한 AI' 개발을 기업에 의무화해야 할까요?",
+    '설명 가능한 AI': {
+      question: "'설명 가능한 AI' 개발을 기업에 의무화해야 할까요?",
       labels: { agree: '의무화 필요', disagree: '의무화 불필요' }
     },
-    '국제 인류 발전 위원회 1': {
-      question: '   세계적으로 가정용 로봇의 업그레이드 혹은 사용에 제한이 필요할까요?',
+    '지구, 인간, AI': {
+      question: '세계적으로 가정용 로봇의 업그레이드 혹은 사용에 제한이 필요할까요?',
       labels: { agree: '제한 필요', disagree: '제한 불필요' }
     }
   };
@@ -169,19 +169,19 @@ export default function Game03() {
     <Layout subtopic={subtopic} round={round}>
       {step === 1 && (
         <>
-          <div style={{ display:'flex', justifyContent:'center', gap:16 }}>
+          <div style={{ marginTop: 60 ,display:'flex', justifyContent:'center', gap:10 }}>
             {comicImages.map((img, idx) => (
-              <img key={idx} src={img} alt={`설명 이미지 ${idx+1}`} style={{ width:230, height:135.38, objectFit:'contain' }} />
+              <img key={idx} src={img} alt={`설명 이미지 ${idx+1}`} style={{ width:250, height:139,  }} />
             ))}
           </div>
 
-          <Card width={936} height={216} extraTop={60} >
+          <Card width={936} height={216} extraTop={30} >
             <p style={title}>
             당신은 {roleName}입니다. {subtopicMap[subtopic]?.question || ''}
             </p>
             <div style={{ display:'flex', gap:24 }}>
-              <SelectCardToggle   label={subtopicMap[subtopic]?.labels.agree || '동의'}  selected={agree==='agree'} onClick={()=>setAgree('agree')} width={220} height={56} />
-              <SelectCardToggle   label={subtopicMap[subtopic]?.labels.disagree || '비동의'} selected={agree==='disagree'} onClick={()=>setAgree('disagree')} width={220} height={56} />
+              <SelectCardToggle   label={subtopicMap[subtopic]?.labels.agree || '동의'}  selected={agree==='agree'} onClick={()=>setAgree('agree')} width={330} height={62} />
+              <SelectCardToggle   label={subtopicMap[subtopic]?.labels.disagree || '비동의'} selected={agree==='disagree'} onClick={()=>setAgree('disagree')} width={330} height={62} />
             </div>
           </Card>
           <div style={{ marginTop:40, textAlign:'center' }}>
@@ -197,22 +197,56 @@ export default function Game03() {
         <>
           <Card width={936} height={216} extraTop={150} >
             <p style={title}>당신의 선택에 얼마나 확신을 가지고 있나요?</p>
-            <div style={{ position:'relative', width:'80%', minWidth:300 }}>
-              <div style={{ position:'absolute', top:12, left:0, right:0, height:LINE, background:Colors.grey03 }} />
-              <div style={{ position:'absolute', top:12, left:0, width:`${pct}%`, height:LINE, background:Colors.brandPrimary }} />
-              <div style={{ position:'relative', display:'flex', justifyContent:'space-between' }}>
-                {[1,2,3,4,5].map(n => {
-                  const isNow = conf===n;
-                  const passed = conf>n;
-                  return (
-                    <div key={n} style={{ textAlign:'center' }}>
-                      <div onClick={()=>setConf(n)} style={{ width:CIRCLE, height:CIRCLE, borderRadius:'50%', background: isNow?Colors.grey01:passed?Colors.brandPrimary:Colors.grey03, border:`${BORDER}px solid ${isNow?Colors.brandPrimary:'transparent'}`, cursor:'pointer', margin:'0 auto' }} />
-                      <span style={{...FontStyles.caption,color:Colors.grey06,marginTop:4,display:'inline-block'}}>{n}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                       <div style={{ position: 'relative', width: '80%', minWidth: 300}}>
+                       <div
+                         style={{
+                           position: 'absolute',
+                           top: 8,
+                           left: 0,
+                           right: 0,
+                           height: LINE,
+                           background: Colors.grey03,
+                           zIndex: 0, // 가장 아래
+                         }}
+                       />
+           
+                       <div
+                         style={{
+                           position: 'absolute',
+                           top: 8,
+                           left: 0,
+                           width: `${pct}%`,
+                           height: LINE,
+                           background: Colors.brandPrimary,
+                           zIndex: 1, // 중간
+                         }}
+                       />
+           
+                       <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
+                         {[1, 2, 3, 4, 5].map((n) => {
+                           const isFilled = n <= conf;
+           
+                           return (
+                             <div key={n} style={{ textAlign: 'center' }}>
+                               <div
+                                 onClick={() => setConf(n)}
+                                 style={{
+                                   width: CIRCLE,
+                                   height: CIRCLE,
+                                   borderRadius: '50%',
+                                   background: isFilled ? Colors.brandPrimary : Colors.grey03,
+                                   cursor: 'pointer',
+                                   margin: '0 auto',
+                                 }}
+                               />
+                               <span style={{ ...FontStyles.caption, color: Colors.grey06, marginTop: 4, display: 'inline-block' }}>
+                                 {n}
+                               </span>
+                             </div>
+                           );
+                         })}
+                     </div>
+                     </div>
           </Card>
           <div style={{ marginTop:80 }}>
             <Continue width={264} height={72} step={2} disabled={conf===0} onClick={handleSubmitConfidence} />

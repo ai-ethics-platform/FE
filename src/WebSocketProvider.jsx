@@ -1144,16 +1144,44 @@ export const WebSocketProvider = ({ children }) => {
       };
 
       socket.onclose = (event) => {
-        clearTimeout(connectionTimeout);
-        isConnecting.current = false;
+        // clearTimeout(connectionTimeout);
+        // isConnecting.current = false;
         
-        const connectDuration = Date.now() - connectStartTime;
+        // const connectDuration = Date.now() - connectStartTime;
         
-        console.log(`🔌 [${providerId}] WebSocket 연결 종료 (${connectDuration}ms):`, {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean
-        });
+        // console.log(`🔌 [${providerId}] WebSocket 연결 종료 (${connectDuration}ms):`, {
+        //   code: event.code,
+        //   reason: event.reason,
+        //   wasClean: event.wasClean
+
+        socket.onclose = async (event) => {
+        
+          // ✅ 조건: 정상 종료가 아니고, 수동 종료가 아님
+          const shouldReconnect =
+            event.code !== 1000 &&
+            event.code !== 1001 &&
+            !isManuallyDisconnected.current &&
+            reconnectAttempts.current < maxReconnectAttempts;
+        
+          if (shouldReconnect) {
+            console.log(`🔄 [${providerId}] 자동 재연결 시도`);
+            
+            try {
+              await connect(currentSessionId, true);  // → 여기서 reconnect
+              console.log(`✅ [${providerId}] 재연결 성공`);
+              return; // 여기서 성공하면 localStorage 삭제 안함
+            } catch (reconnectError) {
+              console.error(`❌ [${providerId}] 재연결 실패`, reconnectError);
+            }
+          }
+        
+          // 🔻 재연결 실패 또는 수동 종료 → 이때만 초기화
+          console.warn('🧹 로컬 상태 초기화');
+          clearAllLocalStorageKeys();
+          alert('❌ 연결이 복구되지 않아 게임이 초기화되었습니다.');
+          navigate('/');
+        };
+        
         
         // 종료 코드별 의미
         const closeCodeMeaning = {

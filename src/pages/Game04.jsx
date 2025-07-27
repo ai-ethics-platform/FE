@@ -14,10 +14,13 @@ import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+const completed = JSON.parse(localStorage.getItem('completedTopics') || '[]');
+const initialRound = completed.length + 1;
 
 export default function Game04() {
   const { state } = useLocation();
   const navigate   = useNavigate();
+  
     const { isConnected, sessionId, sendMessage } = useWebSocket();
     const { isInitialized: webrtcInitialized } = useWebRTC();
     const { isHost, sendNextPage } = useHostActions();
@@ -40,24 +43,36 @@ export default function Game04() {
     }, [isConnected, webrtcInitialized]);
 
   const myVote   = state?.agreement ?? null;
-  const subtopic = localStorage.getItem('subtopic') ?? '가정 1';
+  const subtopic = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
   const roomCode = localStorage.getItem('room_code') ?? '';
 
-  const [round, setRound] = useState(1);
-  useEffect(() => {
-    const completed       = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-    const calculatedRound = completed.length + 1;
-    setRound(calculatedRound);
-    localStorage.setItem('currentRound', calculatedRound.toString());
-  }, []);
+  // const [round, setRound] = useState(1);
+  // useEffect(() => {
+  //   const completed       = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+  //   const calculatedRound = completed.length + 1;
+  //   setRound(calculatedRound);
+  //   localStorage.setItem('currentRound', calculatedRound.toString());
+  // }, []);
+   const [round, setRound] = useState(() => {
+        const c = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+        return c.length + 1;
+      });
+    
+      // (선택) currentRound 도 localStorage 에 동기화하고 싶으면
+      useEffect(() => {
+        localStorage.setItem('currentRound', String(round));
+      }, [round]);
 
   const [agreedList, setAgreedList] = useState([]);
   const [disagreedList, setDisagreedList] = useState([]);
+  const [selectedMode, setSelectedMode] = useState(() => localStorage.getItem('mode') ?? null);
 
+ 
+  
 useEffect(() => {
   let attempt = 0;
   const maxAttempts = 5;
-  const interval = 3000; // 3초
+  const interval = 1000; // 3초
 
   const fetchAgreementStatus = async () => {
     try {
@@ -83,8 +98,10 @@ useEffect(() => {
       });
       if (agreeList.length > disagreeList.length) {
         localStorage.setItem('mode', 'agree');
-      }else{
-        localStorage.setItem('mode','disagree');
+        setSelectedMode('agree');
+      } else {
+        localStorage.setItem('mode', 'disagree');
+        setSelectedMode('disagree');
       }
 
     } catch (err) {
@@ -128,23 +145,57 @@ useEffect(() => {
     navigate('/game05');
 
   };
+  const currentSubtopic = localStorage.getItem('subtopic');
+  const subtopicMap = {
+    'AI의 개인 정보 수집': {
+      question: '24시간 개인정보 수집 업데이트에 동의하시겠습니까?',
+      labels: { agree: '동의', disagree: '비동의' }
+    },
+    '안드로이드의 감정 표현': {
+      question: '감정 엔진 업데이트에 동의하시겠습니까?',
+      labels: { agree: '동의', disagree: '비동의' }
+    },
+    '아이들을 위한 서비스': {
+      question: '가정용 로봇 사용에 대한 연령 규제가 필요할까요?',
+      labels: { agree: '규제 필요', disagree: '규제 불필요' }
+    },
+    '설명 가능한 AI': {
+      question: "'설명 가능한 AI' 개발을 기업에 의무화해야 할까요?",
+      labels: { agree: '의무화 필요', disagree: '의무화 불필요' }
+    },
+    '지구, 인간, AI': {
+      question: '세계적으로 가정용 로봇의 업그레이드 혹은 사용에 제한이 필요할까요?',
+      labels: { agree: '제한 필요', disagree: '제한 불필요' }
+    }
+  };
 
-  const selectedMode = localStorage.getItem('mode');
 
   return (
     <Layout subtopic={subtopic} round={round} >
 
-      <div style={{ marginTop:50, display: 'flex', gap: 48 }}>
+          <div style={{
+            width: 100,
+            minHeight: 40,
+            ...FontStyles.headlineNormal,
+            color: secsLeft <= 10 && secsLeft > 0 ? Colors.systemRed : Colors.grey04,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            userSelect: 'none',
+          }}>
+            {timeStr }
+          </div>
+      <div style={{ marginTop:10, display: 'flex', gap: 48 }}>
 
         {[
-          { label: '동의', list: agreedList, key: 'agree', icon: agreeIcon },
-          { label: '비동의', list: disagreedList, key: 'disagree', icon: disagreeIcon },
-        ].map(({ label, list, key, icon }) => (
+          { list: agreedList, key: 'agree', icon: agreeIcon },
+          {  list: disagreedList, key: 'disagree', icon: disagreeIcon },
+        ].map(({ list, key, icon }) => (
           <div key={key} style={{ position: 'relative', width: 360, height: 391 }}>
             <img
               src={key === selectedMode ? boxSelected : boxUnselect}
-              alt=""
-              style={{
+              alt={`${key} 아이콘`}
+                style={{
                 position: 'absolute',
                 inset: 0,
                 width: '100%',
@@ -166,11 +217,10 @@ useEffect(() => {
             >
               <img
                 src={icon}
-                alt={`${label} 아이콘`}
                 style={{ width: 160, height: 160, marginTop: 40, marginBottom: -10 }}
               />
               <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary }}>
-                {label}
+              {subtopicMap[currentSubtopic]?.labels?.[key] ?? (key === 'agree' ? '동의' : '비동의')}
               </p>
               <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, margin: '16px 0' }}>
                 {list.length}명
@@ -181,30 +231,32 @@ useEffect(() => {
 
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: 40}}>
-        {secsLeft > 0 ? (
-          <>
-            <p style={{ ...FontStyles.headlineSmall, color: Colors.grey06 }}>
-              선택의 이유를 한 분씩 공유해 주세요.
-            </p>
-            <div style={{
-              width: 264, height: 72, margin: '16px auto 0',
-              background: Colors.grey04, borderRadius: 8, opacity: 0.6,
-              display: 'flex', justifyContent: 'center', alignItems: 'center',
-              fontSize: 24, color: Colors.grey01, userSelect: 'none',
-            }}>
-              {timeStr}
-            </div>
-          </>
-        ) : (
+      <div style={{ textAlign: 'center', marginTop: 10 }}>
+        <p style={{ 
+          ...FontStyles.headlineSmall, 
+          color: Colors.grey05
+        }}>
+          {secsLeft <= 0 
+            ? '마무리하고 다음으로 넘어가 주세요.' 
+            : '선택의 이유를 한 분씩 공유해 주세요.'}
+        </p>
+
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 24,
+          marginTop: 16,
+        }}>
           <Continue
             width={264}
             height={72}
             step={1}
             onClick={handleContinue}
           />
-        )}
+        </div>
       </div>
+
     </Layout>
   );
 }

@@ -1093,6 +1093,8 @@
 
 // export default WebRTCProvider;
 
+
+// zoom을 위한 코드 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import voiceManager from './utils/voiceManager';
 import axiosInstance from './api/axiosInstance';

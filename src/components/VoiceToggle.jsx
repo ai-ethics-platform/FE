@@ -17,7 +17,7 @@ export default function VoiceToggle({ onChange }) {
     console.log('Voice enabled changed to:', newValue);
 
     if (newValue === false) {
-      await voiceManager.disableVoiceFeatures(); // 🔥 음성 기능 끄기
+      await voiceManager.disableVoiceFeatures(); //
     } else {
       // 필요시 다시 enable 로직
     }

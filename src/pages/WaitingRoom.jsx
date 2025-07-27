@@ -126,7 +126,7 @@ export default function WaitingRoom() {
         
         setTimeout(() => {
           updateAssignmentsWithRoles();
-        }, 100);
+        }, 5000);
       }
 
       return { participants: room.participants, hostUserId };
@@ -244,7 +244,7 @@ export default function WaitingRoom() {
       
       setTimeout(() => {
         updateAssignmentsWithRoles();
-      }, 300);
+      }, 5000);
       
     } catch (err) {
       console.error(` 방장: 역할 배정 실패:`, err);
@@ -324,7 +324,7 @@ export default function WaitingRoom() {
           // assignments 즉시 업데이트
           setTimeout(() => {
             updateAssignmentsWithRoles();
-          }, 100);
+          }, 5000);
         }
       }
       
@@ -360,7 +360,7 @@ export default function WaitingRoom() {
     // 5초마다 폴링
     pollingIntervalRef.current = setInterval(() => {
       pollRoomStatus();
-    }, 2000);
+    }, 5000);
   };
 
   // 폴링 중지 함수
@@ -407,7 +407,7 @@ export default function WaitingRoom() {
       // 폴링 시작
       setTimeout(() => {
         startPolling();
-      }, 1000);
+      }, 5000);
     };
     
     initializeRoom();

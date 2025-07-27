@@ -1,139 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import contentbox from '../assets/contentBox1.svg';
-import paginationBothL from '../assets/paginationBothL.svg';
-import paginationBothR from '../assets/paginationBothR.svg';
+import React from 'react';
+import  useTypingEffect  from '../hooks/useTypingEffect';
+import contentBoxFrame from '../assets/contentBox2.svg';
 import { Colors, FontStyles } from './styleConstants';
-import useTypingEffect from '../hooks/useTypingEffect';
-import NextGreen from './NextGreen'; // ⬅️ 새로 추가
-import arrowLdisabled from '../assets/arrowLdisabled.svg';
-import arrowRdisabled from '../assets/arrowRdisabled.svg';
-
-export default function ContentTextBox3({
-  paragraphs = [],
-  currentIndex = 0,
-  setCurrentIndex = () => {},
-  onContinue ,
-  disabled = false,
-  continueLabel = '다음',
-}) {
-  const [typingDone, setTypingDone] = useState(false);
-  const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };
-  const isTextReady = currentParagraph.main && currentParagraph.main.length > 0;
-  const shouldShowArrows = paragraphs.length > 1;
-
-  useEffect(() => {
-    setTypingDone(false);
-  }, [currentIndex]);
-
-  const typedMain = useTypingEffect(
-    isTextReady ? currentParagraph.main : '',
-    70,
-    () => setTypingDone(true)
-  );
-  const typedSub = typingDone ? currentParagraph.sub : '';
-
-  const handlePrev = () => {
-    if (!typingDone) return;
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      setTypingDone(false);
-    }
-  };
-  
-  const handleNext = () => {
-    if (!typingDone) return;
-    if (currentIndex < paragraphs.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setTypingDone(false);
-    } 
-  };
-  const isFirst = currentIndex === 0;
-const isLast = currentIndex === paragraphs.length - 1;
-
-const leftArrowImage = isFirst ? arrowLdisabled : paginationBothL;
-const rightArrowImage = isLast ? arrowRdisabled : paginationBothR;
-const handleContinueClick = () => {
-  if (!typingDone) return;
-  if (currentIndex === paragraphs.length - 1) {
-    onContinue?.();
-  }
-};
-
+export default function ContentBox2({ text, typingSpeed = 70 }) {
+  const typedText = useTypingEffect(text, typingSpeed);
   return (
-    <div style={{ position: 'relative', width: 960, minHeight: 200 }}>
+    <div style={{
+      position: 'relative',
+      width: 960,
+      height: 520,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
       <img
-        src={contentbox}
-        alt="frame"
+        src={contentBoxFrame}
+        alt="content frame"
         style={{
           position: 'absolute',
-          inset: 0,
-          // width: '100%',
-          // height: '100%',
-          objectFit: 'contain',
-          zIndex: 0,
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          
         }}
       />
-      <div
-        style={{
-          position: 'absolute',
-          top: 30,
-          left: 32,
-          right: 32,
-          bottom: 24,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: 150,
-          zIndex: 1,
-        }}
-      >
-        <div>
-          <div style={{ ...FontStyles.headlineSmall, marginBottom: 3 }}>
-            {typedMain.split('\n').map((line, idx) => (
-              <React.Fragment key={idx}>
-                {line}
-                <br />
-              </React.Fragment>
-            ))}
-          </div>
-          <div style={{ ...FontStyles.headlineSmall, color: Colors.grey04 }}>
-            {typedSub}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {paragraphs.length > 1 && (
-              <div style={{ display: 'flex', gap: 16 }}>
-                <img
-                  src={leftArrowImage}
-                  alt="prev"
-                  style={{
-                    marginBottom: -80,
-                    height: 24,
-                    cursor: typingDone && !isFirst ? 'pointer' : 'default',
-                    opacity: typingDone ? 1 : 0.3,
-                  }}
-                  onClick={handlePrev}
-                />
-                <img
-                  src={rightArrowImage}
-                  alt="next"
-                  style={{
-                    marginBottom: -80,
-                    height: 24,
-                    cursor: typingDone && !isLast ? 'pointer' : 'default',
-                    opacity: typingDone ? 1 : 0.3,
-                  }}
-                  onClick={handleNext}
-                />
-              </div>
-            )}
-          </div>
-
-          </div>
-        </div>
-  
+      <div style={{
+        position: 'relative',
+        lineHeight: '28px',
+        color:Colors.grey06,
+        ...FontStyles.headlineSmall,
+        //display: 'flex',            
+        alignItems: 'center',       
+        justifyContent: 'center',   
+        textAlign: 'center',
+        wordBreak: 'keep-all',
+        whiteSpace: 'normal',
+        whiteSpace: 'pre-line',
+        maxWidth: 600,
+        padding: '40px 60px',
+        zIndex: 1,
+      }}>
+        {typedText}
       </div>
+    </div>
   );
 }

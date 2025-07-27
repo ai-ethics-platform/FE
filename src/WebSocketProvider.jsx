@@ -1232,7 +1232,12 @@ export const WebSocketProvider = ({ children }) => {
       }
       
       console.error(`❌ [${providerId}] WebSocket 연결 실패:`, error);
+       
       setIsConnected(false);
+      clearAllLocalStorageKeys();
+      alert('게임이 종료되어 메인 화면으로 이동합니다.');
+      navigate('/');
+
     }
   };
 

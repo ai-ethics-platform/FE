@@ -144,13 +144,14 @@ useEffect(() => {
     {
       main: '     여러분이 사용자라면 HomeMate를 어떻게 부를까요?',
       sub: 
-         '합의 후에 방장이 이름을 작성해주세요'
+         '합의 후에 방장이 이름을 작성해주세요.'
     },
   ];
 
   //  방장 전용 이름 입력 핸들러
   const handleNameChange = (e) => {
     if (!isHost) {
+      alert('방장이 아니므로 이름 입력이 불가능합니다.');
       console.log('⚠️ [MateName] 방장이 아니므로 이름 입력 불가');
       return;
     }
@@ -312,7 +313,7 @@ useEffect(() => {
           <div style={{ height: 20 }} />
           
           <InputBoxSmall
-            placeholder={"여러분의 HomeMate 이름을 지어주세요."}
+            placeholder={"여러분의 HomeMate 이름을 지어주세요.(방장만 입력 가능)"}
             width={520} 
             height={64}
             value={name} 

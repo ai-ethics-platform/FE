@@ -154,7 +154,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';      
-import ContentBox2 from '../components/ContentBox2';
+import ContentBox3 from '../components/ContentBox3';
 import Continue3 from '../components/Continue3';
 import voiceManager from '../utils/voiceManager';
 
@@ -231,19 +231,19 @@ export default function Game08() {
     const expl = results['설명 가능한 AI'];
     let p2;
     if (completed.includes('아이들을 위한 서비스') && completed.includes('설명 가능한 AI')) {
-      p2 = `국가 내에서는 아이들을 위해 ${kids==='agree'?'다양한':'제한된'} 서비스를 제공하며, 가정용 로봇의 알고리즘은 ${expl==='agree'?'투명하게 공개되었습니다':'기업의 보호 하에 빠르게 발전하였습니다'}.`;
+      p2 = `국가 내에서는 아이들을 위해 ${kids==='agree'?'다양한':'제한된'} 서비스를 제공하며, \n 가정용 로봇의 알고리즘은 ${expl==='agree'?'투명하게 공개되었습니다':'기업의 보호 하에 빠르게 발전하였습니다'}.`;
     } else if (completed.includes('아이들을 위한 서비스')) {
       p2 = `국가 내에서는 아이들을 위해 ${kids==='agree'?'다양한':'제한된'} 서비스를 제공하게 되었습니다.`;
     } else {
-      p2 = '국가 내에서는 아이들을 위해 다양한 서비스를 제공하며, 가정용 로봇의 알고리즘은 투명하게 공개되었습니다.';
+      p2 = '국가 내에서는 아이들을 위해 다양한 서비스를 제공하며, \n 가정용 로봇의 알고리즘은 투명하게 공개되었습니다.';
     }
     // 3rd
     const earth = results['지구, 인간, AI'];
     let p3 = completed.includes('지구, 인간, AI')
-      ? `그리고 세계는 지금, ${earth==='agree'?'기술적 발전을 조금 늦추었지만 환경과 미래를 위해 나아가고 있죠':'기술적 편리함을 누리며 점점 빠른 발전을 이루고 있죠'}.`
+      ? `그리고 세계는 지금, ${earth==='agree'?'기술적 발전을 조금 늦추었지만 \n 환경과 미래를 위해 나아가고 있죠':'기술적 편리함을 누리며 \n 점점 빠른 발전을 이루고 있죠'}.`
       : '그리고 세계는 지금, 기술적 발전을 조금 늦추었지만 환경과 미래를 위해 나아가고 있죠.';
     // 4th
-    const p4 = '여러분이 선택한 가치가 모여 하나의 미래를 만들었습니다. 그 미래에 여러분은 함께할 준비가 되었나요?';
+    const p4 = '여러분이 선택한 가치가 모여 하나의 미래를 만들었습니다. \n 그 미래에 여러분은 함께할 준비가 되었나요?';
 
     setParagraphs([p1, p2, p3, p4]);
   }, []);
@@ -272,7 +272,7 @@ export default function Game08() {
 
       <Layout subtopic={subtopic} onProfileClick={pid=>setOpenProfile(pid)}>
         <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:'80vw',maxWidth:936,display:'flex',flexDirection:'column',alignItems:'center',padding:'0 16px'}}>
-          <ContentBox2 text={combinedText} width={936} height={407} />
+          <ContentBox3 text={combinedText} width={936} height={407} />
           <div style={{marginTop:20}}>
             <Continue3 label="나가기" width={264} height={72} onClick={handleExit} />
           </div>

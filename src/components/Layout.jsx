@@ -160,9 +160,9 @@ export default function Layout({
               alt="close"
               style={{ 
                 position: 'absolute', 
-                top: 16, 
-                right: 16, 
-                width: 32, 
+                top: 3, 
+                right: 3, 
+                width: 31, 
                 cursor: 'pointer' 
               }}
               onClick={() => setOpenProfile(null)}

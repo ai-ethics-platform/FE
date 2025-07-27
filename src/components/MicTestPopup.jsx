@@ -403,7 +403,7 @@ export default function MicTestPopup({ onConfirm, userImage }) {
       />
 
       <div style={{ marginBottom: 32, ...FontStyles.headlineNormal, color: Colors.brandPrimary }}>
-        마이크를 테스트해 주세요
+        마이크 기능은 현재 준비 중입니다. 
       </div>
 
       {/* 사용자 이미지 (음성 테두리 제거) */}

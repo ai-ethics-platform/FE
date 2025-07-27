@@ -80,13 +80,13 @@ const handleContinueClick = () => {
           left: 40,
           right: 50,
           bottom: 24,
-           // ← 여기 추가!
-
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           minHeight: 150,
           zIndex: 1,
+          wordBreak: 'keep-all',
+          whiteSpace: 'normal',
         }}
       >
         <div>

@@ -124,7 +124,7 @@ export default function Game03() {
       setWaiting(true);
       await axiosInstance.post(
         `/rooms/rooms/round/${roomCode}/choice`,
-        { round_number: round, choice: choiceInt }
+        { round_number: round, choice: choiceInt, subtopic: subtopic }
       );
       pollConsensus();
     } catch (err) {
@@ -157,7 +157,7 @@ export default function Game03() {
     try {
       await axiosInstance.post(
         `/rooms/rooms/round/${roomCode}/choice/confidence`,
-        { round_number: round, confidence: conf }
+        { round_number: round, confidence: conf, subtopic: subtopic }
       );
       nav('/game04');
       } catch (err) {

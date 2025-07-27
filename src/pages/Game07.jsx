@@ -61,7 +61,6 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
        const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];
        setParagraphs(resolveParagraphs(rawParagraphs, storedName));
 
-
     } else {
       (async () => {
         try {

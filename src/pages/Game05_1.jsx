@@ -520,7 +520,7 @@ useEffect(() => {
     const intChoice = consensusChoice === 'agree' ? 1 : 2;
     await axiosInstance.post(
       `/rooms/rooms/round/${roomCode}/consensus`,
-      { round_number: round, choice: intChoice }
+      { round_number: round, choice: intChoice,subtopic:subtopic }
     );
 
     // ② 서버 반영 후에 비로소 다음 단계로 이동 신호
@@ -558,7 +558,7 @@ useEffect(() => {
     try {
       await axiosInstance.post(
         `/rooms/rooms/round/${roomCode}/consensus/confidence`,
-        { round_number: round, confidence: conf }
+        { round_number: round, confidence: conf,subtopic: subtopic }
       );
   
       //  현재 subtopic을 completedTopics에 추가

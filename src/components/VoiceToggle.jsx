@@ -1,6 +1,6 @@
 import voiceManager from '../utils/voiceManager';
 import React, { useState, useEffect } from 'react';
-
+import { Colors } from './styleConstants';
 export default function VoiceToggle({ onChange }) {
   const [enabled, setEnabled] = useState(() => {
     const stored = localStorage.getItem('voice_enabled');
@@ -27,8 +27,8 @@ export default function VoiceToggle({ onChange }) {
     <button
       onClick={handleToggle}
       style={{
-       // background: enabled ? '#4caf50' : '#aaa',
-        color: 'white',
+        background: enabled ? Colors.brandPrimary : Colors.grey03,
+        color: enabled? 'white':'black',
         border: 'none',
         padding: '8px 16px',
         borderRadius: 8,

@@ -11,31 +11,26 @@ const instance = axios.create({
   },
 });
 
-// // 리프레쉬 토큰으로 새로운 액세스 토큰 요청
+// 리프레쉬 토큰으로 새로운 액세스 토큰 요청
 const refreshAccessToken = async () => {
   const refreshToken = localStorage.getItem('refresh_token');
-  //const refreshToken = getRefreshToken();
   if (!refreshToken) {
     throw new Error('No refresh token available');
   }
   try {
-    const response = await axios.post(`${API_BASE}/auth/login`,{
-        headers: {
-            Authorization:`Bearer ${refreshToken}`,
-        },
-        body:{
-            username,
-            password
-        }
-        });
+    const response = await axios.post(`${API_BASE}/auth/refresh`, {
+      refresh_token: refreshToken, 
+    });
 
-        const {accessToken : newAccessToken} = response.data.access_token;
-        setAccessToken(newAccessToken);
-        return newAccessToken; 
-  } catch (error){
-    console.error("리프래시 토큰으로 토큰 재발급 실패: ",error);
+    const { access_token: newAccessToken } = response.data; 
+    localStorage.setItem('access_token', newAccessToken); 
+    return newAccessToken;
+  } catch (error) {
+    console.error("리프래시 토큰으로 토큰 재발급 실패: ", error);
+    throw error;
   }
 };
+
 
 // 요청 인터셉터: 액세스 토큰 자동 추가
 instance.interceptors.request.use(
@@ -71,7 +66,7 @@ instance.interceptors.response.use(
         // 2. 새로운 토큰들을 로컬 스토리지에 저장
         localStorage.setItem('access_token', tokenData.access_token);
         localStorage.setItem('refresh_token', tokenData.refresh_token);
-        console.log('✅ 액세스 토큰 갱신 완료');
+        console.log(' 액세스 토큰 갱신 완료');
         
         // 3. 원래 요청의 헤더에 새로운 토큰 추가
         originalRequest.headers.Authorization = `Bearer ${tokenData.access_token}`;

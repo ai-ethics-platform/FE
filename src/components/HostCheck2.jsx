@@ -5,6 +5,8 @@ import SecondaryButton from './SecondaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance';
 import { useHostActions } from '../hooks/useWebSocketMessage';
+import PrimaryButton from "../components/PrimaryButton"
+
 export default function HostCheck2({ onClose, mateName }) {
     const { sendNextPage } = useHostActions();
 

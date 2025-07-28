@@ -15,7 +15,7 @@ import {
   useWebSocketNavigation, 
   useHostActions 
 } from '../hooks/useWebSocketMessage';
-
+import { FontStyles,Colors } from '../components/styleConstants';
 export default function SelectHomeMate() {
   const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(null);
@@ -202,7 +202,21 @@ export default function SelectHomeMate() {
 
   return (
     <Background bgIndex={2}>
-      
+       <div style={{
+            width: 900,
+            top:0,
+            left:260,
+            position:'absolute',
+            minHeight: 10,
+            ...FontStyles.title,
+            color: Colors.systemRed,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            userSelect: 'none',
+          }}>
+          모든 플레이어가 같은 화면에 있는지 확인하고 방장이 넘겨주세요.
+            </div>
       {/* 🔧 연결 상태 디버깅 정보 */}
       {/* <div style={{
         position: 'absolute',

@@ -1190,7 +1190,7 @@ export const WebSocketProvider = ({ children }) => {
           // 🔻 재연결 실패 또는 수동 종료 → 이때만 초기화
           console.warn('🧹 로컬 상태 초기화');
           clearAllLocalStorageKeys();
-          alert('❌ 연결이 복구되지 않아 게임이 초기화되었습니다.');
+          alert('게임이 종료되었습니다.');
           navigate('/');
         };
         

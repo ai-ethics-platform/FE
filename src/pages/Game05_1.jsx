@@ -589,9 +589,21 @@ useEffect(() => {
 
   return (
     <Layout subtopic={subtopic} round={round} >
-    
+     
       {step === 1 && (
         <>
+        <div style={{
+            width: 700,
+            minHeight: 0,
+            ...FontStyles.headlineSmall,
+            color: Colors.systemRed,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            userSelect: 'none',
+          }}>
+          모든 플레이어가 같은 화면에 있는지 확인하고 방장이 넘겨주세요.
+            </div>
           <div style={{ marginTop:0, display: 'flex', justifyContent: 'center', gap: 16 }}>
             {[neutralLast, agreeLast].map((img, idx) => (
               <img

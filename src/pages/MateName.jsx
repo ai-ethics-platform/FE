@@ -13,7 +13,7 @@ import axiosInstance from '../api/axiosInstance';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocket } from '../WebSocketProvider';
-
+import {Colors,FontStyles} from "../components/styleConstants";
 import { 
   useWebSocketNavigation, 
   useHostActions 
@@ -222,6 +222,22 @@ useEffect(() => {
 
   return (
     <Background bgIndex={2}>
+     <div style={{
+                width: 900,
+                top:0,
+                left:260,
+                 zIndex:1,
+                 position:'absolute',
+                 minHeight: 10,
+                 ...FontStyles.title,
+                 color: Colors.systemRed,
+                 display: 'flex',
+                 alignItems: 'center',
+                 justifyContent: 'center',
+                 userSelect: 'none',
+               }}>
+               모든 플레이어가 같은 화면에 있는지 확인하고 방장이 넘겨주세요.
+                 </div>
       {/* 연결 상태 디버깅 정보 */}
       {/* <div style={{
         position: 'absolute',

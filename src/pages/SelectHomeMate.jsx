@@ -6,7 +6,7 @@ import ContentTextBox from '../components/ContentTextBox';
 import character1 from '../assets/images/character1.png';
 import character2 from '../assets/images/character2.png';
 import character3 from '../assets/images/character3.png';
-
+import { clearAllLocalStorageKeys } from '../utils/storage';
 import axiosInstance from '../api/axiosInstance';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import { useWebRTC } from '../WebRTCProvider';
@@ -40,6 +40,16 @@ export default function SelectHomeMate() {
     webrtc: false,
     ready: false
   });
+  useEffect(() => {
+    if (!websocketConnected) {
+      console.warn('🔌 [MateName] WebSocket 연결 끊김 → 초기화 후 메인으로 이동');
+  
+      clearAllLocalStorageKeys();
+  
+      alert('❌ 연결이 끊겨 게임이 초기화됩니다.');
+      navigate('/');
+    }
+  }, [websocketConnected, navigate]);
 
   // 역할별 사용자 ID 매핑
   const [roleUserMapping, setRoleUserMapping] = useState({
@@ -96,7 +106,7 @@ export default function SelectHomeMate() {
     };
     setConnectionStatus(newStatus);
   }, [websocketConnected])
-  
+
   // 특정 역할의 음성 상태 (내 것은 WebRTC, 다른 사람은 WebSocket)
   // const getVoiceStateForRoleWithMyStatus = (roleId) => {
   //   if (String(roleId) === myRoleId) {

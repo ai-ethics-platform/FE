@@ -307,6 +307,7 @@ import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useHostActions,useWebSocketMessage } from '../hooks/useWebSocketMessage';
+import { clearAllLocalStorageKeys } from '../utils/storage'; // 경로는 맞게 수정
 
 const CARD_W = 640;
 const CARD_H = 170;
@@ -331,7 +332,16 @@ export default function Game05_01() {
     const { isConnected, sessionId, sendMessage } = useWebSocket();
     const { isInitialized: webrtcInitialized } = useWebRTC();
     const { isHost,sendNextPage } = useHostActions();
-    
+
+    useEffect(() => {
+      if (!isConnected) {
+        console.warn('❌ WebSocket 연결 끊김 감지됨');
+        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+        clearAllLocalStorageKeys();     
+        nav('/');
+      }
+    }, [isConnected]);
+
     const [connectionStatus, setConnectionStatus] = useState({
       websocket: false,
       webrtc: false,

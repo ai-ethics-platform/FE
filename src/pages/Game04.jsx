@@ -126,7 +126,7 @@ useEffect(() => {
 }, [roomCode, round]);
 
 
-  const [secsLeft, setSecsLeft] = useState(10);
+  const [secsLeft, setSecsLeft] = useState(300);
   useEffect(() => {
     if (secsLeft <= 0) return;
     const timer = setInterval(() => setSecsLeft(s => s - 1), 1000);

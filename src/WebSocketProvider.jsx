@@ -748,7 +748,8 @@ export const WebSocketProvider = ({ children }) => {
   const reconnectDelay = useRef(1000);
   const isManuallyDisconnected = useRef(false);
   const reconnectTimer = useRef(null);
-  
+  const pingIntervalRef = useRef(null);
+
   // 🔧 중복 방지 플래그들 강화
   const isJoining = useRef(false);
   const hasJoinedSession = useRef(false);
@@ -774,7 +775,6 @@ export const WebSocketProvider = ({ children }) => {
       console.log(`🗑️ [${providerId}] 핸들러 제거: ${handlerId} (남은 ${messageHandlers.current.size}개)`);
     }
   };
-
   const sendMessage = (message) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(message));
@@ -782,6 +782,9 @@ export const WebSocketProvider = ({ children }) => {
       return true;
     } else {
       console.warn(`⚠️ [${providerId}] WebSocket 연결되지 않음. 메시지 전송 실패:`, message);
+      clearAllLocalStorageKeys();
+      alert('게임이 초기화되었습니다.');
+      navigate('/');
       return false;
     }
   };
@@ -1106,6 +1109,12 @@ export const WebSocketProvider = ({ children }) => {
           }
         };
         sendMessage(initPayload);
+        pingIntervalRef.current = setInterval(() => {
+          if (ws.current?.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({ type: 'ping' }));
+            console.log(`🏓 ping 전송`);
+          }
+        }, 30000);
       };
 
       socket.onmessage = (event) => {
@@ -1155,7 +1164,10 @@ export const WebSocketProvider = ({ children }) => {
         //   wasClean: event.wasClean
 
         socket.onclose = async (event) => {
-        
+          if (pingIntervalRef.current) {
+            clearInterval(pingIntervalRef.current);
+            pingIntervalRef.current = null;
+          }
           // ✅ 조건: 정상 종료가 아니고, 수동 종료가 아님
           const shouldReconnect =
             event.code !== 1000 &&
@@ -1257,6 +1269,10 @@ export const WebSocketProvider = ({ children }) => {
     setIsConnected(false);
     messageHandlers.current.clear();
     console.log(`🔌 [${providerId}] WebSocket 수동으로 연결 해제`);
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
+    }
   };
    
   // 🔧 음성 세션 초기화 함수 중복 방지 강화

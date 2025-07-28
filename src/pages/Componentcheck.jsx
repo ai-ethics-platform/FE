@@ -50,7 +50,7 @@ import GameMapFrame from '../components/GameMapFrame';
 import GameMapOptionBox from '../components/GameMapOptionBox';
 import CharacterPopup from '../components/CharacterPopUp';
 import { Colors } from '../components/styleConstants';
-
+import HostCheck1 from "../components/HostCheck1";
 
 const fullText = `지금은 20XX년,\n국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
   `이 로봇의 기능은 아래와 같습니다.\n` +
@@ -113,6 +113,7 @@ export default function Componentcheck() {
       {/* 버튼 클릭 불가 문제 해결을 위해 zIndex 부여 */}
       <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
         <PrimaryButton disabled={false}>버튼 텍스트</PrimaryButton>
+        <HostCheck1/>
       </div>
       <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
         <SecondaryButton disabled={false}>버튼 텍스트</SecondaryButton>

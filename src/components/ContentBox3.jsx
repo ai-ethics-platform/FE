@@ -3,7 +3,9 @@ import  useTypingEffect  from '../hooks/useTypingEffect';
 import contentBoxFrame from '../assets/contentBox2.svg';
 import { Colors, FontStyles } from './styleConstants';
 export default function ContentBox2({ text, typingSpeed = 70 }) {
-  const typedText = useTypingEffect(text, typingSpeed);
+  
+const typedText = useTypingEffect(text, typingSpeed);
+  
   return (
     <div style={{
       position: 'relative',
@@ -12,8 +14,8 @@ export default function ContentBox2({ text, typingSpeed = 70 }) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-    }}>
-      <img
+     }}>    
+    <img
         src={contentBoxFrame}
         alt="content frame"
         style={{
@@ -23,7 +25,6 @@ export default function ContentBox2({ text, typingSpeed = 70 }) {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
-          
         }}
       />
       <div style={{
@@ -38,7 +39,7 @@ export default function ContentBox2({ text, typingSpeed = 70 }) {
         wordBreak: 'keep-all',
         whiteSpace: 'normal',
         whiteSpace: 'pre-line',
-        maxWidth: 600,
+        maxWidth: 700,
         padding: '40px 60px',
         zIndex: 1,
       }}>

@@ -1190,7 +1190,7 @@ export const WebSocketProvider = ({ children }) => {
           // 🔻 재연결 실패 또는 수동 종료 → 이때만 초기화
           console.warn('🧹 로컬 상태 초기화');
           clearAllLocalStorageKeys();
-          alert('게임이 종료되었습니다.');
+          alert('게임이 종료되어 메인 화면으로 이동합니다. ');
           navigate('/');
         };
         
@@ -1212,7 +1212,7 @@ export const WebSocketProvider = ({ children }) => {
         
         setIsConnected(false);
         clearAllLocalStorageKeys();
-        alert('❌ 연결이 끊겨 게임 상태가 초기화되었습니다.');
+        alert('게임이 종료되어 메인 화면으로 이동합니다.');
         navigate('/');
 
         // ws.current 정리
@@ -1434,7 +1434,7 @@ export const WebSocketProvider = ({ children }) => {
         return { success: true, message: '세션 정보가 삭제되었습니다.' };
       }
     };
-
+    
     return () => {
       delete window.debugWebSocket;
     };

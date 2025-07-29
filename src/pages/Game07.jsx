@@ -122,10 +122,11 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
  const hasMinimumRounds = completedTopics.length >= 3;
  const hasCompletedInternational = completedTopics.includes('지구, 인간, AI');
  const showResultButton = hasCompletedInternational;
+  const [openProfile, setOpenProfile] = useState(null);
 
   return (
     <>
-      <Layout round={currentRound-1} subtopic={subtopic}>
+      <Layout round={currentRound-1} subtopic={subtopic} onProfileClick={setOpenProfile}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={paragraphs[0]?.main || ''} width={936} height={407} />
    

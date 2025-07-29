@@ -45,6 +45,7 @@ export default function Game04() {
   const myVote   = state?.agreement ?? null;
   const subtopic = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
   const roomCode = localStorage.getItem('room_code') ?? '';
+  const [openProfile, setOpenProfile] = useState(null);
 
   // const [round, setRound] = useState(1);
   // useEffect(() => {
@@ -171,7 +172,7 @@ useEffect(() => {
 
 
   return (
-    <Layout subtopic={subtopic} round={round} >
+    <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile} >
 
           <div style={{
             width: 100,

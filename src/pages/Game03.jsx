@@ -33,6 +33,7 @@ export default function Game03() {
   const subtopic      = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
   const mode          = 'neutral';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
+  const [openProfile, setOpenProfile] = useState(null);
 
   
   // 역할 이름 가져오기
@@ -166,7 +167,7 @@ export default function Game03() {
   };
 
   return (
-    <Layout subtopic={subtopic} round={round}>
+    <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
       {step === 1 && (
         <>
           <div style={{ marginTop: 60 ,display:'flex', justifyContent:'center', gap:10 }}>

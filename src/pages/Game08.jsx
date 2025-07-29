@@ -261,16 +261,7 @@ export default function Game08() {
 
   return (
     <>
-      {openProfile && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',display:'flex',justifyContent:'center',alignItems:'center',zIndex:2000}} onClick={()=>setOpenProfile(null)}>
-          <div style={{position:'relative',background:'#fff',padding:32,borderRadius:12,boxShadow:'0 12px 30px rgba(0,0,0,0.25)'}} onClick={e=>e.stopPropagation()}>
-            <img src={profileImages[openProfile]} alt={`Profile ${openProfile}`} style={{width:360,height:'auto'}}/>
-            <img src={closeIcon} alt="close" style={{position:'absolute',top:24,right:24,width:40,height:40,cursor:'pointer'}} onClick={()=>setOpenProfile(null)}/>
-          </div>
-        </div>
-      )}
-
-      <Layout subtopic={subtopic} onProfileClick={pid=>setOpenProfile(pid)}>
+      <Layout subtopic={subtopic}  onProfileClick={setOpenProfile}>
         <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:'80vw',maxWidth:936,display:'flex',flexDirection:'column',alignItems:'center',padding:'0 16px'}}>
           <ContentBox3 text={combinedText} width={936} height={407} />
           <div style={{marginTop:20}}>

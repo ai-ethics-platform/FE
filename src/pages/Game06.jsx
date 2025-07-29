@@ -48,6 +48,7 @@ export default function Game06() {
   const [showPopup, setShowPopup] = useState(false);
   const [completedTopics, setCompletedTopics] = useState([]);
   const [currentRound, setCurrentRound] = useState(1);
+  const [openProfile, setOpenProfile] = useState(null);
 
   // 결과보기 조건 수정 
   const hasMinimumRounds = completedTopics.length >= 3;
@@ -125,7 +126,7 @@ const showResultButton = hasCompletedInternational;
 
   return (
     <>
-      <Layout round={currentRound-1} subtopic={subtopic} >
+      <Layout round={currentRound-1} subtopic={subtopic}  onProfileClick={setOpenProfile} >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={paragraphs[0]?.main || ''} width={936} height={407} />
       

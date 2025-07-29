@@ -61,9 +61,9 @@ export default function Login() {
         >
          <p style={{
             fontFamily: 'Cafe24Ohsquareair, Pretendard, sans-serif',
-            fontSize: '24px',
+            fontSize: '26px',
             color: '#000',
-            margin: 10,
+            margin: 5,
           }}>
             AI 윤리 딜레마 게임
           </p>

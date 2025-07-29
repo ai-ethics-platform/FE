@@ -253,12 +253,21 @@ export default function Game08() {
   const combinedText = paragraphs.join('\n\n');
 
   // Exit handler
-  const handleExit = () => {
-    clearGameSession();
-    disconnect?.();
-    voiceManager.leaveSession().then(ok => ok ? console.log('음성 세션 종료') : console.warn('음성 세션 종료 실패'));
-    navigate('/');
+  const handleExit = async () => {
+    try {
+      // 1. 음성 세션 종료
+      const result = await voiceManager.leaveSession();
+      console.log(result ? '음성 세션 종료' : '음성 세션 종료 실패');
+      disconnect?.();
+      clearGameSession();
+      navigate('/');
+    } catch (error) {
+      console.error('❌ 나가기 처리 중 오류:', error);
+      clearGameSession();
+      navigate('/');
+    }
   };
+  
 
   return (
     <>

@@ -173,6 +173,7 @@ const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img 
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import { Colors,FontStyles } from '../components/styleConstants';
 
 export default function Game08() {
   const navigate = useNavigate();

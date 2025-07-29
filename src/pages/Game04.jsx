@@ -173,7 +173,6 @@ useEffect(() => {
 
   return (
     <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile} >
-
           <div style={{
             width: 100,
             minHeight: 40,

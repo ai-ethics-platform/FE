@@ -234,8 +234,7 @@ export default function Layout({
               transform: none !important;
               padding: 24px 16px;
             }
-          }
-            .profile-hint {
+          } .profile-hint {
             position: absolute;
             top: 20px;         /* 상단에서의 위치 */
             left: 6%;
@@ -245,12 +244,14 @@ export default function Layout({
             text-align: center;
             opacity: 0.8;
           }
-
+            
         `}</style>
         <div className="layout-viewport">
-        <div className="profile-hint">
-          프로필을 선택하면 <br /> 역할 설명을 볼 수 있습니다
-        </div>
+        {!nodescription && (
+          <div className="profile-hint">
+            프로필을 선택하면 <br /> 역할 설명을 볼 수 있습니다
+          </div>
+        )}
           <aside className="layout-sidebar">
             <UserProfile
               player="1P"

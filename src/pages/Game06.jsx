@@ -13,6 +13,7 @@ import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import { Colors,FontStyles } from '../components/styleConstants';
 
 export default function Game06() {
  const navigate = useNavigate();
@@ -127,6 +128,7 @@ const showResultButton = hasCompletedInternational;
   return (
     <>
       <Layout round={currentRound-1} subtopic={subtopic}  onProfileClick={setOpenProfile} >
+     
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={paragraphs[0]?.main || ''} width={936} height={407} />
       

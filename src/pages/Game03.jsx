@@ -6,14 +6,13 @@ import Layout from '../components/Layout';
 import SelectCardToggle from '../components/SelectButton';
 import Continue from '../components/Continue';
 import contentBoxFrame from '../assets/contentBox4.svg';
-import { Colors, FontStyles } from '../components/styleConstants';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
-
+import { FontStyles,Colors } from '../components/styleConstants';
 import UserProfile from '../components/Userprofile';
 
 const CARD_W = 640;
@@ -168,6 +167,7 @@ export default function Game03() {
 
   return (
     <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
+      
       {step === 1 && (
         <>
           <div style={{ marginTop: 60 ,display:'flex', justifyContent:'center', gap:10 }}>

@@ -19,7 +19,6 @@ import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
-
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
 export default function Game02() {
@@ -118,24 +117,6 @@ export default function Game02() {
     <>
    
       <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
-      {/* <div style={{
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          background: 'rgba(0,0,0,0.8)',
-          color: 'white',
-          padding: '12px',
-          borderRadius: '6px',
-          fontSize: '11px',
-          zIndex: 1000,
-          fontFamily: 'monospace'
-        }}>
-          <div>🔍 연결 상태</div>
-          <div>WebSocket: {connectionStatus.websocket ? '✅' : '❌'}</div>
-          <div>WebRTC: {connectionStatus.webrtc ? '✅' : '❌'}</div>
-          <div>전체: {connectionStatus.ready ? '✅ Ready' : '⚠️ Not Ready'}</div>
-        </div> */}
-
         {/* 본문 */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <img

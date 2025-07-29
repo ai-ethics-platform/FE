@@ -17,6 +17,7 @@ import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import { FontStyles,Colors } from '../components/styleConstants';
 
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
@@ -111,6 +112,7 @@ export default function Game05() {
     <>
      
       <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
+  
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <img src={comicImages[currentIndex]} alt={`comic ${currentIndex + 1}`} style={{ width: 744, height:360,borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />  
           <div style={{ width: '100%', maxWidth: 900 }}>

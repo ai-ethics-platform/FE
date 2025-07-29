@@ -238,10 +238,9 @@ useEffect(() => {
           color: Colors.grey05
         }}>
           {secsLeft <= 0 
-            ? '마무리하고 다음으로 넘어가 주세요.' 
-            : '선택의 이유를 한 분씩 공유해 주세요.'}
+            ? '마무리하고 다음으로 넘어가 주세요' 
+            : '선택의 이유를 자유롭게 공유해주세요'}
         </p>
-
         <div style={{
           display: 'flex',
           justifyContent: 'center',

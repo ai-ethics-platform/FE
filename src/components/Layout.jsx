@@ -10,7 +10,7 @@ import CharacterPopup1 from '../components/CharacterPopUp';
 import CharacterPopup2 from '../components/CharacterPopUp';
 import CharacterPopup3 from '../components/CharacterPopUp';
 import closeIcon from "../assets/close.svg";
-
+import { FontStyles,Colors } from './styleConstants';
 export default function Layout({
   subtopic ,
   onProfileClick,
@@ -235,9 +235,22 @@ export default function Layout({
               padding: 24px 16px;
             }
           }
-        `}</style>
+            .profile-hint {
+            position: absolute;
+            top: 20px;         /* 상단에서의 위치 */
+            left: 6%;
+            transform: translateX(-50%);
+            font-size: 14px;   /* 글씨 크기 */
+            color: ${Colors.grey06};
+            text-align: center;
+            opacity: 0.8;
+          }
 
+        `}</style>
         <div className="layout-viewport">
+        <div className="profile-hint">
+          프로필을 선택하면 <br /> 역할 설명을 볼 수 있습니다
+        </div>
           <aside className="layout-sidebar">
             <UserProfile
               player="1P"
@@ -299,3 +312,4 @@ export default function Layout({
     </>
   );
 }
+

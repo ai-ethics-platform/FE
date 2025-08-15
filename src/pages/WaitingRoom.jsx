@@ -19,8 +19,7 @@ export default function WaitingRoom() {
   const location = useLocation();
   const navigate = useNavigate();
   // zoom 수정
-  // const allTopics = ['안드로이드', '자율 무기 시스템'];
-  const allTopics = ['안드로이드'];
+  const allTopics = ['안드로이드', '자율 무기 시스템'];
 
   const initialTopic = location.state?.topic || '안드로이드';
   const initialIndex = allTopics.indexOf(initialTopic);
@@ -709,8 +708,7 @@ export default function WaitingRoom() {
           disableLeft={currentIndex === 0}
           disableRight={currentIndex === allTopics.length - 1}
           
-          hideArrows={true}
-         //zoom 수정  hideArrows={false}
+          hideArrows={false}
 
         />
       </div>

@@ -18,6 +18,7 @@ import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import { clearAllLocalStorageKeys } from '../utils/storage';
 
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
@@ -28,19 +29,39 @@ export default function Game02() {
   const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
   useWebSocketNavigation(navigate, { nextPagePath: '/game03', infoPath: '/game03' });
-   const [connectionStatus, setConnectionStatus] = useState({
-    websocket: false,
-    webrtc: false,
-    ready: false
+  // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
+  const [connectionStatus, setConnectionStatus] = useState({
+    websocket: true,
+    webrtc: true,
+    ready: true
   });
-
-
+ // 🔧 연결 상태 모니터링
+    useEffect(() => {
+      const newStatus = {
+        websocket: isConnected,
+        webrtc: webrtcInitialized,
+        ready: isConnected && webrtcInitialized
+      };
+  
+      setConnectionStatus(newStatus);
+  
+      console.log('[game02] 연결 상태 업데이트:', newStatus);
+    }, [isConnected, webrtcInitialized]);
+   useEffect(() => {
+      if (!isConnected) {
+        console.warn('❌ WebSocket 연결 끊김 감지됨');
+        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+        clearAllLocalStorageKeys();     
+        navigate('/');
+      }
+    }, [isConnected]);
   // 로컬 설정
   const category = localStorage.getItem('category') ?? '안드로이드';
   const subtopic = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
   const mode = localStorage.getItem('mode') ?? 'neutral';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex')) || 0;  
   const roomCode = localStorage.getItem('room_code');
+  const myRoleId = localStorage.getItem('myrole_id');
 
   const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
   const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];
@@ -111,12 +132,13 @@ export default function Game02() {
   const handleContinue = () => {
     navigate(`/game03`);
   }
-  
+  const handleBackClick = () => {
+    navigate(`/character_description${myRoleId}`);  };
 
   return (
     <>
    
-      <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
+      <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}  onBackClick={handleBackClick}>
         {/* 본문 */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
           <img

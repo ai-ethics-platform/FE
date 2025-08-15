@@ -3,52 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
-import axiosInstance from '../api/axiosInstance';
-
-export default function JoinRoom({ onClose }) {
-  const [roomCode, setRoomCode] = useState('');
-  const [nickname, setNickname] = useState('');
+import axiosInstance from "../api/axiosInstance";
+export default function GuestLogin({ onClose }) {
+  const [guestId, setGuestId] = useState('');
   const navigate = useNavigate();
+  const isValid = guestId.trim().length > 0; 
+  
+  const handleJoin = async () => {
+    if (!isValid) return;
+    try {
+      // axiosInstance 기준 (baseURL이 dilemmai.org로 설정되어 있다고 가정)
+      const { data } = await axiosInstance.post('/auth/guest', {
+        guest_id: guestId.trim(),
+      });
 
-  // 닉네임(username) 조회
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data: me } = await axiosInstance.get('/users/me');
-        // API 응답에서 username 필드를 닉네임으로 사용
-        setNickname(me.username || '');
-        localStorage.setItem('nickname',me.username);
-      } catch (err) {
-        console.error('❌ 유저 정보 로드 실패:', err);
-      }
-    })();
-  }, []);
+      const { access_token, refresh_token } = data;
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
 
-  const isValidCode = roomCode.length === 6;
-
-  const handleChange = (e) => {
-    const value = e.target.value;
-    if (/^\d*$/.test(value)) {
-      setRoomCode(value.slice(0, 6));
+      console.log('로그인 성공:', data);
+      navigate('/selectroom');
+    } catch (err) {
+      console.error('게스트 로그인 실패:', err?.response?.data || err);
+      alert('게스트 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
     }
   };
 
-  const handleJoin = async () => {
-    if (!isValidCode) return;
-
-    try {
-      await axiosInstance.post('/rooms/join/code', {
-        room_code: roomCode,
-        nickname,
-      });
-
-      // 방 코드 저장
-      localStorage.setItem('room_code', roomCode);
-      navigate('/waitingroom');
-    } catch (error) {
-      console.error('방 입장 실패:', error.response?.data || error.message);
-      alert(`방 입장 오류: ${JSON.stringify(error.response?.data?.detail || '')}`);
-    }
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter') handleJoin();
   };
 
   return (
@@ -82,13 +64,14 @@ export default function JoinRoom({ onClose }) {
         }}
       />
       <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 32 }}>
-        방 참여하기
+        게스트 로그인
       </div>
       <input
         type="text"
-        placeholder="방 코드 6자리를 입력해 주세요."
-        value={roomCode}
-        onChange={handleChange}
+        placeholder="사용할 아이디를 입력하세요."
+        value={guestId}
+        onChange={(e) => setGuestId(e.target.value)}
+        onKeyDown={onKeyDown}
         style={{
           width: '80%',
           height: 56,
@@ -103,15 +86,15 @@ export default function JoinRoom({ onClose }) {
         }}
       />
       <PrimaryButton
-        disabled={!isValidCode}
+        disabled={!isValid}
         onClick={handleJoin}
         style={{
           width: 168,
           height: 72,
-          opacity: isValidCode ? 1 : 0.4,
+          opacity: isValid ? 1 : 0.4,
         }}
       >
-        입장하기
+        시작하기
       </PrimaryButton>
     </div>
   );

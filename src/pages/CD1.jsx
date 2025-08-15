@@ -79,9 +79,11 @@ export default function CD1() {
     // if (isHost) sendNextPage();
     // else alert('⚠️ 방장만 진행할 수 있습니다.');
   };
-
+  const handleBackClick = () => {
+    navigate('/game01'); 
+  };
   return (
-    <Layout round={round} subtopic={subtopic} me="1P">
+    <Layout round={round} subtopic={subtopic} me="1P" onBackClick={handleBackClick}>
       <div style={{
         display: 'flex',
         flexDirection: 'column',

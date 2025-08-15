@@ -13,6 +13,8 @@ import {
   useWebSocketNavigation, 
   useHostActions 
 } from '../hooks/useWebSocketMessage';
+import BackButton from '../components/BackButton';
+import { clearAllLocalStorageKeys } from '../utils/storage'; 
 
 export default function Game01() {
   const navigate = useNavigate();
@@ -75,12 +77,20 @@ export default function Game01() {
 
 
 
-  const [connectionStatus, setConnectionStatus] = useState({
-    websocket: false,
-    webrtc: false,
-    ready: false
-  });
-
+ // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
+ const [connectionStatus, setConnectionStatus] = useState({
+  websocket: true,
+  webrtc: true,
+  ready: true
+});
+    useEffect(() => {
+      if (!isConnected) {
+        console.warn('❌ WebSocket 연결 끊김 감지됨');
+        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+        clearAllLocalStorageKeys();     
+        navigate('/');
+      }
+    }, [isConnected]);
 
    // 🔧 연결 상태 모니터링
     useEffect(() => {
@@ -92,7 +102,7 @@ export default function Game01() {
   
       setConnectionStatus(newStatus);
   
-      console.log('[SelectHomeMate] 연결 상태 업데이트:', newStatus);
+      console.log('[game01] 연결 상태 업데이트:', newStatus);
     }, [isConnected, webrtcInitialized]);
 
   // // Continue
@@ -121,8 +131,13 @@ export default function Game01() {
   //     }
 
   // };
+  const handleBackClick = () => {
+    navigate('/gamemap'); 
+  };
+
   const handleContinue = () => {
     if (myRoleId) {
+      //navigate('/game08');
       navigate(`/character_description${myRoleId}`);
     } else {
       console.warn('myRoleId가 존재하지 않습니다.');
@@ -167,46 +182,7 @@ export default function Game01() {
   }
 
   return (
-    <Layout round={round} subtopic={subtopic} nodescription={true}  >
-       {/* <div style={{
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
-        background: 'rgba(0,0,0,0.8)',
-        color: 'white',
-        padding: '12px',
-        borderRadius: '6px',
-        fontSize: '11px',
-        zIndex: 1000,
-        maxWidth: '350px',
-        fontFamily: 'monospace'
-      }}>
-        <div style={{color: '#00ff00'}}>🔍 [SelectHomeMate] 연결 상태</div>
-        <div style={{color: connectionStatus.websocket ? '#00ff00' : '#ff0000'}}>
-          WebSocket: {connectionStatus.websocket ? '✅ Connected' : '❌ Disconnected'}
-        </div>
-        <div style={{color: connectionStatus.webrtc ? '#00ff00' : '#ff0000'}}>
-          WebRTC: {connectionStatus.webrtc ? '✅ Initialized' : '❌ Not Ready'}
-        </div>
-        <div style={{color: connectionStatus.ready ? '#00ff00' : '#ff0000'}}>
-          Overall: {connectionStatus.ready ? '✅ Ready' : '⚠️ Not Ready'}
-        </div>
-        <div style={{color: '#ffff00'}}>
-          내 역할: {myRoleId || 'NULL'}
-        </div>
-        <div style={{color: voiceSessionStatus.isSpeaking ? '#00ff00' : '#888888'}}>
-          내 음성: {voiceSessionStatus.isSpeaking ? '🗣️ 말하는 중' : '🤐 조용함'}
-        </div>
-        <div style={{color: '#ffdddd'}}>
-          🔧 방장 전용 + 브로드캐스트 적용됨
-        </div>
-        {!isHost && (
-          <div style={{color: '#ffaa00'}}>
-            ⏳ 방장의 선택을 기다리는 중...
-          </div>
-        )}
-      </div> */}
-
+    <Layout round={round} subtopic={subtopic} nodescription={true}   onBackClick={handleBackClick} >
       {/* 본문 */}
       <div style={{display:'flex',gap:24,flexWrap:'wrap',justifyContent:'center'}}>
         {images.map((src,i)=>(

@@ -12,7 +12,7 @@ export function clearAllLocalStorageKeys() {
       'mode',
       'access_token',
       'refresh_token',
-      'mataName',
+      'mateName',
       'nickname',
       'title',
       'completedTopics',

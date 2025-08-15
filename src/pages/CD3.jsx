@@ -48,9 +48,11 @@ export default function CD3() {
   }
  const rawParagraphs = [{ main: mainText }];
   const paragraphs = resolveParagraphs(rawParagraphs, mateName);
-
+  const handleBackClick = () => {
+    navigate('/game01'); 
+  };
   return (
-    <Layout round={round} subtopic={subtopic} me="3P">
+    <Layout round={round} subtopic={subtopic} me="3P" onBackClick={handleBackClick}>
       
       <div style={{
         display: 'flex',

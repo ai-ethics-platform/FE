@@ -71,7 +71,7 @@ export default function HostCheck1({ onClose, activeIndex }) {
       <p style={{ ...FontStyles.headlineSmall, color:Colors.brandPrimary,marginBottom: 40 }}>
         방장만 다음 페이지로 이동할 수 있습니다. <br/>
         모든 유저가 해당 화면에 들어와있나요?
-      </p>
+      </p> 
       <div style = {{
         display: 'flex',
         marginTop: 20,

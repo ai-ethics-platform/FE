@@ -1,4 +1,3 @@
-// 수정할 것 - 게스트 로그인 활성화 필요
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -7,14 +6,12 @@ import InputBoxLarge from '../components/InputBoxLarge';
 import PrimaryButton from '../components/PrimaryButton';
 import SecondaryButton from '../components/SecondaryButton';
 import TextButton from '../components/TextButton';
-import VoiceToggle from '../components/VoiceToggle';
-
 import profileIcon from '../assets/login.svg';
 import lockIcon from '../assets/password.svg';
 import eyeOnIcon from '../assets/eyeon.svg';
 import eyeOffIcon from '../assets/eyeoff.svg';
 import axios from 'axios'; 
-
+import GuestLogin from '../components/GuestLogin';
 import { Colors, FontStyles } from '../components/styleConstants';
 
 export default function Login() {
@@ -22,6 +19,8 @@ export default function Login() {
   const [pwVisible, setPwVisible] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showGuestLogin, setShowGuestLogin] = useState(false);
+
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -35,6 +34,7 @@ export default function Login() {
   };
   return (
     <Background bgIndex={1}>
+  
       <div
         style={{
           position: 'absolute',
@@ -42,7 +42,7 @@ export default function Login() {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '0 1rem', // 모바일 대응
+          padding: '0 1rem', 
 
         }}
       >
@@ -134,11 +134,17 @@ export default function Login() {
                 form.append('username', username);
                 form.append('password', password);
              
-                const response = await axios.post('https://dilemmai.org/auth/login', form, {
-                  headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                  },
-                });
+                // const response = await axios.post('https://dilemmai.org/auth/login', form, {
+                //   headers: {
+                //     'Content-Type': 'application/x-www-form-urlencoded',
+                //   },
+                // });
+               
+                const response = await axios.post(
+                  'https://dilemmai.org/auth/login-json',
+                  { username, password },                          // JSON 바디
+                  { headers: { 'Content-Type': 'application/json' } }
+                );            
                
                 const { access_token, refresh_token } = response.data;
 
@@ -185,18 +191,31 @@ export default function Login() {
               fontSize: 'clamp(1rem, 2vw, 1.125rem)',
               marginTop: '2vh',
             }}
-            onClick={() => {
-            }}
-           //실험에서 설계
-            disabled={true}
+           onClick={() => setShowGuestLogin(true)}
+          
           >
             Guest로 로그인
           </SecondaryButton>
-
+        {/* 게스트 로그인 팝업 */}
+         {showGuestLogin && (
+            <div
+              style={{
+               position: 'fixed',
+               inset: 0,
+               background: 'rgba(0,0,0,0.45)',
+              display: 'flex',
+               justifyContent: 'center',
+               alignItems: 'center',
+               zIndex: 9999,
+             }}
+           >
+             <GuestLogin onClose={() => setShowGuestLogin(false)} />
+           </div>
+         )}
         </div>
 
       </div>
-
+              
 
     </Background>
   );

@@ -4,6 +4,7 @@ import UserProfile from '../components/Userprofile';
 import GameFrame from '../components/GameFrame';
 import { useVoiceRoleStates } from '../hooks/useVoiceRoleStates';
 import voiceManager from '../utils/voiceManager';
+import BackButton from './BackButton';
 
 // Character popup components
 import CharacterPopup1 from '../components/CharacterPopUp';
@@ -17,6 +18,9 @@ export default function Layout({
   children,
   round,
   nodescription = false,
+  onBackClick,
+  showBackButton = true,
+  allowScroll = false
 }) {
   // Zoom for responsive scaling
   const [zoom, setZoom] = useState(1);
@@ -43,7 +47,8 @@ export default function Layout({
     nickname: null,
     participantId: null,
     micLevel: 0,
-    speakingThreshold: 30
+    speakingThreshold: 30,
+    
   });
 
   // 팝업 상태 
@@ -111,7 +116,26 @@ export default function Layout({
     // 다른 사람 역할이면 WebSocket 상태 반환
     return getVoiceStateForRole(roleId);
   };
+  const viewportOverride = allowScroll
+    ? {
+        position: "relative",
+        top: "auto", right: "auto", bottom: "auto", left: "auto",
+        overflowY: "auto",
+        height: "100vh",
+      }
+    : {};
 
+  const stageOverride = allowScroll
+    ? {
+        position: "relative",
+        top: "auto",
+        left: "50%",
+        transform: "translateX(-50%)",       // 스케일 제거
+        width: "1060px",
+        minHeight: "720px",
+        padding: "42px 24px 32px",
+      }
+    : {};
   return (
     <>
       {/* Profile Popup as Component */}
@@ -170,8 +194,25 @@ export default function Layout({
           </div>
         </div>
       )}
-
       <Background bgIndex={2}>
+      {showBackButton && ( 
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: -2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              zIndex: 1000,
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <BackButton onClick={onBackClick} />
+            </div>
+          </div>
+        )}
         <style>{`
           html, body, #root {
             margin: 0;
@@ -187,7 +228,7 @@ export default function Layout({
 
           .layout-sidebar {
             position: fixed;
-            top: 32.5%;
+            top: 38.5%;
             left: 0;
             transform: translateY(-50%);
             width: 220px;
@@ -246,7 +287,7 @@ export default function Layout({
           }
             
         `}</style>
-        <div className="layout-viewport">
+        <div className="layout-viewport" style={viewportOverride}>
         {!nodescription && (
           <div className="profile-hint">
             프로필을 선택하면 <br /> 역할 설명을 볼 수 있습니다
@@ -295,7 +336,7 @@ export default function Layout({
             />
           </aside>
 
-          <section className="layout-stage">
+          <section className="layout-stage"style={stageOverride}>
             <div className="layout-gameframe">
               <GameFrame
                 topic={

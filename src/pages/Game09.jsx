@@ -1,94 +1,24 @@
 import React, { useEffect,useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import Layout      from '../components/Layout';
-import ContentBox2 from '../components/ContentBox2';
-import UserProfile from '../components/Userprofile';
-
-import { useWebSocket } from '../WebSocketProvider';
-import { useWebRTC } from '../WebRTCProvider';
-import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
-
-import voiceManager from '../utils/voiceManager';
-
-const fullText =
-  '  여러분의 결정으로 가정용 로봇은 보다 정확한 서비스를 제공하였고, 여러분의 친구처럼 제 역할을 다하고 있습니다.';
+import Layout from '../components/Layout';
+import ResultStatCard from '../components/ResultStatCard';
 
 export default function Game09() {
   const navigate = useNavigate();
-  const subtopic = '다른 사람들이 선택한 미래';
-
-   const { isConnected, sessionId, sendMessage } = useWebSocket();
-   const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
-   const { isHost } = useHostActions();
-    const [connectionStatus, setConnectionStatus] = useState({
-     websocket: false,
-     webrtc: false,
-     ready: false
-   });
- useWebSocketNavigation(navigate, {
-    infoPath: `/game09`,
-    nextPagePath: `/game09`
-  });
-  useEffect(() => {
-     const newStatus = {
-       websocket: isConnected,
-       webrtc: webrtcInitialized,
-       ready: isConnected && webrtcInitialized
-     };
-     setConnectionStatus(newStatus);
-   
-     console.log(' [Game09] 연결 상태 업데이트:', newStatus);
-   }, [isConnected, webrtcInitialized]);  
+  const [openProfile, setOpenProfile] = useState(null);
   
-   function clearGameSession() {
-    [
-      'myrole_id',
-      'host_id',
-      'user_id',
-      'role1_user_id',
-      'role2_user_id',
-      'role3_user_id',
-      'room_code',
-      'category',
-      'subtopic',
-      'mode',
-      'access_token',
-      'refresh_token',
-      'mataName',
-      'nickname',
-      'title',
-      'session_id',
-      'selectedCharacterIndex',
-      'currentRound',
-      'completedTopics'
-    ].forEach(key => localStorage.removeItem(key));
-  }
-
-  
-  // leave WebRTC session on unmount
-  useEffect(() => {
-    return () => {
-      clearGameSession();
-      voiceManager.leaveSession()
-        .then(success => {
-          if (success) console.log('🛑 음성 세션에서 나감 완료');
-          else console.warn('⚠️ 음성 세션 나가기 실패');
-        });
-    };
-  }, []);
-
+  const subtopic = "결과: 다른 사람들이 선택한 미래";
+  const handleBackClick = () => {
+    navigate('/game08'); 
+  };
   return (
-    <Layout subtopic={subtopic} >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 32,
-        }}
-      >
-        <ContentBox2 text={fullText} width={936} height={107} />
+    <Layout subtopic={subtopic} onProfileClick={setOpenProfile}  onBackClick={handleBackClick}    allowScroll >
+        <div style={{ display: 'grid', gap: 24, width: '100%' }}>
+        <ResultStatCard subtopic="AI의 개인 정보 수집" agreePct={36} disagreePct={64} />
+        <ResultStatCard subtopic="안드로이드의 감정 표현" agreePct={28} disagreePct={72} />
+        <ResultStatCard subtopic="아이들을 위한 서비스" agreePct={45} disagreePct={55} />
+        <ResultStatCard subtopic="설명 가능한 AI" agreePct={52} disagreePct={48} />
+        <ResultStatCard subtopic="지구, 인간, AI" agreePct={33} disagreePct={67} />
       </div>
     </Layout>
   );

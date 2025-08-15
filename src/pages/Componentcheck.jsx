@@ -56,6 +56,7 @@ const fullText = `지금은 20XX년,\n국내 최대 로봇 개발사 A가 다기
   `이 로봇의 기능은 아래와 같습니다.\n` +
   `• 가족의 감정, 건강 상태, 생활 습관 등을 입력하면 맞춤형 알림, 식단 제안 등의 서비스를 제공\n` +
   `• 기타 업데이트 시 정교화된 서비스 추가 가능`; 
+  
 export default function Componentcheck() {
     return (
       <Background bgIndex={2}>
@@ -109,7 +110,6 @@ export default function Componentcheck() {
   isMe={true}        // 내 프로필이라면 왼쪽 스피킹 바
   isSpeaking={false}  // 말하고 있는 사람은 mikeon 아이콘
 />
-<UserProfile player="2P"   isSpeaking={true} characterDesc="디테일 있음" />
       {/* 버튼 클릭 불가 문제 해결을 위해 zIndex 부여 */}
       <div style={{ position: 'relative', zIndex: 100, marginTop: 40 }}>
         <PrimaryButton disabled={false}>버튼 텍스트</PrimaryButton>

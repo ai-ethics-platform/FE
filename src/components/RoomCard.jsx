@@ -40,7 +40,7 @@ export default function RoomCard({ icon, title, description, disabled = false, o
         alt="프레임"
         style={{
           position: 'absolute',
-          top: 0,
+          top: 10,
           left: 0,
           width: '100%',
           height: '100%',
@@ -85,7 +85,7 @@ export default function RoomCard({ icon, title, description, disabled = false, o
           style={{
             width: CardSizes.icon.width,
             height: CardSizes.icon.width,
-            marginBottom: 15,
+            marginBottom: 10,
           }}
         />
         <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 15 }}>
@@ -104,6 +104,7 @@ export default function RoomCard({ icon, title, description, disabled = false, o
             ...FontStyles.body,
             color: Colors.grey06,
             width: '80%',
+            whiteSpace: 'pre-line',
           }}
         >
           {description}

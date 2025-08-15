@@ -14,6 +14,7 @@ import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import { clearAllLocalStorageKeys } from '../utils/storage';
 const completed = JSON.parse(localStorage.getItem('completedTopics') || '[]');
 const initialRound = completed.length + 1;
 
@@ -26,11 +27,12 @@ export default function Game04() {
     const { isHost, sendNextPage } = useHostActions();
     useWebSocketNavigation(navigate, { nextPagePath: '/game05', infoPath: '/game05' });
     
-    const [connectionStatus, setConnectionStatus] = useState({
-      websocket: false,
-      webrtc: false,
-      ready: false
-    });
+ // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
+ const [connectionStatus, setConnectionStatus] = useState({
+  websocket: true,
+  webrtc: true,
+  ready: true
+});
     
     useEffect(() => {
       const newStatus = {
@@ -41,6 +43,15 @@ export default function Game04() {
       setConnectionStatus(newStatus);
       console.log('[Game04] 연결 상태 업데이트:', newStatus);
     }, [isConnected, webrtcInitialized]);
+
+   useEffect(() => {
+      if (!isConnected) {
+        console.warn('❌ WebSocket 연결 끊김 감지됨');
+        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+        clearAllLocalStorageKeys();     
+        navigate('/');
+      }
+    }, [isConnected]);
 
   const myVote   = state?.agreement ?? null;
   const subtopic = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
@@ -170,9 +181,11 @@ useEffect(() => {
     }
   };
 
-
+  const handleBackClick = () => {
+    navigate('/game03'); 
+  };
   return (
-    <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile} >
+    <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}  onBackClick={handleBackClick}  >
           <div style={{
             width: 100,
             minHeight: 40,

@@ -4,7 +4,7 @@ import paginationBothL from '../assets/paginationBothL.svg';
 import paginationBothR from '../assets/paginationBothR.svg';
 import { Colors, FontStyles } from './styleConstants';
 import useTypingEffect from '../hooks/useTypingEffect';
-import NextGreen from './NextGreen'; // ⬅️ 새로 추가
+import NextGreen from './NextGreen';
 import arrowLdisabled from '../assets/arrowLdisabled.svg';
 import arrowRdisabled from '../assets/arrowRdisabled.svg';
 

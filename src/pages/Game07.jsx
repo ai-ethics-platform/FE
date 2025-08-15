@@ -13,17 +13,18 @@ import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { Colors,FontStyles } from '../components/styleConstants';
-
+import { clearAllLocalStorageKeys } from '../utils/storage';
 export default function Game07() {
   const navigate = useNavigate();
 const { isConnected, sessionId, sendMessage } = useWebSocket();
    const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
    const { isHost } = useHostActions();
-    const [connectionStatus, setConnectionStatus] = useState({
-     websocket: false,
-     webrtc: false,
-     ready: false
-   });
+ // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
+ const [connectionStatus, setConnectionStatus] = useState({
+  websocket: true,
+  webrtc: true,
+  ready: true
+});
 
   useEffect(() => {
      const newStatus = {
@@ -33,9 +34,16 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
      };
      setConnectionStatus(newStatus);
    
-     console.log('🔧 [Game02] 연결 상태 업데이트:', newStatus);
+     console.log('🔧 [Game07] 연결 상태 업데이트:', newStatus);
    }, [isConnected, webrtcInitialized]);
-
+   useEffect(() => {
+      if (!isConnected) {
+        console.warn('❌ WebSocket 연결 끊김 감지됨');
+        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+        clearAllLocalStorageKeys();     
+        navigate('/');
+      }
+    }, [isConnected]);
 
   const subtopic = localStorage.getItem('subtopic');
   const category = localStorage.getItem('category');
@@ -113,7 +121,11 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
     //   return;
     // }
     // sendNextPage();
-    if (completedTopics.length >= 5) navigate('/game08');
+    if (completedTopics.length >= 5) 
+      {
+        localStorage.setItem('mode','disagree');
+        navigate('/game08');
+      }
     else setShowPopup(true);
   };
 
@@ -122,11 +134,13 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
  const hasMinimumRounds = completedTopics.length >= 3;
  const hasCompletedInternational = completedTopics.includes('지구, 인간, AI');
  const showResultButton = hasCompletedInternational;
-  const [openProfile, setOpenProfile] = useState(null);
-
+ const [openProfile, setOpenProfile] = useState(null);
+ const handleBackClick = () => {
+  navigate('/game05_1'); 
+};
   return (
     <>
-      <Layout round={currentRound-1} subtopic={subtopic} onProfileClick={setOpenProfile}>
+      <Layout round={currentRound-1} subtopic={subtopic} onProfileClick={setOpenProfile}  onBackClick={handleBackClick} >
      
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={paragraphs[0]?.main || ''} width={936} height={407} />

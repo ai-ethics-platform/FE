@@ -14,6 +14,7 @@ import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { Colors,FontStyles } from '../components/styleConstants';
+import { clearAllLocalStorageKeys } from '../utils/storage';
 
 export default function Game06() {
  const navigate = useNavigate();
@@ -21,11 +22,12 @@ export default function Game06() {
    const { isConnected, sessionId, sendMessage } = useWebSocket();
    const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
    const { isHost } = useHostActions();
-    const [connectionStatus, setConnectionStatus] = useState({
-     websocket: false,
-     webrtc: false,
-     ready: false
-   });
+ // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
+ const [connectionStatus, setConnectionStatus] = useState({
+  websocket: true,
+  webrtc: true,
+  ready: true
+});
 
   useEffect(() => {
      const newStatus = {
@@ -38,12 +40,20 @@ export default function Game06() {
      console.log(' [Game06] 연결 상태 업데이트:', newStatus);
    }, [isConnected, webrtcInitialized]);
   
+   useEffect(() => {
+      if (!isConnected) {
+        console.warn('❌ WebSocket 연결 끊김 감지됨');
+        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+        clearAllLocalStorageKeys();     
+        navigate('/');
+      }
+    }, [isConnected]);
 
   const category = localStorage.getItem('category');
    const subtopic = localStorage.getItem('subtopic');
   const roomCode = localStorage.getItem('room_code');
   const mode      = 'ending1';
-
+  
   const [mateName, setMateName] = useState('HomeMate');
   const [paragraphs, setParagraphs]   = useState([]); 
   const [showPopup, setShowPopup] = useState(false);
@@ -52,7 +62,7 @@ export default function Game06() {
   const [openProfile, setOpenProfile] = useState(null);
 
   // 결과보기 조건 수정 
-  const hasMinimumRounds = completedTopics.length >= 3;
+const hasMinimumRounds = completedTopics.length >= 3;
 const hasCompletedInternational = completedTopics.includes('지구, 인간, AI');
 const showResultButton = hasCompletedInternational;
 
@@ -109,7 +119,7 @@ const showResultButton = hasCompletedInternational;
     //   alert('⚠️ 방장만 다음 라운드로 진행할 수 있습니다.');
     //   return;
     // }
-    //saveCompletedTopic();
+    // saveCompletedTopic();
     //localStorage.removeItem('category');
     localStorage.removeItem('subtopic');
     localStorage.removeItem('mode');
@@ -121,13 +131,18 @@ const showResultButton = hasCompletedInternational;
     //   alert('방장만 결과 보기로 진행할 수 있습니다.');
     //   return;
     // }
-    if (completedTopics.length >= 5) navigate('/game08');
+    if (completedTopics.length >= 5){
+      localStorage.setItem('mode','agree');
+      navigate('/game08');
+    } 
     else setShowPopup(true);
   };
-
+  const handleBackClick = () => {
+    navigate('/game05_1'); 
+  };
   return (
     <>
-      <Layout round={currentRound-1} subtopic={subtopic}  onProfileClick={setOpenProfile} >
+      <Layout round={currentRound-1} subtopic={subtopic}  onProfileClick={setOpenProfile}  onBackClick={handleBackClick} >
      
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={paragraphs[0]?.main || ''} width={936} height={407} />

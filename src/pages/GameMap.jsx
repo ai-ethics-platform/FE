@@ -126,7 +126,7 @@ const isHomeUnlocked = true;
 const isNationalUnlocked = isCompleted('AI의 개인 정보 수집');
 const isInternationalUnlocked = isCompleted('아이들을 위한 서비스');
   return (
-    <Layout subtopic={subtopic} nodescription={true}>
+    <Layout subtopic={subtopic} nodescription={true} showBackButton={false}>
         <div style={{
             width: 500,
             minHeight: 0,

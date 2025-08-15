@@ -8,11 +8,9 @@ import RoomTypeToggle from './RoomTypeToggle';
 import mainTopicDefault from '../assets/maintopicframedefault.svg';
 import mainTopicHover from '../assets/maintopicframehover.svg';
 import mainTopicActive from '../assets/maintopicframe.svg';
-
 import axiosInstance from '../api/axiosInstance';
 
-// 자율무기 시스템 뺐음 
-const topics = ['안드로이드'];
+const topics = ['안드로이드','자율 무기 시스템'];
 
 export default function CreateRoom2({ onClose }) {
   const [isPublic, setIsPublic] = useState(false); // 기본은 비공개
@@ -33,14 +31,21 @@ export default function CreateRoom2({ onClose }) {
       setLoading(true);
   
       //  1단계: 방 생성
-      const response = await axiosInstance.post('/rooms/create/private', {
+      // const response = await axiosInstance.post('/rooms/create/private', {
+      //   title,
+      //   description,
+      //   topic,
+      //   allow_random_matching: true
+
+      // });
+      const endpoint = isPublic ? '/rooms/create/public' : '/rooms/create/private';
+      const response = await axiosInstance.post(endpoint, {
         title,
         description,
         topic,
-        allow_random_matching: true
-
+        allow_random_matching: !!isPublic,
       });
-  
+
       const roomCode = response.data.room.room_code;
       localStorage.setItem('room_code', roomCode);
       localStorage.setItem('category', topic);
@@ -102,8 +107,7 @@ export default function CreateRoom2({ onClose }) {
       <div style={{ color: Colors.grey05, marginBottom: 32 }}>
         이번 게임에서 플레이할 주제를 선택해 주세요.
       </div>
-      {/* Zoom 위한 코드 수정  */}
-      {/* <RoomTypeToggle isPublic={isPublic} setIsPublic={setIsPublic} /> */}
+      <RoomTypeToggle isPublic={isPublic} setIsPublic={setIsPublic} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
         {topics.map((topic) => (

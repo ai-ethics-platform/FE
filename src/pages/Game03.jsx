@@ -14,7 +14,7 @@ import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { FontStyles,Colors } from '../components/styleConstants';
 import UserProfile from '../components/Userprofile';
-
+import { clearAllLocalStorageKeys } from '../utils/storage';
 const CARD_W = 640;
 const CARD_H = 170;
 const CIRCLE = 16;
@@ -101,11 +101,12 @@ export default function Game03() {
   const { isHost, sendNextPage } = useHostActions();
   useWebSocketNavigation(nav, { nextPagePath: '/game04', infoPath: '/game04' });
   
-  const [connectionStatus, setConnectionStatus] = useState({
-    websocket: false,
-    webrtc: false,
-    ready: false
-  });
+ // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
+ const [connectionStatus, setConnectionStatus] = useState({
+  websocket: true,
+  webrtc: true,
+  ready: true
+});
   
   useEffect(() => {
     const newStatus = {
@@ -116,7 +117,15 @@ export default function Game03() {
     setConnectionStatus(newStatus);
     console.log('🔧 [Game03] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
-  
+     useEffect(() => {
+        if (!isConnected) {
+          console.warn('❌ WebSocket 연결 끊김 감지됨');
+          alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+          clearAllLocalStorageKeys();     
+          nav('/');
+        }
+      }, [isConnected]);
+
   // step 1: 개인 동의/비동의 POST 후 consensus 폴링 시작
   const handleSubmitChoice = async () => {
     const choiceInt = agree === 'agree' ? 1 : 2;
@@ -164,9 +173,11 @@ export default function Game03() {
       console.error('확신 전송 중 오류:', err);
     }
   };
-
+  const handleBackClick = () => {
+    navigate('/game02'); 
+  };
   return (
-    <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}>
+    <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}  onBackClick={handleBackClick} >
       
       {step === 1 && (
         <>

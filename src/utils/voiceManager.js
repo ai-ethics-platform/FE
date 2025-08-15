@@ -1,407 +1,4 @@
-// import axiosInstance from '../api/axiosInstance';
-
-// class VoiceManager {
-//   constructor() {
-//     this.isConnected = false;
-//     this.isSpeaking = false;
-//     this.sessionId = null;
-//     this.mediaStream = null;
-//     this.audioContext = null;
-//     this.analyser = null;
-//     this.animationFrame = null;
-//     this.speakingThreshold = 30;
-//     this.nickname = null;
-//     this.participantId = null;
-//     this.lastSpeakingState = false;
-//     this.micLevel = 0;
-//     this.isDebugMode = true;
-    
-//     // 연속 녹음 관련
-//     this.mediaRecorder = null;
-//     this.isRecording = false;
-//     this.recordedChunks = [];
-//     this.recordingStartTime = null;
-//     this.sessionInitialized = false;
-//   }
-
-//   // 세션 나가기
-//   async leaveSession() {
-//     this.sessionId ||= localStorage.getItem('session_id');
-    
-//     if (!this.sessionId) {
-//       console.warn('⚠️ leaveSession: sessionId가 없습니다.');
-//       return false;
-//     }
-    
-//     try {
-//       await axiosInstance.post(`/voice/sessions/${this.sessionId}/leave`, {});
-//       console.log(' leaveSession 성공');
-//       return true;
-//     } catch (err) {
-//       console.error('❌ leaveSession 실패:', err);
-//       return false;
-//     }
-//   }
-
-//   getLocalStream() {
-//     return this.mediaStream;
-//   }
-  
-//   getAudioTracks() {
-//     return this.mediaStream ? this.mediaStream.getAudioTracks() : [];
-//   }
-
-// //  음성 세션 초기화 (WebSocketProvider에서 세션이 준비된 후 호출)
-// async initializeVoiceSession() {
-//     if (this.sessionInitialized) {
-//       console.log('⚠️ 음성 세션이 이미 초기화되어 있음');
-//       return true;
-//     }
-  
-//     try {
-//       console.log('🎤 VoiceManager 초기화 시작');
-      
-//       // 1. ✅ 세션 정보 확인 (WebSocketProvider에서 설정됨)
-//       this.sessionId = localStorage.getItem('session_id');
-//       if (!this.sessionId) {
-//         console.error('❌ session_id가 없습니다. WebSocketProvider 초기화를 먼저 해주세요.');
-//         return false;
-//       }
-      
-//       // ✅ 세션 ID 형식 검증
-//       if (typeof this.sessionId !== 'string' || this.sessionId.length === 0) {
-//         console.error('❌ 유효하지 않은 session_id 형식:', this.sessionId);
-//         return false;
-//       }
-      
-//       // ✅ 백엔드에서 세션 유효성 재확인
-//       try {
-//         const sessionVerify = await axiosInstance.get(`/voice/sessions/${this.sessionId}`);
-//         console.log('✅ VoiceManager: 세션 유효성 확인됨:', sessionVerify.data);
-//       } catch (verifyError) {
-//         console.error('❌ VoiceManager: 세션 유효성 확인 실패:', verifyError.response?.data);
-//         return false;
-//       }
-      
-//       // 2. 사용자 정보 설정
-//       const { data: userInfo } = await axiosInstance.get('/users/me');
-//       this.participantId = userInfo.id;
-//       this.nickname = localStorage.getItem('nickname') || userInfo.username || `Player_${userInfo.id}`;
-      
-//       console.log('📋 VoiceManager 세션 정보:', {
-//         sessionId: this.sessionId,
-//         nickname: this.nickname,
-//         participantId: this.participantId
-//       });
-      
-//       // 3. 마이크 연결
-//       await this.connectMicrophone();
-      
-//       // 4. 초기 마이크 ON 상태 전송
-//       //await this.sendVoiceStatusToServer(false);
-      
-//       // 5. 음성 감지 시작
-//       this.startSpeechDetection();
-      
-//       // 6. 연속 녹음 시작
-//       this.startRecording();
-      
-//       this.sessionInitialized = true;
-//       console.log('✅ VoiceManager 초기화 완료');
-//       return true;
-      
-//     } catch (error) {
-//       console.error('❌ VoiceManager 초기화 실패:', error);
-//       console.error('❌ 에러 상세:', {
-//         message: error.message,
-//         response: error.response?.data,
-//         status: error.response?.status
-//       });
-//       return false;
-//     }
-//   }
-
-//   // 마이크 연결
-//   async connectMicrophone() {
-//     try {
-//       console.log('🎤 마이크 연결 시도...');
-      
-//       this.mediaStream = await navigator.mediaDevices.getUserMedia({ 
-//         audio: {
-//           echoCancellation: true,
-//           noiseSuppression: true,
-//           autoGainControl: true,
-//           sampleRate: 44100
-//         }
-//       });
-      
-//       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-//       this.analyser = this.audioContext.createAnalyser();
-      
-//       const microphone = this.audioContext.createMediaStreamSource(this.mediaStream);
-//       microphone.connect(this.analyser);
-      
-//       this.analyser.fftSize = 256;
-//       this.analyser.smoothingTimeConstant = 0.8;
-      
-//       this.isConnected = true;
-//       console.log('✅ 마이크 연결 성공! 임계값:', this.speakingThreshold);
-      
-//     } catch (error) {
-//       console.error('❌ 마이크 연결 실패:', error);
-//       if (error.name === 'NotAllowedError') {
-//         alert('마이크 권한이 필요합니다. 브라우저 설정에서 마이크 권한을 허용해주세요.');
-//       }
-//       throw error;
-//     }
-//   }
-
-//   // 연속 녹음 시작
-//   startRecording() {
-//     if (!this.mediaStream || this.isRecording) return;
-
-//     try {
-//       this.mediaRecorder = new MediaRecorder(this.mediaStream, {
-//         mimeType: 'audio/webm;codecs=opus'
-//       });
-
-//       this.recordedChunks = [];
-//       this.recordingStartTime = Date.now();
-
-//       this.mediaRecorder.ondataavailable = (event) => {
-//         if (event.data.size > 0) {
-//           this.recordedChunks.push(event.data);
-//         }
-//       };
-
-//       this.mediaRecorder.onstop = () => {
-//         console.log('🎵 녹음 종료, 총 청크:', this.recordedChunks.length);
-//       };
-
-//       this.mediaRecorder.start(1000);
-//       this.isRecording = true;
-      
-//       console.log('🔴 연속 녹음 시작');
-//     } catch (error) {
-//       console.error('❌ 녹음 시작 실패:', error);
-//     }
-//   }
-
-//   // 연속 녹음 중지 및 저장
-//   async stopRecording() {
-//     if (!this.isRecording || !this.mediaRecorder) return null;
-
-//     return new Promise((resolve) => {
-//       this.mediaRecorder.onstop = () => {
-//         const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
-//         const duration = Date.now() - this.recordingStartTime;
-        
-//         console.log('⏹️ 녹음 완료:', {
-//           size: blob.size,
-//           duration: duration,
-//           chunks: this.recordedChunks.length
-//         });
-        
-//         resolve({
-//           blob,
-//           duration,
-//           startTime: this.recordingStartTime,
-//           endTime: Date.now()
-//         });
-//       };
-
-//       this.mediaRecorder.stop();
-//       this.isRecording = false;
-//     });
-//   }
-
-//   // 서버에 음성 상태 전송
-//   async sendVoiceStatusToServer(isSpeaking) {
-//     try {
-//       if (this.lastSpeakingState === isSpeaking) return;
-//       this.lastSpeakingState = isSpeaking;
-
-//       const message = {
-//         type: "voice_status_update",
-//         data:{
-//             user_id: parseInt(this.participantId),
-//             is_mic_on: this.isConnected,
-//             is_speaking: isSpeaking,
-//             session_id: this.sessionId
-//         }
-      
-//       };
-  
-
-//       if (window.webSocketInstance && window.webSocketInstance.sendMessage) {
-//         const success = window.webSocketInstance.sendMessage(message);
-//         if (success) {
-//           console.log('📡 WebSocket으로 음성 상태 전송:', message);
-//         }
-//       } else {
-//         console.warn('⚠️ WebSocket 인스턴스가 없음');
-//       }
-      
-//     } catch (error) {
-//       console.error('음성 상태 전송 실패:', error);
-//       this.lastSpeakingState = !isSpeaking;
-//     }
-//   }
-
-//   // 음성 감지 시작
-//   startSpeechDetection() {
-//     if (!this.analyser) {
-//       console.error('❌ 분석기가 없습니다');
-//       return;
-//     }
-
-//     const bufferLength = this.analyser.frequencyBinCount;
-//     const dataArray = new Uint8Array(bufferLength);
-    
-//     const detectSpeech = () => {
-//       if (!this.analyser) return;
-      
-//       this.analyser.getByteFrequencyData(dataArray);
-      
-//       const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
-//       this.micLevel = average;
-      
-//       const currentlySpeaking = average > this.speakingThreshold;
-      
-//       if (currentlySpeaking !== this.isSpeaking) {
-//         this.isSpeaking = currentlySpeaking;
-        
-//         // if (this.isDebugMode) {
-//         //   console.log('🗣️ 음성 상태 변화:', {
-//         //     speaking: currentlySpeaking,
-//         //     level: average.toFixed(1),
-//         //     threshold: this.speakingThreshold,
-//         //     participantId: this.participantId
-//         //   });
-//         //}
-        
-//        // this.sendVoiceStatusToServer(currentlySpeaking);
-//       }
-      
-//       this.animationFrame = requestAnimationFrame(detectSpeech);
-//     };
-    
-//     console.log('👂 음성 감지 시작 (임계값:', this.speakingThreshold, ')');
-//     detectSpeech();
-//   }
-
-//   // 임계값 조정
-//   setSpeakingThreshold(threshold) {
-//     this.speakingThreshold = threshold;
-//     console.log('🔧 음성 임계값 변경:', threshold);
-//   }
-
-//   // 디버그 모드 토글
-//   toggleDebugMode() {
-//     this.isDebugMode = !this.isDebugMode;
-//     console.log('🐛 디버그 모드:', this.isDebugMode ? 'ON' : 'OFF');
-//   }
-
-//   // 음성 감지 중지
-//   stopSpeechDetection() {
-//     if (this.animationFrame) {
-//       cancelAnimationFrame(this.animationFrame);
-//       this.animationFrame = null;
-//     }
-//     console.log('⏹️ 음성 감지 중지');
-//   }
-
-//   // 마이크 연결 해제
-//   disconnectMicrophone() {
-//     this.stopSpeechDetection();
-    
-//     if (this.mediaStream) {
-//       this.mediaStream.getTracks().forEach(track => track.stop());
-//       this.mediaStream = null;
-//     }
-    
-//     if (this.audioContext) {
-//       this.audioContext.close();
-//       this.audioContext = null;
-//     }
-    
-//     this.analyser = null;
-//     this.isConnected = false;
-//     this.isSpeaking = false;
-//     this.lastSpeakingState = false;
-//     this.micLevel = 0;
-    
-//     console.log('🔇 마이크 연결 해제');
-//   }
-
-//   // 음성 세션 완전 종료
-//   async terminateVoiceSession() {
-//     console.log('🛑 음성 세션 완전 종료 시작');
-    
-//     try {
-//       // 1. 녹음 중지 및 저장
-//       const recordingData = await this.stopRecording();
-      
-//       // // 2. 마지막 음성 상태 업데이트
-//       // if (this.isSpeaking) {
-//       //   await this.sendVoiceStatusToServer(false);
-//       // }
-//       // 3. 세션 나가기
-//       await this.leaveSession();
-      
-//       // 4. 마이크 연결 해제
-//       this.disconnectMicrophone();
-      
-//       // 5. 세션 정보 초기화
-//       this.sessionId = null;
-//       this.nickname = null;
-//       this.participantId = null;
-//       this.sessionInitialized = false;
-      
-//       console.log('✅ 음성 세션 완전 종료 완료');
-//       return recordingData;
-      
-//     } catch (error) {
-//       console.error('❌ 음성 세션 종료 중 오류:', error);
-//       return null;
-//     }
-//   }
-
-//   // // 일시적 정리 (페이지 이동 시 - 녹음은 유지)
-//   // async cleanup() {
-//   //   if (this.isSpeaking) {
-//   //     await this.sendVoiceStatusToServer(false);
-//   //   }
-    
-//   //   console.log('🧹 음성 세션 일시적 정리 완료 (녹음 유지)');
-//   // }
-
-//   // 현재 상태 반환
-//   getStatus() {
-//     return {
-//       isConnected: this.isConnected,
-//       isSpeaking: this.isSpeaking,
-//       sessionId: this.sessionId,
-//       nickname: this.nickname,
-//       participantId: this.participantId,
-//       micLevel: this.micLevel,
-//       speakingThreshold: this.speakingThreshold,
-//       isRecording: this.isRecording,
-//       sessionInitialized: this.sessionInitialized
-//     };
-//   }
-// }
-
-// // 싱글톤 인스턴스
-// const voiceManager = new VoiceManager();
-
-// // 전역에서 접근 가능하도록 설정
-// window.voiceManager = voiceManager;
-
-// export default voiceManager;
-
-
-//줌을 위한 코드
+// 음성 송수신, websocket, webRTC 연결 모두 마친 상태 + 음성 스트림 1개 , 음성 녹음 종료와 마이크 꺼짐 완료 
 import axiosInstance from '../api/axiosInstance';
 
 class VoiceManager {
@@ -409,7 +6,7 @@ class VoiceManager {
     this.isConnected = false;
     this.isSpeaking = false;
     this.sessionId = null;
-    this.mediaStream = null;
+    this.mediaStream = null;  // 🚨 WebRTC에서 받은 스트림
     this.audioContext = null;
     this.analyser = null;
     this.animationFrame = null;
@@ -426,9 +23,49 @@ class VoiceManager {
     this.recordedChunks = [];
     this.recordingStartTime = null;
     this.sessionInitialized = false;
+    this.micNode = null;
+    
+    // 🚨 WebRTC 스트림 사용 여부 플래그
+    this.usingWebRTCStream = false;
   }
 
-  // 세션 나가기
+  async uploadRecordingToServer(recordingData) {
+    try {
+      if (!recordingData?.blob || !recordingData.blob.size) {
+        console.warn('⚠️ 업로드할 녹음 데이터가 없습니다.');
+        return null;
+      }
+      
+      const sessId = this.sessionId || localStorage.getItem('session_id');
+      if (!sessId) {
+        console.error('❌ uploadRecordingToServer: session_id가 없습니다.');
+        return null;
+      }
+
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `recording_${sessId}_${ts}.webm`;
+      const file = new File([recordingData.blob], filename, { type: 'audio/webm' });
+
+      const form = new FormData();
+      form.append('file', file);
+      const url = `/upload_audio`;
+
+      const { data } = await axiosInstance.post(url, form, {
+        maxBodyLength: Infinity,
+      });
+
+      console.log('✅ 업로드 성공:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ 업로드 실패:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
+      return null;
+    }
+  }
+
   async leaveSession() {
     this.sessionId ||= localStorage.getItem('session_id');
     
@@ -439,7 +76,7 @@ class VoiceManager {
     
     try {
       await axiosInstance.post(`/voice/sessions/${this.sessionId}/leave`, {});
-      console.log(' leaveSession 성공');
+      console.log('✅ leaveSession 성공');
       return true;
     } catch (err) {
       console.error('❌ leaveSession 실패:', err);
@@ -455,35 +92,29 @@ class VoiceManager {
     return this.mediaStream ? this.mediaStream.getAudioTracks() : [];
   }
 
-//  음성 세션 초기화 (WebSocketProvider에서 세션이 준비된 후 호출)
-async initializeVoiceSession() {
+  // 🚨 핵심 수정: WebRTC 스트림을 받는 초기화 함수
+  async initializeVoiceSession(webRTCMediaStream = null) {
     if (this.sessionInitialized) {
       console.log('⚠️ 음성 세션이 이미 초기화되어 있음');
       return true;
     }
-    // ✋ 사용자가 꺼둔 상태면 초기화 중단
-    const voiceEnabled = localStorage.getItem('voice_enabled');
-    if (voiceEnabled === 'false') {
-      console.log('🚫 음성 기능 비활성화 상태입니다. 초기화 중단');
-      return false;
-    }
+  
     try {
       console.log('🎤 VoiceManager 초기화 시작');
       
-      // 1. ✅ 세션 정보 확인 (WebSocketProvider에서 설정됨)
+      // 1. 세션 정보 확인
       this.sessionId = localStorage.getItem('session_id');
       if (!this.sessionId) {
-        console.error('❌ session_id가 없습니다. WebSocketProvider 초기화를 먼저 해주세요.');
+        console.error('❌ session_id가 없습니다.');
         return false;
       }
       
-      // ✅ 세션 ID 형식 검증
       if (typeof this.sessionId !== 'string' || this.sessionId.length === 0) {
         console.error('❌ 유효하지 않은 session_id 형식:', this.sessionId);
         return false;
       }
       
-      // ✅ 백엔드에서 세션 유효성 재확인
+      // 2. 백엔드 세션 유효성 확인
       try {
         const sessionVerify = await axiosInstance.get(`/voice/sessions/${this.sessionId}`);
         console.log('✅ VoiceManager: 세션 유효성 확인됨:', sessionVerify.data);
@@ -492,7 +123,7 @@ async initializeVoiceSession() {
         return false;
       }
       
-      // 2. 사용자 정보 설정
+      // 3. 사용자 정보 설정
       const { data: userInfo } = await axiosInstance.get('/users/me');
       this.participantId = userInfo.id;
       this.nickname = localStorage.getItem('nickname') || userInfo.username || `Player_${userInfo.id}`;
@@ -500,23 +131,35 @@ async initializeVoiceSession() {
       console.log('📋 VoiceManager 세션 정보:', {
         sessionId: this.sessionId,
         nickname: this.nickname,
-        participantId: this.participantId
+        participantId: this.participantId,
+        hasWebRTCStream: !!webRTCMediaStream
       });
       
-      // 3. 마이크 연결
-      await this.connectMicrophone();
+      // 🚨 4. 핵심: WebRTC 스트림 사용
+      if (webRTCMediaStream) {
+        console.log('✅ WebRTC 스트림 사용:', webRTCMediaStream.id);
+        this.mediaStream = webRTCMediaStream;
+        this.usingWebRTCStream = true;
+        this.isConnected = true;
+        
+        // WebRTC 스트림으로 오디오 분석 설정
+        await this.setupAudioAnalysisWithWebRTCStream(webRTCMediaStream);
+      } else {
+        console.error('❌ WebRTC 스트림이 전달되지 않았습니다');
+        return false;
+      }
       
-      // 4. 초기 마이크 ON 상태 전송
-      //await this.sendVoiceStatusToServer(false);
+      // 5. 초기 마이크 ON 상태 전송
+      await this.sendVoiceStatusToServer(false);
       
-      // 5. 음성 감지 시작
+      // 6. 음성 감지 시작
       this.startSpeechDetection();
       
-      // 6. 연속 녹음 시작
-     // this.startRecording();
+      // 7. 연속 녹음 시작
+      this.startRecording();
       
       this.sessionInitialized = true;
-      console.log('✅ VoiceManager 초기화 완료');
+      console.log('✅ VoiceManager 초기화 완료 (WebRTC 스트림 사용)');
       return true;
       
     } catch (error) {
@@ -530,110 +173,29 @@ async initializeVoiceSession() {
     }
   }
 
-  // 마이크 연결
-  async connectMicrophone() {
+  // 🚨 WebRTC 스트림으로 오디오 분석 설정
+  async setupAudioAnalysisWithWebRTCStream(webRTCStream) {
     try {
-      console.log('🎤 마이크 연결 시도...');
-      ㄴ
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 44100
-        }
-      });
+      console.log('🔊 WebRTC 스트림으로 오디오 분석 설정 중...');
       
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
       this.analyser = this.audioContext.createAnalyser();
       
-      const microphone = this.audioContext.createMediaStreamSource(this.mediaStream);
-      microphone.connect(this.analyser);
+      // 🚨 중요: WebRTC 스트림을 AudioContext에 연결 (분석용)
+      this.micNode = this.audioContext.createMediaStreamSource(webRTCStream);
+      this.micNode.connect(this.analyser);
       
       this.analyser.fftSize = 256;
       this.analyser.smoothingTimeConstant = 0.8;
       
-      this.isConnected = true;
-      console.log('✅ 마이크 연결 성공! 임계값:', this.speakingThreshold);
+      console.log('✅ WebRTC 스트림 오디오 분석 설정 완료');
       
     } catch (error) {
-      console.error('❌ 마이크 연결 실패:', error);
-      if (error.name === 'NotAllowedError') {
-        alert('마이크 권한이 필요합니다. 브라우저 설정에서 마이크 권한을 허용해주세요.');
-      }
+      console.error('❌ WebRTC 스트림 오디오 분석 설정 실패:', error);
       throw error;
     }
   }
 
-  async disableVoiceFeatures() {
-    console.log('🛑 [VoiceManager] 음성 기능 완전 OFF 시작');
-  
-    // 1. 음성 감지 중지
-    this.stopSpeechDetection();
-  
-    // 2. MediaRecorder 종료
-    try {
-      this.mediaRecorder?.stop();
-    } catch (e) {
-      console.warn('⚠️ MediaRecorder 종료 실패:', e);
-    }
-    this.mediaRecorder = null;
-    this.isRecording = false;
-  
-    // 3. 마이크 트랙 정지
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach((track) => {
-        console.log(`🎙️ 정지 트랙: ${track.kind}`);
-        track.stop(); // 🔥 마이크 완전 끔
-      });
-      this.mediaStream = null;
-    } else {
-      console.log('📭 mediaStream 없음 → 마이크 트랙 없음');
-    }
-  
-    // // 4. PeerConnection 트랙 정리
-    // if (this.peerConnection) {
-    //   this.peerConnection.getSenders().forEach((sender) => {
-    //     if (sender.track) {
-    //       console.log(`📡 송신 트랙 종료: ${sender.track.kind}`);
-    //       sender.track.stop();
-    //     }
-    //     this.peerConnection.removeTrack(sender);
-    //   });
-    //   this.peerConnection.close();
-    //   this.peerConnection = null;
-    // }
-  
-    // 5. AudioContext 종료
-    if (this.audioContext && this.audioContext.state !== 'closed') {
-      try {
-        await this.audioContext.close();
-        console.log('🎧 AudioContext 종료됨');
-      } catch (err) {
-        console.warn('⚠️ AudioContext 종료 실패:', err);
-      }
-    }
-  
-    this.audioContext = null;
-    this.analyser = null;
-    this.isConnected = false;
-    this.isSpeaking = false;
-    this.lastSpeakingState = false;
-    this.micLevel = 0;
-  
-    console.log('✅ [VoiceManager] 음성 기능 완전 OFF 완료');
-    console.log('💬 현재 상태:', {
-      mediaStream: this.mediaStream,
-      peerConnection: this.peerConnection,
-      mediaRecorder: this.mediaRecorder,
-      audioContext: this.audioContext
-    });
-
-  }
-  
-  
-  
-  
   // 연속 녹음 시작
   startRecording() {
     if (!this.mediaStream || this.isRecording) return;
@@ -659,42 +221,10 @@ async initializeVoiceSession() {
       this.mediaRecorder.start(1000);
       this.isRecording = true;
       
-      console.log('🔴 연속 녹음 시작');
+      console.log('🔴 연속 녹음 시작 (WebRTC 스트림 사용)');
     } catch (error) {
       console.error('❌ 녹음 시작 실패:', error);
     }
-  }
-
-  // 연속 녹음 중지 및 저장
-  async stopRecording() {
-    if (!this.isRecording || !this.mediaRecorder) return null;
-
-    return new Promise((resolve) => {
-      this.mediaRecorder.onstop = () => {
-        const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
-        const duration = Date.now() - this.recordingStartTime;
-        
-        console.log('⏹️ 녹음 완료:', {
-          size: blob.size,
-          duration: duration,
-          chunks: this.recordedChunks.length
-        });
-        
-        resolve({
-          blob,
-          duration,
-          startTime: this.recordingStartTime,
-          endTime: Date.now()
-        });
-      };
-
-      this.mediaRecorder.stop();
-      this.isRecording = false;
-
-      //Zoom 연결에서 음성 송수신 해제하기 위한 코드 
-      this.mediaRecorder = null; // 🔧 추가
-
-    });
   }
 
   // 서버에 음성 상태 전송
@@ -711,13 +241,11 @@ async initializeVoiceSession() {
             is_speaking: isSpeaking,
             session_id: this.sessionId
         }
-      
       };
-  
 
-      if (window.webSocketInstance && window.webSocketInstance.sendMessage) {
+       if (window.webSocketInstance && window.webSocketInstance.sendMessage) {
         const success = window.webSocketInstance.sendMessage(message);
-        if (success) {
+          if (success) {
           console.log('📡 WebSocket으로 음성 상태 전송:', message);
         }
       } else {
@@ -732,11 +260,6 @@ async initializeVoiceSession() {
 
   // 음성 감지 시작
   startSpeechDetection() {
-    const isVoiceEnabled = localStorage.getItem('voice_enabled') !== 'false';
-  if (!isVoiceEnabled) {
-    console.log('🛑 음성 감지 차단됨: voice_enabled=false');
-    return;
-  }
     if (!this.analyser) {
       console.error('❌ 분석기가 없습니다');
       return;
@@ -757,23 +280,12 @@ async initializeVoiceSession() {
       
       if (currentlySpeaking !== this.isSpeaking) {
         this.isSpeaking = currentlySpeaking;
-        
-        // if (this.isDebugMode) {
-        //   console.log('🗣️ 음성 상태 변화:', {
-        //     speaking: currentlySpeaking,
-        //     level: average.toFixed(1),
-        //     threshold: this.speakingThreshold,
-        //     participantId: this.participantId
-        //   });
-        //}
-        
-       // this.sendVoiceStatusToServer(currentlySpeaking);
       }
       
       this.animationFrame = requestAnimationFrame(detectSpeech);
     };
     
-    console.log('👂 음성 감지 시작 (임계값:', this.speakingThreshold, ')');
+    console.log('👂 음성 감지 시작 (WebRTC 스트림) (임계값:', this.speakingThreshold, ')');
     detectSpeech();
   }
 
@@ -791,7 +303,6 @@ async initializeVoiceSession() {
 
   // 음성 감지 중지
   stopSpeechDetection() {
-
     if (this.animationFrame) {
       cancelAnimationFrame(this.animationFrame);
       this.animationFrame = null;
@@ -799,69 +310,281 @@ async initializeVoiceSession() {
     console.log('⏹️ 음성 감지 중지');
   }
 
-  // 마이크 연결 해제
-  disconnectMicrophone() {
-    this.stopSpeechDetection();
-    
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach(track => track.stop());
-      this.mediaStream = null;
+  // 수정된 stopRecording 메서드
+  async stopRecording() {
+    console.log('🎵 stopRecording 시작 - 상태 확인:', {
+      mediaRecorder: !!this.mediaRecorder,
+      mediaRecorderState: this.mediaRecorder?.state,
+      isRecording: this.isRecording,
+      chunksLength: this.recordedChunks?.length || 0,
+      usingWebRTCStream: this.usingWebRTCStream
+    });
+
+    if (!this.mediaRecorder) {
+      console.warn('⚠️ stopRecording: mediaRecorder가 없음');
+      
+      if (this.recordedChunks?.length > 0) {
+        console.log('📦 기존 청크로 Blob 생성:', this.recordedChunks.length);
+        const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+        const duration = this.recordingStartTime ? (Date.now() - this.recordingStartTime) : 0;
+        
+        this.isRecording = false;
+        this.recordedChunks = [];
+        
+        return {
+          blob,
+          duration,
+          startTime: this.recordingStartTime,
+          endTime: Date.now()
+        };
+      }
+      
+      this.isRecording = false;
+      return null;
     }
-    
-    if (this.audioContext) {
-      this.audioContext.close();
-      this.audioContext = null;
+
+    if (this.mediaRecorder.state === 'inactive') {
+      console.log('📝 MediaRecorder가 이미 inactive 상태');
+      
+      if (this.recordedChunks?.length > 0) {
+        const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+        const duration = this.recordingStartTime ? (Date.now() - this.recordingStartTime) : 0;
+        
+        console.log('📦 inactive 상태에서 Blob 생성:', {
+          size: blob.size,
+          duration,
+          chunks: this.recordedChunks.length
+        });
+        
+        this.isRecording = false;
+        this.recordedChunks = [];
+        
+        return {
+          blob,
+          duration,
+          startTime: this.recordingStartTime,
+          endTime: Date.now()
+        };
+      }
+      
+      this.isRecording = false;
+      return null;
     }
-    
-    this.analyser = null;
-    this.isConnected = false;
-    this.isSpeaking = false;
-    this.lastSpeakingState = false;
-    this.micLevel = 0;
-    
-    console.log('🔇 마이크 연결 해제');
-  }
-  async terminateVoiceSession() {
-    console.log('🛑 음성 세션 완전 종료 시작');
-  
-    try {
-      // ✅ 1. 녹음 중지 시도 (녹음 중이 아니어도 강제 stop)
-      if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+
+    return new Promise((resolve) => {
+      let resolved = false;
+      
+      const finalize = () => {
+        if (resolved) return;
+        resolved = true;
+        
+        try {
+          const blob = new Blob(this.recordedChunks || [], { type: 'audio/webm' });
+          const duration = this.recordingStartTime ? (Date.now() - this.recordingStartTime) : 0;
+          
+          console.log('⏹️ 녹음 완료:', {
+            size: blob.size,
+            duration,
+            chunks: this.recordedChunks?.length || 0
+          });
+          
+          this.isRecording = false;
+          this.recordedChunks = [];
+          this.mediaRecorder = null;
+          
+          resolve({
+            blob,
+            duration,
+            startTime: this.recordingStartTime,
+            endTime: Date.now()
+          });
+        } catch (error) {
+          console.error('❌ finalize 중 오류:', error);
+          this.isRecording = false;
+          this.recordedChunks = [];
+          this.mediaRecorder = null;
+          resolve(null);
+        }
+      };
+
+      this.mediaRecorder.onstop = () => {
+        console.log('📝 MediaRecorder onstop 이벤트 발생');
+        try {
+          finalize();
+        } catch (e) {
+          console.error('❌ onstop 핸들러 오류:', e);
+          resolved = true;
+          resolve(null);
+        }
+      };
+
+      this.mediaRecorder.onerror = (event) => {
+        console.error('❌ MediaRecorder 오류:', event.error);
+        if (!resolved) {
+          resolved = true;
+          this.isRecording = false;
+          this.recordedChunks = [];
+          this.mediaRecorder = null;
+          resolve(null);
+        }
+      };
+
+      try {
+        if (typeof this.mediaRecorder.requestData === 'function') {
+          console.log('📤 마지막 데이터 요청');
+          this.mediaRecorder.requestData();
+        }
+      } catch (e) {
+        console.warn('⚠️ requestData 실패 (무시):', e.message);
+      }
+
+      try {
+        console.log('🛑 MediaRecorder.stop() 호출');
         this.mediaRecorder.stop();
         this.isRecording = false;
-        this.mediaRecorder = null;
-        console.log('⏹️ 강제 녹음 종료');
+      } catch (e) {
+        console.error('❌ MediaRecorder.stop() 오류:', e);
+        finalize();
+        return;
       }
-  
-      // ✅ 2. 세션 나가기
-     // await this.leaveSession();
-  
-      // ✅ 3. 마이크 해제
-      this.disconnectMicrophone();
-  
-      // ✅ 4. 상태 초기화
-      this.sessionId = null;
-      this.nickname = null;
-      this.participantId = null;
-      this.sessionInitialized = false;
-  
-      console.log('✅ 음성 세션 완전 종료 완료');
-      return null;
-  
-    } catch (error) {
-      console.error('❌ 음성 세션 종료 중 오류:', error);
-      return null;
-    }
+
+      setTimeout(() => {
+        if (!resolved) {
+          console.warn('⏱️ onstop 이벤트 타임아웃 - 강제 완료');
+          finalize();
+        }
+      }, 3000);
+    });
   }
-  
-  // // 일시적 정리 (페이지 이동 시 - 녹음은 유지)
-  // async cleanup() {
-  //   if (this.isSpeaking) {
-  //     await this.sendVoiceStatusToServer(false);
+
+  // // 🚨 수정된 disconnectMicrophone - WebRTC 스트림은 건드리지 않음
+  // disconnectMicrophone() {
+  //   console.log('🔇 마이크 연결 해제 시작 (WebRTC 스트림 보존)');
+    
+  //   // 1. 음성 감지 중지
+  //   this.stopSpeechDetection();
+    
+  //   // 2. 오디오 노드 연결 해제
+  //   try {
+  //     if (this.micNode) {
+  //       this.micNode.disconnect();
+  //       this.micNode = null;
+  //       console.log('🔌 오디오 노드 연결 해제 완료');
+  //     }
+  //   } catch (e) {
+  //     console.warn('⚠️ 오디오 노드 해제 실패:', e);
+  //   }
+
+  //   // 🚨 3. WebRTC 스트림은 정지하지 않음 (WebRTC에서 관리)
+  //   console.log('⚠️ WebRTC 스트림은 WebRTC Provider에서 관리하므로 여기서 정지하지 않음');
+    
+  //   // 4. AudioContext 정리
+  //   if (this.audioContext) {
+  //     try {
+  //       if (this.audioContext.state !== 'closed') {
+  //         this.audioContext.close();
+  //         console.log('🔊 AudioContext 종료 완료');
+  //       }
+  //     } catch (e) {
+  //       console.warn('⚠️ AudioContext 종료 실패:', e);
+  //     }
+  //     this.audioContext = null;
   //   }
     
-  //   console.log('🧹 음성 세션 일시적 정리 완료 (녹음 유지)');
+  //   // 5. 상태 초기화 (스트림 참조는 유지)
+  //   this.analyser = null;
+  //   this.isConnected = false;
+  //   this.isSpeaking = false;
+  //   this.lastSpeakingState = false;
+  //   this.micLevel = 0;
+    
+  //   console.log('✅ VoiceManager 정리 완료 (WebRTC 스트림 보존)');
   // }
+
+  // VoiceManager.js - disconnectMicrophone 함수 수정
+disconnectMicrophone() {
+  console.log('🔇 마이크 연결 해제 시작');
+  
+  // 1. 음성 감지 중지
+  this.stopSpeechDetection();
+  
+  // 2. 오디오 노드 연결 해제
+  try {
+    if (this.micNode) {
+      this.micNode.disconnect();
+      this.micNode = null;
+      console.log('🔌 오디오 노드 연결 해제 완료');
+    }
+  } catch (e) {
+    console.warn('⚠️ 오디오 노드 해제 실패:', e);
+  }
+
+  // 🚨 3. 핵심 수정: 스트림 참조 완전 제거
+  console.log('🔇 스트림 참조 완전 제거');
+  this.mediaStream = null; // 🎯 이 줄 추가!
+  
+  // 4. AudioContext 정리
+  if (this.audioContext) {
+    try {
+      if (this.audioContext.state !== 'closed') {
+        this.audioContext.close();
+        console.log('🔊 AudioContext 종료 완료');
+      }
+    } catch (e) {
+      console.warn('⚠️ AudioContext 종료 실패:', e);
+    }
+    this.audioContext = null;
+  }
+  
+  // 5. 상태 초기화
+  this.analyser = null;
+  this.isConnected = false;
+  this.isSpeaking = false;
+  this.lastSpeakingState = false;
+  this.micLevel = 0;
+  
+  console.log('✅ VoiceManager 정리 완료 (스트림 참조까지 제거)');
+}
+// VoiceManager.js - terminateVoiceSession 올바른 순서로 수정
+
+async terminateVoiceSession() {
+  console.log('🛑 음성 세션 완전 종료 시작');
+  
+  try {
+    // 🚨 WebRTC 전역 함수 호출 (한 줄로 끝!)
+    if (window.terminateWebRTCSession) {
+      console.log('✅ WebRTC 전역 함수 호출 중...');
+      const result = await window.terminateWebRTCSession();
+      console.log('✅ WebRTC 완전 정리 완료');
+      return result;
+    } else {
+      console.error('❌ window.terminateWebRTCSession 함수가 없음');
+      
+      // 🚨 백업: 기존 방식으로 개별 처리
+      const recordingData = await this.stopRecording();
+      this.disconnectMicrophone();
+      
+      if (window.stopAllOutgoingAudioGlobal) {
+        window.stopAllOutgoingAudioGlobal();
+      }
+      
+      return { recordingData, uploadResult: null };
+    }
+    
+  } catch (error) {
+    console.error('❌ 음성 세션 종료 중 오류:', error);
+    return null;
+  }
+}
+
+  // 일시적 정리
+  async cleanup() {
+    if (this.isSpeaking) {
+      await this.sendVoiceStatusToServer(false);
+    }
+  
+    console.log('🧹 음성 세션 일시적 정리 완료 (녹음 유지)');
+  }
 
   // 현재 상태 반환
   getStatus() {
@@ -874,7 +597,8 @@ async initializeVoiceSession() {
       micLevel: this.micLevel,
       speakingThreshold: this.speakingThreshold,
       isRecording: this.isRecording,
-      sessionInitialized: this.sessionInitialized
+      sessionInitialized: this.sessionInitialized,
+      usingWebRTCStream: this.usingWebRTCStream  // 🚨 새로 추가
     };
   }
 }

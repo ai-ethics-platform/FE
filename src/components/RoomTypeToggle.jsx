@@ -15,26 +15,28 @@ export default function RoomTypeToggle({ isPublic, setIsPublic }) {
         border: '1.5px solid #0D575C',
         overflow: 'hidden',
         marginBottom: 32,
+        gap: 0,
+    
       }}
     >
       <div
         onClick={() => setIsPublic(false)}
-        style={{ cursor: 'pointer', width: '50%', height: '100%' }}
+        style={{ cursor: 'pointer', width: '50%', height: '100%', lineHeight: 0 }}
       >
         <img
           src={isPublic ? privateInactive : privateActive}
           alt="비공개 방"
-          style={{ width: '100%', height: '100%' }}
+          style={{ width: '100%', height: '100%', display: 'block'  }}
         />
       </div>
       <div
         onClick={() => setIsPublic(true)}
-        style={{ cursor: 'pointer', width: '50%', height: '100%' }}
+        style={{ cursor: 'pointer', width: '50%', height: '100%', lineHeight: 0 }}
       >
         <img
           src={isPublic ? publicActive : publicInactive}
           alt="공개 방"
-          style={{ width: '100%', height: '100%' }}
+          style={{ width: '100%', height: '100%', display: 'block'  }}
         />
       </div>
     </div>

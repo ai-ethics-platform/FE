@@ -1,4 +1,3 @@
-// 사진처리 1번 역할에 대한것 처리하기 - 총 5개 필요 
 // 이후 확장편에서 이미지 받아오는 api로 수정+ 이미지 설명 받아오는 엔드포인트 생성 시 이 부분만 수정
 
 import React, { useEffect, useState } from 'react';
@@ -12,6 +11,11 @@ import { resolveParagraphs } from '../utils/resolveParagraphs';
 import player3DescImg_title1 from '../assets/3player_des1.svg';
 import player3DescImg_title2 from '../assets/3player_des2.svg';
 import player3DescImg_title3 from '../assets/3player_des3.svg';
+import AWS_1 from "../assets/3player_AWS_1.svg";
+import AWS_2 from "../assets/3player_AWS_2.svg";
+import AWS_3 from "../assets/3player_AWS_3.svg";
+import AWS_4 from "../assets/3player_AWS_4.svg";
+import AWS_5 from "../assets/3player_AWS_5.svg";
 import axiosInstance from '../api/axiosInstance';
 
 export default function CD3() {
@@ -107,30 +111,35 @@ export default function CD3() {
     // 자율 무기 시스템 분기
     switch (true) {
       case subtopic === 'AI 알고리즘 공개':
+        descImg= AWS_1 ;
         mainText =
           '당신은 군사 AI 윤리 전문가입니다. ' +
           '당신이 살고 있는 지역에 최근 자율 무기 시스템의 학교 폭격 사건이 일어났습니다.';
         break;
 
       case subtopic === 'AWS의 권한':
+        descImg= AWS_2 ;
         mainText =
           '당신은 자율 무기 시스템 TALOS 도입 이후 작전 효율성과 병사들의 변화 양상을 모두 지켜보고 있는 군 지휘관입니다. ' +
           '당신은 두 병사의 입장을 듣고, 군 전체가 나아갈 방향을 모색하려 합니다.';
         break;
 
       case subtopic === '사람이 죽지 않는 경쟁':
+        descImg= AWS_3 ;
         mainText =
           '당신은 본 회의를 진행하는 국가 인공지능 위원회의 대표입니다. ' +
           '국가의 발전을 위해 더 나은 결정이 무엇일지 고민이 필요합니다.';
         break;
 
       case subtopic === 'AI의 권리와 책임':
+        descImg= AWS_4 ;
         mainText =
           '당신은 본 회의를 진행하는 국가 인공지능 위원회의 대표입니다. ' +
           '국가의 발전을 위해 더 나은 결정이 무엇일지 고민이 필요합니다.';
         break;
 
       case subtopic === 'AWS 규제':
+        descImg= AWS_5 ;
         mainText =
           '당신은 저개발국 C의 글로벌 NGO 활동가입니다. ' +
           '국제사회에 현장의 목소리를 내고자 이 자리에 참석했습니다.';

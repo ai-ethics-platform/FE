@@ -1,4 +1,3 @@
-// 사진처리 1번 역할에 대한것 처리하기 - 총 5개 필요 
 // 이후 확장편에서 이미지 받아오는 api로 수정+ 이미지 설명 받아오는 엔드포인트 생성 시 이 부분만 수정
 
 // pages/CD1.jsx
@@ -10,6 +9,12 @@ import ContentTextBox from '../components/ContentTextBox2';
 import player1DescImg_title1 from '../assets/1player_des1.svg';
 import player1DescImg_title2 from '../assets/1player_des2.svg';
 import player1DescImg_title3 from '../assets/1player_des3.svg';
+import AWS_1 from "../assets/1player_AWS_1.svg";
+import AWS_2 from "../assets/1player_AWS_2.svg";
+import AWS_3 from "../assets/1player_AWS_3.svg";
+import AWS_4 from "../assets/1player_AWS_4.svg";
+import AWS_5 from "../assets/1player_AWS_5.svg";
+
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
 import { useWebRTC } from '../WebRTCProvider';
@@ -141,10 +146,12 @@ export default function CD1() {
     // ---- 자율 무기 시스템 분기 ----
     switch (subtopic) {
       case 'AI 알고리즘 공개':
+        descImg= AWS_1 ;
         mainText = '당신은 최근 자율 무기 시스템의 학교 폭격 사건이 일어난 지역의 주민입니다.';
         break;
 
       case 'AWS의 권한':
+        descImg= AWS_2 ;
         mainText =
           '당신은 최근 훈련을 마치고 자율 무기 시스템 TALOS와 함께 실전에 투입된 신입 병사 B입니다. ' +
           'TALOS는 정확하고 빠르게 움직이며, 실전에서 당신의 생존률을 높여준다고 느낍니다. ' +
@@ -152,18 +159,21 @@ export default function CD1() {
         break;
 
       case '사람이 죽지 않는 전쟁':
+        descImg= AWS_3 ;
         mainText =
           '당신은 대규모 AWS 제조 업체에서 핵심 알고리즘을 설계하는 개발자 중 한 명입니다. ' +
           'AWS를 직접 만들어 내며 많은 윤리적 고민과 시행착오를 거쳐 왔습니다.';
         break;
 
       case 'AI의 권리와 책임':
+        descImg= AWS_4 ;
         mainText =
           '당신은 대규모 AWS 제조 업체에서 핵심 알고리즘을 설계하는 개발자 중 한 명입니다. ' +
           'AWS를 직접 만들어 내며 많은 윤리적 고민과 시행착오를 거쳐 왔습니다.';
         break;
 
       case 'AWS 규제':
+        descImg= AWS_5 ;
         mainText =
           '당신은 AWS 기술 보유 중인 중견국 A의 국방 기술 고문입니다. ' +
           'AWS가 기회가 될지 위험이 될지 판단하고자 국제 인류 발전 위원회에 참석했습니다.';

@@ -1,4 +1,5 @@
-// 확장성 이전 코드
+// //확장성 코드
+// //api 연결 시 해야하는 것 - 편집 시 만드는 이미지 임포트해오는것 진행해야함 
 // import React from 'react';
 // import { Colors, FontStyles } from './styleConstants';
 // // 기본 아이콘들 (디테일 없음)
@@ -17,13 +18,11 @@
 // import profile1MicOn from '../assets/1playerprofilemikeon.svg';
 // import profile2MicOn from '../assets/2playerprofilemikeon.svg';
 // import profile3MicOn from '../assets/3playerprofilemikeon.svg';
+// // 생성 모드용 이미지
+// import frame235 from '../assets/creatorprofiledefault.svg';
 
 // import crownIcon from '../assets/crown.svg';
 // import isMeIcon from '../assets/speaking.svg';
-
-// // 확장성 
-// import frame235 from '../assets/creatorprofiledefault.svg';
-
 
 // const colorMap = {
 //   '1P': Colors.player1P,
@@ -41,6 +40,8 @@
 //  * @param {boolean} isMe        내 프로필 여부
 //  * @param {boolean} isSpeaking  말하고 있는 상태
 //  * @param {boolean} [nodescription=false]  true일 경우 description 강제 비활성화, 기본 아이콘 사용
+//  * @param {boolean} [create=false]  true일 경우 모든 캐릭터 이미지를 frame235로 사용
+//  * @param {string} [description='']  직접 전달된 설명 텍스트 (우선순위 높음)
 //  */
 // export default function UserProfile({
 //   player = '1P',
@@ -49,7 +50,7 @@
 //   isSpeaking = false,
 //   nodescription = false,
 //   create = false,
-
+//   description = '',
 //   ...rest
 // }) {
 //   // localStorage raw read
@@ -60,7 +61,12 @@
 //   const roleNum = parseInt(player.replace('P',''), 10);
 //   let mappedDesc = '';
 
-//   if (hasSubtopic) {
+//   // 1. description prop이 있으면 우선 사용
+//   if (description && description.trim() !== '') {
+//     mappedDesc = description;
+//   }
+//   // 2. description prop이 없으면 기존 로직 사용
+//   else if (hasSubtopic) {
 //     switch (subtopic) {
 //       case 'AI의 개인 정보 수집':
 //       case '안드로이드의 감정 표현':
@@ -82,8 +88,8 @@
 //     }
 //   }
 
-//   // 디테일 여부: nodescription false, 서브토픽 유효, 매핑 설명 존재
-//   const isDetailed = hasSubtopic && mappedDesc !== '';
+//   // 디테일 여부: create 모드가 아닐 때만 description 표시
+//   const isDetailed = !nodescription && mappedDesc !== '';
 //   const finalDesc = isDetailed ? mappedDesc : '';
 
 //   // 아이콘 결정
@@ -126,7 +132,7 @@
 //         width: containerSize,
 //         height: containerSize,
 //         borderRadius: '50%',
-//         backgroundColor: (!isDetailed && !create) ? colorMap[player] : 'transparent',
+//         backgroundColor: 'transparent',
 //         display: 'flex',
 //         alignItems: 'center',
 //         justifyContent: 'center',
@@ -161,9 +167,9 @@
 //     </div>
 //   );
 // }
+// //확장성 코드
+// //api 연결 시 해야하는 것 - 편집 시 만드는 이미지 임포트해오는것 진행해야함 
 
-//확장성 코드
-//api 연결 시 해야하는 것 - 확장성 이미지 임포트해오는것 진행해야함 
 import React from 'react';
 import { Colors, FontStyles } from './styleConstants';
 // 기본 아이콘들 (디테일 없음)
@@ -232,6 +238,7 @@ export default function UserProfile({
   // 2. description prop이 없으면 기존 로직 사용
   else if (hasSubtopic) {
     switch (subtopic) {
+      // 안드로이드 관련 서브토픽
       case 'AI의 개인 정보 수집':
       case '안드로이드의 감정 표현':
         mappedDesc = roleNum === 1 ? '요양보호사 K' : roleNum === 2 ? '노모 L' : '자녀 J';
@@ -247,6 +254,28 @@ export default function UserProfile({
           : roleNum === 2 ? '국제 환경단체 대표'
           : '소비자 대표';
         break;
+
+      // 자율 무기 시스템 관련 서브토픽
+      case 'AI 알고리즘 공개': {
+        mappedDesc = roleNum === 1 ? '지역 주민' : roleNum === 2 ? '병사 J' : '군사 AI 윤리 전문가';
+        break;
+      }
+      case 'AWS의 권한': {
+        mappedDesc = roleNum === 1 ? '신입 병사' : roleNum === 2 ? '베테랑 병사 A' : '군 지휘관';
+        break;
+      }
+      case '사람이 죽지 않는 전쟁': {
+        mappedDesc = roleNum === 1 ? '개발자' : roleNum === 2 ? '국방부 장관' : '국가 인공지능 위원회 대표';
+        break;
+      }
+      case 'AI의 권리와 책임': {
+        mappedDesc = roleNum === 1 ? '개발자' : roleNum === 2 ? '국방부 장관' : '국가 인공지능 위원회 대표';
+        break;
+      }
+      case 'AWS 규제': {
+        mappedDesc = roleNum === 1 ? '국방 기술 고문' : roleNum === 2 ? '국제기구 외교 대표' : '글로벌 NGO 활동가';
+        break;
+      }
       default:
         mappedDesc = '';
     }
@@ -321,7 +350,6 @@ export default function UserProfile({
             maxWidth: 180,
             wordBreak: 'keep-all',
             whiteSpace: 'normal',
-            //whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             lineHeight: 1.2,

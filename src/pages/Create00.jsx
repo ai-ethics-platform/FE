@@ -16,7 +16,7 @@ export default function Create00() {
       headerLeftType="home"               
       headerNextDisabled={false}          
       onHeaderLeftClick={() => window.history.back()}
-      onHeaderNextClick={() => console.log('NEXT')}
+      onHeaderNextClick={() => navigate('/create01')}
       frame = {false}
    >
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>

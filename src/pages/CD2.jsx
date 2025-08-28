@@ -1,4 +1,3 @@
-// 사진처리 1번 역할에 대한것 처리하기 - 총 5개 필요 
 // 이후 확장편에서 이미지 받아오는 api로 수정+ 이미지 설명 받아오는 엔드포인트 생성 시 이 부분만 수정
 
 import React, { useEffect, useState } from 'react';
@@ -17,6 +16,11 @@ import player2DescImg_title1 from '../assets/2player_des1.svg';
 import player2DescImg_title2 from '../assets/2player_des2.svg';
 import player2DescImg_title3 from '../assets/2player_des3.svg';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
+import AWS_1 from "../assets/2player_AWS_1.svg";
+import AWS_2 from "../assets/2player_AWS_2.svg";
+import AWS_3 from "../assets/2player_AWS_3.svg";
+import AWS_4 from "../assets/2player_AWS_4.svg";
+import AWS_5 from "../assets/2player_AWS_5.svg";
 import axiosInstance from '../api/axiosInstance';
 
 export default function CD2() {
@@ -119,12 +123,14 @@ export default function CD2() {
     // 자율 무기 시스템 분기
     switch (true) {
       case subtopic === 'AI 알고리즘 공개':
+        descImg= AWS_1 ;
         mainText =
           '당신은 자율 무기 시스템과 작전을 함께 수행 중인 병사 J입니다. ' +
           '당신이 살고 있는 지역에 최근 자율 무기 시스템의 학교 폭격 사건이 일어났습니다.';
         break;
 
       case subtopic === 'AWS의 권한':
+        descImg= AWS_2 ;
         mainText =
           '당신은 수년간 작전을 수행해 온 베테랑 병사 A입니다. ' +
           '자율 무기 시스템 TALOS는 전장에서 병사보다 빠르고 정확하지만, ' +
@@ -132,6 +138,7 @@ export default function CD2() {
         break;
 
       case subtopic === '사람이 죽지 않는 전쟁':
+        descImg= AWS_3;
         mainText =
           '당신은 AWS 중심의 전쟁 시스템을 주도한 군사 전략의 최고 책임자인 국방부 장관입니다.\n' +
           '자국 병사 사망자 수는 ‘0’이고, 전투는 정밀하고 자동화된 시스템으로 수행되고 있습니다.\n' +
@@ -139,6 +146,7 @@ export default function CD2() {
         break;
 
       case subtopic === 'AI의 권리와 책임':
+        descImg= AWS_4;
          mainText =
           '당신은 AWS 중심의 전쟁 시스템을 주도한 군사 전략의 최고 책임자인 국방부 장관입니다.\n' +
           '자국 병사 사망자 수는 ‘0’이고, 전투는 정밀하고 자동화된 시스템으로 수행되고 있습니다.\n' +
@@ -146,6 +154,7 @@ export default function CD2() {
         break;
 
       case subtopic === 'AWS 규제':
+        descImg= AWS_5;
         mainText =
           '당신은 선진국 B의 국제기구 외교 대표입니다. ' +
           'AWS의 국제적 확산에 대한 바람직한 방향을 고민하기 위해 이 자리에 참석했습니다.';

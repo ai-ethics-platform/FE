@@ -4,9 +4,9 @@ import { Colors, FontStyles } from '../styleConstants';
 import headerBg from '../../assets/header.svg';
 import homeIcon from '../../assets/gotohome.svg';
 import backIcon from '../../assets/goback.svg';
-import nextIcon from '../../assets/gonext.svg';
-import nextHoverIcon from '../../assets/gonexthover.svg';
-import nextDisabledIcon from '../../assets/gonextdisable.svg';
+import nextIcon from '../../assets/gonextorange.svg';
+import nextHoverIcon from '../../assets/gonextorangehover.svg';
+import nextDisabledIcon from '../../assets/gonextorangedisable.svg';
 
 export default function HeaderBar({
   leftType = 'home',        // 'home' | 'back'

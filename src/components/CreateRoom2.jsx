@@ -23,7 +23,7 @@ export default function CreateRoom2({ onClose }) {
   const handleCreateRoom = async () => {
     if (!selectedTopic) return;
   
-    const title = `${selectedTopic} 토론방`;
+    const title = `${selectedTopic}`;
     const description = `AI 윤리 주제 중 '${selectedTopic}'에 대한 토론`;
     const topic = selectedTopic;
   
@@ -45,7 +45,7 @@ export default function CreateRoom2({ onClose }) {
         topic,
         allow_random_matching: !!isPublic,
       });
-
+      
       const roomCode = response.data.room.room_code;
       localStorage.setItem('room_code', roomCode);
       localStorage.setItem('category', topic);

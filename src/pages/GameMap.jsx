@@ -3,63 +3,41 @@ import React, { useEffect,useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import GameMapFrame from '../components/GameMapFrame';
-import UserProfile from '../components/Userprofile';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-
 import homeIcon from '../assets/homeIcon.svg';
 import aiIcon from '../assets/aiIcon.svg';
 import internationalIcon from '../assets/internationalIcon.svg';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocket } from '../WebSocketProvider';
-import { 
-  useWebSocketNavigation, 
-  useHostActions 
-} from '../hooks/useWebSocketMessage';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { FontStyles,Colors } from '../components/styleConstants';
+
 export default function GameMap() {
   const navigate = useNavigate();
   const subtopic = '라운드 선택';
   const round = Number(localStorage.getItem('currentRound') ?? 1);
-  // WebSocket과 WebRTC 상태 가져오기
-  const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
+
+  const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isConnected: websocketConnected } = useWebSocket();
   const { isHost, sendNextPage } = useHostActions();
-  useWebSocketNavigation(navigate, {
-      nextPagePath: '/game01'  // 다음 페이지 경로
-    });
-    
-    // 🔧 연결 상태 모니터링
-      const [connectionStatus, setConnectionStatus] = useState({
-        websocket: false,
-        webrtc: false,
-        ready: false
-      });
+  useWebSocketNavigation(navigate, { nextPagePath: '/game01' });
 
- // 🔧 연결 상태 모니터링
+  const [connectionStatus, setConnectionStatus] = useState({
+    websocket: false, webrtc: false, ready: false
+  });
+
+  //  카테고리 읽기(가볍게)
+  const category = localStorage.getItem('category') || '안드로이드';
+  const isAWS = category === '자율 무기 시스템';
+
   useEffect(() => {
     const newStatus = {
       websocket: websocketConnected,
       webrtc: webrtcInitialized,
       ready: websocketConnected && webrtcInitialized
     };
-
     setConnectionStatus(newStatus);
-
     console.log('🔧 [Gamemap] 연결 상태 업데이트:', newStatus);
   }, [websocketConnected, webrtcInitialized]);
- // const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-
-  // // 나 및 다른 참가자의 음성 상태
-  // const getVoiceState = (roleId) => {
-  //   if (String(roleId) === myRoleId) {
-  //     return {
-  //       is_speaking: voiceSessionStatus.isSpeaking,
-  //       is_mic_on: voiceSessionStatus.isConnected,
-  //       nickname: voiceSessionStatus.nickname || ''
-  //     };
-  //   }
-  //   return getVoiceStateForRole(roleId);
-  // };
 
   useEffect(() => {
     const orig = document.body.style.overflow;
@@ -67,99 +45,165 @@ export default function GameMap() {
     return () => { document.body.style.overflow = orig; };
   }, []);
 
-  const handleSelect = (topic,title) => {
-    const prevTitle = localStorage.getItem('title');
-    const category = localStorage.getItem('category') || '안드로이드';
-    const mode = 'neutral';
-    localStorage.setItem('title', title);
-    localStorage.setItem('category', category);
-    localStorage.setItem('subtopic', topic);
-    localStorage.setItem('mode', mode);
-   
-      //  이전 title과 같으면 game02, 다르면 game01
-    const nextPage = prevTitle === title ? '/game02' : '/game01';
-
-    console.log(` [GameMap] ${prevTitle === title ? '같은 주제 재선택' : '새 주제 선택'} → ${nextPage}로 이동`);
-    navigate(nextPage);
-
-  };
-
+  //  섹션과 옵션을 카테고리에 따라 구성
+  const sections = isAWS
+    ? [
+        { title: '주거, 군사 지역', options: ['AI 알고리즘 공개', 'AWS의 권한'] },
+        { title: '국가 인공지능 위원회', options: ['사람이 죽지 않는 전쟁', 'AI의 권리와 책임'] },
+        { title: '국제 인류 발전 위원회', options: ['AWS 규제'] },
+      ]
+    : [
+        { title: '가정', options: ['AI의 개인 정보 수집', '안드로이드의 감정 표현'] },
+        { title: '국가 인공지능 위원회', options: ['아이들을 위한 서비스', '설명 가능한 AI'] },
+        { title: '국제 인류 발전 위원회', options: ['지구, 인간, AI'] },
+      ];
+      const handleSelect = (topic, title) => {
+        const prevTitle = localStorage.getItem('title');
+        const categoryStored =
+          localStorage.getItem('category') || (isAWS ? '자율 무기 시스템' : '안드로이드');
+        const mode = 'neutral';
+      
+        localStorage.setItem('title', title);
+        localStorage.setItem('category', categoryStored);
+        localStorage.setItem('subtopic', topic);
+        localStorage.setItem('mode', mode);
+      
+        let nextPage;
+      
+        if (isAWS) {
+          // AWS 모드
+          if (prevTitle !== title) {
+            nextPage = '/game01';
+          } else {
+            // 타이틀 동일
+            if (topic === 'AI의 권리와 책임') {
+              nextPage = '/game02';
+            } else {
+              const myRoleId = localStorage.getItem('myrole_id');
+              if (myRoleId === '1' || myRoleId === '2' || myRoleId === '3') {
+                nextPage = `/character_description${myRoleId}`;
+              } else {
+                // 역할 아이디 없으면 안전 폴백
+                nextPage = '/game01';
+                console.warn('[GameMap][AWS] myrole_id 없음 → /game01로 폴백');
+              }
+            }
+          }
+        } else {
+          // 안드로이드 모드: 기존 규칙 유지
+          nextPage = prevTitle === title ? '/game02' : '/game01';
+        }
+      
+        navigate(nextPage);
+      };
+      
+      
   const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
   const isCompleted = (name) => completedTopics.includes(name);
 
+  //  해금 규칙(카테고리별 1→2→3 단계)
   const getUnlockedOptions = () => {
-    const unlocked = new Set(['AI의 개인 정보 수집']);
-    if (isCompleted('AI의 개인 정보 수집')) {
-      unlocked.add('안드로이드의 감정 표현');
-      unlocked.add('아이들을 위한 서비스');
-    }
-    if (isCompleted('아이들을 위한 서비스')) {
-      unlocked.add('설명 가능한 AI');
-      unlocked.add('지구, 인간, AI');
+    const unlocked = new Set();
+
+    if (isAWS) {
+      // 1단계: 첫 옵션만 기본 해금
+      unlocked.add('AI 알고리즘 공개');
+      // 2단계: 1단계 첫 옵션 완료 시
+      if (isCompleted('AI 알고리즘 공개')) {
+        unlocked.add('AWS의 권한');
+        unlocked.add('사람이 죽지 않는 전쟁');
+      }
+      // 3단계: 2단계 첫 옵션 완료 시
+      if (isCompleted('사람이 죽지 않는 전쟁')) {
+        unlocked.add('AI의 권리와 책임');
+        unlocked.add('AWS 규제');
+      }
+    } else {
+      // 안드로이드 
+      unlocked.add('AI의 개인 정보 수집');
+      if (isCompleted('AI의 개인 정보 수집')) {
+        unlocked.add('안드로이드의 감정 표현');
+        unlocked.add('아이들을 위한 서비스');
+      }
+      if (isCompleted('아이들을 위한 서비스')) {
+        unlocked.add('설명 가능한 AI');
+        unlocked.add('지구, 인간, AI');
+      }
     }
     return unlocked;
   };
 
   const unlockedOptions = getUnlockedOptions();
-  // const createOption = (text,title) => ({
-  //   text,
-  //   disabled: !unlockedOptions.has(text),
-  //   onClick: () => handleSelect(text,title)
-  // });
 
   const createOption = (text, title) => {
     const isDone = completedTopics.includes(text);
     const isUnlocked = unlockedOptions.has(text);
-  
+
     return {
       text,
-      disabled: isDone,
-      locked: !isUnlocked,
+      disabled: isDone,         // 완료한 항목은 비활성
+      locked: !isUnlocked,      // 잠금 표시용
       onClick: () => {
         if (!isDone && isUnlocked) handleSelect(text, title);
       },
     };
   };
-  
-//  GameMapFrame 해금 조건
-const isHomeUnlocked = true;
-const isNationalUnlocked = isCompleted('AI의 개인 정보 수집');
-const isInternationalUnlocked = isCompleted('아이들을 위한 서비스');
+
+  //  섹션 단축 변수
+  const s0 = sections[0];
+  const s1 = sections[1];
+  const s2 = sections[2];
+
+  //  프레임 잠금 여부 (1프레임은 항상 열림, 2/3은 단계 해금)
+  const isHomeUnlocked = true;
+  const isNationalUnlocked = isAWS
+    ? isCompleted('AI 알고리즘 공개')                // AWS 1-1 완료 시 2프레임
+    : isCompleted('AI의 개인 정보 수집');          // Android 1-1 완료 시 2프레임
+  const isInternationalUnlocked = isAWS
+    ? isCompleted('사람이 죽지 않는 전쟁')          // AWS 2-1 완료 시 3프레임
+    : isCompleted('아이들을 위한 서비스');          // Android 2-1 완료 시 3프레임
+
   return (
     <Layout subtopic={subtopic} nodescription={true} showBackButton={false}>
-        <div style={{
-            width: 500,
-            minHeight: 0,
-            ...FontStyles.headlineSmall,
-            color: Colors.systemRed,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            userSelect: 'none',
-          }}>
-          합의 후 같은 라운드를 선택하세요.
-            </div>
-      {/* 메인 맵 프레임 */}
+      <div style={{
+        width: 500,
+        minHeight: 0,
+        ...FontStyles.headlineSmall,
+        color: Colors.systemRed,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        userSelect: 'none',
+      }}>
+        합의 후 같은 라운드를 선택하세요.
+      </div>
+
       <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginLeft: 60, marginTop: 12, zIndex: 1 }}>
+        {/* 섹션 1 */}
         <GameMapFrame
           icon={homeIcon}
-          title="가정"
-          disabled={!isHomeUnlocked} // 항상 false
-          option1={createOption('AI의 개인 정보 수집','가정')}
-          option2={createOption('안드로이드의 감정 표현','가정')}
+          title={s0.title}
+          disabled={!isHomeUnlocked}
+          option1={createOption(s0.options[0], s0.title)}
+          option2={s0.options[1] ? createOption(s0.options[1], s0.title) : undefined}
         />
+
+        {/* 섹션 2 */}
         <GameMapFrame
           icon={aiIcon}
-          title="국가 인공지능 위원회"
-          disabled={!isNationalUnlocked} // '가정 1'이 끝나야 true
-          option1={createOption('아이들을 위한 서비스','국가 인공지능 위원회')}
-          option2={createOption('설명 가능한 AI','국가 인공지능 위원회')}
+          title={s1.title}
+          disabled={!isNationalUnlocked}
+          option1={createOption(s1.options[0], s1.title)}
+          option2={s1.options[1] ? createOption(s1.options[1], s1.title) : undefined}
         />
+
+        {/* 섹션 3 */}
         <GameMapFrame
           icon={internationalIcon}
-          disabled={!isInternationalUnlocked} // '국가 인공지능 위원회 1'이 끝나야 true
-          title="국제 인류 발전 위원회"
-          option1={createOption('지구, 인간, AI','국제 인류 발전 위원회')}
+          title={s2.title}
+          disabled={!isInternationalUnlocked}
+          option1={createOption(s2.options[0], s2.title)}
+          option2={s2.options[1] ? createOption(s2.options[1], s2.title) : undefined}
         />
       </div>
     </Layout>

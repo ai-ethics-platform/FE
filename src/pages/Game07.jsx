@@ -36,14 +36,14 @@ const { isConnected, sessionId, sendMessage } = useWebSocket();
    
      console.log('🔧 [Game07] 연결 상태 업데이트:', newStatus);
    }, [isConnected, webrtcInitialized]);
-   useEffect(() => {
-      if (!isConnected) {
-        console.warn('❌ WebSocket 연결 끊김 감지됨');
-        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-        clearAllLocalStorageKeys();     
-        navigate('/');
-      }
-    }, [isConnected]);
+  //  useEffect(() => {
+  //     if (!isConnected) {
+  //       console.warn('❌ WebSocket 연결 끊김 감지됨');
+  //       alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+  //       clearAllLocalStorageKeys();     
+  //       navigate('/');
+  //     }
+  //   }, [isConnected]);
 
   const subtopic = localStorage.getItem('subtopic');
   const category = localStorage.getItem('category');

@@ -56,7 +56,7 @@ export default function CreatorContentBox({ text, topicText,typingSpeed = 70 }) 
         whiteSpace: 'normal',
         whiteSpace: 'pre-line',
         maxWidth: 600,
-        padding: '40px 60px',
+        padding: '20px 30px',
         zIndex: 1,
       }}>
         {typedText}

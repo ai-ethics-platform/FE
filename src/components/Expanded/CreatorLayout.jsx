@@ -1,49 +1,106 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Colors } from '../styleConstants';
-import HeaderBar from './HeaderBar'; // 아이콘 내장 버전 가정
+import HeaderBar1 from './HeaderBar';
+import HeaderBar2 from './HeaderBar2';
+import MakeFrame from './MakeFrame';
+import DilemmaOutPopup from '../DilemmaOutPopup';
+import { useNavigate } from 'react-router-dom';
 
 const HEADER_H = 56;
 
 export default function CreatorLayout({
-  // 헤더 제어
-  headerLeftType = 'home',           // 'home' | 'back'
+  headerbar = 1,
+  headerLeftType = 'home',
   headerNextDisabled = false,
-  onHeaderLeftClick = () => {},
+  onHeaderLeftClick,   // 외부에서 덮어쓸 수 있지만 기본은 팝업
   onHeaderNextClick = () => {},
+  frame = true,
+  frameProps = {},
   children,
   style = {},
 }) {
+  const Header = headerbar === 1 ? HeaderBar1 : HeaderBar2;
+  const mergedFrameProps = { maxLength: 30, ...frameProps };
+  const navigate = useNavigate();
+
+  const [showOutPopup, setShowOutPopup] = useState(false);
 
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: Colors.grey01, // 페이지 배경
+        backgroundColor: Colors.creatorgrey01,
         overflow: 'hidden',
         ...style,
       }}
     >
-     <HeaderBar
-            leftType={headerLeftType}
-            nextDisabled={headerNextDisabled}
-            onLeftClick={onHeaderLeftClick}
-            onNextClick={onHeaderNextClick}
-            height={HEADER_H}
+      <Header
+        leftType={headerLeftType}
+        nextDisabled={headerNextDisabled}
+        onLeftClick={onHeaderLeftClick || (() => setShowOutPopup(true))} // 기본: 팝업 열기
+        onNextClick={onHeaderNextClick}
+        height={HEADER_H}
       />
+
       <div
         style={{
           height: `calc(100% - ${HEADER_H}px)`,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',  // 가운데 배치 (원하면 빼도 됨)
+          justifyContent: frame ? 'flex-start' : 'center',
+          overflowY: 'auto',
+          padding: frame ? '26px 0 30px' : 0,
+          gap: frame ? 26 : 0,
         }}
       >
-        {children}
+        {frame && (
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 500,
+            }}
+          >
+            <MakeFrame {...mergedFrameProps} />
+          </div>
+        )}
+
+        <div
+          style={{
+            width: '100%',
+            maxWidth: 1060,
+          }}
+        >
+          {children}
+        </div>
       </div>
 
-
-       </div>
-       
+      {/* 팝업 오버레이 */}
+      {showOutPopup && (
+        <div
+          onClick={() => setShowOutPopup(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.35)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <DilemmaOutPopup
+              onClose={() => setShowOutPopup(false)}
+              onLogout={() => {
+                setShowOutPopup(false);
+                navigate('/selectroom'); // ✅ 메인으로 이동
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

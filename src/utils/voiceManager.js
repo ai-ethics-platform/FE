@@ -29,32 +29,79 @@ class VoiceManager {
     this.usingWebRTCStream = false;
   }
 
+  // async uploadRecordingToServer(recordingData) {
+  //   try {
+  //     if (!recordingData?.blob || !recordingData.blob.size) {
+  //       console.warn('⚠️ 업로드할 녹음 데이터가 없습니다.');
+  //       return null;
+  //     }
+      
+  //     const sessId = this.sessionId || localStorage.getItem('session_id');
+  //     if (!sessId) {
+  //       console.error('❌ uploadRecordingToServer: session_id가 없습니다.');
+  //       return null;
+  //     }
+
+  //     const ts = new Date().toISOString().replace(/[:.]/g, '-');
+  //     const filename = `recording_${sessId}_${ts}.webm`;
+  //     const file = new File([recordingData.blob], filename, { type: 'audio/webm' });
+
+  //     const form = new FormData();
+  //     form.append('file', file);
+  //     const url = `/upload_audio`;
+
+  //     const { data } = await axiosInstance.post(url, form, {
+  //       maxBodyLength: Infinity,
+  //     });
+
+  //     console.log('✅ 업로드 성공:', data);
+  //     return data;
+  //   } catch (error) {
+  //     console.error('❌ 업로드 실패:', {
+  //       status: error.response?.status,
+  //       data: error.response?.data,
+  //       message: error.message,
+  //     });
+  //     return null;
+  //   }
+  // }
   async uploadRecordingToServer(recordingData) {
     try {
       if (!recordingData?.blob || !recordingData.blob.size) {
         console.warn('⚠️ 업로드할 녹음 데이터가 없습니다.');
         return null;
       }
-      
+  
       const sessId = this.sessionId || localStorage.getItem('session_id');
       if (!sessId) {
         console.error('❌ uploadRecordingToServer: session_id가 없습니다.');
         return null;
       }
-
+  
+      // 실제 blob 타입/확장자에 맞추기 (webm/ogg인 경우 그대로)
+      const blob = recordingData.blob;
+      const mime = blob.type || 'audio/webm';
+      const ext  = mime.includes('wav') ? 'wav'
+                 : mime.includes('webm') ? 'webm'
+                 : mime.includes('ogg') ? 'ogg'
+                 : 'bin';
+  
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
-      const filename = `recording_${sessId}_${ts}.webm`;
-      const file = new File([recordingData.blob], filename, { type: 'audio/webm' });
-
+      const file = new File([blob], `recording_${sessId}_${ts}.${ext}`, { type: mime });
+  
       const form = new FormData();
-      form.append('file', file);
-      const url = `/upload_audio`;
+      form.append('session_id', sessId); 
+      form.append('file', file);         
+  
+      // const { data } = await axiosInstance.post('/upload_audio', form, {
+      //   headers: { 'Content-Type': undefined },
+      //   maxBodyLength: Infinity,
+      // });
+      
+      const {data} = await axiosInstance.postForm('/upload_audio', form); // Content-Type 자동
 
-      const { data } = await axiosInstance.post(url, form, {
-        maxBodyLength: Infinity,
-      });
-
-      console.log('✅ 업로드 성공:', data);
+  
+      console.log(' 업로드 성공:', data);
       return data;
     } catch (error) {
       console.error('❌ 업로드 실패:', {
@@ -65,6 +112,7 @@ class VoiceManager {
       return null;
     }
   }
+  
 
   async leaveSession() {
     this.sessionId ||= localStorage.getItem('session_id');

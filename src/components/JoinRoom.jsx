@@ -10,19 +10,42 @@ export default function JoinRoom({ onClose }) {
   const [nickname, setNickname] = useState('');
   const navigate = useNavigate();
 
-  // 닉네임(username) 조회
-  useEffect(() => {
-    (async () => {
-      try {
+  // // 닉네임(username) 조회
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const { data: me } = await axiosInstance.get('/users/me');
+  //       // API 응답에서 username 필드를 닉네임으로 사용
+  //       setNickname(me.username || '');
+  //       localStorage.setItem('nickname',me.username);
+  //     } catch (err) {
+  //       console.error('❌ 유저 정보 로드 실패:', err);
+  //     }
+  //   })();
+  // }, []);
+  
+// 닉네임(username) 조회
+useEffect(() => {
+  (async () => {
+    try {
+      // 1. localStorage 먼저 확인
+      const storedNickname = localStorage.getItem('nickname');
+
+      if (storedNickname) {
+        // 있으면 그대로 state에 반영
+        setNickname(storedNickname);
+      } else {
+        // 없으면 API 호출
         const { data: me } = await axiosInstance.get('/users/me');
-        // API 응답에서 username 필드를 닉네임으로 사용
-        setNickname(me.username || '');
-        localStorage.setItem('nickname',me.username);
-      } catch (err) {
-        console.error('❌ 유저 정보 로드 실패:', err);
+        const nickname = me.username || '';
+        setNickname(nickname);
+        localStorage.setItem('nickname', nickname);
       }
-    })();
-  }, []);
+    } catch (err) {
+      console.error('❌ 유저 정보 로드 실패:', err);
+    }
+  })();
+}, []);
 
   const isValidCode = roomCode.length === 6;
 

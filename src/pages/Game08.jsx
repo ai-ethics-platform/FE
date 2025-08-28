@@ -69,14 +69,75 @@ export default function Game08() {
       ready: isConnected && webrtcInitialized
     });
   }, [isConnected, webrtcInitialized]);
-
-  // Build dynamic paragraphs based on localStorage
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-    const results = JSON.parse(localStorage.getItem('subtopicResults') ?? '{}');
-
+    const results   = JSON.parse(localStorage.getItem('subtopicResults') ?? '{}');
+    const category  = localStorage.getItem('category') || '안드로이드';
+    const isAWS     = category === '자율 무기 시스템';
+  
+    // agree면 왼쪽, disagree면 오른쪽 선택
+    const pick = (res, left, right) => (res === 'disagree' ? right : left);
+  
+    if (isAWS) {
+      // 결과 값
+      const rExplain  = results['AI 알고리즘 공개'];      // 동의/비동의
+      const rPower    = results['AWS의 권한'];           // 강화/제한 (agree/disagree로 저장됨)
+      const rZeroWar  = results['사람이 죽지 않는 전쟁']; // 그렇다/아니다 (agree/disagree)
+      const rRights   = results['AI의 권리와 책임'];      // 그렇다/아니다 (agree/disagree)
+      const rRegulate = results['AWS 규제'];             // 유지/제한 (agree/disagree)
+  
+      const has = (key) => completed.includes(key);
+  
+      // 1) 문장 1
+      let p1;
+      if (has('AI 알고리즘 공개') && has('AWS의 권한')) {
+        const safer    = pick(rExplain, '안전해', '책임 규명이 명확해');
+        const powerStr = pick(rPower, '강화되어 여러분의 동료처럼', '제한되어 인간의 보조 도구로서');
+        p1 = `여러분의 결정으로 자율 무기 시스템은 보다 ${safer}졌고, AWS의 권한은 ${powerStr} 제 역할을 다하고 있습니다.`;
+      } else if (has('AI 알고리즘 공개')) {
+        const safer = pick(rExplain, '안전해', '책임 규명이 명확해');
+        p1 = `여러분의 결정으로 자율 무기 시스템은 보다 ${safer}졌습니다.`;
+      } else {
+        // (명시 안된 경우의 안전한 기본)
+        p1 = '여러분의 결정으로 자율 무기 시스템은 변화의 기점에 서 있습니다.';
+      }
+  
+      // 2) 문장 2
+      let p2;
+      if (has('사람이 죽지 않는 전쟁') && has('AI의 권리와 책임')) {
+        const warPart    = pick(rZeroWar, '점점 AWS끼리만 일어나게 되었고', '여전히 인간 병력이 투입되고 있고');
+        const rightsPart = pick(rRights, '부여할 수 있다', '부여할 수 없다');
+        p2 = `국가 차원에서 전쟁은 ${warPart}, 자율 무기 시스템에 권리를 ${rightsPart}는 논의가 진행되고 있습니다.`;
+      } else if (has('사람이 죽지 않는 전쟁')) {
+        const warOnly = pick(rZeroWar, '점점 AWS끼리만 일어나게 되었습니다.', '여전히 인간 병력이 투입되고 있습니다.');
+        p2 = `국가 차원에서 전쟁은 ${warOnly}`;
+      } else {
+        p2 = '국가 차원에서도 여러 논의가 이어지고 있습니다.';
+      }
+  
+      // 3) 문장 3
+      let p3;
+      if (has('AWS 규제')) {
+        const worldFlow = pick(
+          rRegulate,
+          'AWS를 경쟁적으로 빠르게 발전시켜 나가고 있죠.',
+          'AWS 대신 AI를 활용한 다른 안보 기술이 모색되고 있죠.'
+        );
+        p3 = `그리고 세계는, ${worldFlow}`;
+      } else {
+        p3 = '그리고 세계는, 각자의 선택에 따라 새로운 안보 질서를 모색하고 있죠.';
+      }
+  
+      // 4) 문장 4
+      const p4 = '여러분이 선택한 가치가 모여 하나의 미래를 만들었습니다. 그 미래에 여러분은 함께할 준비가 되었나요?';
+  
+      setParagraphs([p1, p2, p3, p4]);
+      return;
+    }
+  
+    // ===== 안드로이드(기존 로직 그대로) =====
     // 1st
-    const ai = results['AI의 개인 정보 수집'];
+    const ai  = results['AI의 개인 정보 수집'];
     const and = results['안드로이드의 감정 표현'];
     let p1;
     if (completed.includes('AI의 개인 정보 수집') && completed.includes('안드로이드의 감정 표현')) {
@@ -99,12 +160,12 @@ export default function Game08() {
     }
     // 3rd
     const earth = results['지구, 인간, AI'];
-    let p3 = completed.includes('지구, 인간, AI')
+    const p3 = completed.includes('지구, 인간, AI')
       ? `그리고 세계는 지금, ${earth==='agree'?'기술적 발전을 조금 늦추었지만 \n 환경과 미래를 위해 나아가고 있죠':'기술적 편리함을 누리며 \n 점점 빠른 발전을 이루고 있죠'}.`
       : '그리고 세계는 지금, 기술적 발전을 조금 늦추었지만 환경과 미래를 위해 나아가고 있죠.';
     // 4th
     const p4 = '여러분이 선택한 가치가 모여 하나의 미래를 만들었습니다. \n 그 미래에 여러분은 함께할 준비가 되었나요?';
-
+  
     setParagraphs([p1, p2, p3, p4]);
   }, []);
 
@@ -115,15 +176,15 @@ const handleExit = async () => {
   console.log('🚪 게임 종료 시작');
   
   try {
-    // 🔍 STEP 1: 종료 전 상태 확인
+    //  STEP 1: 종료 전 상태 확인
     console.log('=== 종료 전 미디어 상태 확인 ===');
     await debugMediaState('종료 전');
     
-    // 🚨 STEP 2: 즉시 브라우저 레벨 강제 정리 (더미 스트림 없이!)
+    //  STEP 2: 즉시 브라우저 레벨 강제 정리 (더미 스트림 없이!)
     console.log('🚨 브라우저 레벨 즉시 강제 정리 시작...');
     await forceBrowserCleanupWithoutDummy();
     
-    // 🔍 STEP 3: 강제 정리 후 상태 확인
+    //  STEP 3: 강제 정리 후 상태 확인
     console.log('=== 강제 정리 후 상태 ===');
     await debugMediaState('강제 정리 후');
     
@@ -160,7 +221,7 @@ const handleExit = async () => {
       clearGameSession();
       console.log('✅ 모든 정리 작업 완료');
       
-      // 🚨 핵심: 더미 스트림 생성 없이 바로 페이지 이동
+      //  핵심: 더미 스트림 생성 없이 바로 페이지 이동
       console.log('🔄 페이지 즉시 이동...');
       window.location.href = '/';
       
@@ -175,7 +236,7 @@ const handleExit = async () => {
   }
 };
 
-// 🚨 핵심 수정: 더미 스트림 생성하지 않는 정리 함수
+//  핵심 수정: 더미 스트림 생성하지 않는 정리 함수
 const forceBrowserCleanupWithoutDummy = async () => {
   console.log('🚨 === 브라우저 레벨 강제 정리 시작 (더미 스트림 없이) ===');
   

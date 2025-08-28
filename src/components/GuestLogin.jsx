@@ -16,11 +16,14 @@ export default function GuestLogin({ onClose }) {
       const { data } = await axiosInstance.post('/auth/guest', {
         guest_id: guestId.trim(),
       });
-
+      
       const { access_token, refresh_token } = data;
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
-
+      localStorage.setItem('nickname', guestId.trim());
+      localStorage.setItem('user_id', guestId.trim());
+      localStorage.setItem('guest_id', guestId.trim());
+      localStorage.setItem('guest_mode',"true");
       console.log('로그인 성공:', data);
       navigate('/selectroom');
     } catch (err) {

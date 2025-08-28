@@ -43,34 +43,17 @@ export default function Game05() {
     setConnectionStatus(newStatus);
     console.log(' [Game05] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
-   useEffect(() => {
-      if (!isConnected) {
-        console.warn('❌ WebSocket 연결 끊김 감지됨');
-        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-        clearAllLocalStorageKeys();     
-        navigate('/');
-      }
-    }, [isConnected]);
+  //  useEffect(() => {
+  //     if (!isConnected) {
+  //       console.warn('❌ WebSocket 연결 끊김 감지됨');
+  //       alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+  //       clearAllLocalStorageKeys();     
+  //       navigate('/');
+  //     }
+  //   }, [isConnected]);
 
   const handleContinue = () => {
-    // if (!connectionStatus.ready) {
-    //   console.warn(' [Game05] 연결이 완전하지 않음:', connectionStatus);
-    //   alert('연결 상태를 확인하고 다시 시도해주세요.');
-    //   return;
-    // }
-  
-    // if (!isHost) {
-    //   alert('⚠️ 방장만 진행할 수 있습니다.');
-    //   return;
-    // }
-  
-    // const success = sendNextPage();
-    // if (success) {
-    //   console.log('[Game05] next_page 브로드캐스트 전송 성공');
-    // } else {
-    //   console.error(' [Game05] next_page 브로드캐스트 전송 실패');
-    //   alert('페이지 이동 신호 전송에 실패했습니다.');
-    // }
+
     navigate('/game05_1');
 
   };
@@ -119,7 +102,6 @@ export default function Game05() {
 
   return (
     <>
-     
       <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}  onBackClick={handleBackClick} >
   
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>

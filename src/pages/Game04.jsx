@@ -44,27 +44,22 @@ export default function Game04() {
       console.log('[Game04] 연결 상태 업데이트:', newStatus);
     }, [isConnected, webrtcInitialized]);
 
-   useEffect(() => {
-      if (!isConnected) {
-        console.warn('❌ WebSocket 연결 끊김 감지됨');
-        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-        clearAllLocalStorageKeys();     
-        navigate('/');
-      }
-    }, [isConnected]);
+  //  useEffect(() => {
+  //     if (!isConnected) {
+  //       console.warn('❌ WebSocket 연결 끊김 감지됨');
+  //       alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+  //       clearAllLocalStorageKeys();     
+  //       navigate('/');
+  //     }
+  //   }, [isConnected]);
 
   const myVote   = state?.agreement ?? null;
   const subtopic = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
   const roomCode = localStorage.getItem('room_code') ?? '';
   const [openProfile, setOpenProfile] = useState(null);
+  const category = localStorage.getItem('category') || '안드로이드';
+  const isAWS = category === '자율 무기 시스템';
 
-  // const [round, setRound] = useState(1);
-  // useEffect(() => {
-  //   const completed       = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-  //   const calculatedRound = completed.length + 1;
-  //   setRound(calculatedRound);
-  //   localStorage.setItem('currentRound', calculatedRound.toString());
-  // }, []);
    const [round, setRound] = useState(() => {
         const c = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
         return c.length + 1;
@@ -80,7 +75,7 @@ export default function Game04() {
   const [selectedMode, setSelectedMode] = useState(() => localStorage.getItem('mode') ?? null);
 
  
-  
+
 useEffect(() => {
   let attempt = 0;
   const maxAttempts = 5;
@@ -157,33 +152,61 @@ useEffect(() => {
     navigate('/game05');
 
   };
-  const currentSubtopic = localStorage.getItem('subtopic');
-  const subtopicMap = {
-    'AI의 개인 정보 수집': {
-      question: '24시간 개인정보 수집 업데이트에 동의하시겠습니까?',
-      labels: { agree: '동의', disagree: '비동의' }
-    },
-    '안드로이드의 감정 표현': {
-      question: '감정 엔진 업데이트에 동의하시겠습니까?',
-      labels: { agree: '동의', disagree: '비동의' }
-    },
-    '아이들을 위한 서비스': {
-      question: '가정용 로봇 사용에 대한 연령 규제가 필요할까요?',
-      labels: { agree: '규제 필요', disagree: '규제 불필요' }
-    },
-    '설명 가능한 AI': {
-      question: "'설명 가능한 AI' 개발을 기업에 의무화해야 할까요?",
-      labels: { agree: '의무화 필요', disagree: '의무화 불필요' }
-    },
-    '지구, 인간, AI': {
-      question: '세계적으로 가정용 로봇의 업그레이드 혹은 사용에 제한이 필요할까요?',
-      labels: { agree: '제한 필요', disagree: '제한 불필요' }
-    }
-  };
-
+ 
   const handleBackClick = () => {
-    navigate('/game03'); 
+    navigate('/game03');   
   };
+    const subtopicMapAndroid = {
+      'AI의 개인 정보 수집': {
+        question: '24시간 개인정보 수집 업데이트에 동의하시겠습니까?',
+        labels: { agree: '동의', disagree: '비동의' },
+      },
+      '안드로이드의 감정 표현': {
+        question: '감정 엔진 업데이트에 동의하시겠습니까?',
+        labels: { agree: '동의', disagree: '비동의' },
+      },
+      '아이들을 위한 서비스': {
+        question: '가정용 로봇 사용에 대한 연령 규제가 필요할까요?',
+        labels: { agree: '규제 필요', disagree: '규제 불필요' },
+      },
+      '설명 가능한 AI': {
+        question: "'설명 가능한 AI' 개발을 기업에 의무화해야 할까요?",
+        labels: { agree: '의무화 필요', disagree: '의무화 불필요' },
+      },
+      '지구, 인간, AI': {
+        question: '세계적으로 가정용 로봇의 업그레이드 혹은 사용에 제한이 필요할까요?',
+        labels: { agree: '제한 필요', disagree: '제한 불필요' },
+      },
+    };
+  
+    const subtopicMapAWS = {
+      'AI 알고리즘 공개': {
+        question: 'AWS의 판단 로그 및 알고리즘 구조 공개 요구에 동의하시겠습니까?',
+        labels: { agree: '동의', disagree: '비동의' },
+      },
+      'AWS의 권한': {
+        question: 'AWS의 권한을 강화해야 할까요? 제한해야 할까요?',
+        labels: { agree: '강화', disagree: '제한' },
+      },
+      '사람이 죽지 않는 전쟁': {
+        question: '사람이 죽지 않는 전쟁을 평화라고 할 수 있을까요?',
+        labels: { agree: '그렇다', disagree: '아니다' },
+      },
+      'AI의 권리와 책임': {
+        question: 'AWS에게, 인간처럼 권리를 부여할 수 있을까요?',
+        labels: { agree: '그렇다', disagree: '아니다' },
+      },
+      'AWS 규제': {
+        question:
+          'AWS는 국제 사회에서 계속 유지되어야 할까요, 아니면 글로벌 규제를 통해 제한되어야 할까요?',
+        labels: { agree: '유지', disagree: '제한' },
+      },
+    };
+  
+    // 최종 사용 맵
+    const currentSubtopic = subtopic; // 이미 위에서 읽은 값 재사용
+    const subtopicMap = isAWS ? subtopicMapAWS : subtopicMapAndroid;
+  
   return (
     <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}  onBackClick={handleBackClick}  >
           <div style={{

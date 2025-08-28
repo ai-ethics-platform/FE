@@ -9,6 +9,10 @@ export const Colors = {
     componentBackgroundFloat: '#FCFDFA',
     dim: 'rgba(0, 0, 0, 0.25)',
     systemRed: '#9E2D2F',
+    CreatorPrimary:'#BB4E2D',
+    CreatorLight:'#F09F86',
+    CreatorDark:'#993516',
+    CreatorGradient: 'linear-gradient(135deg, #BB4E2D 0%, #993516 100%)',
 
   // Greyscale
     grey01: '#E6ECEF',
@@ -18,6 +22,14 @@ export const Colors = {
     grey05: '#788388',
     grey06: '#444F55',
     grey07: '#252C30',
+
+    creatorgrey01:'#F2EEED',
+    creatorgrey02:'#E4DCDA',
+    creatorgrey03:'#CEC8C6',
+    creatorgrey04:'#B3A7A4',
+    creatorgrey05:'#887E7A',
+    creatorgrey06:'#524844',
+    creatorgrey07:'#2F2725',
 
   // Players
     player1P: '#8A6262',

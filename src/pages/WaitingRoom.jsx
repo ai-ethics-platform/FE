@@ -1,4 +1,4 @@
-// 수정할 것 - 마이크 팝업 페이지 음성 키기, category, 비공개, 공개 수정하기 
+// 게스트 로그인 부분 nickname 수정해야됨 
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -33,6 +33,11 @@ export default function WaitingRoom() {
       setTimeout(() => setCopied(false), 1000); // 1초 후 사라짐
     });
   };
+  const setCategoryFromRoom = (room) => {
+    if (room && typeof room.title === 'string' && room.title.length > 0) {
+      localStorage.setItem('category', room.title);
+    }
+  };
   //  useRef로 폴링 타이머 ID 관리
   const pollingIntervalRef = useRef(null);
 
@@ -62,30 +67,41 @@ export default function WaitingRoom() {
   const room_code = localStorage.getItem('room_code');
 
   // A) 초기 데이터 로드 - 내 정보 조회
-  const loadMyInfo = async () => {
-    try {
+const loadMyInfo = async () => {
+  try {
+    // 1. 로컬 스토리지에서 닉네임 먼저 확인
+    let nickname = localStorage.getItem('nickname');
+    let myUserId = localStorage.getItem('user_id');
+
+    if (!nickname || !myUserId) {
+      // 2. 없으면 API 호출
       const { data: userInfo } = await axiosInstance.get('/users/me');
-      const myUserId = userInfo.id;
-      const nickname = userInfo.username || `Player_${myUserId}`;
-      
+      myUserId = userInfo.id;
+      nickname = userInfo.username || `Player_${myUserId}`;
+
+      // 3. 로컬 스토리지에 저장
       localStorage.setItem('nickname', nickname);
       localStorage.setItem('user_id', myUserId);
-      
-      setMyPlayerId(String(myUserId));
-      
-      return myUserId;
-    } catch (err) {
-      console.error(`내 정보 로드 실패:`, err);
-      return null;
     }
-  };
+
+    // 4. state 업데이트
+    setMyPlayerId(String(myUserId));
+
+    return myUserId;
+  } catch (err) {
+    console.error(`내 정보 로드 실패:`, err);
+    return null;
+  }
+};
+
 
   // B) participants 로드 및 역할 배정 확인
   const loadParticipants = async () => {
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
       console.log(`API 응답:`, room);
-      
+      setCategoryFromRoom(room);
+
       setParticipants(room.participants);
       
       const hostUserId = room.created_by;
@@ -389,11 +405,7 @@ export default function WaitingRoom() {
       }
       
       const isHost = String(myUserId) === String(loadedHostUserId);
-      // console.log(`사용자 역할 확인:`, { 
-      //   myUserId, 
-      //   hostUserId: loadedHostUserId, 
-      //   isHost: isHost ? '방장' : '일반 유저' 
-      // });
+     
       
       if (checkIfRolesAlreadyAssigned()) {
         setHasAssignedRoles(true);
@@ -468,14 +480,7 @@ export default function WaitingRoom() {
   };
 
   const getOrderedPlayers = () => {
-    // console.log(`getOrderedPlayers 호출:`, {
-    //   myPlayerId,
-    //   participantsLength: participants.length,
-    //   assignmentsLength: assignments.length,
-    //   participants: participants.map(p => ({ user_id: p.user_id, nickname: p.nickname })),
-    //   assignments: assignments.map(a => ({ player_id: a.player_id, role_id: a.role_id }))
-    // });
-
+  
     // participants가 있으면 항상 3명을 표시 (assignments가 없어도)
     if (!myPlayerId || participants.length !== 3) {
       const playerIds = participants.map(p => p.user_id);
@@ -493,12 +498,6 @@ export default function WaitingRoom() {
       otherPlayerIds[1]  // 오른쪽
     ].filter(Boolean);
     
-    // console.log(`최종 플레이어 순서:`, {
-    //   left: otherPlayerIds[0],
-    //   center: myPlayerId,
-    //   right: otherPlayerIds[1],
-    //   result: orderedPlayers
-    // });
 
     return orderedPlayers;
   };
@@ -547,52 +546,7 @@ export default function WaitingRoom() {
 
   return (
     <Background bgIndex={2}>
-      {/* 디버깅 정보 */}
-      {/* <div style={{
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
-        background: 'rgba(0,0,0,0.8)',
-        color: 'white',
-        padding: '12px',
-        borderRadius: '6px',
-        fontSize: '11px',
-        zIndex: 1000,
-        maxWidth: '350px',
-        fontFamily: 'monospace'
-      }}>
-        <div style={{color: isPolling ? '#00ff00' : '#ff0000'}}>
-          폴링: {isPolling ? '✅ 실행중' : '❌ 중지'}
-        </div>
-        <div style={{color: '#ffff00'}}>👥 참가자: {participants.length}/3</div>
-        <div style={{color: '#00ffff'}}>👤 내 ID: {myPlayerId}</div>
-        <div style={{color: '#ff00ff'}}>👑 호스트 ID: {hostUserId}</div>
-        <div style={{color: myPlayerId === hostUserId ? '#00ff00' : '#ff0000'}}>
-          🎯 방장: {myPlayerId === hostUserId ? 'YES' : 'NO'}
-        </div>
-        <div style={{color: hasAssignedRoles ? '#00ff00' : '#ff0000'}}>
-          🎭 역할배정: {hasAssignedRoles ? 'DONE' : myPlayerId === hostUserId ? 'HOST_PENDING' : 'POLLING'}
-        </div>
-        <div>🎪 내 역할: {localStorage.getItem('myrole_id') || 'NONE'}</div>
-        <div>👑 호스트 역할: {localStorage.getItem('host_id') || 'NONE'}</div>
-        <div>✅ 준비완료: {participants.filter(p => p.is_ready).length}/3</div>
-        <div>🔄 업데이트 중: {isUpdating ? 'YES' : 'NO'}</div>
-        <div>📊 Assignments: {assignments.length}</div>
-        <div>🎯 현재 순서: {getOrderedPlayers().join(', ')}</div>
-        
-        <div style={{ 
-          fontSize: '10px', 
-          marginTop: '8px', 
-          borderTop: '1px solid #555', 
-          paddingTop: '5px',
-          color: '#cccccc'
-        }}>
-          <div> LocalStorage:</div>
-          <div>role1: {localStorage.getItem('role1_user_id') || 'NULL'}</div>
-          <div>role2: {localStorage.getItem('role2_user_id') || 'NULL'}</div>
-          <div>role3: {localStorage.getItem('role3_user_id') || 'NULL'}</div>
-        </div>
-      </div> */}
+    
 
       {/* 뒤로 가기 */}
       <div
@@ -723,27 +677,13 @@ export default function WaitingRoom() {
         boxSizing: 'border-box'
       }}>
         {getOrderedPlayers().map((id, idx) => {
-          // console.log(`StatusCard 렌더링:`, {
-          //   id,
-          //   idx,
-          //   myPlayerId,
-          //   isMe: String(id) === String(myPlayerId),
-          //   hostUserId
-          // });
+         
           
           const assign = assignments.find(a => String(a.player_id) === String(id));
           const isOwner = String(id) === String(hostUserId);
           const isMe = String(id) === String(myPlayerId);
           
-          // console.log(`StatusCard ${idx} 상세:`, {
-          //   id,
-          //   assign,
-          //   isOwner,
-          //   isMe,
-          //   roleId: assign?.role_id,
-          //   statusIndex: isMe ? myStatusIndex : statusIndexMap[String(id)] || 0
-          // });
-          
+       
           return (
             <div key={id} style={{ transform: `scale(${idx === 1 ? 1 : 0.9})` }}>
               <StatusCard
@@ -751,21 +691,7 @@ export default function WaitingRoom() {
                 isOwner={isOwner}
                 isMe={isMe}
                 roleId={assign?.role_id}
-                // statusIndex={isMe
-                //   ? myStatusIndex
-                //   : statusIndexMap[String(id)] || 0}
-                // //onContinueClick={() => setShowMicPopup(true)}
-                // onContinueClick={() => {
-                //   console.log('버튼 눌림', { isReady, myStatusIndex });
-                //   if (!isMe) return;
-                //   if (isReady) {
-                //     console.log('➡ 준비 취소 팝업 띄우기');
-                //     setShowCancelPopup(true);
-                //   } else {
-                //     console.log('➡ 마이크 팝업 띄우기');
-                //     setShowMicPopup(true);
-                //   }
-                // }}
+              
                 statusIndex={
                   isMe
                           ? myStatusIndex

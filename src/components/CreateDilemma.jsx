@@ -1,3 +1,5 @@
+// 수정할 것 
+// 챗봇 완성 시 챗봇 api를 연결할 수 있는 페이지로 연결하도록 수정해야함
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
@@ -11,8 +13,9 @@ export default function CreateDilemma({ onClose }) {
  const [name, setName] = useState('');
   const [school, setSchool] = useState('');
   const [email, setEmail] = useState('');
+  // 수정 필요 
   const handleCreateDilemma = async () => {
-    navigate('/create01');
+    navigate('/create00');
   };
 
  

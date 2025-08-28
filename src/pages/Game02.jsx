@@ -47,17 +47,18 @@ export default function Game02() {
   
       console.log('[game02] 연결 상태 업데이트:', newStatus);
     }, [isConnected, webrtcInitialized]);
-   useEffect(() => {
-      if (!isConnected) {
-        console.warn('❌ WebSocket 연결 끊김 감지됨');
-        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-        clearAllLocalStorageKeys();     
-        navigate('/');
-      }
-    }, [isConnected]);
+  //  useEffect(() => {
+  //     if (!isConnected) {
+  //       console.warn('❌ WebSocket 연결 끊김 감지됨');
+  //       alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+  //       clearAllLocalStorageKeys();     
+  //       navigate('/');
+  //     }
+  //   }, [isConnected]);
+
   // 로컬 설정
-  const category = localStorage.getItem('category') ?? '안드로이드';
-  const subtopic = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
+  const category = localStorage.getItem('category');
+  const subtopic = localStorage.getItem('subtopic');
   const mode = localStorage.getItem('mode') ?? 'neutral';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex')) || 0;  
   const roomCode = localStorage.getItem('room_code');

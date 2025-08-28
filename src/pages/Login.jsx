@@ -134,17 +134,17 @@ export default function Login() {
                 form.append('username', username);
                 form.append('password', password);
              
-                // const response = await axios.post('https://dilemmai.org/auth/login', form, {
-                //   headers: {
-                //     'Content-Type': 'application/x-www-form-urlencoded',
-                //   },
-                // });
+                const response = await axios.post('https://dilemmai.org/auth/login', form, {
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                });
                
-                const response = await axios.post(
-                  'https://dilemmai.org/auth/login-json',
-                  { username, password },                          // JSON 바디
-                  { headers: { 'Content-Type': 'application/json' } }
-                );            
+                // const response = await axios.post(
+                //   'https://dilemmai.org/auth/login-json',
+                //   { username, password },                          // JSON 바디
+                //   { headers: { 'Content-Type': 'application/json' } }
+                // );            
                
                 const { access_token, refresh_token } = response.data;
 

@@ -63,29 +63,30 @@ export default function GameIntro() {
   const connectionEstablishedRef = useRef(false);
   const initMessageSentRef = useRef(false);
   const sendMessageRef = useRef(null);
-
-  const fullText =
+  const category = localStorage.getItem('category') || '안드로이드';
+const isAWS = category === '자율 무기 시스템';
+// 안드로이드용 텍스트 (기존 그대로)
+const ANDROID_TEXT =
   `          지금은 20XX년, 국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
   `    이 로봇의 기능은 아래와 같습니다.\n\n` +
   `     • 가족의 감정, 건강 상태, 생활 습관 등을 입력하면\n 맞춤형 알림, 식단 제안 등의 서비스를 제공\n\n` +
   `     • 기타 업데이트 시 정교화된 서비스 추가 가능`;
+
+// 자율 무기 시스템용 텍스트 (요청하신 문구)
+const AWS_TEXT =
+  `로봇 개발사 A가 자율 무기 시스템(Autonomous Weapon Systems, AWS)을 개발 중입니다.\n` +
+  `이 로봇의 기능은 아래와 같습니다.\n\n` +
+  `실시간 데이터 수집 및 분석\n` +
+  `인간 병사의 개입 없이 자동화된 의사결정 시스템으로 운영\n` +
+  `적군과 비전투원 구별\n` +
+  `목표를 선정해 정밀 타격 수행 가능`;
+  const fullText = isAWS ? AWS_TEXT : ANDROID_TEXT;
+
   const { isHost, sendNextPage } = useHostActions();
   
   useWebSocketNavigation(navigate, {
     nextPagePath: '/selecthomemate'
   });
-    // useEffect(() => {
-  //   const handlerId = "on-next-page";
-  //   const onMessage = (msg) => {
-  //     if (msg.type === "next_page") {
-  //       console.log(`➡️ [GameIntro-${clientId}] next_page 수신 → 페이지 이동`);
-  //       navigate("/selecthomemate");
-  //     }
-  //   };
-  
-  //   addMessageHandler(handlerId, onMessage);
-  //   return () => removeMessageHandler(handlerId);
-  // }, [addMessageHandler, removeMessageHandler, navigate, clientId]);
   
   useEffect(() => {
     sendMessageRef.current = sendMessage;

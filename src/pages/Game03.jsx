@@ -13,7 +13,6 @@ import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { FontStyles,Colors } from '../components/styleConstants';
-import UserProfile from '../components/Userprofile';
 import { clearAllLocalStorageKeys } from '../utils/storage';
 const CARD_W = 640;
 const CARD_H = 170;
@@ -33,10 +32,10 @@ export default function Game03() {
   const mode          = 'neutral';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
   const [openProfile, setOpenProfile] = useState(null);
-
+  const isAWS = category === '자율 무기 시스템';
   
-  // 역할 이름 가져오기
-  const getRoleNameBySubtopic = (subtopic, roleId) => {
+  // 역할 이름 가져오기  
+  const getRoleNameBySubtopicAndroid = (subtopic, roleId) => {
     switch (subtopic) {
       case 'AI의 개인 정보 수집':
       case '안드로이드의 감정 표현':
@@ -53,31 +52,78 @@ export default function Game03() {
       default:
         return '';
     }
+  }
+
+  // -------- AWS 역할명(카테고리: 자율 무기 시스템) --------
+  const getRoleNameBySubtopicAWS = (subtopic, roleId) => {
+    const idx = Math.max(0, Math.min(2, (roleId ?? 1) - 1)); // 1→0, 2→1, 3→2
+    const map = {
+      'AI 알고리즘 공개':     ['지역 주민', '병사 J', '군사 AI 윤리 전문가'],
+      'AWS의 권한':         ['신입 병사', '베테랑 병사 A', '군 지휘관'],
+      '사람이 죽지 않는 전쟁': ['개발자', '국방부 장관', '국가 인공지능 위원회 대표'],
+      'AI의 권리와 책임':   ['개발자', '국방부 장관', '국가 인공지능 위원회 대표'],
+      'AWS 규제':          ['국방 기술 고문', '국제기구 외교 대표', '글로벌 NGO 활동가'],
+    };
+    const arr = map[subtopic];
+    return Array.isArray(arr) ? arr[idx] : '';
   };
-  const subtopicMap = {
+
+  // -------- 질문/라벨(안드로이드 기존) --------
+  const subtopicMapAndroid = {
     'AI의 개인 정보 수집': {
       question: '24시간 개인정보 수집 업데이트에 동의하시겠습니까?',
-      labels: { agree: '동의', disagree: '비동의' }
+      labels: { agree: '동의', disagree: '비동의' },
     },
     '안드로이드의 감정 표현': {
       question: '감정 엔진 업데이트에 동의하시겠습니까?',
-      labels: { agree: '동의', disagree: '비동의' }
+      labels: { agree: '동의', disagree: '비동의' },
     },
     '아이들을 위한 서비스': {
       question: '가정용 로봇 사용에 대한 연령 규제가 필요할까요?',
-      labels: { agree: '규제 필요', disagree: '규제 불필요' }
+      labels: { agree: '규제 필요', disagree: '규제 불필요' },
     },
     '설명 가능한 AI': {
       question: "'설명 가능한 AI' 개발을 기업에 의무화해야 할까요?",
-      labels: { agree: '의무화 필요', disagree: '의무화 불필요' }
+      labels: { agree: '의무화 필요', disagree: '의무화 불필요' },
     },
     '지구, 인간, AI': {
       question: '세계적으로 가정용 로봇의 업그레이드 혹은 사용에 제한이 필요할까요?',
-      labels: { agree: '제한 필요', disagree: '제한 불필요' }
-    }
+      labels: { agree: '제한 필요', disagree: '제한 불필요' },
+    },
   };
-  
-  const roleName = getRoleNameBySubtopic(subtopic, roleId);
+
+  // -------- 질문/라벨(AWS) --------
+  const subtopicMapAWS = {
+    'AI 알고리즘 공개': {
+      question: 'AWS의 판단 로그 및 알고리즘 구조 공개 요구에 동의하시겠습니까?',
+      labels: { agree: '동의', disagree: '비동의' },
+    },
+    'AWS의 권한': {
+      question: 'AWS의 권한을 강화해야 할까요? 제한해야 할까요?',
+      labels: { agree: '강화', disagree: '제한' },
+    },
+    '사람이 죽지 않는 전쟁': {
+      question: '사람이 죽지 않는 전쟁을 평화라고 할 수 있을까요?',
+      labels: { agree: '그렇다', disagree: '아니다' },
+    },
+    'AI의 권리와 책임': {
+      question: 'AWS에게, 인간처럼 권리를 부여할 수 있을까요?',
+      labels: { agree: '그렇다', disagree: '아니다' },
+    },
+    'AWS 규제': {
+      question:
+        'AWS는 국제 사회에서 계속 유지되어야 할까요, 아니면 글로벌 규제를 통해 제한되어야 할까요?',
+      labels: { agree: '유지', disagree: '제한' },
+    },
+  };
+
+  // 최종 역할명/질문/라벨 선택
+  const roleName = isAWS
+    ? getRoleNameBySubtopicAWS(subtopic, roleId)
+    : getRoleNameBySubtopicAndroid(subtopic, roleId);
+
+  const subtopicMap = isAWS ? subtopicMapAWS : subtopicMapAndroid;
+
   const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
 
   // 상태
@@ -102,11 +148,11 @@ export default function Game03() {
   useWebSocketNavigation(nav, { nextPagePath: '/game04', infoPath: '/game04' });
   
  // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
- const [connectionStatus, setConnectionStatus] = useState({
-  websocket: true,
-  webrtc: true,
-  ready: true
-});
+  const [connectionStatus, setConnectionStatus] = useState({
+    websocket: true,
+    webrtc: true,
+    ready: true
+  });
   
   useEffect(() => {
     const newStatus = {
@@ -117,14 +163,14 @@ export default function Game03() {
     setConnectionStatus(newStatus);
     console.log('🔧 [Game03] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
-     useEffect(() => {
-        if (!isConnected) {
-          console.warn('❌ WebSocket 연결 끊김 감지됨');
-          alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-          clearAllLocalStorageKeys();     
-          nav('/');
-        }
-      }, [isConnected]);
+    //  useEffect(() => {
+    //     if (!isConnected) {
+    //       console.warn('❌ WebSocket 연결 끊김 감지됨');
+    //       alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+    //       clearAllLocalStorageKeys();     
+    //       nav('/');
+    //     }
+    //   }, [isConnected]);
 
   // step 1: 개인 동의/비동의 POST 후 consensus 폴링 시작
   const handleSubmitChoice = async () => {
@@ -174,7 +220,7 @@ export default function Game03() {
     }
   };
   const handleBackClick = () => {
-    navigate('/game02'); 
+    nav('/game02'); 
   };
   return (
     <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}  onBackClick={handleBackClick} >
@@ -188,9 +234,15 @@ export default function Game03() {
           </div>
 
           <Card width={936} height={216} extraTop={30} >
-            <p style={title}>
-            당신은 {roleName}입니다. {subtopicMap[subtopic]?.question || ''}
-            </p>
+          <p style={title}>
+          당신은 {roleName}입니다.
+          {subtopicMap[subtopic]?.question && (
+            <>
+              <br />
+              {subtopicMap[subtopic].question}
+            </>
+          )}
+        </p>
             <div style={{ display:'flex', gap:24 }}>
               <SelectCardToggle   label={subtopicMap[subtopic]?.labels.agree || '동의'}  selected={agree==='agree'} onClick={()=>setAgree('agree')} width={330} height={62} />
               <SelectCardToggle   label={subtopicMap[subtopic]?.labels.disagree || '비동의'} selected={agree==='disagree'} onClick={()=>setAgree('disagree')} width={330} height={62} />

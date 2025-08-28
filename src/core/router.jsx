@@ -22,6 +22,7 @@ import Game09 from "../pages/Game09";
 import CD1 from "../pages/CD1";
 import CD2 from "../pages/CD2";
 import CD3 from "../pages/CD3";
+import CD_all from "../pages/CD_all";
 import GameMap from "../pages/GameMap";
 import WebSocketProvider from "../WebSocketProvider";
 import WebRTCProvider from "../WebRTCProvider"; 
@@ -73,6 +74,8 @@ function GameRoutes() {
           <Route path="/character_description2" element={<CD2 />} />
           <Route path="/character_description3" element={<CD3 />} />
           <Route path="/gamemap" element={<GameMap />} />
+          <Route path="/character_all" element={<CD_all />} />
+
         </Routes>
       </WebRTCProvider>
     </WebSocketProvider>

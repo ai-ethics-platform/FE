@@ -21,6 +21,7 @@ import AWS_2 from "../assets/2player_AWS_2.svg";
 import AWS_3 from "../assets/2player_AWS_3.svg";
 import AWS_4 from "../assets/2player_AWS_4.svg";
 import AWS_5 from "../assets/2player_AWS_5.svg";
+
 import axiosInstance from '../api/axiosInstance';
 
 export default function CD2() {
@@ -176,7 +177,7 @@ export default function CD2() {
   const paragraphs = resolveParagraphs(rawParagraphs, mateName);
 
   const handleContinue = () => {
-    navigate('/game02');
+    navigate('/character_all');
     // if (isHost) sendNextPage();
     // else alert('⚠️ 방장만 진행할 수 있습니다.');
   };

@@ -195,7 +195,7 @@ export default function CD1() {
   const paragraphs = resolveParagraphs(rawParagraphs, mateName);
 
   const handleContinue = () => {
-    navigate('/game02');
+    navigate('/character_all');
     // if (isHost) sendNextPage();
     // else alert('⚠️ 방장만 진행할 수 있습니다.');
   };

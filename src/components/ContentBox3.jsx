@@ -37,7 +37,7 @@ const typedText = useTypingEffect(text, typingSpeed);
         justifyContent: 'center',   
         textAlign: 'center',
         wordBreak: 'keep-all',
-        whiteSpace: 'normal',
+        whiteSpace: 'pre-line',
         maxWidth: 700,
         padding: '40px 60px',
         zIndex: 1,

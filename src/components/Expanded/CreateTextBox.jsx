@@ -13,7 +13,7 @@ export default function ContentTextBox2({
   onContinue,
   disabled = false,
   continueLabel = '다음',
-  maxWidth = 650,
+  maxWidth = 700,
   framePadding = 12,       // ✅ 프레임 안쪽 여백(=축소 효과)
 }) {
   const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };

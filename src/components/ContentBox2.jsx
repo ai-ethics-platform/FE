@@ -36,7 +36,7 @@ export default function ContentBox2({ text, typingSpeed = 70 }) {
         justifyContent: 'center',   
         textAlign: 'center',
         wordBreak: 'keep-all',
-        whiteSpace: 'normal',
+        whiteSpace: 'pre-line',
         maxWidth: 600,
         padding: '40px 60px',
         zIndex: 1,

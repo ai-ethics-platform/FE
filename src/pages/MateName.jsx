@@ -286,6 +286,8 @@ import { useWebSocket } from '../WebSocketProvider';
 import { Colors, FontStyles } from "../components/styleConstants";
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 
+import hostInfoSvg from '../assets/host_info.svg';
+
 export default function MateName() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -422,6 +424,23 @@ useEffect(() => {
 
   return (
     <Background bgIndex={2}>
+        <div 
+              style={{
+                  position: 'absolute',
+                  top:'-105px',
+                  right: '0px', // 화면에서 우측 20px
+                  zIndex: 10, // 다른 요소들 위에 배치
+                }}
+              >
+                <img 
+                  src={hostInfoSvg} 
+                  alt="Host Info"
+                  style={{
+                    width: '300px', // 크기 설정 (필요에 따라 조정)
+                    height: '300px', // 크기 설정 (필요에 따라 조정)
+                  }}
+                />
+      </div>
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
         {/* 사이드 프로필 */}
         <div style={{ position: 'fixed', top: '32.5%', left: 0, transform: 'translateY(-50%)', width: 220, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start' }}>

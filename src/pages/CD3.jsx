@@ -183,7 +183,7 @@ export default function CD3() {
         <div style={{ width: '100%', maxWidth: 900 }}>
           <ContentTextBox
             paragraphs={paragraphs}
-            onContinue={() => navigate('/game02')}
+            onContinue={() => navigate('/character_all')}
           />
         </div>
       </div>

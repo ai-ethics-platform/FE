@@ -134,7 +134,7 @@ export default function Game02() {
     navigate(`/game03`);
   }
   const handleBackClick = () => {
-    navigate(`/character_description${myRoleId}`);  };
+    navigate(`/character_all`);  };
 
   return (
     <>

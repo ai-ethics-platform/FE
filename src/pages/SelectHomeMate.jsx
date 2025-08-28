@@ -24,12 +24,13 @@ import {
 import { FontStyles,Colors } from '../components/styleConstants';
 import HostCheck1 from '../components/HostCheck1';
 
+import hostInfoSvg from '../assets/host_info.svg';
+
 export default function SelectHomeMate() {
   const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(null);
   const [hostId, setHostId] = useState(null);
   const [myRoleId, setMyRoleId] = useState(null);
-  const [showPopup, setShowPopup] = useState(false);
   const [category, setCategory] = useState(null);
 
   // round 계산 (기본값 그대로)
@@ -248,9 +249,24 @@ export default function SelectHomeMate() {
 
   return (
     <Background bgIndex={2}>
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
-       
-
+      <div 
+          style={{
+            position: 'absolute',
+            top:'-105px',
+            right: '0px', 
+            zIndex: 10, 
+          }}
+        >
+          <img 
+            src={hostInfoSvg} 
+            alt="Host Info"
+            style={{
+              width: '300px', 
+              height: '300px', 
+            }}
+          />
+        </div>
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>      
         <div style={{
           position: 'fixed',
           top: '32.5%',
@@ -323,23 +339,6 @@ export default function SelectHomeMate() {
           </div>
         </div>
       </div>
-      
-      {showPopup && (
-        <div style={{ 
-          position: 'fixed', 
-          inset: 0, 
-          background: 'rgba(0,0,0,0.4)', 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          zIndex: 1000 
-        }}>
-          <HostCheck1
-            onClose={() => setShowPopup(false)}
-            activeIndex={activeIndex}
-          />
-        </div>
-      )}
     </Background>
   );
 }

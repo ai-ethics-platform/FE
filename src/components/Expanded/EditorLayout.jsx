@@ -7,7 +7,7 @@ import { Colors } from '../styleConstants';
 import HeaderBar1 from './HeaderBar';
 import HeaderBar2 from './HeaderBar2';
 import MakeFrame from './MakeFrameGreen';
-import UserProfile from '../UserProfile';
+import UserProfile from '../Userprofile';
 import bg2Default from '../../assets/images/bg2.png';
 import NextGreen from "../NextOrange";
 import BackOrange from "./BackOrange";

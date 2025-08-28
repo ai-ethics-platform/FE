@@ -54,7 +54,6 @@ export default function CreatorContentBox({ text, topicText,typingSpeed = 70 }) 
         textAlign: 'center',
         wordBreak: 'keep-all',
         whiteSpace: 'normal',
-        whiteSpace: 'pre-line',
         maxWidth: 600,
         padding: '20px 30px',
         zIndex: 1,

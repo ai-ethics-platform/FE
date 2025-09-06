@@ -25,8 +25,11 @@ export default function Editor08() {
   const MEDIA_WIDTH = 280;
   const MEDIA_HEIGHT = 200;
 
-  const QUESTION_TEXT =
-    '당신은 운전자 K입니다. 자율주행자동차의 정확성을 우선시해야 할까요?';
+  const descFromLocal =localStorage.getItem('question');
+  const agree_label =localStorage.getItem('agree_label');
+  const disagree_label =localStorage.getItem('disagree_label');
+
+  const [question, setQuestion] = useState([descFromLocal ]);
 
   // 공통 라벨 스타일 (질문/동의/비동의 모두 동일 톤)
   const labelBoxStyle = {
@@ -99,7 +102,7 @@ export default function Editor08() {
           {/* 질문 + 선택지 카드 */}
           <Card width={740} height={160} extraTop={10} style={{ marginInline: 'auto' }}>
           {/* 중앙 흰 박스 (질문) */}
-            <div style={labelBoxStyle}>{QUESTION_TEXT}</div>
+            <div style={labelBoxStyle}>{question}</div>
 
             {/* 동의 / 비동의 */}
             <div style={{ display: 'flex', gap: 24 }}>
@@ -114,7 +117,7 @@ export default function Editor08() {
                     transform: 'translateX(-50%)',
                   }}
                 >
-                  동의
+                  {agree_label}
                 </div>
                 <SelectCardToggle
                   label={''}               // ← 내부 라벨 사용 안 함
@@ -136,7 +139,7 @@ export default function Editor08() {
                     transform: 'translateX(-50%)',
                   }}
                 >
-                  비동의
+                  {disagree_label}
                 </div>
                 <SelectCardToggle
                   label={''}

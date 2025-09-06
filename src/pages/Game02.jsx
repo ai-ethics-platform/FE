@@ -134,7 +134,8 @@ export default function Game02() {
     navigate(`/game03`);
   }
   const handleBackClick = () => {
-    navigate(`/character_all`);  };
+    navigate(`/character_all`);  
+  };
 
   return (
     <>

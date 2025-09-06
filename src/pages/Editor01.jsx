@@ -14,13 +14,24 @@ export default function Editor01() {
   const [image, setImage] = useState(null);
   const [isDefaultImage, setIsDefaultImage] = useState(true);
 
-  // 예시 텍스트
-  const paragraphs = [
-    { main: '자율 주행 자동차는 도로 위에서 다양한 상황을 처리해야 합니다.' },
-    { main: '예를 들어, 자율 주행 자동차가 한 보행자를 인식하고 멈추는 과정에서, 높은 정확성을 가진 알고리즘이 필요한데, 이 알고리즘은 사람의 행동을 예측하고 그에 따라 반응해야 합니다.' },
-    { main: '하지만 이 알고리즘이 너무 복잡하면, 왜 특정한 행동을 했는지 설명할 수 없게 됩니다.' },
-  ];
-
+  // // 예시 텍스트
+  // const paragraphs = [
+  //   { main: '자율 주행 자동차는 도로 위에서 다양한 상황을 처리해야 합니다.' },
+  //   { main: '예를 들어, 자율 주행 자동차가 한 보행자를 인식하고 멈추는 과정에서, 높은 정확성을 가진 알고리즘이 필요한데, 이 알고리즘은 사람의 행동을 예측하고 그에 따라 반응해야 합니다.' },
+  //   { main: '하지만 이 알고리즘이 너무 복잡하면, 왜 특정한 행동을 했는지 설명할 수 없게 됩니다.' },
+  // ];
+  let paragraphs = [];
+  try {
+    const raw = localStorage.getItem('opening'); // '["문장1.","문장2.","문장3."]'
+    const arr = raw ? JSON.parse(raw) : [];      // ["문장1.","문장2.","문장3."]
+  
+    paragraphs = arr.map((txt) => ({
+      main: txt ?? null,
+    }));
+  } catch (e) {
+    console.error("opening 파싱 실패:", e);
+    paragraphs = [];
+  }
   // 이미지 변경
   const handleImageChange = () => {
     const input = document.createElement('input');

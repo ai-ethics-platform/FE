@@ -6,13 +6,13 @@ import { Colors, FontStyles } from '../components/styleConstants';
 import endingFrame from '../assets/creatorendingbox.svg';
 import Continue3 from '../components/Continue3';
 import DilemmaDonePopUp from '../components/Expanded/DilemmaDonePopUp';
-
+import axiosInstance from "../api/axiosInstance";
 export default function Editor10() {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState(localStorage.getItem('creatorTitle') || '');
   const [endingText] = useState(
-    localStorage.getItem('agreeEnding') );
+    localStorage.getItem('disagreeEnding') );
 
   const [isDoneOpen, setIsDoneOpen] = useState(false); 
 
@@ -24,10 +24,20 @@ export default function Editor10() {
     navigate('/editor01');
   };
 
-  const handleCompleted = () => {
+  const handleCompleted = async () => {
+    await putTitle(title);
     navigate('/creatorending');
   };
 
+  const putTitle = async (title) => {
+    const code = localStorage.getItem('code');
+    if (!code) throw new Error('게임 코드가 없습니다. (code)');
+    await axiosInstance.put(
+      `/custom-games/${code}/title`,
+      { title },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+  };
   // 흰 텍스트 박스 스타일
   const labelBoxStyle = {
     background: '#fff',
@@ -45,7 +55,7 @@ export default function Editor10() {
       <CreatorLayout
         headerbar={2}
         headerLeftType="home"
-        headerNextDisabled={true}
+        headerNextDisabled={false}
         onHeaderNextClick={() => setIsDoneOpen(true)}  
         frameProps={{
           value: title,
@@ -55,10 +65,9 @@ export default function Editor10() {
             localStorage.setItem('creatorTitle', val);
           },
         }}
-        nextPath="/editor10_1"
-        backPath="/editor09"
-        showNext
+        backPath="/editor10"
         showBack
+        
       >
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           
@@ -72,7 +81,7 @@ export default function Editor10() {
               position: 'relative',
               textAlign: 'center',
             }}
-            > 최종 동의 선택 시 엔딩 
+            > 최종 비동의 선택 시 엔딩 
             </div>
             <div
               style={{
@@ -115,7 +124,7 @@ export default function Editor10() {
                 <div style={{ ...labelBoxStyle, width: '100%', height: '100%' }}>{endingText}</div>
               </div>
             </div>
-{/* 
+
             <div style={{ marginTop: 17, display: 'flex', justifyContent: 'center' }}>
               <Continue3
                 label={'처음부터 다시 보기'}
@@ -123,7 +132,7 @@ export default function Editor10() {
                 height={60}
                 onClick={handleFirst}
               />
-            </div> */}
+            </div>
           </div>
         </div>
       </CreatorLayout>
@@ -147,10 +156,9 @@ export default function Editor10() {
             {/* DilemmaDonePopUp이 제공하는 API에 맞춰 onClose/onConfirm 등 연결 */}
             <DilemmaDonePopUp
               onClose={() => setIsDoneOpen(false)}
-              onConfirm={() => {
-                // 팝업 닫고 다음 화면으로 이동
+              onConfirm={async () => {
                 setIsDoneOpen(false);
-                handleCompleted(); 
+                await handleCompleted(); 
               }} />
           </div>
         </div>

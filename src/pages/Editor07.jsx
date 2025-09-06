@@ -1,4 +1,3 @@
-// game05상황
 import { useState, useEffect } from 'react';
 import CreatorLayout from '../components/Expanded/EditorLayout';
 import { useNavigate } from 'react-router-dom';
@@ -25,12 +24,24 @@ export default function Editor07() {
     });
   }, [currentIndex]);
 
-  // 예시 텍스트
-  const paragraphs = [
-    { main: '자율 주행 자동차는 도로 위에서 다양한 상황을 처리해야 합니다.' },
-    { main: '예를 들어, 자율 주행 자동차가 한 보행자를 인식하고 멈추는 과정에서, 높은 정확성을 가진 알고리즘이 필요한데, 이 알고리즘은 사람의 행동을 예측하고 그에 따라 반응해야 합니다.' },
-    { main: '하지만 이 알고리즘이 너무 복잡하면, 왜 특정한 행동을 했는지 설명할 수 없게 됩니다.' },
-  ];
+    const agreeArr = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("flips_agree_texts") || "[]");
+      } catch {
+        return [];
+      }
+    })();
+  
+    const disagreeArr = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("flips_disagree_texts") || "[]");
+      } catch {
+        return [];
+      }
+    })();
+  
+    // 예: 여기서는 agree 텍스트만 보여주도록 paragraphs에 할당
+    const paragraphs = agreeArr.map(text => ({ main: text }));
 
   // 3개를 다 읽고 넘긴 상태 조건
   const allVisited = visited.size >= paragraphs.length;
@@ -70,7 +81,7 @@ export default function Editor07() {
           localStorage.setItem("creatorTitle", val);
         },
       }}
-      nextPath="/editor08"
+      nextPath="/editor07_1"
      // showNext={canProceed}           
       showBack
       showNext
@@ -78,10 +89,21 @@ export default function Editor07() {
     >
       {/* 스테이지: 가운데 정렬 + 내부 여백 */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
+      
         <div style={{ width: '100%', maxWidth: STAGE_MAX_WIDTH, boxSizing: 'border-box' }}>
           {/* 콘텐츠 수직 정렬 */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
             {/* 이미지 영역 */}
+            <div 
+            style={{
+              ...FontStyles.bodyBold,
+              color:Colors.systemRed,
+              marginTop:-20,
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+            >동의 선택시 
+            </div>
             <div
               style={{
                 width: MEDIA_WIDTH,

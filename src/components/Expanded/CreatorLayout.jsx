@@ -95,7 +95,7 @@ export default function CreatorLayout({
               onClose={() => setShowOutPopup(false)}
               onLogout={() => {
                 setShowOutPopup(false);
-                navigate('/selectroom'); // ✅ 메인으로 이동
+                navigate('/selectroom'); //  메인으로 이동
               }}
             />
           </div>

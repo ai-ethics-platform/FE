@@ -28,7 +28,7 @@ import WebSocketProvider from "../WebSocketProvider";
 import WebRTCProvider from "../WebRTCProvider"; 
 import MicTest from '../pages/MicTest';
 import Create00 from '../pages/Create00';
-import Create01 from "../pages/Create01";
+import Create01 from "../pages/create01";
 import Create02 from '../pages/Create02';
 import Create03 from '../pages/Create03';
 import Create04 from "../pages/Create04";
@@ -43,10 +43,13 @@ import Editor04 from "../pages/Editor04";
 import Editor05 from "../pages/Editor05";
 import Editor06 from "../pages/Editor06";
 import Editor07 from "../pages/Editor07";
+import Editor07_1 from "../pages/Editor07_1";
 import Editor08 from "../pages/Editor08";
 import Editor09 from "../pages/Editor09";
 import Editor10 from "../pages/Editor10";
+import Editor10_1 from "../pages/Editor10_1";
 import CreatorEnding from "../pages/CreatorEnding";
+import CustomRoom from "../pages/CustomRoom";
 import VoiceTestSimulator from '../pages/VoiceTestSimulator';
 // WebSocket/WebRTC가 필요한 페이지들을 감싸는 컴포넌트
 function GameRoutes() {
@@ -109,11 +112,13 @@ function Router() {
         <Route path="/editor05" element={<Editor05 />} />
         <Route path="/editor06" element={<Editor06 />} />
         <Route path="/editor07" element={<Editor07 />} />
+        <Route path="/editor07_1" element={<Editor07_1 />} />
         <Route path="/editor08" element={<Editor08 />} />
         <Route path="/editor09" element={<Editor09 />} />
         <Route path="/editor10" element={<Editor10 />} />
+        <Route path="/editor10_1" element={<Editor10_1 />} />
         <Route path="/creatorending" element={<CreatorEnding />} />
-
+        <Route path="/customroom" element={<CustomRoom />} />
         {/* WebSocket/WebRTC가 필요한 모든 게임 관련 페이지들 */}
         <Route path="/*" element={<GameRoutes />} />
       </Routes>

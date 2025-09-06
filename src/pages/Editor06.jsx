@@ -27,6 +27,8 @@ export default function Create05() {
   const SCALED_H = Math.round(BOX_H * SCALE);   // 313
   const GAP = Math.round(48 * SCALE);           // 간격도 살짝 축소 (옵션)
 
+  const agree_label =localStorage.getItem('agree_label');
+  const disagree_label =localStorage.getItem('disagree_label');
   useEffect(() => {
     if (secsLeft <= 0) return;
     const timer = setInterval(() => setSecsLeft((s) => s - 1), 1000);
@@ -118,7 +120,7 @@ export default function Create05() {
                   style={{ width: 160, height: 160, marginTop: 40, marginBottom: -10 }}
                 />
                 <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary }}>
-                  {key === 'agree' ? '동의' : '비동의'}
+                  {key === 'agree' ?  agree_label : disagree_label}
                 </p>
                 <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, marginTop: -10 }}>
                   {list.length}명

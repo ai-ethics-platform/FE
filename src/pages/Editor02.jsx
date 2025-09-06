@@ -22,12 +22,10 @@ const [image3, setImage3] = useState(null);
 const [isDefaultImage1, setIsDefaultImage1] = useState(true);
 const [isDefaultImage2, setIsDefaultImage2] = useState(true);
 const [isDefaultImage3, setIsDefaultImage3] = useState(true);
-
-  // 예시 텍스트
-  const paragraphs = [
-    { main: '역할 설명' },
-    ];
-
+const rolesBackground = localStorage.getItem('rolesBackground');
+const [paragraphs, setParagraphs] = useState([
+  { main: rolesBackground }
+]);
 // 역할별 이미지 변경 핸들러
 const handleImageChange = (setImage, setIsDefault) => {
   const input = document.createElement("input");

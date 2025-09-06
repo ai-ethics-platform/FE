@@ -1,7 +1,5 @@
 //수정할 것 
-// 역할 3개에 대한 이름 GET 해오기 
-// 게임 이름에 대한 이름 GET 해오기
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Colors } from '../styleConstants';
 import HeaderBar1 from './HeaderBar';
@@ -15,7 +13,7 @@ import DilemmaOutPopup from '../DilemmaOutPopup';
 
 const HEADER_H = 56;
 
-export default function CreatorLayout({
+export default function EditorLayout({
   headerbar = 2,
   headerLeftType = 'home',
   headerNextDisabled = false,
@@ -46,8 +44,31 @@ export default function CreatorLayout({
   const mergedFrameProps = { maxLength: 30, ...frameProps };
 
   const [openProfile, setOpenProfile] = useState(null);
-  const [showOutPopup, setShowOutPopup] = useState(false); // ✅ 팝업 상태
+  const [showOutPopup, setShowOutPopup] = useState(false); 
+  const [roleDescs, setRoleDescs] = useState([
+    '요양보호사', // 기본값(1P)
+    '노모',       // 기본값(2P)
+    '자녀',       // 기본값(3P)
+  ]);
 
+  //  초기 로드 + 다른 탭/창에서 localStorage 변경까지 반영
+  useEffect(() => {
+    const loadFromLocal = () => {
+      const n1 = localStorage.getItem('char1') || '역할 1';
+      const n2 = localStorage.getItem('char2') || '역할 2';
+      const n3 = localStorage.getItem('char3') || '역할 3';
+      setRoleDescs([n1, n2, n3]);
+    };
+
+    loadFromLocal();
+
+    const onStorage = (e) => {
+      if (!e.key || !['char1', 'char2', 'char3'].includes(e.key)) return;
+      loadFromLocal();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
   const topInset = bg2InsetTop ?? bg2Inset;
   const rightInset = bg2InsetRight ?? bg2Inset;
   const bottomInset = bg2InsetBottom ?? bg2Inset;
@@ -110,9 +131,9 @@ export default function CreatorLayout({
             zIndex: 10,
           }}
         >
-          <UserProfile isLeader player="1P" create description="요양보호사" />
-          <UserProfile player="2P" create description="노모" />
-          <UserProfile player="3P" create description="자녀" />
+          <UserProfile isLeader player="1P" create description={roleDescs[0]} />
+          <UserProfile player="2P" create description={roleDescs[1]} />
+          <UserProfile player="3P" create description={roleDescs[2]} />
         </div>
 
         {/* 흰색 테두리 프레임 */}

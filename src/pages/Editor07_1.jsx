@@ -1,5 +1,3 @@
-//game02에서 사용하는 딜레마 상황 
-// api 연결 시 - 텍스트, 이미지 불러오기 
 import { useState, useEffect } from 'react';
 import CreatorLayout from '../components/Expanded/EditorLayout';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +5,7 @@ import CreateTextBox from "../components/Expanded/CreateTextBox";
 import create02Image from '../assets/images/Frame159.png';
 import { Colors, FontStyles } from '../components/styleConstants';
 
-export default function Editor03() {
+export default function Editor07() {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState(localStorage.getItem("creatorTitle") || "");
@@ -26,16 +24,26 @@ export default function Editor03() {
     });
   }, [currentIndex]);
 
-  const DilemmaText = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("dilemma_situation") || "[]");
-    } catch {
-      return [];
-    }
-  })();
-  const paragraphs = DilemmaText.map(text => ({ main: text }));
+    const agreeArr = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("flips_agree_texts") || "[]");
+      } catch {
+        return [];
+      }
+    })();
+  
+    const disagreeArr = (() => {
+      try {
+        return JSON.parse(localStorage.getItem("flips_disagree_texts") || "[]");
+      } catch {
+        return [];
+      }
+    })();
+  
+    // 예: 여기서는 agree 텍스트만 보여주도록 paragraphs에 할당
+    const paragraphs = disagreeArr.map(text => ({ main: text }));
 
-  //  "3개를 다 읽고 넘긴 상태" 조건
+  // 3개를 다 읽고 넘긴 상태 조건
   const allVisited = visited.size >= paragraphs.length;
   const isLast = currentIndex === paragraphs.length - 1;
   const canProceed = allVisited && isLast;
@@ -64,7 +72,7 @@ export default function Editor03() {
     <CreatorLayout
       headerbar={2}
       headerLeftType="home"
-      headerNextDisabled={true}
+      headerNextDisabled={true}  
       frameProps={{
         value: title,
         onChange: (val) => setTitle(val),
@@ -73,18 +81,29 @@ export default function Editor03() {
           localStorage.setItem("creatorTitle", val);
         },
       }}
-      nextPath="/editor04"
+      nextPath="/editor08"
      // showNext={canProceed}           
       showBack
       showNext
-      backPath="/editor02_3"
+      backPath="/editor07"
     >
       {/* 스테이지: 가운데 정렬 + 내부 여백 */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
+      
         <div style={{ width: '100%', maxWidth: STAGE_MAX_WIDTH, boxSizing: 'border-box' }}>
           {/* 콘텐츠 수직 정렬 */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
             {/* 이미지 영역 */}
+            <div 
+            style={{
+              ...FontStyles.bodyBold,
+              color:Colors.systemRed,
+              marginTop:-20,
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+            >비동의 선택시 
+            </div>
             <div
               style={{
                 width: MEDIA_WIDTH,

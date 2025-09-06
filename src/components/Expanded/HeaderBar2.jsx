@@ -14,8 +14,8 @@ const PREVIEW_GROUPS = [
   ['/editor01'],
   ['/editor02', '/editor02_1', '/editor02_2', '/editor02_3'],
   ['/editor03', '/editor04', '/editor05', '/editor06'],
-  ['/editor07', '/editor08', '/editor09'],
-  ['/editor10'],
+  ['/editor07','/editor07_1', '/editor08', '/editor09'],
+  ['/editor10','/editor10_1'],
 ];
 
 export default function HeaderBar({

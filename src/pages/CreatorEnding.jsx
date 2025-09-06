@@ -14,8 +14,7 @@ export default function Create00() {
   const handleNext = () => {
     navigate('/selectroom');
   };
-
-  const linkUrl = "https://www.dilemmai-idl.com/custom/1";
+  const linkUrl=localStorage.getItem("url") ||  null;
 
   const handleCopy = async () => {
     try {

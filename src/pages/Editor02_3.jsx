@@ -22,10 +22,10 @@ export default function Editor02_3() {
   const [isDefaultImage2, setIsDefaultImage2] = useState(true);
   const [isDefaultImage3, setIsDefaultImage3] = useState(true);
 
-  // 예시 텍스트
-  const paragraphs = [
-    { main: '자율 주행 자동차는 도로 위에서 다양한 상황을 처리해야 합니다.' },
-     ];
+  const descFromLocal =localStorage.getItem('charDes3');
+  const labelFromLocal =localStorage.getItem('char3');
+
+  const [paragraphs, setParagraphs] = useState([{ main: descFromLocal }]);
 
   // 역할별 이미지 변경 핸들러
   const handleImageChange = (setImage, setIsDefault) => {
@@ -148,8 +148,8 @@ export default function Editor02_3() {
                   lineHeight: 1,
                 }}
               >
-                자녀 J
-              </div>
+                {labelFromLocal}
+                </div>
             </div>
           </div>
 

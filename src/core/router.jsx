@@ -28,7 +28,7 @@ import WebSocketProvider from "../WebSocketProvider";
 import WebRTCProvider from "../WebRTCProvider"; 
 import MicTest from '../pages/MicTest';
 import Create00 from '../pages/Create00';
-import Create01 from "../pages/create01";
+import Create01 from "../pages/Create01";
 import Create02 from '../pages/Create02';
 import Create03 from '../pages/Create03';
 import Create04 from "../pages/Create04";

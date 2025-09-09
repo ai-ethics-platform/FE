@@ -1,3 +1,4 @@
+// 커스텀 모드일 때 opening 부분 수정하기
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -14,6 +15,7 @@ import {
   useWebSocketNavigation, 
   useHostActions 
 } from '../hooks/useWebSocketMessage';
+import { clearAllLocalStorageKeys } from '../utils/storage';
 
 
 export default function GameIntro() {
@@ -80,7 +82,15 @@ const AWS_TEXT =
   `인간 병사의 개입 없이 자동화된 의사결정 시스템으로 운영\n` +
   `적군과 비전투원 구별\n` +
   `목표를 선정해 정밀 타격 수행 가능`;
-  const fullText = isAWS ? AWS_TEXT : ANDROID_TEXT;
+
+ const TEACHER_TEXT = ' 선생님이 만든 템플릿으로 \n\n 게임을 시작합니다.' ;
+
+ const isCustomMode = !!localStorage.getItem('code');
+
+ // const fullText = isAWS ? AWS_TEXT : ANDROID_TEXT;
+ 
+ //  교체: 커스텀 모드면 TEACHER_TEXT, 아니면 기존 로직
+ const fullText = isCustomMode ? TEACHER_TEXT : (isAWS ? AWS_TEXT : ANDROID_TEXT);
 
   const { isHost, sendNextPage } = useHostActions();
   
@@ -115,7 +125,14 @@ const AWS_TEXT =
     
     return () => clearInterval(statusInterval);
   }, []);
-
+ useEffect(() => {
+    if (!isConnected) {
+      console.warn('❌ WebSocket 연결 끊김 감지됨');
+      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+      clearAllLocalStorageKeys();
+      navigate('/');
+    }
+  }, [isConnected]);
   // init 메시지 전송 함수
   const sendInitMessage = useCallback(() => {
     if (initMessageSentRef.current) {
@@ -331,9 +348,14 @@ const AWS_TEXT =
   //     alert('서버 연결을 확인해주세요.');
   //   }
   // }, [clientId, voiceInitialized, isHost, sendNextPage]);
-    const handleContinue = () => {
-      navigate(`/selecthomemate`);
+
+  const handleContinue = () => {
+    if (isCustomMode) {
+      navigate('/game01');
+    } else {
+      navigate('/selecthomemate');
     }
+  };
 
   return (
     <Background bgIndex={2}>

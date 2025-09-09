@@ -121,6 +121,22 @@ export default function CharacterPopup({ subtopic, roleId, mateName, onClose }) 
       }
     }
   }
+//  커스텀 모드 오버라이드: char1/2/3 + charDes1/2/3 사용
+const isCustomMode = !!localStorage.getItem('code');
+if (isCustomMode) {
+  const titleMap = {
+    1: (localStorage.getItem('char1') || '').trim(),
+    2: (localStorage.getItem('char2') || '').trim(),
+    3: (localStorage.getItem('char3') || '').trim(),
+  };
+  const descMap = {
+    1: (localStorage.getItem('charDes1') || '').trim(),
+    2: (localStorage.getItem('charDes2') || '').trim(),
+    3: (localStorage.getItem('charDes3') || '').trim(),
+  };
+  titleText = titleMap[roleId] ?? titleText;
+  mainText = descMap[roleId] ?? mainText;
+}
 
   return (
     <div style={{

@@ -61,7 +61,6 @@ export default function Editor09() {
               zIndex: 0, // 가장 아래
             }}
           />
-
           {/* 진행(채움) 라인 */}
           <div
             style={{

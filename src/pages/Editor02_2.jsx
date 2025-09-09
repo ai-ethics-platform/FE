@@ -1,52 +1,118 @@
 // 역할 설명 - 첫번째 유저에 대한 역할 설명 페이지
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CreatorLayout from '../components/Expanded/EditorLayout';
 import { useNavigate } from 'react-router-dom';
 import CreateTextBox from "../components/Expanded/CreateTextBox";
-import create02Image from '../assets/images/Frame235.png';
-import charBg from '../assets/charbg2.svg'; // ← 경로 확인해서 맞춰줘
+import defaultRoleImg from '../assets/images/Frame235.png';
+import charBg from '../assets/charbg1.svg'; // ← 경로 확인
 import { Colors, FontStyles } from '../components/styleConstants';
+import axiosInstance from '../api/axiosInstance';
 
-export default function Editor02_2() {
+// 로컬스토리지 키 (1번 슬롯만 사용)
+const ROLE_IMG_KEY_2 = 'role_image_2';
+
+// 서버에서 온 상대경로를 baseURL로 보정
+const resolveImageUrl = (raw) => {
+  if (!raw || raw === '-' || String(raw).trim() === '') return null;
+  const u = String(raw).trim();
+  if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
+  const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
+  if (!base) return u;
+  return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
+};
+
+// 업로드 API (필드명 'file')
+async function uploadRoleImageSlot1(file) {
+  const code = localStorage.getItem('code');
+  if (!code) throw new Error('게임 코드가 없습니다. (code)');
+  const form = new FormData();
+  form.append('file', file);
+  const res = await axiosInstance.post(
+    `/custom-games/${code}/role-images/2`,
+    form,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+  const url = res?.data?.url || res?.data?.image_url;
+  if (!url) throw new Error('업로드 응답에 url이 없습니다.');
+  return url;
+}
+
+export default function Editor02_1() {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState(localStorage.getItem("creatorTitle") || "");
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // 이미지 상태 각각 분리
-  const [image1, setImage1] = useState(null);
-  const [image2, setImage2] = useState(null);
-  const [image3, setImage3] = useState(null);
-
-  const [isDefaultImage1, setIsDefaultImage1] = useState(true);
-  const [isDefaultImage2, setIsDefaultImage2] = useState(true);
-  const [isDefaultImage3, setIsDefaultImage3] = useState(true);
-  const descFromLocal =localStorage.getItem('charDes2');
-  const labelFromLocal =localStorage.getItem('char2');
+  // 1번 역할 설명/라벨
+  const descFromLocal = localStorage.getItem('charDes2') || '';
+  const labelFromLocal = localStorage.getItem('char2') || '';
 
   const [paragraphs, setParagraphs] = useState([{ main: descFromLocal }]);
-  // 예시 텍스트
 
+  // ⭐ 1번 역할 이미지: URL + 폴백 플래그
+  const [img1, setImg1] = useState(() => resolveImageUrl(localStorage.getItem(ROLE_IMG_KEY_2)));
+  const [fallback1, setFallback1] = useState(!img1);
 
-  // 역할별 이미지 변경 핸들러
-  const handleImageChange = (setImage, setIsDefault) => {
+  // 최초 로딩: 역할 이미지 GET → 로컬/상태 반영
+  useEffect(() => {
+    (async () => {
+      try {
+        const code = localStorage.getItem('code');
+        if (!code) return;
+
+        const res = await axiosInstance.get(`/custom-games/${code}/role-images`, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const urls = res?.data?.urls || {};
+
+        if (urls['1']) {
+          localStorage.setItem(ROLE_IMG_KEY_2, urls['2']);
+          const u = resolveImageUrl(urls['2']);
+          setImg1(u);
+          setFallback1(!u);
+        } else {
+          // 서버에 없으면 로컬 값 사용 → 그래도 없으면 폴백
+          const saved = resolveImageUrl(localStorage.getItem(ROLE_IMG_KEY_2));
+          setImg1(saved);
+          setFallback1(!saved);
+        }
+      } catch (err) {
+        console.error('역할1 이미지 로드 실패:', err);
+        const saved = resolveImageUrl(localStorage.getItem(ROLE_IMG_KEY_2));
+        setImg1(saved);
+        setFallback1(!saved);
+      }
+    })();
+  }, []);
+
+  // 1번 역할 이미지 업로드 → 로컬 덮어쓰기 → 상태 반영
+  const handleImageChangeSlot1 = () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = e.target.files?.[0];
-      if (file) {
-        setImage(file);
-        setIsDefault(false);
+      if (!file) return;
+      try {
+        setFallback1(false);
+        const rawUrl = await uploadRoleImageSlot1(file);
+        localStorage.setItem(ROLE_IMG_KEY_2, rawUrl);
+        const resolved = resolveImageUrl(rawUrl);
+        setImg1(resolved);
+        setFallback1(!resolved);
+      } catch (err) {
+        console.error(err);
+        alert('역할 이미지 업로드에 실패했습니다.');
+        setFallback1(true);
       }
     };
     input.click();
   };
 
-  // 레이아웃용 상수 (스샷처럼 보이도록)
-  const STAGE_MAX_WIDTH = 1060; // 내부 패널 넓이
-  const MEDIA_WIDTH = 200;      // 이미지/텍스트 박스 폭
-  const MEDIA_HEIGHT = 200;     // 이미지 높이
+  // 레이아웃용 상수
+  const STAGE_MAX_WIDTH = 1060;
+  const MEDIA_WIDTH = 200;
+  const MEDIA_HEIGHT = 200;
 
   return (
     <CreatorLayout
@@ -78,13 +144,13 @@ export default function Editor02_2() {
                 border: '2px solid #ddd',
                 backgroundColor: '#f8f9fa',
                 overflow: 'hidden',
-                position: 'relative', // 버튼 오버레이용
+                position: 'relative',
               }}
             >
               {/* 이미지 변경 버튼 (좌상단) */}
               <button
                 type="button"
-                onClick={() => handleImageChange(setImage1, setIsDefaultImage1)}
+                onClick={handleImageChangeSlot1}
                 style={{
                   position: 'absolute',
                   top: 2,
@@ -104,18 +170,15 @@ export default function Editor02_2() {
               </button>
 
               <img
-                src={isDefaultImage1 ? create02Image : URL.createObjectURL(image1)}
-                alt="딜레마 이미지"
+                src={!fallback1 && img1 ? img1 : defaultRoleImg}
+                alt="역할1 이미지"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                onLoad={(e) => {
-                  if (!isDefaultImage1 && image1) {
-                    URL.revokeObjectURL(e.currentTarget.src);
-                  }
-                }}
+                onError={() => setFallback1(true)}
+                onLoad={() => setFallback1(false)}
               />
             </div>
 
-            {/* ▶ 이미지 하단 라벨 (charbg + 흰 박스 + 직업명) */}
+            {/* 이미지 하단 라벨 (charbg + 흰 박스 + 직업명) */}
             <div
               style={{
                 width: MEDIA_WIDTH,
@@ -124,7 +187,7 @@ export default function Editor02_2() {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                height: 42, // 라벨 영역 높이
+                height: 42,
               }}
             >
               <img
@@ -145,12 +208,12 @@ export default function Editor02_2() {
                   padding: '6px 12px',
                   background: '#fff',
                   ...FontStyles.bodyBold,
-                  color: Colors.player2P,
+                  color: Colors.player1P,
                   lineHeight: 1,
                 }}
               >
                 {labelFromLocal}
-                </div>
+              </div>
             </div>
           </div>
 

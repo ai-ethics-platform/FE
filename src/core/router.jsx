@@ -50,6 +50,7 @@ import Editor10 from "../pages/Editor10";
 import Editor10_1 from "../pages/Editor10_1";
 import CreatorEnding from "../pages/CreatorEnding";
 import CustomRoom from "../pages/CustomRoom";
+import ChatPage from "../pages/ChatPage";
 import VoiceTestSimulator from '../pages/VoiceTestSimulator';
 // WebSocket/WebRTC가 필요한 페이지들을 감싸는 컴포넌트
 function GameRoutes() {
@@ -118,7 +119,13 @@ function Router() {
         <Route path="/editor10" element={<Editor10 />} />
         <Route path="/editor10_1" element={<Editor10_1 />} />
         <Route path="/creatorending" element={<CreatorEnding />} />
-        <Route path="/customroom" element={<CustomRoom />} />
+        <Route
+          path="/customroom"
+          element={
+              <CustomRoom />
+          }
+        />
+        <Route path="/chatpage" element={<ChatPage />} />
         {/* WebSocket/WebRTC가 필요한 모든 게임 관련 페이지들 */}
         <Route path="/*" element={<GameRoutes />} />
       </Routes>

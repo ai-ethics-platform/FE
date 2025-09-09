@@ -1,5 +1,3 @@
-// //확장성 코드
-// //api 연결 시 해야하는 것 - 편집 시 만드는 이미지 임포트해오는것 진행해야함 
 // import React from 'react';
 // import { Colors, FontStyles } from './styleConstants';
 // // 기본 아이콘들 (디테일 없음)
@@ -68,6 +66,7 @@
 //   // 2. description prop이 없으면 기존 로직 사용
 //   else if (hasSubtopic) {
 //     switch (subtopic) {
+//       // 안드로이드 관련 서브토픽
 //       case 'AI의 개인 정보 수집':
 //       case '안드로이드의 감정 표현':
 //         mappedDesc = roleNum === 1 ? '요양보호사 K' : roleNum === 2 ? '노모 L' : '자녀 J';
@@ -83,6 +82,28 @@
 //           : roleNum === 2 ? '국제 환경단체 대표'
 //           : '소비자 대표';
 //         break;
+
+//       // 자율 무기 시스템 관련 서브토픽
+//       case 'AI 알고리즘 공개': {
+//         mappedDesc = roleNum === 1 ? '지역 주민' : roleNum === 2 ? '병사 J' : '군사 AI 윤리 전문가';
+//         break;
+//       }
+//       case 'AWS의 권한': {
+//         mappedDesc = roleNum === 1 ? '신입 병사' : roleNum === 2 ? '베테랑 병사 A' : '군 지휘관';
+//         break;
+//       }
+//       case '사람이 죽지 않는 전쟁': {
+//         mappedDesc = roleNum === 1 ? '개발자' : roleNum === 2 ? '국방부 장관' : '국가 인공지능 위원회 대표';
+//         break;
+//       }
+//       case 'AI의 권리와 책임': {
+//         mappedDesc = roleNum === 1 ? '개발자' : roleNum === 2 ? '국방부 장관' : '국가 인공지능 위원회 대표';
+//         break;
+//       }
+//       case 'AWS 규제': {
+//         mappedDesc = roleNum === 1 ? '국방 기술 고문' : roleNum === 2 ? '국제기구 외교 대표' : '글로벌 NGO 활동가';
+//         break;
+//       }
 //       default:
 //         mappedDesc = '';
 //     }
@@ -157,7 +178,6 @@
 //             maxWidth: 180,
 //             wordBreak: 'keep-all',
 //             whiteSpace: 'normal',
-//             //whiteSpace: 'nowrap',
 //             overflow: 'hidden',
 //             textOverflow: 'ellipsis',
 //             lineHeight: 1.2,
@@ -167,9 +187,6 @@
 //     </div>
 //   );
 // }
-// //확장성 코드
-// //api 연결 시 해야하는 것 - 편집 시 만드는 이미지 임포트해오는것 진행해야함 
-
 import React from 'react';
 import { Colors, FontStyles } from './styleConstants';
 // 기본 아이콘들 (디테일 없음)
@@ -223,19 +240,30 @@ export default function UserProfile({
   description = '',
   ...rest
 }) {
+  // 커스텀 모드 판별
+  const isCustomMode = !!localStorage.getItem('code');
+
   // localStorage raw read
   const rawSubtopic = localStorage.getItem('subtopic');
   // nodescription이 true면 무조건 서브토픽 무시
   const subtopic = nodescription ? null : rawSubtopic;
   const hasSubtopic = Boolean(subtopic);
-  const roleNum = parseInt(player.replace('P',''), 10);
+  const roleNum = parseInt(player.replace('P', ''), 10);
   let mappedDesc = '';
 
-  // 1. description prop이 있으면 우선 사용
+  // 1) description prop이 있으면 우선 사용
   if (description && description.trim() !== '') {
     mappedDesc = description;
   }
-  // 2. description prop이 없으면 기존 로직 사용
+  // 2) 커스텀 모드면 char1/char2/char3 사용 (nodescription이면 표시 안 함)
+  else if (!nodescription && isCustomMode) {
+    const customKey = player === '1P' ? 'char1' : player === '2P' ? 'char2' : 'char3';
+    const customDesc = (localStorage.getItem(customKey) || '').trim();
+    if (customDesc) {
+      mappedDesc = customDesc;
+    }
+  }
+  // 3) 기본(비커스텀) 매핑
   else if (hasSubtopic) {
     switch (subtopic) {
       // 안드로이드 관련 서브토픽
@@ -245,14 +273,12 @@ export default function UserProfile({
         break;
       case '아이들을 위한 서비스':
       case '설명 가능한 AI':
-        mappedDesc = roleNum === 1 ? '로봇 제조사 연합회 대표'
-          : roleNum === 2 ? '소비자 대표'
-          : '국가 인공지능 위원회 대표';
+        mappedDesc =
+          roleNum === 1 ? '로봇 제조사 연합회 대표' : roleNum === 2 ? '소비자 대표' : '국가 인공지능 위원회 대표';
         break;
       case '지구, 인간, AI':
-        mappedDesc = roleNum === 1 ? '기업 연합체 대표'
-          : roleNum === 2 ? '국제 환경단체 대표'
-          : '소비자 대표';
+        mappedDesc =
+          roleNum === 1 ? '기업 연합체 대표' : roleNum === 2 ? '국제 환경단체 대표' : '소비자 대표';
         break;
 
       // 자율 무기 시스템 관련 서브토픽
@@ -291,7 +317,6 @@ export default function UserProfile({
     if (create) {
       return frame235;
     }
-    
     // 기존 로직
     if (isDetailed) return isSpeaking ? profileMicOnMap[player] : profileMap[player];
     return isSpeaking ? iconMicOnMap[player] : iconMap[player];
@@ -321,16 +346,18 @@ export default function UserProfile({
           style={{ position: 'absolute', top: 0, left: 0, width: 8, height: '100%' }}
         />
       )}
-      <div style={{
-        width: containerSize,
-        height: containerSize,
-        borderRadius: '50%',
-        backgroundColor: 'transparent',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-      }}>
+      <div
+        style={{
+          width: containerSize,
+          height: containerSize,
+          borderRadius: '50%',
+          backgroundColor: 'transparent',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
         <img
           src={icon}
           alt={`${player} 아이콘`}
@@ -339,21 +366,27 @@ export default function UserProfile({
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', lineHeight: 1 }}>
-          <span style={{ ...FontStyles.title, color: colorMap[player] }}>{player.replace('P', '')}</span>
+          <span style={{ ...FontStyles.title, color: colorMap[player] }}>
+            {player.replace('P', '')}
+          </span>
           {isLeader && <img src={crownIcon} alt="방장" style={{ width: 20, height: 20, marginLeft: 6 }} />}
         </div>
         {isDetailed && (
-          <div style={{
-            ...FontStyles.body,
-            color: colorMap[player],
-            marginTop: 2,
-            maxWidth: 180,
-            wordBreak: 'keep-all',
-            whiteSpace: 'normal',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            lineHeight: 1.2,
-          }}>{finalDesc}</div>
+          <div
+            style={{
+              ...FontStyles.body,
+              color: colorMap[player],
+              marginTop: 2,
+              maxWidth: 180,
+              wordBreak: 'keep-all',
+              whiteSpace: 'normal',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              lineHeight: 1.2,
+            }}
+          >
+            {finalDesc}
+          </div>
         )}
       </div>
     </div>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Redirecting…</title>
+  <script>
+    (function () {
+      var code = (window.location.pathname || '').split('/').pop(); // /game/:code
+      var next = '/customroom'; 
+      var target = 'https://www.dilemmai-idl.com'
+        + '?next=' + encodeURIComponent(next)
+        + (code ? '&code=' + encodeURIComponent(code) : '');
+      window.location.replace(target);
+    })();
+  </script>
+</head>
+<body>Redirecting…</body>
+</html>

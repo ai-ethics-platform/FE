@@ -1,0 +1,107 @@
+:root{
+    --assistant-bg:#e8f0ff;
+    --assistant-border:#cfdcff;
+    --user-bg:#fff4e8;
+    --user-border:#f0d9c2;
+    --system-bg:#f2f3f5;
+    --ink:#111827;
+  }
+  
+  * { box-sizing: border-box; }
+  pre { margin: 0; font-family: inherit; white-space: pre-wrap; word-break: break-word; }
+  
+  .chat-wrap{
+    display:flex; flex-direction:column;
+    height:100vh; background:#fafafa;
+  }
+  
+  /* ----- header */
+  .chat-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 18px; border-bottom:1px solid #e5e7eb; background:#fff;
+  }
+  .chat-header .title{ font-weight:700; font-size:18px; }
+  .chat-header .step{ color:#6b7280; }
+  .chat-header .reset-btn{ border:1px solid #e5e7eb; background:#fff; padding:6px 10px; border-radius:8px; }
+  
+  /* ----- body */
+  .chat-body{
+    flex:1; overflow-y:auto; padding:20px 18px;
+    background: #f7f8fb;
+  }
+  
+  .bubble-row{ display:flex; margin:10px 0; }
+  .bubble-row.left{ justify-content:flex-start; }
+  .bubble-row.right{ justify-content:flex-end; }
+  
+  .bubble{
+    position:relative; max-width:72%;
+    padding:14px 16px; border-radius:14px;
+    border:1px solid transparent; color:var(--ink);
+    box-shadow: 0 1px 1px rgba(0,0,0,0.06);
+  }
+  .bubble.system{
+    background: var(--system-bg);
+    border-color:#e5e7eb; color:#374151;
+  }
+  .bubble.assistant{
+    background: var(--assistant-bg);
+    border-color: var(--assistant-border);
+  }
+  .bubble.user{
+    background: var(--user-bg);
+    border-color: var(--user-border);
+  }
+  
+  /* 꼬리 - assistant(왼쪽) */
+  .bubble.assistant::after{
+    content:""; position:absolute; left:-6px; bottom:12px;
+    width:12px; height:12px; background:var(--assistant-bg);
+    border-left:1px solid var(--assistant-border);
+    border-bottom:1px solid var(--assistant-border);
+    transform:rotate(45deg);
+  }
+  /* 꼬리 - user(오른쪽) */
+  .bubble.user::after{
+    content:""; position:absolute; right:-6px; bottom:12px;
+    width:12px; height:12px; background:var(--user-bg);
+    border-right:1px solid var(--user-border);
+    border-bottom:1px solid var(--user-border);
+    transform:rotate(45deg);
+  }
+  
+  /* 메시지 텍스트 */
+  .bubble .msg{ line-height:1.6; font-size:15px; }
+  
+  /* "메시지 입력 중…" 스타일(살짝 연한 느낌) */
+  .bubble.typing{ opacity:.85; }
+  .bubble.typing .msg{ position:relative; padding-right:18px; }
+  .bubble.typing .msg::after{
+    content:""; position:absolute; right:0; top:6px; width:4px; height:4px; border-radius:50%;
+    background:#9aa7c9; box-shadow: 8px 0 0 #9aa7c9, 16px 0 0 #9aa7c9;
+    animation: blink 1.2s infinite ease-in-out;
+  }
+  @keyframes blink{
+    0% { opacity:.3; }
+    50% { opacity:1; }
+    100% { opacity:.3; }
+  }
+  
+  /* ----- input */
+  .chat-input{
+    display:flex; gap:10px; padding:12px; border-top:1px solid #e5e7eb; background:#fff;
+  }
+  .chat-input input{
+    flex:1; padding:12px 14px; border:1px solid #e5e7eb; border-radius:12px; font-size:15px;
+    outline:none;
+  }
+  .chat-input input:focus{ border-color:#c7d2fe; box-shadow:0 0 0 3px rgba(99,102,241,.15); }
+  .chat-input button{
+    padding:0 16px; border:1px solid #e5e7eb; border-radius:12px; background:#111827; color:#fff; font-weight:600;
+  }
+  .chat-input button:disabled{ opacity:.5; cursor:not-allowed; }
+  
+  /* 에러/컨텍스트 */
+  .error{ color:#b91c1c; padding:8px 16px; }
+  .context-view{ padding:8px 16px; background:#fff; border-top:1px solid #e5e7eb; }
+  

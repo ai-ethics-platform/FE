@@ -140,5 +140,13 @@ instance.interceptors.response.use(
   }
 );
 
+export async function callChatbot({ step, input, context, prompt }) {
+  const { data } = await instance.post(
+    "/chat/with-prompt",
+    { step, input, context, prompt }
+  );
+  // data: { output, context, next, meta }
+  return data;
+}
 
 export default instance;

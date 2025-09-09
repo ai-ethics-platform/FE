@@ -1,5 +1,4 @@
-// // api 연결할 것 - 이미지, 화면 내용 3개 
-// import { useState } from 'react';
+// import { useEffect, useState } from 'react';
 // import DilemmaOutPopup from '../components/DilemmaOutPopup';
 // import CreatorLayout from '../components/Expanded/CreatorLayout';
 // import CreatorContentBox from "../components/Expanded/CreatorContentBox";
@@ -11,34 +10,109 @@
 // import { FontStyles, Colors } from '../components/styleConstants';
 // import NextGreen from "../components/NextOrange";
 // import BackOrange from "../components/Expanded/BackOrange";
+// import axiosInstance from '../api/axiosInstance';
+
+// // ── 서버가 주는 상대경로(/static/...) → 절대경로로 보정
+// const resolveImageUrl = (raw) => {
+//   if (!raw || raw === '-' || String(raw).trim() === '') return null;
+//   const u = String(raw).trim();
+//   if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
+//   const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
+//   if (!base) return u;
+//   return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
+// };
+
+// // ── 업로드 공통 함수(현재는 같은 엔드포인트 사용)
+// async function uploadRepresentativeImage(file) {
+//   const form = new FormData();
+//   form.append('file', file);
+//   const res = await axiosInstance.post('/custom-games/upload-image', form, {
+//     headers: { 'Content-Type': 'multipart/form-data' },
+//   });
+//   const url = res?.data?.url || res?.data?.image_url;
+//   if (!url) throw new Error('업로드 응답에 url이 없습니다.');
+//   return url; // 상대/절대 어떤 형태든 그대로 반환
+// }
+
+// // ── 서버 응답에서 원하는 키를 다양한 레이어에서 탐색
+// const pickFromLayers = (game, key) => {
+//   const layers = [game, game?.data, game?.images, game?.data?.images];
+//   for (const layer of layers) {
+//     const v = layer?.[key];
+//     if (typeof v === 'string' && v.trim().length > 0) return v;
+//   }
+//   return null;
+// };
+
+// // ── array 유틸
+// const isNonEmptyStringArray = (arr) =>
+//   Array.isArray(arr) && arr.length > 0 && arr.every(s => typeof s === 'string' && s.trim().length > 0);
+
+// // ── 로컬에서 여러 후보 키 중 첫 유효 배열 읽기(오타/단수 포함 지원)
+// const readLocalFlipArray = (keys) => {
+//   for (const k of keys) {
+//     try {
+//       const raw = localStorage.getItem(k);
+//       if (!raw) continue;
+//       const parsed = JSON.parse(raw);
+//       if (isNonEmptyStringArray(parsed)) return parsed;
+//     } catch {}
+//   }
+//   return null;
+// };
 
 // export default function Create04() {
 //   const navigate = useNavigate();
 //   const [title, setTitle] = useState(localStorage.getItem("creatorTitle") || "");
 
+//   // ── 이미지 URL(동의/비동의) + 폴백 플래그
+//   const [agreeUrl, setAgreeUrl] = useState(() => resolveImageUrl(localStorage.getItem('dilemma_image_4_1')));
+//   const [disagreeUrl, setDisagreeUrl] = useState(() => resolveImageUrl(localStorage.getItem('dilemma_image_4_2')));
+//   const [agreeFallback, setAgreeFallback] = useState(() => !resolveImageUrl(localStorage.getItem('dilemma_image_4_1')));
+//   const [disagreeFallback, setDisagreeFallback] = useState(() => !resolveImageUrl(localStorage.getItem('dilemma_image_4_2')));
 
-//   // B 영역 - 이미지 상태 (기본 이미지로 시작)
-//     const [image1, setImage1] = useState(null);
-//     const [image2, setImage2] = useState(null);
+//   // 입력 빌더
+//   const buildInputsFromArray = (arr, firstPlaceholder) =>
+//     (Array.isArray(arr) ? arr : []).map((text, idx) => ({
+//       id: idx + 1,
+//       label: `화면 ${idx + 1}${idx === 0 ? ' *' : ''}`,
+//       value: text ?? '',
+//       placeholder: idx === 0 ? firstPlaceholder : ' ',
+//       canDelete: idx !== 0,
+//     }));
 
-//     const [isDefaultImage1, setIsDefaultImage1] = useState(true);
-//     const [isDefaultImage2, setIsDefaultImage2] = useState(true);
-
-//     // 역할별 이미지 변경 핸들러
-//     const handleImageChange = (setImage, setIsDefault) => {
+//   // ── 이미지 선택 핸들러(동의/비동의 슬롯별)
+//   const handleImageChange = async (slot /* 1=agree, 2=disagree */) => {
 //     const input = document.createElement("input");
 //     input.type = "file";
 //     input.accept = "image/*";
-//     input.onchange = (e) => {
-//         const file = e.target.files?.[0];
-//         if (file) {
-//         setImage(file);
-//         setIsDefault(false);
+//     input.onchange = async (e) => {
+//       const file = e.target.files?.[0];
+//       if (!file) return;
+//       try {
+//         const rawUrl = await uploadRepresentativeImage(file);
+//         const resolved = resolveImageUrl(rawUrl);
+//         const key = slot === 1 ? 'dilemma_image_4_1' : 'dilemma_image_4_2';
+//         localStorage.setItem(key, rawUrl);
+
+//         if (slot === 1) {
+//           setAgreeUrl(resolved);
+//           setAgreeFallback(!resolved);
+//         } else {
+//           setDisagreeUrl(resolved);
+//           setDisagreeFallback(!resolved);
 //         }
+//       } catch (err) {
+//         console.error(err);
+//         alert('이미지 업로드에 실패했습니다.');
+//         if (slot === 1) setAgreeFallback(true);
+//         else setDisagreeFallback(true);
+//       }
 //     };
 //     input.click();
-//     };
-//   // C 영역 - 입력 필드들을 배열로 관리
+//   };
+
+//   // C 영역 - 입력 필드들
 //   const [agreeInputs, setAgreeInputs] = useState([
 //     { id: 1, label: "화면 1 *", value: "", placeholder: "예: Homemate 사용자 최적화 시스템 업그레이드 공지", canDelete: false },
 //     { id: 2, label: "화면 2 ", value: "", placeholder: "예: 업데이트를 하면 고객님의 감정, 건강 상태, 생활 습관 등을 자동으로 수집하여...", canDelete: true },
@@ -49,69 +123,226 @@
 //     { id: 2, label: "화면 2 ", value: "", placeholder: " ", canDelete: true },
 //     { id: 3, label: "화면 3 ", value: "", placeholder: " ", canDelete: true },
 //   ]);
-    
 
-//   const handleNext = () => {
-//     navigate('/create05');
+//   // ── 마운트 시 1회:
+//   //     1) 로컬에 모든 것(agree/disagree 텍스트 + 두 이미지)이 있으면 GET 스킵
+//   //     2) 없으면 GET 시도 후 비는 값만 채워 로컬에 저장
+//   useEffect(() => {
+//     (async () => {
+//       // 1) 로컬 검사 (키 오타/단수도 허용)
+//       const localAgreeTexts =
+//         readLocalFlipArray(['flips_agree_texts', 'filp_agree_text', 'flip_agree_text']);
+//       const localDisagreeTexts =
+//         readLocalFlipArray(['flips_disagree_texts', 'flip_disagree_text']);
+
+//       const localAgreeImg = resolveImageUrl(localStorage.getItem('dilemma_image_4_1'));
+//       const localDisagreeImg = resolveImageUrl(localStorage.getItem('dilemma_image_4_2'));
+
+//       const hasAllLocal =
+//         isNonEmptyStringArray(localAgreeTexts || []) &&
+//         isNonEmptyStringArray(localDisagreeTexts || []) &&
+//         !!localAgreeImg &&
+//         !!localDisagreeImg;
+
+//       // 로컬 값이 있으면 상태 세팅하고 GET 스킵
+//       if (hasAllLocal) {
+//         // 텍스트 입력 상태 세팅(로컬 → state)
+//         setAgreeInputs(buildInputsFromArray(localAgreeTexts, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));
+//         setDisagreeInputs(buildInputsFromArray(localDisagreeTexts, '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'));
+
+//         // 이미지 상태 세팅(로컬 → state)
+//         setAgreeUrl(localAgreeImg); setAgreeFallback(!localAgreeImg);
+//         setDisagreeUrl(localDisagreeImg); setDisagreeFallback(!localDisagreeImg);
+//         return; // ✅ GET 건너뛰기
+//       }
+
+//       // 2) 일부만 있거나 아예 없으면: 필요 시 GET
+//       const code = localStorage.getItem('code');
+//       if (!code) {
+//         // code 없으면 GET 자체 불가 → 로컬/폴백만 세팅
+//         if (localAgreeTexts) {
+//           setAgreeInputs(buildInputsFromArray(localAgreeTexts, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));
+//           localStorage.setItem('flips_agree_texts', JSON.stringify(localAgreeTexts)); // 정규화 저장
+//         }
+//         if (localDisagreeTexts) {
+//           setDisagreeInputs(buildInputsFromArray(localDisagreeTexts, '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'));
+//           localStorage.setItem('flips_disagree_texts', JSON.stringify(localDisagreeTexts)); // 정규화 저장
+//         }
+//         setAgreeUrl(localAgreeImg); setAgreeFallback(!localAgreeImg);
+//         setDisagreeUrl(localDisagreeImg); setDisagreeFallback(!localDisagreeImg);
+//         return;
+//       }
+
+//       try {
+//         const res = await axiosInstance.get(`/custom-games/${code}`, {
+//           headers: { 'Content-Type': 'application/json' },
+//         });
+//         const game = res?.data || {};
+
+//         // 서버 이미지 후보
+//         const rawAgreeImg = pickFromLayers(game, 'dilemma_image_4_1');
+//         const rawDisagreeImg = pickFromLayers(game, 'dilemma_image_4_2');
+
+//         // 서버 텍스트 후보 (여러 경로 대응)
+//         const serverAgreeArr =
+//           game?.flips?.agree_texts
+//           || game?.data?.flips?.agree_texts
+//           || game?.flips?.agree
+//           || game?.data?.flips?.agree
+//           || null;
+
+//         const serverDisagreeArr =
+//           game?.flips?.disagree_texts
+//           || game?.data?.flips?.disagree_texts
+//           || game?.flips?.disagree
+//           || game?.data?.flips?.disagree
+//           || null;
+
+//         // 각 항목별 "없을 때만" 채움
+//         // 이미지
+//         const agreeImgFinal = localAgreeImg || resolveImageUrl(rawAgreeImg);
+//         const disagreeImgFinal = localDisagreeImg || resolveImageUrl(rawDisagreeImg);
+
+//         if (!localAgreeImg && rawAgreeImg) localStorage.setItem('dilemma_image_4_1', rawAgreeImg);
+//         if (!localDisagreeImg && rawDisagreeImg) localStorage.setItem('dilemma_image_4_2', rawDisagreeImg);
+
+//         setAgreeUrl(agreeImgFinal); setAgreeFallback(!agreeImgFinal);
+//         setDisagreeUrl(disagreeImgFinal); setDisagreeFallback(!disagreeImgFinal);
+
+//         // 텍스트
+//         const agreeTextsFinal = localAgreeTexts || (isNonEmptyStringArray(serverAgreeArr) ? serverAgreeArr : null);
+//         const disagreeTextsFinal = localDisagreeTexts || (isNonEmptyStringArray(serverDisagreeArr) ? serverDisagreeArr : null);
+
+//         if (agreeTextsFinal) {
+//           setAgreeInputs(buildInputsFromArray(agreeTextsFinal, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));
+//           localStorage.setItem('flips_agree_texts', JSON.stringify(agreeTextsFinal)); // 정규화 저장
+//         }
+//         if (disagreeTextsFinal) {
+//           setDisagreeInputs(buildInputsFromArray(disagreeTextsFinal, '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'));
+//           localStorage.setItem('flips_disagree_texts', JSON.stringify(disagreeTextsFinal)); // 정규화 저장
+//         }
+//       } catch (e) {
+//         console.error('GET 실패:', e);
+//         // GET 실패 시 현재 로컬/폴백으로 마무리
+//         if (localAgreeTexts) {
+//           setAgreeInputs(buildInputsFromArray(localAgreeTexts, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));
+//           localStorage.setItem('flips_agree_texts', JSON.stringify(localAgreeTexts));
+//         }
+//         if (localDisagreeTexts) {
+//           setDisagreeInputs(buildInputsFromArray(localDisagreeTexts, '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'));
+//           localStorage.setItem('flips_disagree_texts', JSON.stringify(localDisagreeTexts));
+//         }
+//         setAgreeUrl(localAgreeImg); setAgreeFallback(!localAgreeImg);
+//         setDisagreeUrl(localDisagreeImg); setDisagreeFallback(!localDisagreeImg);
+//       }
+//     })();
+//   }, []);
+
+//   // ==== 이하 기존 텍스트/플립 로직은 그대로 ====
+
+//   // 동의 / 비동의 입력 onChange 및 저장
+//   const handleAgreeInputChange = (id, newValue) => {
+//     setAgreeInputs(prev => {
+//       const next = prev.map(input => input.id === id ? { ...input, value: newValue } : input);
+//       const agree_texts = [...next].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
+//       localStorage.setItem('flips_agree_texts', JSON.stringify(agree_texts));
+//       return next;
+//     });
 //   };
-//   const handleBack = () => {
-//     navigate('/create03');
-//   };
-//   const handleConfirm = async (finalTitle) => {
-//     // TODO
-//   };
-// // 입력값 변경
-// const handleAgreeInputChange = (id, newValue) => {
-//     setAgreeInputs(prev =>
-//       prev.map(input => input.id === id ? { ...input, value: newValue } : input)
-//     );
-//   };
-  
 //   const handleDisagreeInputChange = (id, newValue) => {
-//     setDisagreeInputs(prev =>
-//       prev.map(input => input.id === id ? { ...input, value: newValue } : input)
-//     );
+//     setDisagreeInputs(prev => {
+//       const next = prev.map(input => input.id === id ? { ...input, value: newValue } : input);
+//       const disagree_texts = [...next].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
+//       localStorage.setItem('flips_disagree_texts', JSON.stringify(disagree_texts));
+//       return next;
+//     });
 //   };
-  
-//   // 입력 필드 추가
+
+//   const persistAgree = (list) => {
+//     const agree_texts = [...list].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
+//     localStorage.setItem('flips_agree_texts', JSON.stringify(agree_texts));
+//   };
+//   const persistDisagree = (list) => {
+//     const disagree_texts = [...list].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
+//     localStorage.setItem('flips_disagree_texts', JSON.stringify(disagree_texts));
+//   };
+
 //   const handleAddAgreeInput = () => {
 //     setAgreeInputs(prev => {
 //       if (prev.length >= 5) return prev;
 //       const nextId = prev.reduce((m, it) => Math.max(m, it.id), 0) + 1;
-//       return [...prev, { id: nextId, label: `화면 ${prev.length + 1}`, value: "", placeholder: " ", canDelete: true }];
+//       const next = [...prev, { id: nextId, label: `화면 ${prev.length + 1}`, value: "", placeholder: " ", canDelete: true }];
+//       persistAgree(next);
+//       return next;
 //     });
 //   };
-  
 //   const handleAddDisagreeInput = () => {
 //     setDisagreeInputs(prev => {
 //       if (prev.length >= 5) return prev;
 //       const nextId = prev.reduce((m, it) => Math.max(m, it.id), 0) + 1;
-//       return [...prev, { id: nextId, label: `화면 ${prev.length + 1}`, value: "", placeholder: " ", canDelete: true }];
+//       const next = [...prev, { id: nextId, label: `화면 ${prev.length + 1}`, value: "", placeholder: " ", canDelete: true }];
+//       persistDisagree(next);
+//       return next;
 //     });
 //   };
-  
-//   // 입력 필드 삭제
+
 //   const handleDeleteAgreeInput = (idToDelete) => {
-//     setAgreeInputs(prev =>
-//       prev.filter(input => input.id !== idToDelete).map((input, index) => ({
-//         ...input,
-//         id: index + 1,
-//         label: `화면 ${index + 1}`
-//       }))
-//     );
+//     setAgreeInputs(prev => {
+//       const next = prev
+//         .filter(input => input.id !== idToDelete)
+//         .map((input, index) => ({ ...input, id: index + 1, label: `화면 ${index + 1}`, canDelete: index !== 0 }));
+//       persistAgree(next);
+//       return next;
+//     });
 //   };
-  
 //   const handleDeleteDisagreeInput = (idToDelete) => {
-//     setDisagreeInputs(prev =>
-//       prev.filter(input => input.id !== idToDelete).map((input, index) => ({
-//         ...input,
-//         id: index + 1,
-//         label: `화면 ${index + 1}`
-//       }))
+//     setDisagreeInputs(prev => {
+//       const next = prev
+//         .filter(input => input.id !== idToDelete)
+//         .map((input, index) => ({ ...input, id: index + 1, label: `화면 ${index + 1}`, canDelete: index !== 0 }));
+//       persistDisagree(next);
+//       return next;
+//     });
+//   };
+
+//   const putFlips = async ({ agree_texts, disagree_texts }) => {
+//     const code = localStorage.getItem('code');
+//     if (!code) throw new Error('게임 코드가 없습니다. (code)');
+//     await axiosInstance.put(
+//       `/custom-games/${code}/flips`,
+//       { agree_texts, disagree_texts },
+//       { headers: { 'Content-Type': 'application/json' } }
 //     );
 //   };
 
+//   const handleNext = async () => {
+//     try {
+//       const safe = s => {
+//         const t = (s ?? '').trim();
+//         return t.length > 0 ? t : '-';
+//       };
 
+//       const agree_texts = [...agreeInputs]
+//         .sort((a, b) => a.id - b.id)
+//         .map(it => safe(it.value));
+
+//       const disagree_texts = [...disagreeInputs]
+//         .sort((a, b) => a.id - b.id)
+//         .map(it => safe(it.value));
+
+//       await putFlips({ agree_texts, disagree_texts });
+
+//       localStorage.setItem('flips_agree_texts', JSON.stringify(agree_texts));
+//       localStorage.setItem('flips_disagree_texts', JSON.stringify(disagree_texts));
+
+//       navigate('/create05');
+//     } catch (e) {
+//       console.error(e);
+//       alert('플립 저장 중 오류가 발생했습니다.');
+//     }
+//   };
+
+//   const handleBack = () => navigate('/create03');
 
 //   return (
 //     <CreatorLayout
@@ -122,321 +353,142 @@
 //       frameProps={{
 //         value: title,
 //         onChange: (val) => setTitle(val),
-//         onConfirm: (val) => {
-//           setTitle(val);
-//           // 여기서도 원하면 localStorage 저장 가능
-//           localStorage.setItem("creatorTitle", val);
-//         },
+//         onConfirm: (val) => { setTitle(val); localStorage.setItem("creatorTitle", val); },
 //       }}
 //     >
-//       {/* A 영역 - 오프닝/제목 멘트 */}
+//       {/* A */}
 //       <div style={{ marginTop: -30, marginBottom: '30px' }}>
-//         <h2 style={{
-//           ...FontStyles.headlineSmall,
-//           marginBottom: '16px',
-//           color: Colors.grey07
-//         }}>
-//           플립 단계 
-//         </h2>
-//         <p style={{
-//           ...FontStyles.title,
-//           color: Colors.grey05,
-//           lineHeight: 1.5,
-//           marginBottom: '32px'
-//         }}>
-//         딜레마 상황과 그에 맞는 질문을 설정해주세요. 게임에 참여하는 3명의 플레이 단계에서는 플레이어의 다수결 선택 결과에 따라 다른 내용이 보여집니다. 
+//         <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '16px', color: Colors.grey07 }}>플립 단계</h2>
+//         <p style={{ ...FontStyles.title, color: Colors.grey05, lineHeight: 1.5, marginBottom: '32px' }}>
+//           딜레마 상황과 그에 맞는 질문을 설정해주세요. 게임에 참여하는 3명의 플레이 단계에서는 플레이어의 다수결 선택 결과에 따라 다른 내용이 보여집니다. 
 //         </p>
 //       </div>
 
-//       {/* B, C 영역을 같은 행에 배치 */}
+//       {/* 동의 */}
 //       <div style={{ marginTop: 0, marginBottom: '30px' }}>
-//         <h2 style={{
-//           ...FontStyles.headlineSmall,
-//           marginBottom: '0px',
-//           color: Colors.grey07
-//         }}>
-//           [선택지1] 동의 
-//         </h2>
-//         <p style={{
-//           ...FontStyles.title,
-//           color: Colors.grey05,
-//          // lineHeight: 1.5,
-//           marginBottom: '0px'
-//         }}>
-//         '동의'을(를) 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
-//          </p>
+//         <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '0px', color: Colors.grey07 }}>[선택지1] 동의</h2>
+//         <p style={{ ...FontStyles.title, color: Colors.grey05, marginBottom: '0px' }}>
+//           '동의'을(를) 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
+//         </p>
 //       </div>
-//       <div style={{
-//         display: 'flex',
-//         gap: 100,
-//         alignItems: 'flex-start',
-//         marginBottom: '20px'
-//       }}>
-      
-//         {/* B 영역 - 이미지 영역 (왼쪽) */}
-//         <div style={{
-//           flex: '0 0 360px', // 고정 너비
-//           display: 'flex',
-//           flexDirection: 'column',
-//           gap: '20px'
-//         }}>
-//           {/* 이미지 표시 영역 */}
-//           <div
-//             style={{
-//               width: '100%',
-//               height: '180px',
-//               border: '2px solid #ddd',
-//               borderRadius: '8px',
-//               display: 'flex',
-//               alignItems: 'center',
-//               justifyContent: 'center',
-//               backgroundColor: '#f8f9fa',
-//               overflow: 'hidden'
-//             }}
-//           >
+//       <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', marginBottom: '20px' }}>
+//         {/* B: 이미지(동의) */}
+//         <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+//           <div style={{ width: '100%', height: '180px', border: '2px solid #ddd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', overflow: 'hidden' }}>
 //             <img
-//               src={isDefaultImage1 ? create02Image : URL.createObjectURL(image1)}
-//               alt="딜레마 이미지"
-//               style={{
-//                 width: '100%',
-//                 height: '100%',
-//                 objectFit: 'cover',
-//                 borderRadius: '6px'
-//               }}
-//               onLoad={(e) => {
-//                 if (!isDefaultImage1 && image1) {
-//                   URL.revokeObjectURL(e.currentTarget.src);
-//                 }
-//               }}
+//               src={!agreeFallback && agreeUrl ? agreeUrl : create02Image}
+//               alt="동의 이미지"
+//               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
+//               onError={() => setAgreeFallback(true)}
+//               onLoad={() => setAgreeFallback(false)}
 //             />
 //           </div>
-
-//           {/* 이미지 변경 링크 */}
-//           <div style={{
-//             textAlign: 'center'
-//           }}>
+//           <div style={{ textAlign: 'center' }}>
 //             <span
-//             onClick={() => handleImageChange(setImage1, setIsDefaultImage1)}
-//             style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+//               onClick={() => handleImageChange(1)}
+//               style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
 //             >
-//             이미지 변경
+//               이미지 변경
 //             </span>
-
 //           </div>
-
-//           {/* 빨간 글씨 안내문 */}
-//           <div style={{
-//             textAlign: 'center'
-//           }}>
-//             <p style={{
-//               color: Colors.systemRed,
-//               ...FontStyles.bodyBold,
-//               margin: 0,
-//               lineHeight: 1.4
-//             }}>
-//               (*권장 이미지 비율 2:1)
-//             </p>
+//           <div style={{ textAlign: 'center' }}>
+//             <p style={{ color: Colors.systemRed, ...FontStyles.bodyBold, margin: 0, lineHeight: 1.4 }}>(*권장 이미지 비율 2:1)</p>
 //           </div>
 //         </div>
 
-//         {/* C 영역 - 입력 필드들 (오른쪽) */}
-//         <div style={{ flex: '1',marginTop:-10 }}>
-//         {agreeInputs.map((input) => (
+//         {/* C: 동의 입력 */}
+//         <div style={{ flex: '1', marginTop: -10 }}>
+//           {agreeInputs.map((input) => (
 //             <CreateInput
-//                 key={input.id}
-//                 label={input.label}
-//                 value={input.value}
-//                 onChange={(e) => handleAgreeInputChange(input.id, e.target.value)}
-//                 placeholder={input.placeholder}
-//                 onDelete={input.canDelete ? () => handleDeleteAgreeInput(input.id) : undefined}
+//               key={input.id}
+//               label={input.label}
+//               value={input.value}
+//               onChange={(e) => handleAgreeInputChange(input.id, e.target.value)}
+//               placeholder={input.placeholder}
+//               onDelete={input.canDelete ? () => handleDeleteAgreeInput(input.id) : undefined}
 //             />
-//             ))}
-
-//           {/* + 버튼 - 5개 미만일 때만 표시 */}
+//           ))}
 //           {agreeInputs.length < 5 && (
-//             <div style={{
-//               display: 'flex',
-//               justifyContent: 'center',
-//               marginTop: '20px'
-//             }}>
+//             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
 //               <button
 //                 onClick={handleAddAgreeInput}
-//                 style={{
-//                   width: '40px',
-//                   height: '40px',
-//                   backgroundColor: 'transparent',
-//                   border: 'none',
-//                   cursor: 'pointer',
-//                   display: 'flex',
-//                   alignItems: 'center',
-//                   justifyContent: 'center',
-//                   padding: 0
-//                 }}
+//                 style={{ width: '40px', height: '40px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
 //               >
-//                 <img
-//                   src={inputPlusIcon}
-//                   alt="입력 필드 추가"
-//                   style={{ width: '40px', height: '40px' }}
-//                 />
+//                 <img src={inputPlusIcon} alt="입력 필드 추가" style={{ width: '40px', height: '40px' }} />
 //               </button>
 //             </div>
 //           )}
 //         </div>
 //       </div>
-//       {/*  비동의 */}
-//       {/* B, C 영역을 같은 행에 배치 */}
+
+//       {/* 비동의 */}
 //       <div style={{ marginTop: 50, marginBottom: '30px' }}>
-//         <h2 style={{
-//           ...FontStyles.headlineSmall,
-//           marginBottom: '0px',
-//           color: Colors.grey07
-//         }}>
-//           [선택지2] 비동의 
-//         </h2>
-//         <p style={{
-//           ...FontStyles.title,
-//           color: Colors.grey05,
-//          // lineHeight: 1.5,
-//           marginBottom: '0px'
-//         }}>
-//         '비동의'을(를) 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
-//          </p>
+//         <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '0px', color: Colors.grey07 }}>[선택지2] 비동의</h2>
+//         <p style={{ ...FontStyles.title, color: Colors.grey05, marginBottom: '0px' }}>
+//           '비동의'을(를) 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
+//         </p>
 //       </div>
-//       <div style={{
-//         display: 'flex',
-//         gap: 100,
-//         alignItems: 'flex-start',
-//         paddingBottom: 40      }}>
-      
-//         {/* B 영역 - 이미지 영역 (왼쪽) */}
-//         <div style={{
-//           flex: '0 0 360px', // 고정 너비
-//           display: 'flex',
-//           flexDirection: 'column',
-//           gap: '20px'
-//         }}>
-//           {/* 이미지 표시 영역 */}
-//           <div
-//             style={{
-//               width: '100%',
-//               height: '180px',
-//               border: '2px solid #ddd',
-//               borderRadius: '8px',
-//               display: 'flex',
-//               alignItems: 'center',
-//               justifyContent: 'center',
-//               backgroundColor: '#f8f9fa',
-//               overflow: 'hidden'
-//             }}
-//           >
+//       <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', paddingBottom: 40 }}>
+//         {/* B: 이미지(비동의) */}
+//         <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+//           <div style={{ width: '100%', height: '180px', border: '2px solid #ddd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', overflow: 'hidden' }}>
 //             <img
-//               src={isDefaultImage2 ? create02Image : URL.createObjectURL(image2)}
-//               alt="딜레마 이미지"
-//               style={{
-//                 width: '100%',
-//                 height: '100%',
-//                 objectFit: 'cover',
-//                 borderRadius: '6px'
-//               }}
-//               onLoad={(e) => {
-//                 if (!isDefaultImage2 && image2) {
-//                   URL.revokeObjectURL(e.currentTarget.src);
-//                 }
-//               }}
+//               src={!disagreeFallback && disagreeUrl ? disagreeUrl : create02Image}
+//               alt="비동의 이미지"
+//               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
+//               onError={() => setDisagreeFallback(true)}
+//               onLoad={() => setDisagreeFallback(false)}
 //             />
 //           </div>
-
-//           {/* 이미지 변경 링크 */}
-//           <div style={{
-//             textAlign: 'center'
-//           }}>
-//            <span
-//             onClick={() => handleImageChange(setImage2, setIsDefaultImage2)}
-//             style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+//           <div style={{ textAlign: 'center' }}>
+//             <span
+//               onClick={() => handleImageChange(2)}
+//               style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
 //             >
-//             이미지 변경
+//               이미지 변경
 //             </span>
 //           </div>
-
-//           {/* 빨간 글씨 안내문 */}
-//           <div style={{
-//             textAlign: 'center'
-//           }}>
-//             <p style={{
-//               color: Colors.systemRed,
-//               ...FontStyles.bodyBold,
-//               margin: 0,
-//               lineHeight: 1.4
-//             }}>
-//               (*권장 이미지 비율 2:1)
-//             </p>
+//           <div style={{ textAlign: 'center' }}>
+//             <p style={{ color: Colors.systemRed, ...FontStyles.bodyBold, margin: 0, lineHeight: 1.4 }}>(*권장 이미지 비율 2:1)</p>
 //           </div>
 //         </div>
 
-//         {/* C 영역 - 입력 필드들 (오른쪽) */}
-//         <div style={{ flex: '1',marginTop:-10 }}>
-//           {/* C 영역 - 비동의 입력 필드들 */}
-//             {disagreeInputs.map((input) => (
+//         {/* C: 비동의 입력 */}
+//         <div style={{ flex: '1', marginTop: -10 }}>
+//           {disagreeInputs.map((input) => (
 //             <CreateInput
-//                 key={input.id}
-//                 label={input.label}
-//                 value={input.value}
-//                 onChange={(e) => handleDisagreeInputChange(input.id, e.target.value)}
-//                 placeholder={input.placeholder}
-//                 onDelete={input.canDelete ? () => handleDeleteDisagreeInput(input.id) : undefined}
+//               key={input.id}
+//               label={input.label}
+//               value={input.value}
+//               onChange={(e) => handleDisagreeInputChange(input.id, e.target.value)}
+//               placeholder={input.placeholder}
+//               onDelete={input.canDelete ? () => handleDeleteDisagreeInput(input.id) : undefined}
 //             />
-//             ))}
-
-//           {/* + 버튼 - 5개 미만일 때만 표시 */}
+//           ))}
 //           {disagreeInputs.length < 5 && (
-//             <div style={{
-//               display: 'flex',
-//               justifyContent: 'center',
-//               marginTop: '20px'
-//             }}>
+//             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
 //               <button
 //                 onClick={handleAddDisagreeInput}
-//                 style={{
-//                   width: '40px',
-//                   height: '40px',
-//                   backgroundColor: 'transparent',
-//                   border: 'none',
-//                   cursor: 'pointer',
-//                   display: 'flex',
-//                   alignItems: 'center',
-//                   justifyContent: 'center',
-//                   padding: 0
-//                 }}
+//                 style={{ width: '40px', height: '40px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
 //               >
-//                 <img
-//                   src={inputPlusIcon}
-//                   alt="입력 필드 추가"
-//                   style={{ width: '40px', height: '40px' }}
-//                 />
+//                 <img src={inputPlusIcon} alt="입력 필드 추가" style={{ width: '40px', height: '40px' }} />
 //               </button>
 //             </div>
 //           )}
 //         </div>
 //       </div>
-//       <div style={{
-//       position: 'absolute',
-//       bottom: '30px',
-//       right: '30px'
-//     }}>
-//       <NextGreen onClick={handleNext} />
-//     </div>
-//     <div style={{
-//                 position: 'absolute',
-//                 bottom: '30px',
-//                 left: '30px'
-//             }}>
-//             <BackOrange onClick={handleBack} />
-//             </div>
+
+//       {/* 하단 버튼 */}
+//       <div style={{ position: 'absolute', bottom: '30px', right: '30px' }}>
+//         <NextGreen onClick={handleNext} />
+//       </div>
+//       <div style={{ position: 'absolute', bottom: '30px', left: '30px' }}>
+//         <BackOrange onClick={() => navigate('/create03')} />
+//       </div>
 //     </CreatorLayout>
 //   );
 // }
 
-// api 연결할 것 - 이미지, 화면 내용 3개 
 import { useEffect, useState } from 'react';
 import DilemmaOutPopup from '../components/DilemmaOutPopup';
 import CreatorLayout from '../components/Expanded/CreatorLayout';
@@ -449,18 +501,94 @@ import create02Image from '../assets/images/create02.png';
 import { FontStyles, Colors } from '../components/styleConstants';
 import NextGreen from "../components/NextOrange";
 import BackOrange from "../components/Expanded/BackOrange";
-import axiosInstance from '../api/axiosInstance'; //  추가
+import axiosInstance from '../api/axiosInstance';
+
+// ── 서버가 주는 상대경로(/static/...) → 절대경로로 보정
+const resolveImageUrl = (raw) => {
+  if (!raw || raw === '-' || String(raw).trim() === '') return null;
+  const u = String(raw).trim();
+  if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
+  const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
+  if (!base) return u;
+  return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
+};
+
+// ── 업로드 공통 함수(현재는 같은 엔드포인트 사용)
+async function uploadRepresentativeImage(file) {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await axiosInstance.post('/custom-games/upload-image', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  const url = res?.data?.url || res?.data?.image_url;
+  if (!url) throw new Error('업로드 응답에 url이 없습니다.');
+  return url; // 상대/절대 어떤 형태든 그대로 반환
+}
+// ✅ 대표 이미지 맵 GET → localStorage 저장
+async function fetchRepresentativeImages(code) {
+  if (!code) throw new Error('게임 코드가 없습니다. (code)');
+  const res = await axiosInstance.get(`/custom-games/${code}/representative-images`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const images = res?.data?.images || {};
+
+  // 서버가 주는 4개 키 저장
+  ['dilemma_image_1', 'dilemma_image_3', 'dilemma_image_4_1', 'dilemma_image_4_2'].forEach((k) => {
+    if (images[k] !== undefined) localStorage.setItem(k, images[k] ?? '');
+  });
+
+  return images;
+}
+
+// ✅ 대표 이미지 맵 PUT (부분 업데이트 가능)
+async function putRepresentativeImages(code, imagesMap) {
+  if (!code) throw new Error('게임 코드가 없습니다. (code)');
+  const payload = { images: imagesMap };
+  await axiosInstance.put(
+    `/custom-games/${code}/representative-images`,
+    payload,
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+}
+
+// ── 서버 응답에서 원하는 키를 다양한 레이어에서 탐색
+const pickFromLayers = (game, key) => {
+  const layers = [game, game?.data, game?.images, game?.data?.images];
+  for (const layer of layers) {
+    const v = layer?.[key];
+    if (typeof v === 'string' && v.trim().length > 0) return v;
+  }
+  return null;
+};
+
+// ── array 유틸
+const isNonEmptyStringArray = (arr) =>
+  Array.isArray(arr) && arr.length > 0 && arr.every(s => typeof s === 'string' && s.trim().length > 0);
+
+// ── 로컬에서 여러 후보 키 중 첫 유효 배열 읽기(오타/단수 포함 지원)
+const readLocalFlipArray = (keys) => {
+  for (const k of keys) {
+    try {
+      const raw = localStorage.getItem(k);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      if (isNonEmptyStringArray(parsed)) return parsed;
+    } catch {}
+  }
+  return null;
+};
 
 export default function Create04() {
   const navigate = useNavigate();
   const [title, setTitle] = useState(localStorage.getItem("creatorTitle") || "");
 
-  // B 영역 - 이미지 상태 (기본 이미지로 시작)
-  const [image1, setImage1] = useState(null);
-  const [image2, setImage2] = useState(null);
-  const [isDefaultImage1, setIsDefaultImage1] = useState(true);
-  const [isDefaultImage2, setIsDefaultImage2] = useState(true);
+  // ── 이미지 URL(동의/비동의) + 폴백 플래그
+  const [agreeUrl, setAgreeUrl] = useState(() => resolveImageUrl(localStorage.getItem('dilemma_image_4_1')));
+  const [disagreeUrl, setDisagreeUrl] = useState(() => resolveImageUrl(localStorage.getItem('dilemma_image_4_2')));
+  const [agreeFallback, setAgreeFallback] = useState(() => !resolveImageUrl(localStorage.getItem('dilemma_image_4_1')));
+  const [disagreeFallback, setDisagreeFallback] = useState(() => !resolveImageUrl(localStorage.getItem('dilemma_image_4_2')));
 
+  // 입력 빌더
   const buildInputsFromArray = (arr, firstPlaceholder) =>
     (Array.isArray(arr) ? arr : []).map((text, idx) => ({
       id: idx + 1,
@@ -470,13 +598,36 @@ export default function Create04() {
       canDelete: idx !== 0,
     }));
 
-  const handleImageChange = (setImage, setIsDefault) => {
+  // ── 이미지 선택 핸들러(동의/비동의 슬롯별)
+  const handleImageChange = async (slot /* 1=agree, 2=disagree */) => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = e.target.files?.[0];
-      if (file) { setImage(file); setIsDefault(false); }
+      if (!file) return;
+      try {
+        const code = localStorage.getItem('code');
+     if (!code) { alert('게임 코드가 없습니다.'); return; }
+
+     // 1) 파일 업로드 → URL 획득(상대/절대 모두 가능)
+     const rawUrl = await uploadRepresentativeImage(file);
+
+     // 2) 해당 슬롯 키만 부분 업데이트
+     const key = slot === 1 ? 'dilemma_image_4_1' : 'dilemma_image_4_2';
+     await putRepresentativeImages(code, { [key]: rawUrl });
+
+     // 3) 로컬 및 화면 동기화
+     localStorage.setItem(key, rawUrl);
+     const resolved = resolveImageUrl(rawUrl);
+     if (slot === 1) { setAgreeUrl(resolved); setAgreeFallback(!resolved); }
+     else { setDisagreeUrl(resolved); setDisagreeFallback(!resolved); }
+      } catch (err) {
+        console.error(err);
+        alert('이미지 업로드에 실패했습니다.');
+        if (slot === 1) setAgreeFallback(true);
+        else setDisagreeFallback(true);
+      }
     };
     input.click();
   };
@@ -493,165 +644,217 @@ export default function Create04() {
     { id: 3, label: "화면 3 ", value: "", placeholder: " ", canDelete: true },
   ]);
 
-  //  초기 로딩: localStorage.data.flips → state 반영
-//  초기 로딩: 개별 키 우선 → state 세팅 + 즉시 로컬 저장(승격)
-//  없으면 data에서 → state 세팅 + 즉시 로컬 저장(승격)
-useEffect(() => {
-  try {
-    // 1) 개별 키 우선 - 다시 진입했을때
-    const agreeLocalRaw = localStorage.getItem('flips_agree_texts');
-    const disagreeLocalRaw = localStorage.getItem('flips_disagree_texts');
+  // ── 마운트 시 1회:
+  //     1) 로컬에 모든 것(agree/disagree 텍스트 + 두 이미지)이 있으면 GET 스킵
+  //     2) 없으면 GET 시도 후 비는 값만 채워 로컬에 저장
+  useEffect(() => {
+    // 0) 대표 이미지 로컬→화면, 없으면 GET
+        const code = localStorage.getItem('code');
 
-    const agreeLocal = agreeLocalRaw ? JSON.parse(agreeLocalRaw) : null;
-    const disagreeLocal = disagreeLocalRaw ? JSON.parse(disagreeLocalRaw) : null;
+        const localAgreeImg = resolveImageUrl(localStorage.getItem('dilemma_image_4_1'));
+        const localDisagreeImg = resolveImageUrl(localStorage.getItem('dilemma_image_4_2'));
 
-    const hasAgreeLocal = Array.isArray(agreeLocal) && agreeLocal.length > 0;
-    const hasDisagreeLocal = Array.isArray(disagreeLocal) && disagreeLocal.length > 0;
+        if (localAgreeImg) { setAgreeUrl(localAgreeImg); setAgreeFallback(false); }
+        if (localDisagreeImg) { setDisagreeUrl(localDisagreeImg); setDisagreeFallback(false); }
 
-    if (hasAgreeLocal || hasDisagreeLocal) {
-      if (hasAgreeLocal) {
-        const builtAgree = buildInputsFromArray(
-          agreeLocal,
-          '예: Homemate 사용자 최적화 시스템 업그레이드 공지'
-        );
-        setAgreeInputs(builtAgree);
-        //  초기 로드 시에도 로컬 저장(승격)
-        persistAgree(builtAgree);
+        if ((!localAgreeImg || !localDisagreeImg) && code) {
+          (async () => {
+            try {
+              const images = await fetchRepresentativeImages(code);
+              const a = images?.dilemma_image_4_1 ?? localStorage.getItem('dilemma_image_4_1') ?? '';
+              const d = images?.dilemma_image_4_2 ?? localStorage.getItem('dilemma_image_4_2') ?? '';
+              const aResolved = resolveImageUrl(a);
+              const dResolved = resolveImageUrl(d);
+              setAgreeUrl(aResolved); setAgreeFallback(!aResolved);
+              setDisagreeUrl(dResolved); setDisagreeFallback(!dResolved);
+            } catch (err) {
+              console.error('대표 이미지 로드 실패:', err);
+              if (!localAgreeImg) { setAgreeUrl(null); setAgreeFallback(true); }
+              if (!localDisagreeImg) { setDisagreeUrl(null); setDisagreeFallback(true); }
+            }
+          })();
+        }
+
+    (async () => {
+      // 1) 로컬 검사 (키 오타/단수도 허용)
+      const localAgreeTexts =
+        readLocalFlipArray(['flips_agree_texts', 'filp_agree_text', 'flip_agree_text']);
+      const localDisagreeTexts =
+        readLocalFlipArray(['flips_disagree_texts', 'flip_disagree_text']);
+
+      const localAgreeImg = resolveImageUrl(localStorage.getItem('dilemma_image_4_1'));
+      const localDisagreeImg = resolveImageUrl(localStorage.getItem('dilemma_image_4_2'));
+
+      const hasAllLocal =
+        isNonEmptyStringArray(localAgreeTexts || []) &&
+        isNonEmptyStringArray(localDisagreeTexts || []) &&
+        !!localAgreeImg &&
+        !!localDisagreeImg;
+
+      // 로컬 값이 있으면 상태 세팅하고 GET 스킵
+      if (hasAllLocal) {
+        // 텍스트 입력 상태 세팅(로컬 → state)
+        setAgreeInputs(buildInputsFromArray(localAgreeTexts, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));
+        setDisagreeInputs(buildInputsFromArray(localDisagreeTexts, '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'));
+
+        // 이미지 상태 세팅(로컬 → state)
+        setAgreeUrl(localAgreeImg); setAgreeFallback(!localAgreeImg);
+        setDisagreeUrl(localDisagreeImg); setDisagreeFallback(!localDisagreeImg);
+        return; // ✅ GET 건너뛰기
       }
-      if (hasDisagreeLocal) {
-        const builtDisagree = buildInputsFromArray(
-          disagreeLocal,
-          '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'
-        );
-        setDisagreeInputs(builtDisagree);
-        //  초기 로드 시에도 로컬 저장(승격)
-        persistDisagree(builtDisagree);
+
+      // 2) 일부만 있거나 아예 없으면: 필요 시 GET
+      const code = localStorage.getItem('code');
+      if (!code) {
+        // code 없으면 GET 자체 불가 → 로컬/폴백만 세팅
+        if (localAgreeTexts) {
+          setAgreeInputs(buildInputsFromArray(localAgreeTexts, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));
+          localStorage.setItem('flips_agree_texts', JSON.stringify(localAgreeTexts)); // 정규화 저장
+        }
+        if (localDisagreeTexts) {
+          setDisagreeInputs(buildInputsFromArray(localDisagreeTexts, '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'));
+          localStorage.setItem('flips_disagree_texts', JSON.stringify(localDisagreeTexts)); // 정규화 저장
+        }
+        setAgreeUrl(localAgreeImg); setAgreeFallback(!localAgreeImg);
+        setDisagreeUrl(localDisagreeImg); setDisagreeFallback(!localDisagreeImg);
+        return;
       }
-      return; // 개별 키로 로드했으면 종료
-    }
 
-    // 2) 처음 페이지 들어왔을때: data에서 폴백 로드
-    const raw = localStorage.getItem('data');
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    const flips = data?.flips ?? {};
+      try {
+        const res = await axiosInstance.get(`/custom-games/${code}`, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const game = res?.data || {};
 
-    const agree = Array.isArray(flips?.agree_texts) ? flips.agree_texts : [];
-    const disagree = Array.isArray(flips?.disagree_texts) ? flips.disagree_texts : [];
+        // 서버 이미지 후보
+        const rawAgreeImg = pickFromLayers(game, 'dilemma_image_4_1');
+        const rawDisagreeImg = pickFromLayers(game, 'dilemma_image_4_2');
 
-    if (agree.length > 0) {
-      const builtAgree = agree.map((text, idx) => ({
-        id: idx + 1,
-        label: `화면 ${idx + 1}${idx === 0 ? ' *' : ''}`,
-        value: text ?? '',
-        placeholder: idx === 0
-          ? "예: Homemate 사용자 최적화 시스템 업그레이드 공지"
-          : " ",
-        canDelete: idx !== 0,
-      }));
-      setAgreeInputs(builtAgree);
-      //  폴백으로 세팅해도 즉시 로컬 저장(승격)
-      persistAgree(builtAgree);
-    }
+        // 서버 텍스트 후보 (여러 경로 대응)
+        const serverAgreeArr =
+          game?.flips?.agree_texts
+          || game?.data?.flips?.agree_texts
+          || game?.flips?.agree
+          || game?.data?.flips?.agree
+          || null;
 
-    if (disagree.length > 0) {
-      const builtDisagree = disagree.map((text, idx) => ({
-        id: idx + 1,
-        label: `화면 ${idx + 1}${idx === 0 ? ' *' : ''}`,
-        value: text ?? '',
-        placeholder: idx === 0
-          ? "예: 비동의 시 발생할 수 있는 문제를 설명해주세요."
-          : " ",
-        canDelete: idx !== 0,
-      }));
-      setDisagreeInputs(builtDisagree);
-      //  폴백으로 세팅해도 즉시 로컬 저장(승격)
-      persistDisagree(builtDisagree);
-    }
-  } catch (e) {
-    console.error('Failed to parse localStorage.data', e);
-  }
-}, []);
+        const serverDisagreeArr =
+          game?.flips?.disagree_texts
+          || game?.data?.flips?.disagree_texts
+          || game?.flips?.disagree
+          || game?.data?.flips?.disagree
+          || null;
 
+        // 각 항목별 "없을 때만" 채움
+        // 이미지
+        const agreeImgFinal = localAgreeImg || resolveImageUrl(rawAgreeImg);
+        const disagreeImgFinal = localDisagreeImg || resolveImageUrl(rawDisagreeImg);
 
-// 동의 입력 onChange
-const handleAgreeInputChange = (id, newValue) => {
-  setAgreeInputs(prev => {
-    const next = prev.map(input =>
-      input.id === id ? { ...input, value: newValue } : input
-    );
-    const agree_texts = [...next]
-      .sort((a, b) => a.id - b.id)
-      .map(it => (it.value ?? '').trim());
-    localStorage.setItem('flips_agree_texts', JSON.stringify(agree_texts)); //  즉시 저장
-    return next;
-  });
-};
+        if (!localAgreeImg && rawAgreeImg) localStorage.setItem('dilemma_image_4_1', rawAgreeImg);
+        if (!localDisagreeImg && rawDisagreeImg) localStorage.setItem('dilemma_image_4_2', rawDisagreeImg);
 
-// 비동의 입력 onChange
-const handleDisagreeInputChange = (id, newValue) => {
-  setDisagreeInputs(prev => {
-    const next = prev.map(input =>
-      input.id === id ? { ...input, value: newValue } : input
-    );
-    const disagree_texts = [...next]
-      .sort((a, b) => a.id - b.id)
-      .map(it => (it.value ?? '').trim());
-    localStorage.setItem('flips_disagree_texts', JSON.stringify(disagree_texts)); //  즉시 저장
-    return next;
-  });
-};
-const persistAgree = (list) => {
-  const agree_texts = [...list].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
-  localStorage.setItem('flips_agree_texts', JSON.stringify(agree_texts));
-};
-const persistDisagree = (list) => {
-  const disagree_texts = [...list].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
-  localStorage.setItem('flips_disagree_texts', JSON.stringify(disagree_texts));
-};
+        setAgreeUrl(agreeImgFinal); setAgreeFallback(!agreeImgFinal);
+        setDisagreeUrl(disagreeImgFinal); setDisagreeFallback(!disagreeImgFinal);
 
-const handleAddAgreeInput = () => {
-  setAgreeInputs(prev => {
-    if (prev.length >= 5) return prev;
-    const nextId = prev.reduce((m, it) => Math.max(m, it.id), 0) + 1;
-    const next = [...prev, { id: nextId, label: `화면 ${prev.length + 1}`, value: "", placeholder: " ", canDelete: true }];
-    persistAgree(next); //  즉시 저장
-    return next;
-  });
-};
-const handleAddDisagreeInput = () => {
-  setDisagreeInputs(prev => {
-    if (prev.length >= 5) return prev;
-    const nextId = prev.reduce((m, it) => Math.max(m, it.id), 0) + 1;
-    const next = [...prev, { id: nextId, label: `화면 ${prev.length + 1}`, value: "", placeholder: " ", canDelete: true }];
-    persistDisagree(next); // 즉시 저장
-    return next;
-  });
-};
+        // 텍스트
+        const agreeTextsFinal = localAgreeTexts || (isNonEmptyStringArray(serverAgreeArr) ? serverAgreeArr : null);
+        const disagreeTextsFinal = localDisagreeTexts || (isNonEmptyStringArray(serverDisagreeArr) ? serverDisagreeArr : null);
 
-const handleDeleteAgreeInput = (idToDelete) => {
-  setAgreeInputs(prev => {
-    const next = prev
-      .filter(input => input.id !== idToDelete)
-      .map((input, index) => ({ ...input, id: index + 1, label: `화면 ${index + 1}`, canDelete: index !== 0 }));
-    persistAgree(next); //  즉시 저장
-    return next;
-  });
-};
-const handleDeleteDisagreeInput = (idToDelete) => {
-  setDisagreeInputs(prev => {
-    const next = prev
-      .filter(input => input.id !== idToDelete)
-      .map((input, index) => ({ ...input, id: index + 1, label: `화면 ${index + 1}`, canDelete: index !== 0 }));
-    persistDisagree(next); //  즉시 저장
-    return next;
-  });
-};
-  //  PUT 함수
+        if (agreeTextsFinal) {
+          setAgreeInputs(buildInputsFromArray(agreeTextsFinal, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));
+          localStorage.setItem('flips_agree_texts', JSON.stringify(agreeTextsFinal)); // 정규화 저장
+        }
+        if (disagreeTextsFinal) {
+          setDisagreeInputs(buildInputsFromArray(disagreeTextsFinal, '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'));
+          localStorage.setItem('flips_disagree_texts', JSON.stringify(disagreeTextsFinal)); // 정규화 저장
+        }
+      } catch (e) {
+        console.error('GET 실패:', e);
+        // GET 실패 시 현재 로컬/폴백으로 마무리
+        if (localAgreeTexts) {
+          setAgreeInputs(buildInputsFromArray(localAgreeTexts, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));
+          localStorage.setItem('flips_agree_texts', JSON.stringify(localAgreeTexts));
+        }
+        if (localDisagreeTexts) {
+          setDisagreeInputs(buildInputsFromArray(localDisagreeTexts, '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'));
+          localStorage.setItem('flips_disagree_texts', JSON.stringify(localDisagreeTexts));
+        }
+        setAgreeUrl(localAgreeImg); setAgreeFallback(!localAgreeImg);
+        setDisagreeUrl(localDisagreeImg); setDisagreeFallback(!localDisagreeImg);
+      }
+    })();
+  }, []);
+
+  // ==== 이하 기존 텍스트/플립 로직은 그대로 ====
+
+  // 동의 / 비동의 입력 onChange 및 저장
+  const handleAgreeInputChange = (id, newValue) => {
+    setAgreeInputs(prev => {
+      const next = prev.map(input => input.id === id ? { ...input, value: newValue } : input);
+      const agree_texts = [...next].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
+      localStorage.setItem('flips_agree_texts', JSON.stringify(agree_texts));
+      return next;
+    });
+  };
+  const handleDisagreeInputChange = (id, newValue) => {
+    setDisagreeInputs(prev => {
+      const next = prev.map(input => input.id === id ? { ...input, value: newValue } : input);
+      const disagree_texts = [...next].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
+      localStorage.setItem('flips_disagree_texts', JSON.stringify(disagree_texts));
+      return next;
+    });
+  };
+
+  const persistAgree = (list) => {
+    const agree_texts = [...list].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
+    localStorage.setItem('flips_agree_texts', JSON.stringify(agree_texts));
+  };
+  const persistDisagree = (list) => {
+    const disagree_texts = [...list].sort((a,b)=>a.id-b.id).map(it => (it.value ?? '').trim());
+    localStorage.setItem('flips_disagree_texts', JSON.stringify(disagree_texts));
+  };
+
+  const handleAddAgreeInput = () => {
+    setAgreeInputs(prev => {
+      if (prev.length >= 5) return prev;
+      const nextId = prev.reduce((m, it) => Math.max(m, it.id), 0) + 1;
+      const next = [...prev, { id: nextId, label: `화면 ${prev.length + 1}`, value: "", placeholder: " ", canDelete: true }];
+      persistAgree(next);
+      return next;
+    });
+  };
+  const handleAddDisagreeInput = () => {
+    setDisagreeInputs(prev => {
+      if (prev.length >= 5) return prev;
+      const nextId = prev.reduce((m, it) => Math.max(m, it.id), 0) + 1;
+      const next = [...prev, { id: nextId, label: `화면 ${prev.length + 1}`, value: "", placeholder: " ", canDelete: true }];
+      persistDisagree(next);
+      return next;
+    });
+  };
+
+  const handleDeleteAgreeInput = (idToDelete) => {
+    setAgreeInputs(prev => {
+      const next = prev
+        .filter(input => input.id !== idToDelete)
+        .map((input, index) => ({ ...input, id: index + 1, label: `화면 ${index + 1}`, canDelete: index !== 0 }));
+      persistAgree(next);
+      return next;
+    });
+  };
+  const handleDeleteDisagreeInput = (idToDelete) => {
+    setDisagreeInputs(prev => {
+      const next = prev
+        .filter(input => input.id !== idToDelete)
+        .map((input, index) => ({ ...input, id: index + 1, label: `화면 ${index + 1}`, canDelete: index !== 0 }));
+      persistDisagree(next);
+      return next;
+    });
+  };
+
   const putFlips = async ({ agree_texts, disagree_texts }) => {
     const code = localStorage.getItem('code');
     if (!code) throw new Error('게임 코드가 없습니다. (code)');
-
     await axiosInstance.put(
       `/custom-games/${code}/flips`,
       { agree_texts, disagree_texts },
@@ -659,7 +862,6 @@ const handleDeleteDisagreeInput = (idToDelete) => {
     );
   };
 
-  //  Next: 현재 값 → PUT → 로컬 저장 → 다음 페이지
   const handleNext = async () => {
     try {
       const safe = s => {
@@ -675,14 +877,11 @@ const handleDeleteDisagreeInput = (idToDelete) => {
         .sort((a, b) => a.id - b.id)
         .map(it => safe(it.value));
 
-      // 1) 서버 PUT
       await putFlips({ agree_texts, disagree_texts });
 
-      // 2) 로컬 저장 (개별 키 + data 병합)
       localStorage.setItem('flips_agree_texts', JSON.stringify(agree_texts));
       localStorage.setItem('flips_disagree_texts', JSON.stringify(disagree_texts));
 
-      // 3) 다음 페이지
       navigate('/create05');
     } catch (e) {
       console.error(e);
@@ -720,18 +919,22 @@ const handleDeleteDisagreeInput = (idToDelete) => {
         </p>
       </div>
       <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', marginBottom: '20px' }}>
-        {/* B: 이미지 */}
+        {/* B: 이미지(동의) */}
         <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ width: '100%', height: '180px', border: '2px solid #ddd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', overflow: 'hidden' }}>
             <img
-              src={isDefaultImage1 ? create02Image : URL.createObjectURL(image1)}
-              alt="딜레마 이미지"
+              src={!agreeFallback && agreeUrl ? agreeUrl : create02Image}
+              alt="동의 이미지"
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
-              onLoad={(e) => { if (!isDefaultImage1 && image1) URL.revokeObjectURL(e.currentTarget.src); }}
+              onError={() => setAgreeFallback(true)}
+              onLoad={() => setAgreeFallback(false)}
             />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <span onClick={() => handleImageChange(setImage1, setIsDefaultImage1)} style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+            <span
+              onClick={() => handleImageChange(1)}
+              style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+            >
               이미지 변경
             </span>
           </div>
@@ -773,18 +976,22 @@ const handleDeleteDisagreeInput = (idToDelete) => {
         </p>
       </div>
       <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', paddingBottom: 40 }}>
-        {/* B: 이미지 */}
+        {/* B: 이미지(비동의) */}
         <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ width: '100%', height: '180px', border: '2px solid #ddd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', overflow: 'hidden' }}>
             <img
-              src={isDefaultImage2 ? create02Image : URL.createObjectURL(image2)}
-              alt="딜레마 이미지"
+              src={!disagreeFallback && disagreeUrl ? disagreeUrl : create02Image}
+              alt="비동의 이미지"
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
-              onLoad={(e) => { if (!isDefaultImage2 && image2) URL.revokeObjectURL(e.currentTarget.src); }}
+              onError={() => setDisagreeFallback(true)}
+              onLoad={() => setDisagreeFallback(false)}
             />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <span onClick={() => handleImageChange(setImage2, setIsDefaultImage2)} style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+            <span
+              onClick={() => handleImageChange(2)}
+              style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
+            >
               이미지 변경
             </span>
           </div>
@@ -823,7 +1030,7 @@ const handleDeleteDisagreeInput = (idToDelete) => {
         <NextGreen onClick={handleNext} />
       </div>
       <div style={{ position: 'absolute', bottom: '30px', left: '30px' }}>
-        <BackOrange onClick={handleBack} />
+        <BackOrange onClick={() => navigate('/create03')} />
       </div>
     </CreatorLayout>
   );

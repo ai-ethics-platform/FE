@@ -125,14 +125,7 @@ const AWS_TEXT =
     
     return () => clearInterval(statusInterval);
   }, []);
- useEffect(() => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket 연결 끊김 감지됨');
-      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-      clearAllLocalStorageKeys();
-      navigate('/');
-    }
-  }, [isConnected]);
+
   // init 메시지 전송 함수
   const sendInitMessage = useCallback(() => {
     if (initMessageSentRef.current) {

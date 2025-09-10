@@ -141,12 +141,20 @@ instance.interceptors.response.use(
 );
 
 export async function callChatbot({ step, input, context, prompt }) {
+  const payload = { step, input, context, prompt }; // ← 스펙 고정
   const { data } = await instance.post(
     "/chat/with-prompt",
-    { step, input, context, prompt }
+    payload,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
   );
-  // data: { output, context, next, meta }
+  // 서버 응답 예:
+  // { "step": "question", "text": "...", "raw": {...} }
   return data;
 }
+
 
 export default instance;

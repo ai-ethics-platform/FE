@@ -171,13 +171,13 @@ export default function ChatPage() {
 
     try {
       // 최근 메시지 1개(바로 직전)만 컨텍스트로 사용
-      const recentMessages = messages.slice(-1);
+      const recentMessages = messages.slice(-2);
       const conversationHistory = recentMessages.map(m => `${m.role}: ${m.content}`).join("\n");
       const inputWithHistory = `${conversationHistory}\n${raw}`;
 
       const prompt = {
         id: "pmpt_68c19d5fe3d48193859772e8883a28d20b3f0cca51ff5a73",
-        version: "9",
+        version: "10",
         messages: [
           { role: "system", content: "당신은 한국어를 사용하는 교사들이 AI 윤리 딜레마 기반의 대화형 수업 게임을 설계할 수 있도록 돕는 티칭 어시스턴트 챗봇입니다." },
           ...recentMessages,

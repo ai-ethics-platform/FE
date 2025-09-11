@@ -171,7 +171,7 @@ export default function ChatPage() {
 
     try {
       // 최근 메시지 1개(바로 직전)만 컨텍스트로 사용
-      const recentMessages = messages.slice(-2);
+      const recentMessages = messages.slice(-5);
       const conversationHistory = recentMessages.map(m => `${m.role}: ${m.content}`).join("\n");
       const inputWithHistory = `${conversationHistory}\n${raw}`;
 

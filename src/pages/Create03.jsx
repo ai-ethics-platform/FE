@@ -494,6 +494,7 @@ const pickArrayFrom = (game, key) => {
   return null;
 };
 // ✅ 대표 이미지 맵 GET → localStorage 저장
+
 async function fetchRepresentativeImages(code) {
   if (!code) throw new Error('게임 코드가 없습니다. (code)');
   const res = await axiosInstance.get(`/custom-games/${code}/representative-images`, {
@@ -543,6 +544,7 @@ export default function Create03() {
   const [option1, setOption1] = useState(localStorage.getItem('agree_label') || "");
   const [option2, setOption2] = useState(localStorage.getItem('disagree_label') || "");
   const didInit = useRef(false);
+  const code = localStorage.getItem('code');
 
   // 유틸
   const toSituationArray = (list) =>
@@ -635,7 +637,6 @@ export default function Create03() {
 
     (async () => {
       try {
-        const code = localStorage.getItem('code');
         if (!code) {
           // code 없으면 GET 불가 → 로컬/폴백만 마무리
           setImageUrl(localImage); setUseFallback(!localImage);

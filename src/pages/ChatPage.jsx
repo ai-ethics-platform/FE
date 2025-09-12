@@ -424,79 +424,189 @@ const readJSON = (key, fallback = []) => {
 };
 const trim1 = (s, max = 200) => (s || "").replace(/\s+/g, " ").slice(0, max);
 
-// ---------------------- 파싱 유틸 (교체) ----------------------
+// // ---------------------- 파싱 유틸 (교체) ----------------------
+// function parseDilemmaText(text) {
+//   const result = {};
+
+//   const splitSentences = (block) => {
+//     if (!block) return [];
+//     const matches = block.match(/[^.!?\n]+[.!?]/g);
+//     if (matches) return matches.map(s => s.trim()).filter(Boolean);
+//     return block.split(/\n+/).map(s => s.trim()).filter(Boolean);
+//   };
+
+//   // 공통: 섹션 헤더/경계에 '### ' 같은 마크다운 헤더 허용
+//   const sec = (letter) => new RegExp(`${letter}\\.`, "u");
+//   const hdr = (letter) => new RegExp(`(?:^|\\n)\\s*(?:#{1,6}\\s*)?${letter}\\.`, "u");
+//   const nextHdr = `\\n\\s*(?:#{1,6}\\s*)?[A-F]\\.`; // lookahead용
+
+//   // A. 오프닝
+//   const openingMatch = text.match(new RegExp(
+//     String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?\.\s*(?:🎬\s*)?오프닝 멘트\s+([\s\S]*?)(?=${nextHdr})`
+//   , "u"));
+//   result.opening = openingMatch ? openingMatch[1].trim() : "";
+
+//   // B. 역할 > 캐릭터 이름
+//   const charMatches = [...text.matchAll(/(?:^|\n)\s*\d+\.\s*\*\*(.*?)\*\*/gu)];
+//   result.char1 = charMatches[0]?.[1]?.trim() ?? "";
+//   result.char2 = charMatches[1]?.[1]?.trim() ?? "";
+//   result.char3 = charMatches[2]?.[1]?.trim() ?? "";
+
+//   // B. 역할 > 캐릭터 설명(상황:)  — 앞의 하이픈/대시 허용
+//   const charDesMatches = [...text.matchAll(
+//     /[-–]?\s*상황:\s*([\s\S]*?)(?=\n\s*\d+\.\s+\*\*|(?:\n\s*(?:#{1,6}\s*)?[A-F]\.)|(?:\n\s*){2,}|$)/gu
+//   )];
+//   result.charDes1 = charDesMatches[0]?.[1]?.trim() ?? "";
+//   result.charDes2 = charDesMatches[1]?.[1]?.trim() ?? "";
+//   result.charDes3 = charDesMatches[2]?.[1]?.trim() ?? "";
+
+//   // C. 상황 및 딜레마 질문
+//   const dilemmaMatch = text.match(new RegExp(
+//     String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?C\.\s*(?:🎯\s*)?상황 및 딜레마 질문\s+([\s\S]*?)(?=${nextHdr})`
+//   , "u"));
+//   if (dilemmaMatch) {
+//     const block = dilemmaMatch[1].trim();
+//     const qMatch = block.match(/질문:\s*([^\n]+)/u);
+//     result.question = qMatch ? qMatch[1].trim() : "";
+//     const withoutQ = block.replace(/질문:\s*[^\n]+/u, "").trim();
+//     result.dilemma_situation = splitSentences(withoutQ);
+//   } else {
+//     result.question = "";
+//     result.dilemma_situation = [];
+//   }
+
+//   // D/E. 선택지 제목 (공백 허용)
+//   const choice1Match = text.match(/(?:^|\n)\s*(?:#{1,6}\s*)?D\.\s*✅?\s*선택지\s*1\s*:\s*([^\n]+)/u);
+//   const choice2Match = text.match(/(?:^|\n)\s*(?:#{1,6}\s*)?E\.\s*✅?\s*선택지\s*2\s*:\s*([^\n]+)/u);
+//   result.choice1 = choice1Match ? choice1Match[1].trim() : "";
+//   result.choice2 = choice2Match ? choice2Match[1].trim() : "";
+
+//   // D/E. 플립자료 — 다음 섹션 헤더(### X.)까지
+//   const flipsAgreeMatch = text.match(new RegExp(
+//     String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?D\.\s*✅?\s*선택지\s*1\s*:([\s\S]*?)📎\s*플립자료:\s*([\s\S]*?)(?=${nextHdr}|$)`
+//   , "u"));
+//   const flipsDisagreeMatch = text.match(new RegExp(
+//     String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?E\.\s*✅?\s*선택지\s*2\s*:([\s\S]*?)📎\s*플립자료:\s*([\s\S]*?)(?=${nextHdr}|$)`
+//   , "u"));
+
+//   result.flips_agree_texts = flipsAgreeMatch ? splitSentences(flipsAgreeMatch[2]) : [];
+//   result.flips_disagree_texts = flipsDisagreeMatch ? splitSentences(flipsDisagreeMatch[2]) : [];
+
+//   // F. 최종 멘트 — “선택지 1 최종선택”/“선택지1 최종선택” 모두 허용
+//   const agreeEndingMatch = text.match(/선택지\s*1\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
+//   const disagreeEndingMatch = text.match(/선택지\s*2\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
+//   result.agreeEnding = agreeEndingMatch ? agreeEndingMatch[1].trim() : "";
+//   result.disagreeEnding = disagreeEndingMatch ? disagreeEndingMatch[1].trim() : "";
+
+//   return result;
+// }
 function parseDilemmaText(text) {
   const result = {};
-
+  const T = (text || "").replace(/\r/g, "");
   const splitSentences = (block) => {
     if (!block) return [];
-    const matches = block.match(/[^.!?\n]+[.!?]/g);
-    if (matches) return matches.map(s => s.trim()).filter(Boolean);
+    const m = block.match(/[^.!?\n]+[.!?]/g);
+    if (m) return m.map(s => s.trim()).filter(Boolean);
     return block.split(/\n+/).map(s => s.trim()).filter(Boolean);
   };
 
-  // 공통: 섹션 헤더/경계에 '### ' 같은 마크다운 헤더 허용
-  const sec = (letter) => new RegExp(`${letter}\\.`, "u");
-  const hdr = (letter) => new RegExp(`(?:^|\\n)\\s*(?:#{1,6}\\s*)?${letter}\\.`, "u");
-  const nextHdr = `\\n\\s*(?:#{1,6}\\s*)?[A-F]\\.`; // lookahead용
+  // 다음 섹션 헤더(lookahead) 후보들: 역할/상황및딜레마/선택지/최종멘트/레터헤더
+  const NEXT = String.raw`(?=\n\s*(?:#{1,6}\s*)?(?:[A-F]\.\s*)?(?:🎭\s*역할|역할|🎯\s*상황\s*및\s*딜레마\s*질문|상황\s*및\s*딜레마\s*질문|✅?\s*선택지\s*[12]|🌀\s*최종\s*멘트|$))`;
+  const FLIP = String.raw`📎\s*(?:\*\*)?\s*플립자료\s*:?\s*(?:\*\*)?`;
 
-  // A. 오프닝
-  const openingMatch = text.match(new RegExp(
-    String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?A\.\s*(?:🎬\s*)?오프닝 멘트\s+([\s\S]*?)(?=${nextHdr})`
-  , "u"));
-  result.opening = openingMatch ? openingMatch[1].trim() : "";
-
-  // B. 역할 > 캐릭터 이름
-  const charMatches = [...text.matchAll(/(?:^|\n)\s*\d+\.\s*\*\*(.*?)\*\*/gu)];
-  result.char1 = charMatches[0]?.[1]?.trim() ?? "";
-  result.char2 = charMatches[1]?.[1]?.trim() ?? "";
-  result.char3 = charMatches[2]?.[1]?.trim() ?? "";
-
-  // B. 역할 > 캐릭터 설명(상황:)  — 앞의 하이픈/대시 허용
-  const charDesMatches = [...text.matchAll(
-    /[-–]?\s*상황:\s*([\s\S]*?)(?=\n\s*\d+\.\s+\*\*|(?:\n\s*(?:#{1,6}\s*)?[A-F]\.)|(?:\n\s*){2,}|$)/gu
-  )];
-  result.charDes1 = charDesMatches[0]?.[1]?.trim() ?? "";
-  result.charDes2 = charDesMatches[1]?.[1]?.trim() ?? "";
-  result.charDes3 = charDesMatches[2]?.[1]?.trim() ?? "";
-
-  // C. 상황 및 딜레마 질문
-  const dilemmaMatch = text.match(new RegExp(
-    String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?C\.\s*(?:🎯\s*)?상황 및 딜레마 질문\s+([\s\S]*?)(?=${nextHdr})`
-  , "u"));
-  if (dilemmaMatch) {
-    const block = dilemmaMatch[1].trim();
-    const qMatch = block.match(/질문:\s*([^\n]+)/u);
-    result.question = qMatch ? qMatch[1].trim() : "";
-    const withoutQ = block.replace(/질문:\s*[^\n]+/u, "").trim();
-    result.dilemma_situation = splitSentences(withoutQ);
-  } else {
-    result.question = "";
-    result.dilemma_situation = [];
+  // A. 오프닝 멘트 (레터/이모지/헤더 유연)
+  {
+    const re = new RegExp(
+      String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:A\.\s*)?(?:🎬\s*)?오프닝\s*멘트\s+([\s\S]*?)${NEXT}`,
+      "u"
+    );
+    const m = T.match(re);
+    result.opening = m?.[1]?.trim() ?? "";
   }
 
-  // D/E. 선택지 제목 (공백 허용)
-  const choice1Match = text.match(/(?:^|\n)\s*(?:#{1,6}\s*)?D\.\s*✅?\s*선택지\s*1\s*:\s*([^\n]+)/u);
-  const choice2Match = text.match(/(?:^|\n)\s*(?:#{1,6}\s*)?E\.\s*✅?\s*선택지\s*2\s*:\s*([^\n]+)/u);
-  result.choice1 = choice1Match ? choice1Match[1].trim() : "";
-  result.choice2 = choice2Match ? choice2Match[1].trim() : "";
+  // B. 역할: "1. **이름**" 블록을 잡고, 각 블록 내에서 "상황:" 추출
+  {
+    const roleBlockRe = new RegExp(
+      String.raw`(?:^|\n)\s*\d+\.\s*\*\*(.*?)\*\*([\s\S]*?)${NEXT}`,
+      "gu"
+    );
+    const blocks = [...T.matchAll(roleBlockRe)];
+    const getDesc = (blk) => {
+      if (!blk) return "";
+      const mm = blk.match(/상황:\s*([\s\S]*?)(?:\n{2,}|$)/u);
+      return mm?.[1]?.trim() ?? "";
+    };
+    result.char1 = blocks[0]?.[1]?.trim() ?? "";
+    result.char2 = blocks[1]?.[1]?.trim() ?? "";
+    result.char3 = blocks[2]?.[1]?.trim() ?? "";
+    result.charDes1 = getDesc(blocks[0]?.[2] ?? "");
+    result.charDes2 = getDesc(blocks[1]?.[2] ?? "");
+    result.charDes3 = getDesc(blocks[2]?.[2] ?? "");
+  }
 
-  // D/E. 플립자료 — 다음 섹션 헤더(### X.)까지
-  const flipsAgreeMatch = text.match(new RegExp(
-    String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?D\.\s*✅?\s*선택지\s*1\s*:([\s\S]*?)📎\s*플립자료:\s*([\s\S]*?)(?=${nextHdr}|$)`
-  , "u"));
-  const flipsDisagreeMatch = text.match(new RegExp(
-    String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?E\.\s*✅?\s*선택지\s*2\s*:([\s\S]*?)📎\s*플립자료:\s*([\s\S]*?)(?=${nextHdr}|$)`
-  , "u"));
+  // C. 상황 및 딜레마 질문
+  {
+    const re = new RegExp(
+      String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:C\.\s*)?(?:🎯\s*)?상황\s*및\s*딜레마\s*질문\s+([\s\S]*?)${NEXT}`,
+      "u"
+    );
+    const m = T.match(re);
+    if (m) {
+      const block = m[1].trim();
+      const q = block.match(/질문:\s*([^\n]+)/u);
+      result.question = q?.[1]?.trim() ?? "";
+      const withoutQ = block.replace(/질문:\s*[^\n]+/u, "").trim();
+      result.dilemma_situation = splitSentences(withoutQ);
+    } else {
+      result.question = "";
+      result.dilemma_situation = [];
+    }
+  }
 
-  result.flips_agree_texts = flipsAgreeMatch ? splitSentences(flipsAgreeMatch[2]) : [];
-  result.flips_disagree_texts = flipsDisagreeMatch ? splitSentences(flipsDisagreeMatch[2]) : [];
+  // D/E. 선택지 제목(레터/이모지/헤더 유연) + 각 블록 내 플립자료 추출
+  {
+    // 선택지 1
+    const title1 = T.match(
+      new RegExp(
+        String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:D\.\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)`,
+        "u"
+      )
+    );
+    result.choice1 = title1?.[1]?.trim() ?? "";
 
-  // F. 최종 멘트 — “선택지 1 최종선택”/“선택지1 최종선택” 모두 허용
-  const agreeEndingMatch = text.match(/선택지\s*1\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
-  const disagreeEndingMatch = text.match(/선택지\s*2\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
-  result.agreeEnding = agreeEndingMatch ? agreeEndingMatch[1].trim() : "";
-  result.disagreeEnding = disagreeEndingMatch ? disagreeEndingMatch[1].trim() : "";
+    const block1 = T.match(
+      new RegExp(
+        String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:D\.\s*)?✅?\s*선택지\s*1\s*:[\s\S]*?${FLIP}\s*([\s\S]*?)${NEXT}`,
+        "u"
+      )
+    );
+    result.flips_agree_texts = block1 ? splitSentences(block1[1]) : [];
+
+    // 선택지 2
+    const title2 = T.match(
+      new RegExp(
+        String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:E\.\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)`,
+        "u"
+      )
+    );
+    result.choice2 = title2?.[1]?.trim() ?? "";
+
+    const block2 = T.match(
+      new RegExp(
+        String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:E\.\s*)?✅?\s*선택지\s*2\s*:[\s\S]*?${FLIP}\s*([\s\S]*?)${NEXT}`,
+        "u"
+      )
+    );
+    result.flips_disagree_texts = block2 ? splitSentences(block2[1]) : [];
+  }
+
+  // F. 최종 멘트
+  {
+    const a = T.match(/선택지\s*1\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
+    const d = T.match(/선택지\s*2\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
+    result.agreeEnding = a?.[1]?.trim() ?? "";
+    result.disagreeEnding = d?.[1]?.trim() ?? "";
+  }
 
   return result;
 }
@@ -599,9 +709,9 @@ export default function ChatPage() {
 
       const prompt = {
         id: "pmpt_68c19d5fe3d48193859772e8883a28d20b3f0cca51ff5a73",
-        version: "14",
+        version: "17",
         messages: [
-          { role: "system", content: "당신은 한국어를 사용하는 교사들이 AI 윤리 딜레마 기반의 대화형 수업 게임을 설계할 수 있도록 돕는 티칭 어시스턴트 챗봇입니다." },
+          { role: "system", content: "너는 교사가 AI 윤리 딜레마 기반 대화형 수업 게임을 설계하도록 돕는 어시스턴트 챗봇이야.너의 역할은 교사가 주제를 선택하고, 그 주제에서 발생할 수 있는 가치 충돌을 탐색하며, 딜레마 질문·역할·상황·최종 게임 스크립트까지 차례대로 완성할 수 있도록 단계별로 안내하는 것이야.  대화는 반드시 한국어 존댓말로, 따뜻하고 협업적인 톤을 유지하며, 중·고등학생도 이해할 수 있을 만큼 쉽게 설명해야 해. 전문 용어는 줄이고, 일상적 비유를 활용하며, 교사가 스스로 판단할 수 있도록 소크라테스식 질문을 섞어야 해.  진행 규칙은 다음과 같아:  ① 주제 선택 → ② 가치 충돌 질문 도출 → ③ 역할 설정 → ④ 상황 및 플립 구성 → ⑤ 최종 게임 스크립트 완성.  각 단계는 한 번에 하나씩만 진행하며, 다음 단계로 넘어가기 전에 반드시 교사의 의견이나 선택을 확인해야 해.  교사가 먼저 추천을 원한다고 요청하기 전에는, 주제·가치 갈등·역할·상황을 마음대로 자동으로 생성하지 말고, 교사가 아이디어를 제시하도록 기다려야 해.  결국 너의 업무는 교사가 주체적으로 차례대로 수업을 설계하도록 돕는 협력자이자 안내자로서, 구조적이면서도 자연스럽게 대화를 이어가는 것이야.   " },
           ...recentMessages,
         ],
       };
@@ -628,7 +738,7 @@ export default function ChatPage() {
       persistParsedToLocalStorage(text);
       
       // '템플릿 생성' 큐가 등장하면 이미지 생성 버튼만 먼저 노출
-      const cue = typeof text === "string" && text.includes("템플릿 생성");
+      const cue = typeof text === "string" && text.includes("# 🎬 오프닝 멘트");
       setShowImageButton(!!cue);
       setShowButton(false); // 템플릿 버튼은 이미지 생성이 끝난 뒤에만 노출
       if (cue) {
@@ -727,7 +837,7 @@ export default function ChatPage() {
          if (!ds?.length) return "";
          const s = trim1(ds.slice(0, 2).join(" "));
          const q = trim1(question || "", 120);
-         return `${IMG_STYLE}. 교실 토론 중 핵심 장면, 만화풍, 16:9.\n상황: ${s}\n질문: ${q}`;
+         return `${IMG_STYLE}. 교실 토론 중 핵심 장면, 만화풍, 2:1.\n상황: ${s}\n질문: ${q}`;
        });
  
        // 3) 플립(찬성)
@@ -744,19 +854,19 @@ export default function ChatPage() {
          return `${IMG_STYLE}. 선택지 2(반대) 논거를 상징적으로 표현한 학습 카드 장면, 만화풍, 16:9.\n핵심 논거: ${core}`;
        });
  
-       // 5~7) 캐릭터 프로필
-       await genIfPossible("role_image_1", () => {
-         if (!char1) return "";
-         return `${IMG_STYLE}. ${char1} 캐릭터 프로필, 허리 위, 단색 배경, 만화풍, 16:9.\n설명: ${trim1(charDes1)}`;
-       });
-       await genIfPossible("role_image_2", () => {
-         if (!char2) return "";
-         return `${IMG_STYLE}. ${char2} 캐릭터 프로필, 허리 위, 단색 배경, 만화풍, 16:9.\n설명: ${trim1(charDes2)}`;
-       });
-       await genIfPossible("role_image_3", () => {
-         if (!char3) return "";
-         return `${IMG_STYLE}. ${char3} 캐릭터 프로필, 허리 위, 단색 배경, 만화풍, 16:9.\n설명: ${trim1(charDes3)}`;
-       });
+      //  // 5~7) 캐릭터 프로필
+      //  await genIfPossible("role_image_1", () => {
+      //    if (!char1) return "";
+      //    return `${IMG_STYLE}. ${char1} 캐릭터 프로필, 허리 위, 단색 배경, 만화풍, 16:9.\n설명: ${trim1(charDes1)}`;
+      //  });
+      //  await genIfPossible("role_image_2", () => {
+      //    if (!char2) return "";
+      //    return `${IMG_STYLE}. ${char2} 캐릭터 프로필, 허리 위, 단색 배경, 만화풍, 16:9.\n설명: ${trim1(charDes2)}`;
+      //  });
+      //  await genIfPossible("role_image_3", () => {
+      //    if (!char3) return "";
+      //    return `${IMG_STYLE}. ${char3} 캐릭터 프로필, 허리 위, 단색 배경, 만화풍, 16:9.\n설명: ${trim1(charDes3)}`;
+      //  });
      } catch (e) {
        const msg = e?.response?.data?.error || e?.message || "이미지 생성 중 오류";
        setMessages(prev => [...prev, { role: "assistant", content: `에러: ${msg}` }]);
@@ -931,17 +1041,20 @@ export default function ChatPage() {
     </div>
   );
 }
-
+// 기존 Bubble 교체
 function Bubble({ role, text, typing }) {
+  const stripAsterisks = (s) => (s ?? "").replace(/\*/g, "");
+
   const side = role === "user" ? "right" : "left";
-  const kind =
-    role === "user" ? "user" :
-    role === "assistant" ? "assistant" : "system";
+  const kind = role === "user" ? "user" : role === "assistant" ? "assistant" : "system";
+
+  // assistant 메시지에 한해 화면 표시만 '*' 제거
+  const display = role === "assistant" ? stripAsterisks(text) : text;
 
   return (
     <div className={`bubble-row ${side}`}>
       <div className={`bubble ${kind} ${typing ? "typing" : ""}`}>
-        <pre className="msg">{text}</pre>
+        <pre className="msg">{display}</pre>
       </div>
     </div>
   );

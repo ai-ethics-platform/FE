@@ -18,68 +18,68 @@ export default function Create00() {
   useEffect(() => {
     let didCancel = false;
 
-    const createEmptyGame = async () => {
-      try {
-        setCreating(true);
-        setErrorMsg('');
+    // const createEmptyGame = async () => {
+    //   try {
+    //     setCreating(true);
+    //     setErrorMsg('');
 
-       // 로컬에서 읽기 
-        const teacher_name = localStorage.getItem('teacher_name') || '';
-        const teacher_school = localStorage.getItem('teacher_school') || '';
-        const teacher_email = localStorage.getItem('teacher_email') || '';
+    //    // 로컬에서 읽기 
+    //     const teacher_name = localStorage.getItem('teacher_name') || '';
+    //     const teacher_school = localStorage.getItem('teacher_school') || '';
+    //     const teacher_email = localStorage.getItem('teacher_email') || '';
 
-        // data는 객체
-        const dataSkeleton = {
-          opening: [], 
-          roles: [],  
-          rolesBackground: "",
-          dilemma: {
-            situation: [],
-            question: "",
-            options: { agree_label: "", disagree_label: "" }
-          },
-          flips: {
-            agree_texts: [],
-            disagree_texts: []
-          },
-          finalMessages: { agree: "", disagree: "" }
-        };
+    //     // data는 객체
+    //     const dataSkeleton = {
+    //       opening: [], 
+    //       roles: [],  
+    //       rolesBackground: "",
+    //       dilemma: {
+    //         situation: [],
+    //         question: "",
+    //         options: { agree_label: "", disagree_label: "" }
+    //       },
+    //       flips: {
+    //         agree_texts: [],
+    //         disagree_texts: []
+    //       },
+    //       finalMessages: { agree: "", disagree: "" }
+    //     };
 
-        const payload = {
-          teacher_name,
-          teacher_school,
-          teacher_email,
-          title: '-',                    
-          representative_image_url: '-', 
-          data: dataSkeleton            
-        };
+    //     const payload = {
+    //       teacher_name,
+    //       teacher_school,
+    //       teacher_email,
+    //       title: '-',                    
+    //       representative_image_url: '-', 
+    //       data: dataSkeleton            
+    //     };
 
-        const { data: res } = await axiosInstance.post('/custom-games', payload, {
-          headers: { 'Content-Type': 'application/json' }
-        });
+    //     const { data: res } = await axiosInstance.post('/custom-games', payload, {
+    //       headers: { 'Content-Type': 'application/json' }
+    //     });
 
-        if (didCancel) return;
+    //     if (didCancel) return;
 
-        const code = res?.code ?? null;
-        const gameUrl = res?.url ?? null;
-        setCreatedCode(code);
-        if (code) {
-          localStorage.setItem('code', code);
-        }
-        if (gameUrl) {
-          localStorage.setItem('url', gameUrl);
-        }
-      } catch (err) {
-        if (!didCancel) {
-          console.error(err);
-          setErrorMsg('초기 게임 생성 중 문제가 발생했습니다.');
-        }
-      } finally {
-        if (!didCancel) setCreating(false);
-      }
-    };
+    //     const code = res?.code ?? null;
+    //     const gameUrl = res?.url ?? null;
+    //     setCreatedCode(code);
+    //     if (code) {
+    //       localStorage.setItem('code', code);
+    //     }
+    //     if (gameUrl) {
+    //       localStorage.setItem('url', gameUrl);
+    //     }
+    //   } catch (err) {
+    //     if (!didCancel) {
+    //       console.error(err);
+    //       setErrorMsg('초기 게임 생성 중 문제가 발생했습니다.');
+    //     }
+    //   } finally {
+    //     if (!didCancel) setCreating(false);
+    //   }
+    // };
 
-    createEmptyGame();
+    // createEmptyGame();
     return () => { didCancel = true; };
   }, []);
 
@@ -87,18 +87,18 @@ export default function Create00() {
 
 
   const handleNext = () => {
-    if (!createdCode) {
-      alert('초기 게임 생성이 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.');
-      return;
-    }
-    navigate('/chatpage');
+    // if (!createdCode) {
+    //   alert('초기 게임 생성이 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.');
+    //   return;
+    // }
+    navigate('/create01');
   };
 
   return (
     <CreatorLayout
       headerbar={1}
       headerLeftType="home"
-      headerNextDisabled={!createdCode || creating}
+      headerNextDisabled={creating}
       onHeaderLeftClick={() => window.history.back()}
       onHeaderNextClick={handleNext}
       frame={false}
@@ -113,7 +113,7 @@ export default function Create00() {
         <Continue
           onClick={handleNext}
           label={creating ? '초기화 중...' : '시작하기'}
-          disabled={creating || !createdCode}
+          disabled={creating}
           style={{ marginTop: 10, width: 264, height: 72, opacity: creating || !createdCode ? 0.6 : 1 }}
         />
       </div>

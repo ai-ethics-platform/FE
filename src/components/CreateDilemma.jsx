@@ -125,7 +125,7 @@ export default function CreateDilemma({ onClose }) {
     localStorage.setItem('teacher_email', email);
 
     // 다음 페이지 이동
-    navigate('/create00');
+    navigate('/chatpage');
   };
 
   // 세 값 중 하나라도 없으면 true

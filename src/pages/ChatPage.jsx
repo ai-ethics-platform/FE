@@ -203,7 +203,10 @@ function parseDilemmaText(text) {
     disagreeEnding: "",
   };
 
-  const T = (text || "").replace(/\r/g, "");
+  // 0) 정규화: CR 제거 + 다양한 대시를 보편적 하이픈으로 치환
+  const T = (text || "")
+    .replace(/\r/g, "")
+    .replace(/[\u2012\u2013\u2014\u2212]/g, "-"); // figure/en/em dashes, minus → "-"
 
   // 보조: 문장 분리 (문장부호 기준 → 없으면 줄 기준)
   const splitSentences = (block) => {
@@ -213,16 +216,15 @@ function parseDilemmaText(text) {
     return block.split(/\n+/).map(s => s.trim()).filter(Boolean);
   };
 
-  // 공통: 섹션 추출 유틸 (헤더 ~ 다음 헤더 직전까지)
+  // 공통: 섹션 추출 (헤더 ~ 다음 헤더 직전까지)
   const getSection = (headerRe) => {
-    // 다음 섹션 헤더 후보들(룩어헤드)
     const NEXT = String.raw`(?=\n\s*(?:#{1,6}\s*)?(?:🎬\s*오프닝\s*멘트|🎭\s*역할|🎯\s*상황\s*및\s*딜레마\s*질문|✅?\s*선택지\s*1|✅?\s*선택지\s*2|🌀\s*최종\s*멘트|$))`;
     const re = new RegExp(
       String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?${headerRe}\s*([\s\S]*?)${NEXT}`,
       "u"
     );
     const m = T.match(re);
-    return m ? m[1].trim() : "";
+    return m ? (m[1] || "").trim() : "";
   };
 
   // A. 🎬 오프닝 멘트
@@ -231,32 +233,59 @@ function parseDilemmaText(text) {
     out.opening = splitSentences(sec);
   }
 
-  // B. 🎭 역할  —  "1. [역할] - [설명]" 형태 3줄
+  // B. 🎭 역할 — 다양한 포맷 허용
   {
     const sec = getSection(String.raw`(?:B\.\s*)?🎭\s*역할`);
     if (sec) {
       const lines = sec.split(/\n+/).map(s => s.trim()).filter(Boolean);
-      const roleLineRe = /^\d+\.\s*\[?([^\]\-]+?)\]?\s*(?:-\s*(.+))?$/u;
+
+      // 허용 패턴:
+      // 1) "1. 의사 - 설명" 형태
+      const reNumbered = /^\d+\.\s*\[?([^\]\-:]+?)\]?\s*(?:[-:]\s*(.+))?$/u;
+      // 2) 불릿/번호 없는 "의사 - 설명" 형태 (대시/콜론 허용)
+      const reNamed = /^[•*-]?\s*\[?([^\]\-:]+?)\]?\s*(?:[-:]\s*(.+))$/u;
+      // 3) 이름만 단독 줄(다음 줄이 설명)까지 허용 — 필요 시 확장 가능
 
       const roles = [];
-      for (const ln of lines) {
-        const m = ln.match(roleLineRe);
+      for (let i = 0; i < lines.length; i++) {
+        const ln = lines[i];
+
+        let m = ln.match(reNumbered);
+        if (!m) m = ln.match(reNamed);
+
         if (m) {
-          roles.push({ name: (m[1] || "").trim(), desc: (m[2] || "").trim() });
+          const name = (m[1] || "").trim();
+          const desc = (m[2] || "").trim();
+          if (name) roles.push({ name, desc });
+          continue;
+        }
+
+        // 이름만 있는 줄 + 다음 줄이 설명으로 보이는 경우 (옵션)
+        // 예: "의사" (다음 줄) "대학병원에서 …"
+        if (/^[^\s-:]+$/.test(ln) && lines[i + 1] && /[-:]/.test(lines[i + 1])) {
+          const next = lines[i + 1];
+          const m2 = next.match(/^\s*(?:[-:]\s*)?(.+)$/u);
+          roles.push({ name: ln.trim(), desc: (m2?.[1] || "").trim() });
+          i++; // 다음 줄 소비
         }
       }
+
       if (roles[0]) { out.char1 = roles[0].name; out.charDes1 = roles[0].desc; }
       if (roles[1]) { out.char2 = roles[1].name; out.charDes2 = roles[1].desc; }
       if (roles[2]) { out.char3 = roles[2].name; out.charDes3 = roles[2].desc; }
     }
   }
 
-  // C. 🎯 상황 및 딜레마 질문  —  첫 번째 물음표(?) 포함 줄을 질문으로, 나머지는 상황으로
+  // C. 🎯 상황 및 딜레마 질문 — '질문:' 줄을 질문으로 우선 인식
   {
     const sec = getSection(String.raw`(?:C\.\s*)?🎯\s*상황\s*및\s*딜레마\s*질문`);
     if (sec) {
       const lines = sec.split(/\n+/).map(s => s.trim()).filter(Boolean);
-      const qIdx = lines.findIndex(l => l.includes("?") || /[?？]$/.test(l));
+      // 우선 '질문:' 접두를 찾음
+      let qIdx = lines.findIndex(l => /^질문\s*[:：]/u.test(l));
+      // 없으면 물음표 포함 줄
+      if (qIdx < 0) qIdx = lines.findIndex(l => l.includes("?") || /[?？]$/.test(l));
+
       if (qIdx >= 0) {
         out.question = lines[qIdx];
         const remain = lines.slice(0, qIdx).concat(lines.slice(qIdx + 1)).join("\n");
@@ -268,25 +297,24 @@ function parseDilemmaText(text) {
     }
   }
 
-  // D. ✅ 선택지 1: [내용]  +  "플립자료: [내용]"
+  // D. ✅ 선택지 1 + 플립 자료 (📎/띄어쓰기 허용)
   {
     const m = T.match(
-      /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)[\s\S]*?(?:플립자료\s*:\s*)([\s\S]*?)(?=\n\s*(?:✅?\s*선택지\s*2|🌀\s*최종|$))/u
+      /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)[\s\S]*?(?:📎?\s*플립\s*자료\s*:\s*)([\s\S]*?)(?=\n\s*(?:✅?\s*선택지\s*2|🌀\s*최종|$))/u
     );
     if (m) {
       out.choice1 = (m[1] || "").trim();
       out.flips_agree_texts = splitSentences((m[2] || "").trim());
     } else {
-      // 타이틀만 있는 경우(플립자료가 다른 줄에 분리된 케이스 대비)
       const titleOnly = T.match(/(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)/u);
       if (titleOnly) out.choice1 = titleOnly[1].trim();
     }
   }
 
-  // E. ✅ 선택지 2: [내용]  +  "플립자료: [내용]"
+  // E. ✅ 선택지 2 + 플립 자료 (📎/띄어쓰기 허용)
   {
     const m = T.match(
-      /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)[\s\S]*?(?:플립자료\s*:\s*)([\s\S]*?)(?=\n\s*(?:🌀\s*최종|$))/u
+      /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)[\s\S]*?(?:📎?\s*플립\s*자료\s*:\s*)([\s\S]*?)(?=\n\s*(?:🌀\s*최종|$))/u
     );
     if (m) {
       out.choice2 = (m[1] || "").trim();
@@ -309,6 +337,127 @@ function parseDilemmaText(text) {
 
   return out;
 }
+
+// function parseDilemmaText(text) {
+//   const out = {
+//     opening: [],
+//     char1: "", char2: "", char3: "",
+//     charDes1: "", charDes2: "", charDes3: "",
+//     dilemma_situation: [],
+//     question: "",
+//     choice1: "", choice2: "",
+//     flips_agree_texts: [],
+//     flips_disagree_texts: [],
+//     agreeEnding: "",
+//     disagreeEnding: "",
+//   };
+
+//   const T = (text || "").replace(/\r/g, "");
+
+//   // 보조: 문장 분리 (문장부호 기준 → 없으면 줄 기준)
+//   const splitSentences = (block) => {
+//     if (!block) return [];
+//     const m = block.match(/[^.!?。\n]+[.!?。]/g);
+//     if (m) return m.map(s => s.trim()).filter(Boolean);
+//     return block.split(/\n+/).map(s => s.trim()).filter(Boolean);
+//   };
+
+//   // 공통: 섹션 추출 유틸 (헤더 ~ 다음 헤더 직전까지)
+//   const getSection = (headerRe) => {
+//     // 다음 섹션 헤더 후보들(룩어헤드)
+//     const NEXT = String.raw`(?=\n\s*(?:#{1,6}\s*)?(?:🎬\s*오프닝\s*멘트|🎭\s*역할|🎯\s*상황\s*및\s*딜레마\s*질문|✅?\s*선택지\s*1|✅?\s*선택지\s*2|🌀\s*최종\s*멘트|$))`;
+//     const re = new RegExp(
+//       String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?${headerRe}\s*([\s\S]*?)${NEXT}`,
+//       "u"
+//     );
+//     const m = T.match(re);
+//     return m ? m[1].trim() : "";
+//   };
+
+//   // A. 🎬 오프닝 멘트
+//   {
+//     const sec = getSection(String.raw`(?:A\.\s*)?🎬\s*오프닝\s*멘트`);
+//     out.opening = splitSentences(sec);
+//   }
+
+//   // B. 🎭 역할  —  "1. [역할] - [설명]" 형태 3줄
+//   {
+//     const sec = getSection(String.raw`(?:B\.\s*)?🎭\s*역할`);
+//     if (sec) {
+//       const lines = sec.split(/\n+/).map(s => s.trim()).filter(Boolean);
+//       const roleLineRe = /^\d+\.\s*\[?([^\]\-]+?)\]?\s*(?:-\s*(.+))?$/u;
+
+//       const roles = [];
+//       for (const ln of lines) {
+//         const m = ln.match(roleLineRe);
+//         if (m) {
+//           roles.push({ name: (m[1] || "").trim(), desc: (m[2] || "").trim() });
+//         }
+//       }
+//       if (roles[0]) { out.char1 = roles[0].name; out.charDes1 = roles[0].desc; }
+//       if (roles[1]) { out.char2 = roles[1].name; out.charDes2 = roles[1].desc; }
+//       if (roles[2]) { out.char3 = roles[2].name; out.charDes3 = roles[2].desc; }
+//     }
+//   }
+
+//   // C. 🎯 상황 및 딜레마 질문  —  첫 번째 물음표(?) 포함 줄을 질문으로, 나머지는 상황으로
+//   {
+//     const sec = getSection(String.raw`(?:C\.\s*)?🎯\s*상황\s*및\s*딜레마\s*질문`);
+//     if (sec) {
+//       const lines = sec.split(/\n+/).map(s => s.trim()).filter(Boolean);
+//       const qIdx = lines.findIndex(l => l.includes("?") || /[?？]$/.test(l));
+//       if (qIdx >= 0) {
+//         out.question = lines[qIdx];
+//         const remain = lines.slice(0, qIdx).concat(lines.slice(qIdx + 1)).join("\n");
+//         out.dilemma_situation = splitSentences(remain);
+//       } else {
+//         out.question = "";
+//         out.dilemma_situation = splitSentences(sec);
+//       }
+//     }
+//   }
+
+//   // D. ✅ 선택지 1: [내용]  +  "플립자료: [내용]"
+//   {
+//     const m = T.match(
+//       /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)[\s\S]*?(?:플립자료\s*:\s*)([\s\S]*?)(?=\n\s*(?:✅?\s*선택지\s*2|🌀\s*최종|$))/u
+//     );
+//     if (m) {
+//       out.choice1 = (m[1] || "").trim();
+//       out.flips_agree_texts = splitSentences((m[2] || "").trim());
+//     } else {
+//       // 타이틀만 있는 경우(플립자료가 다른 줄에 분리된 케이스 대비)
+//       const titleOnly = T.match(/(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)/u);
+//       if (titleOnly) out.choice1 = titleOnly[1].trim();
+//     }
+//   }
+
+//   // E. ✅ 선택지 2: [내용]  +  "플립자료: [내용]"
+//   {
+//     const m = T.match(
+//       /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)[\s\S]*?(?:플립자료\s*:\s*)([\s\S]*?)(?=\n\s*(?:🌀\s*최종|$))/u
+//     );
+//     if (m) {
+//       out.choice2 = (m[1] || "").trim();
+//       out.flips_disagree_texts = splitSentences((m[2] || "").trim());
+//     } else {
+//       const titleOnly = T.match(/(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)/u);
+//       if (titleOnly) out.choice2 = titleOnly[1].trim();
+//     }
+//   }
+
+//   // F. 🌀 최종 멘트 — 1줄째: 선택지1 최종, 2줄째: 선택지2 최종
+//   {
+//     const sec = getSection(String.raw`(?:F\.\s*)?🌀\s*최종\s*멘트`);
+//     if (sec) {
+//       const lines = sec.split(/\n+/).map(s => s.trim()).filter(Boolean);
+//       if (lines[0]) out.agreeEnding = lines[0];
+//       if (lines[1]) out.disagreeEnding = lines[1];
+//     }
+//   }
+
+//   return out;
+// }
 
 
 function hasOpeningCue(s) {
@@ -430,7 +579,7 @@ export default function ChatPage() {
       // 진희님 프롬프트 
       const prompt = {
         id: "pmpt_68c5008a398081948d5dc37bf1d1aec20557fb7a1f2f0442",
-        version: "8", 
+        version: "9", 
         messages: [
           { role: "system", content: "너는 교사가 AI 윤리 딜레마 기반 대화형 수업 게임을 설계하도록 돕는 어시스턴트 챗봇이야.너의 역할은 교사가 주제를 선택하고, 그 주제에서 발생할 수 있는 가치 충돌을 탐색하며, 딜레마 질문·역할·상황·최종 게임 스크립트까지 차례대로 완성할 수 있도록 단계별로 안내하는 것이야.  대화는 반드시 한국어 존댓말로, 따뜻하고 협업적인 톤을 유지하며, 중·고등학생도 이해할 수 있을 만큼 쉽게 설명해야 해. 전문 용어는 줄이고, 일상적 비유를 활용하며, 교사가 스스로 판단할 수 있도록 소크라테스식 질문을 섞어야 해.  진행 규칙은 다음과 같아:  ① 주제 선택 → ② 가치 충돌 질문 도출 → ③ 역할 설정 → ④ 상황 및 플립 구성 → ⑤ 최종 게임 스크립트 완성.  각 단계는 한 번에 하나씩만 진행하며, 다음 단계로 넘어가기 전에 반드시 교사의 의견이나 선택을 확인해야 해.  교사가 먼저 추천을 원한다고 요청하기 전에는, 주제·가치 갈등·역할·상황을 마음대로 자동으로 생성하지 말고, 교사가 아이디어를 제시하도록 기다려야 해.  결국 너의 업무는 교사가 주체적으로 차례대로 수업을 설계하도록 돕는 협력자이자 안내자로서, 구조적이면서도 자연스럽게 대화를 이어가는 것이야.   " },
           ...recentMessages,

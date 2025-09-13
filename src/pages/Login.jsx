@@ -252,10 +252,18 @@ export default function Login() {
       document.body.style.overflow = original;
     };
   }, []);
-  const handleVoiceChange = (enabled) => {
-    console.log('Voice enabled changed to:', enabled);
-    // 필요시 상태 업데이트 or 안내
-  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+  
+    if (code) {
+      // code를 로컬에 저장
+      localStorage.setItem('code', code);
+  
+    }
+  }, [location.search]);
+  
   return (
     <Background bgIndex={1}>
   
@@ -375,21 +383,11 @@ export default function Login() {
                 localStorage.setItem('access_token', access_token);
                 localStorage.setItem('refresh_token', refresh_token);
 
-                const params = new URLSearchParams(location.search);
-                       const code = params.get('code');
-                       const nextParam = params.get('next'); // 보통 /customroom
-                
-                       // 1) 리다이렉트 통해 들어온 경우: next 또는 code가 있다면 customroom로
-                       // 2) 그렇지 않으면 기본 selectroom
-                       const next = nextParam
-                         ? nextParam + (code ? `?code=${encodeURIComponent(code)}` : '')
-                         : (code ? `/customroom?code=${encodeURIComponent(code)}` : '/selectroom');
-                
-                       if (code) {
-                         localStorage.setItem('code', code); // 앱 전역에서 사용
-                       }
-                
-                       navigate(next, { replace: true });
+                if (code) {
+                  navigate(`/customroom?code=${encodeURIComponent(code)}`, { replace: true });
+                } else {
+                  navigate('/selectroom', { replace: true });
+                }
 
               } catch (error) {
                 if (error.response) {

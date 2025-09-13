@@ -732,10 +732,10 @@ async function uploadRepresentativeImage(file) {
     })();
   }, [navigate]);
   
-// ✅ 모든 대표 이미지 맵을 가져와 localStorage에 저장
+//  모든 대표 이미지 맵을 가져와 localStorage에 저장  /custom-games/{code}/dilemma-images
 async function fetchRepresentativeImages(code) {
   if (!code) throw new Error('게임 코드가 없습니다. (code)');
-  const res = await axiosInstance.get(`/custom-games/${code}/representative-images`, {
+  const res = await axiosInstance.get(`/custom-games/${code}/dilemma-images`, {
     headers: { 'Content-Type': 'application/json' },
   });
   const images = res?.data?.images || {};
@@ -759,7 +759,7 @@ async function fetchRepresentativeImages(code) {
   );
 
   const { data } = await axiosInstance.put(
-    `/custom-games/${code}/representative-images`,
+    `/custom-games/${code}/dilemma-images/dilemma_image_1`,
     { images } // <== 딱 이 형태로 보냄
   );
 

@@ -433,7 +433,7 @@ async function uploadRoleImage(slot, file) {
   if (!code) throw new Error('게임 코드가 없습니다. (code)');
   const form = new FormData();
   form.append('file', file);
-  const res = await axiosInstance.post(
+  const res = await axiosInstance.put(
     `/custom-games/${code}/role-images/${slot}`,
     form,
     { headers: { 'Content-Type': 'multipart/form-data' } }

@@ -31,7 +31,7 @@ export default function Create00() {
       headerbar={1}
       headerLeftType="home"
       headerNextDisabled={true}
-      onHeaderLeftClick={() => window.history.back()}
+      onHeaderLeftClick={() => navigate('/selectroom')}
       onHeaderNextClick={() => console.log('NEXT')}
       frame={false}
     >

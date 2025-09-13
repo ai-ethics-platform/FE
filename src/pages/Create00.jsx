@@ -99,7 +99,7 @@ export default function Create00() {
       headerbar={1}
       headerLeftType="home"
       headerNextDisabled={creating}
-      onHeaderLeftClick={() => window.history.back()}
+      onHeaderLeftClick={() => navigate('/chatpage')}
       onHeaderNextClick={handleNext}
       frame={false}
     >

@@ -56,7 +56,7 @@ export default function Editor08() {
   };
 
   const handleContinue = () => {
-    navigate('/editor09');
+    navigate('/editor05');
   };
 
   return (
@@ -72,8 +72,8 @@ export default function Editor08() {
           localStorage.setItem('creatorTitle', val);
         },
       }}
-      nextPath="/editor09"
-      backPath="/editor07"
+      nextPath="/editor05"
+      backPath="/editor03"
       showNext
       showBack
     >

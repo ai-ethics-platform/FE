@@ -78,7 +78,7 @@ export default function Editor08() {
         },
       }}
       nextPath="/editor09"
-      backPath="/editor07"
+      backPath="/editor07_1"
       showNext
       showBack
     >

@@ -536,14 +536,14 @@ export default function Game03() {
     setConnectionStatus(newStatus);
     console.log('🔧 [Game03] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
-  // useEffect(() => {
-  //   if (!isConnected) {
-  //     console.warn('❌ WebSocket 연결 끊김 감지됨');
-  //     alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-  //     clearAllLocalStorageKeys();
-  //     navigate('/');
-  //   }
-  // }, [isConnected]);
+  useEffect(() => {
+    if (!isConnected) {
+      console.warn('❌ WebSocket 연결 끊김 감지됨');
+      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+      clearAllLocalStorageKeys();
+      navigate('/');
+    }
+  }, [isConnected]);
   // step 1: 개인 동의/비동의 POST 후 consensus 폴링 시작
   const handleSubmitChoice = async () => {
     const choiceInt = agree === 'agree' ? 1 : 2;

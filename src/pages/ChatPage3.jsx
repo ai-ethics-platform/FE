@@ -40,11 +40,11 @@ function parseDilemmaText(text) {
   
     const T = (text || '')
       .replace(/\r/g, '')
-      .replace(/[\u2012\u2013\u2014\u2212]/g, '-'); // 다양한 대시 → '-'
+      // 다양한 대시/emdash/figure dash → 하이픈
+      .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-');
   
     const splitSentences = (block) => {
       if (!block) return [];
-      // 마침표/물음표/개행 기준으로 문장성 덩어리 추출
       const m = block.match(/[^.!?。…\n]+[.!?。…]?/g);
       if (!m) return [];
       return m.map(s => s.trim()).filter(Boolean);
@@ -66,32 +66,51 @@ function parseDilemmaText(text) {
     // A. 오프닝
     out.opening = splitSentences(getSection(String.raw`(?:A\.\s*)?🎬\s*오프닝\s*멘트`));
   
-    // B. 역할 — 이름(따옴표 포함 가능) 한 줄 + 비어있지 않은 문단을 설명으로
+    // B. 역할 — 두 가지 방식 모두 지원
+    //  (1) 불릿 한 줄 패턴: -- '이름' : 설명
+    //  (2) 블록 패턴: 첫 줄=이름, 나머지 줄=설명
     {
       const sec = getSection(String.raw`(?:B\.\s*)?🎭\s*역할`);
       if (sec) {
-        // 빈 줄로 블록 구분
-        const blocks = sec
-          .split(/\n{2,}/u)
-          .map(b => b.trim())
-          .filter(Boolean);
+        const lines = sec.split(/\n+/u).map(s => s.trim()).filter(Boolean);
   
-        const roles = [];
-        for (const b of blocks) {
-          const lines = b.split(/\n+/).map(x => x.trim()).filter(Boolean);
-          if (!lines.length) continue;
-          // 첫 줄을 이름으로 가정(따옴표/불릿/번호 제거)
-          let name = lines[0]
-            .replace(/^[•*\-\d.\s]+/, '')
-            .trim();
-          name = stripQuotes(name);
+        // 1) 우선: 한 줄 불릿 패턴을 최대한 뽑는다.
+        //    예) -- '교감 선생님' : 학교의 행정과...
+        const bulletRoleRe = /^-{1,3}\s*['"]?(.+?)['"]?\s*:\s*(.+)$/u;
+        const bulletRoles = [];
+        for (const ln of lines) {
+          const m = ln.match(bulletRoleRe);
+          if (m) {
+            const name = stripQuotes(m[1]);
+            const desc = m[2].trim();
+            if (name) bulletRoles.push({ name, desc });
+          }
+        }
   
-          // 나머지 줄 전부를 설명으로
-          const desc = lines.slice(1).join(' ').trim();
+        // 2) 불릿에서 3명 다 못 뽑았으면, 블록 패턴 백업
+        let roles = bulletRoles.slice(0, 3);
+        if (roles.length < 3) {
+          const blocks = sec.split(/\n{2,}/u).map(b => b.trim()).filter(Boolean);
+          for (const b of blocks) {
+            if (roles.length >= 3) break;
+            const blines = b.split(/\n+/).map(x => x.trim()).filter(Boolean);
+            if (!blines.length) continue;
   
-          // 이름만 있고 설명이 다음 블록에 없는 경우 방어
-          if (!name) continue;
-          roles.push({ name, desc });
+            // 첫 줄에 "이름 : 설명" 형태가 있을 수도 있으니 우선 분기
+            const mInline = blines[0].match(bulletRoleRe);
+            if (mInline) {
+              const name = stripQuotes(mInline[1]);
+              const desc = (mInline[2] + ' ' + blines.slice(1).join(' ')).trim();
+              if (name) roles.push({ name, desc });
+              continue;
+            }
+  
+            // 일반 블록: 1행=이름(불릿/번호 제거), 2행~ = 설명
+            let name = blines[0].replace(/^[•*\-\d.\s]+/, '').trim();
+            name = stripQuotes(name);
+            const desc = blines.slice(1).join(' ').trim();
+            if (name) roles.push({ name, desc });
+          }
         }
   
         if (roles[0]) { out.char1 = roles[0].name; out.charDes1 = roles[0].desc; }
@@ -100,48 +119,43 @@ function parseDilemmaText(text) {
       }
     }
   
+    // C. 상황+질문
     {
-          const sec = getSection(String.raw`(?:C\.\s*)?🎯\s*상황\s*및\s*딜레마\s*질문`);
-          if (sec) {
-            const rawLines = sec.replace(/\r/g, '').split('\n');
-            const lines = rawLines.map(s => s.trim()).filter(l => l.length > 0);
-    
-            // 1) "질문:" 라인 우선 탐지
-            const colonIdx = lines.findIndex(l => /^질문\s*[:：]\s*/u.test(l));
-            if (colonIdx >= 0) {
-              // 같은 줄에 질문이 있으면 그대로, 없으면 다음 비어있지 않은 줄을 질문으로
-              const sameLine = lines[colonIdx].replace(/^질문\s*[:：]\s*/u, '').trim();
-              let q = sameLine;
-              if (!q) {
-                const nxt = lines.slice(colonIdx + 1).find(l => l.length > 0);
-                if (nxt) q = nxt.trim();
-              }
-              out.question = q || '';
-    
-              // 상황 본문 = "질문:" 라인과 (질문이 다음 줄이었다면 그 줄도) 제거한 나머지
-              const toRemove = new Set([colonIdx]);
-              if (!sameLine && lines[colonIdx + 1]) toRemove.add(colonIdx + 1);
-              const remain = lines.filter((_, i) => !toRemove.has(i)).join('\n');
-              out.dilemma_situation = splitSentences(remain);
-            } else {
-              // 2) "질문:" 라인이 없다면, 물음표로 끝나는 첫 줄을 질문으로 시도
-              const qIdx = lines.findIndex(l => /[?？]\s*$/.test(l));
-              if (qIdx >= 0) {
-                out.question = lines[qIdx].trim();
-                const remain = lines.filter((_, i) => i !== qIdx).join('\n');
-                out.dilemma_situation = splitSentences(remain);
-              } else {
-                // 질문을 못 찾으면 전부 상황으로
-                out.dilemma_situation = splitSentences(sec);
-                out.question = '';
-              }
-            }
+      const sec = getSection(String.raw`(?:C\.\s*)?🎯\s*상황\s*및\s*딜레마\s*질문`);
+      if (sec) {
+        const rawLines = sec.replace(/\r/g, '').split('\n');
+        const lines = rawLines.map(s => s.trim()).filter(l => l.length > 0);
+  
+        const colonIdx = lines.findIndex(l => /^질문\s*[:：]\s*/u.test(l));
+        if (colonIdx >= 0) {
+          const sameLine = lines[colonIdx].replace(/^질문\s*[:：]\s*/u, '').trim();
+          let q = sameLine;
+          if (!q) {
+            const nxt = lines.slice(colonIdx + 1).find(l => l.length > 0);
+            if (nxt) q = nxt.trim();
+          }
+          out.question = q || '';
+  
+          const toRemove = new Set([colonIdx]);
+          if (!sameLine && lines[colonIdx + 1]) toRemove.add(colonIdx + 1);
+          const remain = lines.filter((_, i) => !toRemove.has(i)).join('\n');
+          out.dilemma_situation = splitSentences(remain);
+        } else {
+          const qIdx = lines.findIndex(l => /[?？]\s*$/.test(l));
+          if (qIdx >= 0) {
+            out.question = lines[qIdx].trim();
+            const remain = lines.filter((_, i) => i !== qIdx).join('\n');
+            out.dilemma_situation = splitSentences(remain);
+          } else {
+            out.dilemma_situation = splitSentences(sec);
+            out.question = '';
           }
         }
+      }
+    }
   
-    // D. 선택지1 + 플립자료
+    // D. 선택지1 + 플립자료(📎 플립자료: 라벨이 없어도 본문 전체를 플립으로 처리)
     {
-      // "✅ 선택지 1: 제목" + "📎 플립자료:"
       const m = T.match(
         /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)\n([\s\S]*?)(?=\n\s*(?:✅?\s*선택지\s*2|🌀\s*최종|$))/u
       );
@@ -173,64 +187,80 @@ function parseDilemmaText(text) {
         if (titleOnly) out.choice2 = titleOnly[1].trim();
       }
     }
-// F. 최종 멘트 — 선택지 1/2 (괄호 옵션) 최종선택 전용, 인덱스 기반 파서
+// F. 최종 멘트 — 초탄탄 버전(공백/괄호/콜론/제로폭 대응, 인덱스 기반)
 {
     const sec = getSection(String.raw`(?:F\.\s*)?(?:🌀\s*)?최종\s*멘트?`);
     if (sec) {
-      const norm = sec.replace(/\r/g, '').trim();
+      // 1) 원문 보존본 + 정규화본 둘 다 사용 (정규화본에서 인덱스 찾고, 그걸로 자름)
+      const raw  = sec.replace(/\r/g, '').trim();
   
-      // 공통 클리너
-      const clean = (s = '') =>
+      // 유니코드 잡스러운 공백/제로폭/콜론/하이픈 정리 + 다중공백 축약
+      const normalize = (s) =>
         s
-          // 각 줄의 선행 불릿/번호 제거(- • * 1. 등)
+          .replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g, ' ')  // NBSP 등 → space
+          .replace(/[\u200B-\u200D\uFEFF]/g, '')                    // zero-width 제거
+          .replace(/[：]/g, ':')                                     // 전각 콜론 → 일반 콜론
+          .replace(/[‐-‒–—]/g, '-')                                  // 다양한 대시 통일
+          .replace(/[ \t]+/g, ' ')                                   // 다중 스페이스 축약
+          .replace(/\n[ \t]+/g, '\n');                               // 개행 뒤 공백 제거
+  
+      const norm = normalize(raw);
+  
+      // 2) 라벨 정규식(매우 느슨)
+      // - "선택지"와 숫자 사이 공백 허용, 괄호 라벨 옵션, '최종선택/최종 선택' 모두 허용, 콜론 유무/줄바꿈 허용
+      const RE1 = /선택지\s*1\s*(?:\([^)]*\)\s*)?최종\s*선택?/u;
+      const RE2 = /선택지\s*2\s*(?:\([^)]*\)\s*)?최종\s*선택?/u;
+  
+      // 3) 위치 찾기
+      const i1 = norm.search(RE1);
+      const i2 = norm.search(RE2);
+  
+      // 4) 라벨 문자열(정확히 매칭된 텍스트) 길이 구하기
+      const m1 = i1 >= 0 ? norm.slice(i1).match(RE1) : null;
+      const m2 = i2 >= 0 ? norm.slice(i2).match(RE2) : null;
+      const lab1len = m1 ? m1[0].length : 0;
+      const lab2len = m2 ? m2[0].length : 0;
+  
+      // 5) agree: [선택지1 라벨] 이후 ~ [선택지2 라벨 시작] 전
+      if (i1 >= 0) {
+        let body1 = norm.slice(i1 + lab1len, i2 >= 0 ? i2 : norm.length);
+        // 라벨과 같은 줄의 콜론 또는 다음 줄 콜론을 정리
+        body1 = body1.replace(/^[ \t]*:?\s*/u, '').replace(/^\s*\n+/, '');
+        out.agreeEnding = body1.trim();
+      }
+  
+      // 6) disagree: [선택지2 라벨] 이후 ~ 끝 (← 여기서 항상 끝까지 자르므로 안전)
+      if (i2 >= 0) {
+        let body2 = norm.slice(i2 + lab2len);
+        body2 = body2.replace(/^[ \t]*:?\s*/u, '').replace(/^\s*\n+/, '');
+        out.disagreeEnding = body2.trim();
+      }
+  
+      // 7) 마지막 클린업: 줄별 불릿/숫자 제거 + 양쪽 따옴표 제거
+      const clean = (s='') =>
+        s
           .replace(/^\s*(?:[-–—•*]\s+|\d+\.\s*)/gm, '')
-          // 앞뒤 따옴표 제거
           .replace(/^["“”'‘’]+|["“”'‘’]+$/g, '')
           .trim();
+      if (out.agreeEnding)    out.agreeEnding    = clean(out.agreeEnding);
+      if (out.disagreeEnding) out.disagreeEnding = clean(out.disagreeEnding);
   
-      // 1) 선택지 1 캡처: 라벨~(다음 라벨 or 끝) 사이
-      const re1 = /선택지\s*1\s*(?:\([^)]+\)\s*)?최종\s*선택?\s*/u;
-      const re2 = /선택지\s*2\s*(?:\([^)]+\)\s*)?최종\s*선택?\s*/u;
-  
-      const i1 = norm.search(re1);
-      const i2 = norm.search(re2);
-  
-      // 선택지 1 본문
-      if (i1 >= 0) {
-        const start1 = i1 + (norm.slice(i1).match(re1)?.[0].length || 0);
-        const end1 = i2 >= 0 ? i2 : norm.length;
-        const body1 = norm.slice(start1, end1)
-          .replace(/^[ \t]*[：:]\s*/u, '')   // 같은 줄 콜론 제거
-          .replace(/^\s*\n+/, '');          // 다음 줄 시작이면 개행 제거
-        out.agreeEnding = clean(body1);
-      }
-  
-      // 2) 선택지 2 본문 (여기가 핵심: 인덱스 기반으로 끝까지)
-      if (i2 >= 0) {
-        const start2 = i2 + (norm.slice(i2).match(re2)?.[0].length || 0);
-        const body2 = norm.slice(start2)
-          .replace(/^[ \t]*[：:]\s*/u, '')   // 같은 줄 콜론 제거
-          .replace(/^\s*\n+/, '');          // 다음 줄 시작이면 개행 제거
-        out.disagreeEnding = clean(body2);
-      }
-  
-      // 백업 1: 느슨한 매치(콜론/개행 변형까지 허용)
+      // 8) 백업: 선택지2 라벨을 못 찾았을 때(아주 드문 케이스) — "2" 숫자 붙임/콜론 누락 등 느슨 매치
       if (!out.disagreeEnding) {
-        const m2b = norm.match(/선택지\s*2[\s\S]*?[：:]*\s*([\s\S]*)$/u);
-        if (m2b) out.disagreeEnding = clean(m2b[1]);
+        // 선택지2 뒤 전부 잡기 (콜론/공백/개행 가리지 않음)
+        const m2b = norm.match(/선택지\s*2[\s\S]*?(?:최종\s*선택?)?[:：]?\s*([\s\S]*)$/u);
+        if (m2b) out.disagreeEnding = clean(m2b[1] || '');
       }
   
-      // 백업 2: 브라켓/불릿 없는 경우 단락 분할 (2=agree, 3=disagree)
+      // 9) 그래도 비면 단락 백업(두 번째 단락=agree, 세 번째 단락=disagree)
       if (!out.agreeEnding && !out.disagreeEnding) {
         const paras = norm.split(/\n{2,}/u).map(s => s.trim()).filter(Boolean);
-        if (paras[1]) out.agreeEnding = clean(paras[1]);
+        if (paras[1]) out.agreeEnding    = clean(paras[1]);
         if (paras[2]) out.disagreeEnding = clean(paras[2]);
       }
-  
-      // 필요시 디버깅
-      // console.log('[FINAL IDX]', { i1, i2, agree: out.agreeEnding, disagree: out.disagreeEnding });
     }
   }
+  
   
   
     return out;
@@ -293,11 +323,19 @@ async function requestImage(input, size = '1867 × 955') {
   return data?.image_data_url || data?.url || data?.image || null;
 }
 
+  // 버튼 표시 상태 계산
+  function computeButtonVisibility() {
+    const readyImgs = imagesReady();
+    return {
+      showImage: parsedReady() && !readyImgs,
+      showTemplate: readyImgs,
+    };
+  }
 export default function Create00() {
   const navigate = useNavigate();
   const [finalText, setFinalText] = useState(localStorage.getItem(STORAGE_FINAL_TEXT) || '');
-  const [showImageBtn, setShowImageBtn] = useState(parsedReady());
-  const [showTemplateBtn, setShowTemplateBtn] = useState(imagesReady());
+   const [{ showImage: showImageBtn, showTemplate: showTemplateBtn }, setBtnState] =
+     useState(() => computeButtonVisibility());
   const [imgLoading, setImgLoading] = useState(false);
     const GPTS_URL =
 'https://chatgpt.com/g/g-68c588a5afa881919352989f07138007-test-kw-ver-17';
@@ -320,9 +358,7 @@ export default function Create00() {
     setFinalText(v);
     localStorage.setItem(STORAGE_FINAL_TEXT, v);
     persistParsedToLocalStorage(v);
-    setShowImageBtn(parsedReady());
-    // 이미지 버튼만 우선; 템플릿 버튼은 이미지 생성 완료 후 켜짐
-    setShowTemplateBtn(imagesReady());
+    setBtnState(computeButtonVisibility());
   };
 
   // 이미지 생성(4장)
@@ -371,8 +407,7 @@ export default function Create00() {
     } finally {
       setImgLoading(false);
       // 이미지 준비 완료되면 템플릿 버튼 ON, 이미지 버튼은 계속 노출해도 무방
-      setShowTemplateBtn(imagesReady());
-    }
+      setBtnState(computeButtonVisibility());    }
   };
 
   // 템플릿 생성 → /custom-games POST 후 /create01 이동
@@ -433,7 +468,7 @@ export default function Create00() {
         teacher_name,
         teacher_school,
         teacher_email,
-        title:'-',
+        title:'제목을 입력하세요',
         representative_image_url: '-',
         data,
       };
@@ -455,11 +490,11 @@ export default function Create00() {
   useEffect(() => {
     // 외부에서 value가 세팅될 수도 있으니, finalText 변경 시 파싱 동기화
     persistParsedToLocalStorage(finalText);
-    setShowImageBtn(parsedReady());
-    setShowTemplateBtn(imagesReady());
+    setBtnState(computeButtonVisibility());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finalText]);
-  
+
+
   return (
     <CreatorLayout
       headerbar={1}
@@ -472,8 +507,8 @@ export default function Create00() {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, width: '100%' }}>
         <div style={{ alignSelf: 'stretch', marginTop: 10, }}>
             <h2 style={{ ...FontStyles.headlineSmall, color: Colors.grey07, marginBottom: 8 }}>
-            챗봇과 사진 구상하기
-             </h2>
+            챗봇과 시나리오 사전 구상기
+            </h2>
 
              <p style={{ ...FontStyles.body, color: Colors.grey05, margin: 0 }}>
             <span style={{ display: 'block', marginBottom: 6 }}>

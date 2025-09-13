@@ -107,14 +107,14 @@ export default function Game01() {
     ready: true,
   });
 
-  // useEffect(() => {
-  //   if (!isConnected) {
-  //     console.warn('❌ WebSocket 연결 끊김 감지됨');
-  //     alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-  //     clearAllLocalStorageKeys();
-  //     navigate('/');
-  //   }
-  // }, [isConnected]);
+  useEffect(() => {
+    if (!isConnected) {
+      console.warn('❌ WebSocket 연결 끊김 감지됨');
+      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+      clearAllLocalStorageKeys();
+      navigate('/');
+    }
+  }, [isConnected]);
 
   // 🔧 연결 상태 모니터링
   useEffect(() => {

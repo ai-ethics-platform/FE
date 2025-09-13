@@ -222,14 +222,14 @@ export default function Game06() {
     setCompletedTopics(saved);
     setCurrentRound(saved.length + 1);
   }, []);
-  // useEffect(() => {
-  //   if (!isConnected) {
-  //     console.warn('❌ WebSocket 연결 끊김 감지됨');
-  //     alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-  //     clearAllLocalStorageKeys();
-  //     navigate('/');
-  //   }
-  // }, [isConnected]);
+  useEffect(() => {
+    if (!isConnected) {
+      console.warn('❌ WebSocket 연결 끊김 감지됨');
+      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+      clearAllLocalStorageKeys();
+      navigate('/');
+    }
+  }, [isConnected]);
   //  기본(템플릿) 엔딩 텍스트 준비
   useEffect(() => {
     const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];

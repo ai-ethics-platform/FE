@@ -583,14 +583,14 @@ export default function Game05_01() {
     setConnectionStatus(newStatus);
     console.log('[game05_1] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
-  // useEffect(() => {
-  //   if (!isConnected) {
-  //     console.warn('❌ WebSocket 연결 끊김 감지됨');
-  //     alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-  //     clearAllLocalStorageKeys();
-  //     navigate('/');
-  //   }
-  // }, [isConnected]);
+  useEffect(() => {
+    if (!isConnected) {
+      console.warn('❌ WebSocket 연결 끊김 감지됨');
+      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+      clearAllLocalStorageKeys();
+      navigate('/');
+    }
+  }, [isConnected]);
   // // 도착 상태
   const [arrivalStatus, setArrivalStatus] = useState({
     arrived_users: 0,

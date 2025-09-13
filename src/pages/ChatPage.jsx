@@ -8,8 +8,6 @@ const STORAGE_KEY = "dilemma.flow.v1";
 const IMG_STYLE =
   "귀여운 2D 벡터 카툰, 둥근 모서리 프레임, 두꺼운 외곽선, 파스텔톤 평면 채색, 약한 그림자, 단순한 배경(공원/교실/도로), 과장된 표정, 말풍선에는 기호만(?, !), 사진/리얼/3D/과도한 질감/복잡한 텍스트 금지";
 
-const IMG_STYLE_1 = '목표 (Objective) 파트당 2개의 시각 패널 ,패널 1 = 초기 상황 / 기대 ,패널 2 = 긴장 / 결과 / 전환 ,오직 시각적 단서만 사용할 것 — 텍스트, 대사 금지. 스타일 & 톤 : 귀엽고, 중립적, 텍스트 절대 금지. 대상 (Audience): 한국의 중·고등학생들이 AI 기술의 윤리적 딜레마를 숙고할 때 활용하는 만화.'
-
 // 안전한 JSON 읽기
 const readJSON = (key, fallback = []) => {
   try {
@@ -309,7 +307,7 @@ export default function ChatPage() {
       // 진희님 프롬프트 
       const prompt = {
         id: "pmpt_68c5008a398081948d5dc37bf1d1aec20557fb7a1f2f0442",
-        version: "1", 
+        version: "2", 
         messages: [
           { role: "system", content: "너는 교사가 AI 윤리 딜레마 기반 대화형 수업 게임을 설계하도록 돕는 어시스턴트 챗봇이야.너의 역할은 교사가 주제를 선택하고, 그 주제에서 발생할 수 있는 가치 충돌을 탐색하며, 딜레마 질문·역할·상황·최종 게임 스크립트까지 차례대로 완성할 수 있도록 단계별로 안내하는 것이야.  대화는 반드시 한국어 존댓말로, 따뜻하고 협업적인 톤을 유지하며, 중·고등학생도 이해할 수 있을 만큼 쉽게 설명해야 해. 전문 용어는 줄이고, 일상적 비유를 활용하며, 교사가 스스로 판단할 수 있도록 소크라테스식 질문을 섞어야 해.  진행 규칙은 다음과 같아:  ① 주제 선택 → ② 가치 충돌 질문 도출 → ③ 역할 설정 → ④ 상황 및 플립 구성 → ⑤ 최종 게임 스크립트 완성.  각 단계는 한 번에 하나씩만 진행하며, 다음 단계로 넘어가기 전에 반드시 교사의 의견이나 선택을 확인해야 해.  교사가 먼저 추천을 원한다고 요청하기 전에는, 주제·가치 갈등·역할·상황을 마음대로 자동으로 생성하지 말고, 교사가 아이디어를 제시하도록 기다려야 해.  결국 너의 업무는 교사가 주체적으로 차례대로 수업을 설계하도록 돕는 협력자이자 안내자로서, 구조적이면서도 자연스럽게 대화를 이어가는 것이야.   " },
           ...recentMessages,
@@ -458,12 +456,6 @@ export default function ChatPage() {
        const openingText = openingArr.join(" "); // 필요 시 첫 문장만 쓰려면 openingArr[0] 사용
  
       const question = localStorage.getItem("question") || "";
-       const char1 = localStorage.getItem("char1");
-       const char2 = localStorage.getItem("char2");
-       const char3 = localStorage.getItem("char3");
-       const charDes1 = localStorage.getItem("charDes1") || "";
-       const charDes2 = localStorage.getItem("charDes2") || "";
-       const charDes3 = localStorage.getItem("charDes3") || "";
        const ds = readJSON("dilemma_situation");
        const fa = readJSON("flips_agree_texts");
        const fd = readJSON("flips_disagree_texts");
@@ -471,29 +463,28 @@ export default function ChatPage() {
        // 1) 오프닝
        await genIfPossible("dilemma_image_1", () => {
         if (!openingArr.length) return "";         
-        const names = [char1, char2, char3].filter(Boolean).join(", ");
-        return `${IMG_STYLE}. 교실에서 AI 윤리 토론 준비 장면, 만화풍, 16:9.\n등장인물: ${names || "학생들"}.\n오프닝 요약: ${trim1(openingText)}.`;       
+        return `${IMG_STYLE}. 16:9 이미지 . 오프닝 요약: ${openingArr}.`;       
       });
        // 2) 상황/질문
        await genIfPossible("dilemma_image_3", () => {
          if (!ds?.length) return "";
          const s = trim1(ds.slice(0, 2).join(" "));
          const q = trim1(question || "", 120);
-         return `${IMG_STYLE}. 교실 토론 중 핵심 장면, 만화풍, 2:1.\n상황: ${s}\n질문: ${q}`;
+         return `${IMG_STYLE}. 16:9.\n상황: ${s}\n질문: ${q}`;
        });
  
        // 3) 플립(찬성)
        await genIfPossible("dilemma_image_4_1", () => {
          if (!fa?.length) return "";
          const core = trim1(fa.slice(0, 3).join(" "));
-         return `${IMG_STYLE}. 선택지 1(찬성) 논거를 상징적으로 표현한 학습 카드 장면, 만화풍, 16:9.\n핵심 논거: ${core}`;
+         return `${IMG_STYLE}. 선택지 1(찬성) 논거를 표현한 만화풍, 16:9.\n핵심 논거: ${core}`;
        });
  
        // 4) 플립(반대)
        await genIfPossible("dilemma_image_4_2", () => {
          if (!fd?.length) return "";
          const core = trim1(fd.slice(0, 3).join(" "));
-         return `${IMG_STYLE}. 선택지 2(반대) 논거를 상징적으로 표현한 학습 카드 장면, 만화풍, 16:9.\n핵심 논거: ${core}`;
+         return `${IMG_STYLE}. 선택지 2(반대) 논거를 표현한 만화풍 16:9.\n핵심 논거: ${core}`;
        }) 
      } catch (e) {
        const msg = e?.response?.data?.error || e?.message || "이미지 생성 중 오류";
@@ -535,8 +526,19 @@ export default function ChatPage() {
       const flips_disagree_texts = JSON.parse(localStorage.getItem("flips_disagree_texts") || "["-"]");
       const agreeEnding = localStorage.getItem("agreeEnding") || "-";
       const disagreeEnding = localStorage.getItem("disagreeEnding") || "-";
-  
-      // dataSkeleton 구성
+      
+      // 대표 이미지들만 포함 (roleImages 제외)
+      const representativeImages = {
+        dilemma_image_1: localStorage.getItem("dilemma_image_1") || "",
+        dilemma_image_3: localStorage.getItem("dilemma_image_3") || "",
+        dilemma_image_4_1: localStorage.getItem("dilemma_image_4_1") || "",
+        dilemma_image_4_2: localStorage.getItem("dilemma_image_4_2") || "",
+      };
+      // 빈 값 제거(선택)
+      Object.keys(representativeImages).forEach(k => {
+        if (!representativeImages[k]) delete representativeImages[k];
+      });
+          // dataSkeleton 구성
       const dataSkeleton = {
         opening,
         roles: [
@@ -561,6 +563,8 @@ export default function ChatPage() {
           agree: agreeEnding,
           disagree: disagreeEnding,
         },
+        ...(Object.keys(representativeImages).length ? { representativeImages } : {}),
+
       };
   
       const payload = {

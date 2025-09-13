@@ -238,7 +238,7 @@ export default function Game01() {
   const roomCode = localStorage.getItem('room_code');
   const nickname = localStorage.getItem('nickname') || 'Guest';
 
-  const title = localStorage.getItem('title') || ''; // ← 누락돼 있던 title 보강
+  const title = localStorage.getItem('title') || ''; 
 
   const category = localStorage.getItem('category') || '안드로이드';
   const isAWS = category === '자율 무기 시스템';

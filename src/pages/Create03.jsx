@@ -49,6 +49,36 @@
 //   }
 //   return null;
 // };
+// // 대표 이미지 맵 GET → localStorage 저장
+
+// async function fetchRepresentativeImages(code) {
+//   if (!code) throw new Error('게임 코드가 없습니다. (code)');
+//   const res = await axiosInstance.get(`/custom-games/${code}/representative-images`, {
+//     headers: { 'Content-Type': 'application/json' },
+//   });
+//   const images = res?.data?.images || {};
+
+//   // 4개 키를 모두 저장
+//   const keys = ['dilemma_image_1', 'dilemma_image_3', 'dilemma_image_4_1', 'dilemma_image_4_2'];
+//   keys.forEach((k) => {
+//     if (images[k] !== undefined) {
+//       localStorage.setItem(k, images[k] ?? '');
+//     }
+//   });
+
+//   return images;
+// }
+
+// // ✅ 대표 이미지 맵 PUT (부분 업데이트 가능)
+// async function putRepresentativeImages(code, imagesMap) {
+//   if (!code) throw new Error('게임 코드가 없습니다. (code)');
+//   const payload = { images: imagesMap };
+//   await axiosInstance.put(
+//     `/custom-games/${code}/dilemma-images`,
+//     payload,
+//     { headers: { 'Content-Type': 'application/json' } }
+//   );
+// }
 
 // export default function Create03() {
 //   const navigate = useNavigate();
@@ -70,6 +100,7 @@
 //   const [option1, setOption1] = useState(localStorage.getItem('agree_label') || "");
 //   const [option2, setOption2] = useState(localStorage.getItem('disagree_label') || "");
 //   const didInit = useRef(false);
+//   const code = localStorage.getItem('code');
 
 //   // 유틸
 //   const toSituationArray = (list) =>
@@ -108,7 +139,26 @@
 //       localSituation = raw ? JSON.parse(raw) : null;
 //     } catch {}
 
-//     const localImage = resolveImageUrl(localStorage.getItem('dilemma_image_3'));
+//     // ✅ 대표 이미지: 로컬 우선, 없으면 GET
+//       const localImage = resolveImageUrl(localStorage.getItem('dilemma_image_3'));
+//       if (localImage) {
+//         setImageUrl(localImage);
+//         setUseFallback(false);
+//       } else if (code) {
+//         (async () => {
+//           try {
+//             const images = await fetchRepresentativeImages(code);
+//             const img3 = images?.dilemma_image_3 ?? localStorage.getItem('dilemma_image_3') ?? '';
+//             const resolved = resolveImageUrl(img3);
+//             setImageUrl(resolved);
+//             setUseFallback(!resolved);
+//           } catch (err) {
+//             console.error('대표 이미지 로드 실패:', err);
+//             setImageUrl(null);
+//             setUseFallback(true);
+//           }
+//         })();
+//       }
 //     const localQuestion = localStorage.getItem('question') || '';
 //     const localAgree    = localStorage.getItem('agree_label') || '';
 //     const localDisagree = localStorage.getItem('disagree_label') || '';
@@ -138,13 +188,11 @@
 //       setOption1(localAgree);
 //       setOption2(localDisagree);
 //       persistAll({ situationInputs: built, question: localQuestion, agree: localAgree, disagree: localDisagree });
-//       return; // ✅ GET 스킵
+//       return; 
 //     }
 
-//     // 2) 일부만 있거나 없으면 GET 시도(비는 값만 채움)
 //     (async () => {
 //       try {
-//         const code = localStorage.getItem('code');
 //         if (!code) {
 //           // code 없으면 GET 불가 → 로컬/폴백만 마무리
 //           setImageUrl(localImage); setUseFallback(!localImage);
@@ -262,30 +310,44 @@
 //       return next;
 //     });
 //   };
+// // --- 이미지 변경 ---
+// const handleImageChange = () => {
+//   const input = document.createElement('input');
+//   input.type = 'file';
+//   input.accept = 'image/*';
+//   input.onchange = async (e) => {
+//     const file = e.target.files?.[0];
+//     if (!file) return;
 
-//   // 대표 이미지 변경 (POST → 로컬 → 상태)
-//   const handleImageChange = () => {
-//     const input = document.createElement('input');
-//     input.type = 'file';
-//     input.accept = 'image/*';
-//     input.onchange = async (e) => {
-//       const file = e.target.files?.[0];
-//       if (!file) return;
-//       try {
-//         setUseFallback(false);
-//         const rawUrl = await uploadRepresentativeImage(file);
-//         localStorage.setItem('dilemma_image_3', rawUrl);
-//         const resolved = resolveImageUrl(rawUrl);
-//         setImageUrl(resolved);
-//         setUseFallback(!resolved);
-//       } catch (err) {
-//         console.error(err);
-//         alert('대표 이미지 업로드에 실패했습니다.');
-//         setUseFallback(true);
-//       }
-//     };
-//     input.click();
+//     const code = localStorage.getItem('code');
+//     if (!code) {
+//       alert('게임 코드가 없습니다.');
+//       return;
+//     }
+
+//     try {
+//       setUseFallback(false);
+
+//       // 1) 업로드로 서버에 이미지 파일 전송 → URL 획득
+//       const url = await uploadRepresentativeImage(file); // 예: "/static/images/cg_xxx1.png" 또는 절대 URL
+
+//       // 2) 대표 이미지 맵 PUT: 이 화면에서는 dilemma_image_1만 갱신
+//       await putRepresentativeImages(code, { dilemma_image_3: url });
+
+//       // 3) 로컬/화면 반영
+//       localStorage.setItem('dilemma_image_3', url);
+//       const resolved = resolveImageUrl(url);
+//       setImageUrl(resolved);
+//       setUseFallback(!resolved);
+//     } catch (err) {
+//       console.error(err);
+//       alert('이미지 업로드/저장에 실패했습니다.');
+//       setUseFallback(true);
+//     }
 //   };
+//   input.click();
+// };
+
 
 //   // 서버 PUT
 //   const putDilemma = async ({ situation, question, options }) => {
@@ -464,17 +526,7 @@ const resolveImageUrl = (raw) => {
   return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
 };
 
-// 이미지 업로드
-async function uploadRepresentativeImage(file) {
-  const form = new FormData();
-  form.append('file', file);
-  const res = await axiosInstance.post('/custom-games/upload-image', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  const url = res?.data?.url || res?.data?.image_url;
-  if (!url) throw new Error('업로드 응답에 url이 없습니다.');
-  return url;
-}
+
 
 // 서버 응답에서 키를 다층으로 탐색
 const pickStringFrom = (game, key) => {
@@ -493,11 +545,11 @@ const pickArrayFrom = (game, key) => {
   }
   return null;
 };
-// ✅ 대표 이미지 맵 GET → localStorage 저장
+// 대표 이미지 맵 GET → localStorage 저장
 
 async function fetchRepresentativeImages(code) {
   if (!code) throw new Error('게임 코드가 없습니다. (code)');
-  const res = await axiosInstance.get(`/custom-games/${code}/representative-images`, {
+   const res = await axiosInstance.get(`/custom-games/${code}/dilemma-images`, {
     headers: { 'Content-Type': 'application/json' },
   });
   const images = res?.data?.images || {};
@@ -513,16 +565,22 @@ async function fetchRepresentativeImages(code) {
   return images;
 }
 
-// ✅ 대표 이미지 맵 PUT (부분 업데이트 가능)
-async function putRepresentativeImages(code, imagesMap) {
-  if (!code) throw new Error('게임 코드가 없습니다. (code)');
-  const payload = { images: imagesMap };
-  await axiosInstance.put(
-    `/custom-games/${code}/representative-images`,
-    payload,
-    { headers: { 'Content-Type': 'application/json' } }
+async function putRepresentativeImageFile(code, slot, file) {
+  if (!code || !slot) throw new Error('code와 slot은 필수입니다.');
+  const form = new FormData();
+  form.append('file', file); // 서버 요구 필드명 'file'
+
+  const res = await axiosInstance.put(
+    `/custom-games/${code}/dilemma-images/${slot}`,
+    form,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
   );
+
+  const url = res?.data?.url || res?.data?.image_url;
+  if (url) localStorage.setItem(slot, url);
+  return url || null;
 }
+
 
 export default function Create03() {
   const navigate = useNavigate();
@@ -772,14 +830,17 @@ const handleImageChange = () => {
     try {
       setUseFallback(false);
 
-      // 1) 업로드로 서버에 이미지 파일 전송 → URL 획득
-      const url = await uploadRepresentativeImage(file); // 예: "/static/images/cg_xxx1.png" 또는 절대 URL
+      // // 1) 업로드로 서버에 이미지 파일 전송 → URL 획득
+      // const url = await uploadRepresentativeImage(file); // 예: "/static/images/cg_xxx1.png" 또는 절대 URL
 
-      // 2) 대표 이미지 맵 PUT: 이 화면에서는 dilemma_image_1만 갱신
-      await putRepresentativeImages(code, { dilemma_image_3: url });
+      // // 2) 대표 이미지 맵 PUT: 이 화면에서는 dilemma_image_1만 갱신
+      // await putRepresentativeImages(code, { dilemma_image_3: url });
 
-      // 3) 로컬/화면 반영
-      localStorage.setItem('dilemma_image_3', url);
+      // // 3) 로컬/화면 반영
+      // localStorage.setItem('dilemma_image_3', url);
+
+      const url = await putRepresentativeImageFile(code, 'dilemma_image_3', file);
+     if (url) localStorage.setItem('dilemma_image_3', url);
       const resolved = resolveImageUrl(url);
       setImageUrl(resolved);
       setUseFallback(!resolved);

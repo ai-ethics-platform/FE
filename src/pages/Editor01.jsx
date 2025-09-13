@@ -115,7 +115,7 @@ export default function Editor01() {
           localStorage.setItem("creatorTitle", val);
         },
       }}
-      nextPath="/editor02"
+      nextPath="/editor02_1"
       showNext
     >
       {/* 스테이지: 가운데 정렬 + 내부 여백 */}

@@ -7,6 +7,8 @@ import endingFrame from '../assets/creatorendingbox.svg';
 import Continue3 from '../components/Continue3';
 import DilemmaDonePopUp from '../components/Expanded/DilemmaDonePopUp';
 import axiosInstance from "../api/axiosInstance";
+import { clearAllLocalStorageKeys } from '../utils/storage';
+
 export default function Editor10() {
   const navigate = useNavigate();
 
@@ -37,6 +39,7 @@ export default function Editor10() {
       { title },
       { headers: { 'Content-Type': 'application/json' } }
     );
+    
   };
   // 흰 텍스트 박스 스타일
   const labelBoxStyle = {
@@ -159,6 +162,7 @@ export default function Editor10() {
               onConfirm={async () => {
                 setIsDoneOpen(false);
                 await handleCompleted(); 
+                clearAllLocalStorageKeys();
               }} />
           </div>
         </div>

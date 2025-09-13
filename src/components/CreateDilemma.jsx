@@ -9,16 +9,25 @@
 // import InputBoxSmall from './InputBoxSmall'; 
 
 // export default function CreateDilemma({ onClose }) {
-//  const navigate = useNavigate();
-//  const [name, setName] = useState('');
+//   const navigate = useNavigate();
+//   const [name, setName] = useState('');
 //   const [school, setSchool] = useState('');
 //   const [email, setEmail] = useState('');
-//   // 수정 필요 
+
+//   // 시작하기 클릭
 //   const handleCreateDilemma = async () => {
-//     navigate('/create00');
+//     // 로컬에 저장
+//     localStorage.setItem('teacher_name', name);
+//     localStorage.setItem('teacher_school', school);
+//     localStorage.setItem('teacher_email', email);
+
+//     // 다음 페이지 이동
+//     navigate('/chatpage');
 //   };
 
- 
+//   // 세 값 중 하나라도 없으면 true
+//   const isDisabled = !name.trim() || !school.trim() || !email.trim();
+
 //   return (
 //     <div
 //       style={{
@@ -60,8 +69,9 @@
 //         원하시는 주제로 딜레마 게임을 직접 만들어 교육에서 활용할 수 있습니다.<br/>
 //         부적절한 콘텐츠를 제작하는 것을 방지하기 위해 정보를 제공받고 있습니다. <br/>
 //         아래에 선생님의 정보를 입력해주세요. 
-//         </div>
-//         <div style={{ width: '100%', marginBottom: 24 }}>
+//       </div>
+
+//       <div style={{ width: '100%', marginBottom: 24 }}>
 //         <InputBoxSmall
 //           label="이름"
 //           width='300px'
@@ -77,22 +87,22 @@
 //           onChange={(e) => setSchool(e.target.value)}
 //         />
 //         <InputBoxSmall
-//           label={
-//             <>
-//             교수자용<br/>
-//             이메일</>
-//           }
+//           label={<>교수자용<br/>이메일</>}
 //           width='300px'
 //           value={email}
 //           placeholder='학교 메일을 입력하세요'
 //           onChange={(e) => setEmail(e.target.value)}
 //         />
 //       </div>
+
 //       <PrimaryButton
 //         onClick={handleCreateDilemma}
+//         disabled={isDisabled}
 //         style={{
 //           width: 168,
 //           height: 72,
+//           opacity: isDisabled ? 0.5 : 1, // 비활성화 시 흐리게
+//           cursor: isDisabled ? 'not-allowed' : 'pointer',
 //         }}
 //       >
 //         {'시작하기'}
@@ -111,23 +121,46 @@ import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance';
 import InputBoxSmall from './InputBoxSmall'; 
 
+
 export default function CreateDilemma({ onClose }) {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [school, setSchool] = useState('');
   const [email, setEmail] = useState('');
+  const GPTS_URL = 'https://chatgpt.com/g/g-68c54f94ce0c8191917ccadd5bb8fa7f-test-2';
 
-  // 시작하기 클릭
-  const handleCreateDilemma = async () => {
-    // 로컬에 저장
+  function openNewTabSafely(url) {
+    // 1) 가장 안정적인 직열기
+    const w = window.open(url, '_blank', 'noopener,noreferrer');
+    if (w) return true;
+  
+    // 2) 팝업 차단 환경용 앵커 폴백 (현재 탭은 절대 변경하지 않음)
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return true;
+  }
+  
+  const handleCreateDilemma = (e) => {
+    e?.preventDefault?.(); // 혹시 폼 submit 방지
+  
+    // 사용자 입력 저장
     localStorage.setItem('teacher_name', name);
     localStorage.setItem('teacher_school', school);
     localStorage.setItem('teacher_email', email);
-
-    // 다음 페이지 이동
-    navigate('/chatpage');
+  
+    // 새 탭 열기 (현재 탭은 건드리지 않음)
+    openNewTabSafely(GPTS_URL);
+  
+    // 우리 앱은 항상 gpts_page로 이동
+    navigate('/chatpage3', { replace: true });
   };
-
+  
   // 세 값 중 하나라도 없으면 true
   const isDisabled = !name.trim() || !school.trim() || !email.trim();
 
@@ -204,7 +237,7 @@ export default function CreateDilemma({ onClose }) {
         style={{
           width: 168,
           height: 72,
-          opacity: isDisabled ? 0.5 : 1, // 비활성화 시 흐리게
+          opacity: isDisabled ? 0.5 : 1,
           cursor: isDisabled ? 'not-allowed' : 'pointer',
         }}
       >

@@ -232,14 +232,14 @@ export default function Game07() {
     const joined = resolved.map(p => p?.main).filter(Boolean).join('\n\n');
     if (!isCustomMode) setDisplayText(joined || '');
   }, [category, subtopic, mode, isCustomMode]);
-  useEffect(() => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket 연결 끊김 감지됨');
-      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-      clearAllLocalStorageKeys();
-      navigate('/');
-    }
-  }, [isConnected]);
+  // useEffect(() => {
+  //   if (!isConnected) {
+  //     console.warn('❌ WebSocket 연결 끊김 감지됨');
+  //     alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+  //     clearAllLocalStorageKeys();
+  //     navigate('/');
+  //   }
+  // }, [isConnected]);
   //  커스텀 모드: disagree_Ending 적용
   useEffect(() => {
     if (!isCustomMode) return;

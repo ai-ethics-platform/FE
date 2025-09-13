@@ -52,6 +52,7 @@ import CreatorEnding from "../pages/CreatorEnding";
 import CustomRoom from "../pages/CustomRoom";
 import ChatPage from "../pages/ChatPage";
 import ChatPage2 from "../pages/ChatPage2";
+import ChatPage3 from "../pages/ChatPage3";
 
 import VoiceTestSimulator from '../pages/VoiceTestSimulator';
 // WebSocket/WebRTC가 필요한 페이지들을 감싸는 컴포넌트
@@ -129,6 +130,7 @@ function Router() {
         />
         <Route path="/chatpage" element={<ChatPage />} />
         <Route path="/chatpage2" element={<ChatPage2 />} />
+        <Route path="/chatpage3" element={<ChatPage3 />} />
 
         {/* WebSocket/WebRTC가 필요한 모든 게임 관련 페이지들 */}
         <Route path="/*" element={<GameRoutes />} />

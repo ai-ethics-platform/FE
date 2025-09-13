@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Background from '../components/Background';
@@ -112,16 +113,13 @@ export default function SelectRoom() {
 
   // 쿼리로 code 들어오면: 저장 -> GET -> 로컬 저장 -> /customroom
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const code = params.get('code');
+    const code = localStorage.getItem('code');
 
     const run = async () => {
       if (!code) return;
 
       try {
-        // 코드 저장(먼저)
-        localStorage.setItem('code', code);
-
+      
         // GET /custom-games/{code}
         const res = await axiosInstance.get(`/custom-games/${code}`, {
           headers: { 'Content-Type': 'application/json' },

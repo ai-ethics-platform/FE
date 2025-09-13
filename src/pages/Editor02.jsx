@@ -45,9 +45,8 @@ export default function Editor02() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // 역할 배경 한 문단
-  const rolesBackground = localStorage.getItem('rolesBackground') || '';
+  const rolesBackground = " 각자의 역할을 소개하는 시간을 가져보세요."
   const [paragraphs, setParagraphs] = useState([{ main: rolesBackground }]);
-
   // 역할 이미지 URL + 폴백 플래그
   const [img1, setImg1] = useState(() => resolveImageUrl(localStorage.getItem(ROLE_IMG_KEYS[0])));
   const [img2, setImg2] = useState(() => resolveImageUrl(localStorage.getItem(ROLE_IMG_KEYS[1])));
@@ -155,8 +154,8 @@ export default function Editor02() {
           localStorage.setItem("creatorTitle", val);
         },
       }}
-      nextPath="/editor02_1"
-      backPath="/editor01"
+      nextPath="/editor03"
+      backPath="/editor02_3"
       showNext
       showBack
     >

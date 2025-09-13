@@ -128,7 +128,7 @@ export default function Editor02_1() {
         },
       }}
       nextPath="/editor02_2"
-      backPath="/editor02"
+      backPath="/editor01"
       showNext
       showBack
     >

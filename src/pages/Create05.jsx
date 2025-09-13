@@ -145,6 +145,7 @@ import NextGreen from "../components/NextOrange";
 import BackOrange from "../components/Expanded/BackOrange";
 import DilemmaDonePopUp from '../components/Expanded/DilemmaDonePopUp';
 import axiosInstance from '../api/axiosInstance'; // ✅ 추가
+import { clearAllLocalStorageKeys } from '../utils/storage';
 
 export default function Create05() {
   const navigate = useNavigate();
@@ -320,6 +321,7 @@ const putTitle = async (title) => {
               onConfirm={async () => {
                 setIsDoneOpen(false);
                 await handleSaveAndComplete(); 
+                clearAllLocalStorageKeys();
               }}
             />
           </div>

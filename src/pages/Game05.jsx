@@ -198,14 +198,14 @@ export default function Game05() {
     setRound(calculatedRound);
     localStorage.setItem('currentRound', calculatedRound.toString());
   }, []);
-  useEffect(() => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket 연결 끊김 감지됨');
-      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-      clearAllLocalStorageKeys();
-      navigate('/');
-    }
-  }, [isConnected]);
+  // useEffect(() => {
+  //   if (!isConnected) {
+  //     console.warn('❌ WebSocket 연결 끊김 감지됨');
+  //     alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+  //     clearAllLocalStorageKeys();
+  //     navigate('/');
+  //   }
+  // }, [isConnected]);
   // 텍스트/이미지 세팅
   useEffect(() => {
     if (isCustomMode) {

@@ -12,7 +12,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const EDIT_GROUPS = [['/create01'], ['/create02'], ['/create03'], ['/create04'], ['/create05']];
 const PREVIEW_GROUPS = [
   ['/editor01'],
-  ['/editor02', '/editor02_1', '/editor02_2', '/editor02_3'],
+  ['/editor02_1', '/editor02_2', '/editor02_3','/editor02'],
   ['/editor03', '/editor04', '/editor05', '/editor06'],
   ['/editor07','/editor07_1', '/editor08', '/editor09'],
   ['/editor10','/editor10_1'],

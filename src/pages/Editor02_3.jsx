@@ -127,7 +127,7 @@ export default function Editor02_1() {
           localStorage.setItem("creatorTitle", val);
         },
       }}
-      nextPath="/editor03"
+      nextPath="/editor02"
       backPath="/editor02_2"
       showNext
       showBack

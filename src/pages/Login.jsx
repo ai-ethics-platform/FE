@@ -284,7 +284,7 @@ export default function Login() {
       localStorage.setItem('refresh_token', refresh_token);
 
       // 상태값 우선, 없으면 로컬스토리지 fallback
-      const codeToUse = inviteCode || localStorage.getItem('code') || '';
+      const codeToUse = inviteCode || localStorage.getItem('code');
 
       if (codeToUse) {
         // 필요하다면 code를 쿼리로 넘길 수도 있음: `/customroom?code=${encodeURIComponent(codeToUse)}`

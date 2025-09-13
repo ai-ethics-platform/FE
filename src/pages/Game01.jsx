@@ -212,12 +212,21 @@ export default function Game01() {
    const rawCustomImg1 = localStorage.getItem('dilemma_image_1') || '';
    const customImg1 = resolveImageUrl(rawCustomImg1);
 
-  // 기존 기본 본문 로직
   const defaultMain = getDefaultMain();
   const rolesBackground = (localStorage.getItem('rolesBackground') || '').trim();
-    const paragraphs = isCustomMode
-      ? [{ main: rolesBackground || defaultMain }]
-      : [{ main: defaultMain }];
+
+  // custom 모드: opening 배열 우선, 없으면 rolesBackground → defaultMain
+  const openingParagraphs =
+    Array.isArray(openingArr) && openingArr.length
+      ? openingArr
+          .map((s) => (typeof s === 'string' ? s.trim() : ''))
+          .filter(Boolean)
+          .map((line) => ({ main: line }))
+      : null;
+
+  const paragraphs = isCustomMode
+    ? (openingParagraphs ?? [{ main: (rolesBackground || defaultMain) }])
+    : [{ main: defaultMain }];
 
   //  paragraphs 변경 시 인덱스 초기화(옵션이지만 권장)
   useEffect(() => {

@@ -588,7 +588,7 @@ export default function Create01() {
     const saved = localStorage.getItem('dilemma_image_1');
     return resolveImageUrl(saved);
   });
-  const [useFallback, setUseFallback] = useState(false);
+  const [useFallback, setUseFallback] = useState(() => !resolveImageUrl(localStorage.getItem('dilemma_image_1')));
 
   // C 영역 - 입력 필드: ★ 서버의 data.opening 배열 길이대로 생성됨
   const [inputs, setInputs] = useState([

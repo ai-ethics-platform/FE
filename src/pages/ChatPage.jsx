@@ -513,31 +513,37 @@ export default function ChatPage() {
       //     localStorage.setItem("template", text);
       //   }
       // 텍스트 정리
-const cleanText = (typeof text === "string" ? text : "").replace(/\*/g, "");
+       // 텍스트 정리 및 정규화
+       const rawText = typeof text === "string" ? text : "";
+       const cleanText = rawText.replace(/\*/g, "");
+       const normalized = cleanText
+         // 제로폭/바이트순서표시 제거
+         .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
+         // 모든 공백(스페이스, NBSP 포함) 제거
+         .replace(/[\s\u00A0]+/g, "")
+         // 전각 물음표 → 반각 물음표로 통일
+         .replace(/？/g, "?");
+      
+       // 공백 제거 기준으로 포함 여부 확인
+       const isReadyToConfirm = normalized.includes("이대로게임초안을확정할까요?");
+      if (isReadyToConfirm) {
+        // 응답 원문 자체도 저장(필요 시 재생성/전송용)
+          localStorage.setItem("template", rawText);
 
-// 1) "이대로 게임 초안을 확정할까요?" 문구 감지 → 이미지 버튼 노출, 템플릿 저장
-const READY_RE = /이대로\s*게임\s*초안을\s*확정할까요\?/u;
-const isReadyToConfirm = READY_RE.test(cleanText);
+        // 이미지 생성 버튼만 보여주고 템플릿 버튼은 숨김
+        setShowImageButton(true);
+        setShowButton(false);
+      } else {
+        // 2) 기존 보조 트리거(원하면 유지/삭제 가능): 
+        //    '버튼을 눌러주세요' 또는 '템플릿 생성(하기)' 문구가 있으면 템플릿 버튼 노출
+        const BTN_RE = /버튼을\s*눌러\s*주세요[!！]?/u;
+        const TPL_RE = /템플릿\s*생성(?:하기)?/u;
 
-if (isReadyToConfirm) {
-  // 응답 원문 자체도 저장(필요 시 재생성/전송용)
-  localStorage.setItem("template", text);
-
-  // 이미지 생성 버튼만 보여주고 템플릿 버튼은 숨김
-  setShowImageButton(true);
-  setShowButton(false);
-} else {
-  // 2) 기존 보조 트리거(원하면 유지/삭제 가능): 
-  //    '버튼을 눌러주세요' 또는 '템플릿 생성(하기)' 문구가 있으면 템플릿 버튼 노출
-  const BTN_RE = /버튼을\s*눌러\s*주세요[!！]?/u;
-  const TPL_RE = /템플릿\s*생성(?:하기)?/u;
-
-  if (BTN_RE.test(cleanText) || TPL_RE.test(cleanText)) {
-    setShowButton(true);
-    localStorage.setItem("template", text);
-  }
-}
-
+        if (BTN_RE.test(cleanText) || TPL_RE.test(cleanText)) {
+          setShowButton(true);
+          localStorage.setItem("template", rawText);
+        }
+      }
       if (newContext && typeof newContext === "object") {
         setContext(newContext);
       }

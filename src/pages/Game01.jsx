@@ -257,6 +257,7 @@ export default function Game01() {
   const creatorTitle = localStorage.getItem('creatorTitle') || '';
   const subtopic = isCustomMode ? creatorTitle : (rawSubtopic || '');
 
+
   let openingArr = [];
   try {
     const raw = localStorage.getItem('opening');
@@ -414,8 +415,8 @@ export default function Game01() {
     return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
   };
 
-  const rawRep = localStorage.getItem('representative_image_url') || '';
-  const repImg = resolveImageUrl(rawRep);
+   const rawCustomImg1 = localStorage.getItem('dilemma_image_1') || '';
+   const customImg1 = resolveImageUrl(rawCustomImg1);
 
   // 기존 기본 본문 로직
   const defaultMain = getDefaultMain();
@@ -434,9 +435,9 @@ export default function Game01() {
       {/* 본문 */}
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
         {isCustomMode ? (
-          repImg ? (
+         customImg1 ? (
             <img
-              src={repImg}
+              src={customImg1}
               alt=""
               style={{ width: 264, height: 360, objectFit: 'cover', borderRadius: 4 }}
               onError={(e) => {

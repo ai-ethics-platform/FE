@@ -20,174 +20,297 @@ const readJSON = (key, fallback = []) => {
 const trim1 = (s, max = 200) => (s || "").replace(/\s+/g, " ").slice(0, max);
 
 
+// function parseDilemmaText(text) {
+//   const result = {};
+//   const T = (text || "").replace(/\r/g, "");
+//   const splitSentences = (block) => {
+//     if (!block) return [];
+//     const m = block.match(/[^.!?\n]+[.!?]/g);
+//     if (m) return m.map(s => s.trim()).filter(Boolean);
+//     return block.split(/\n+/).map(s => s.trim()).filter(Boolean);
+//   };
+
+//   // 다음 섹션 헤더(lookahead) 후보들: 역할/상황및딜레마/선택지/최종멘트/레터헤더
+//   const NEXT = String.raw`(?=\n\s*(?:#{1,6}\s*)?(?:[A-F]\.\s*)?(?:🎭\s*역할|역할|🎯\s*상황\s*및\s*딜레마\s*질문|상황\s*및\s*딜레마\s*질문|✅?\s*선택지\s*[12]|🌀\s*최종\s*멘트|$))`;
+//   const FLIP = String.raw`📎\s*(?:\*\*)?\s*플립자료\s*:?\s*(?:\*\*)?`;
+
+//   // A. 오프닝 멘트 (레터/이모지/헤더 유연)
+//   {
+//     const re = new RegExp(
+//       String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:A\.\s*)?(?:🎬\s*)?오프닝\s*멘트\s+([\s\S]*?)${NEXT}`,
+//       "u"
+//     );
+//     const m = T.match(re);
+//    result.opening = m ? splitSentences(m[1].trim()) : [];
+//   }
+// // B. 역할: "1. **이름**" 패턴 우선 시도 + 새 포맷(이름/역할/상황) 폴백
+// {
+//   // v1) 기존 포맷: "1. **이름**" 블록 내부에서 "상황:" 추출
+//    const roleEntryRe = new RegExp(
+//         String.raw`(?:^|\n)\s*\d+\.\s*\*\*(.*?)\*\*([\s\S]*?)(?=\n\s*\d+\.\s*\*\*|${NEXT})`,
+//         "gu"
+//       );
+//       const blocks = [...T.matchAll(roleEntryRe)];
+    
+//   const getDesc = (blk) => {
+//     if (!blk) return "";
+//     const mm = blk.match(/상황:\s*([\s\S]*?)(?:\n{2,}|$)/u);
+//     return mm?.[1]?.trim() ?? "";
+//   };
+//   result.char1 = blocks[0]?.[1]?.trim() ?? "";
+//   result.char2 = blocks[1]?.[1]?.trim() ?? "";
+//   result.char3 = blocks[2]?.[1]?.trim() ?? "";
+//   result.charDes1 = getDesc(blocks[0]?.[2] ?? "");
+//   result.charDes2 = getDesc(blocks[1]?.[2] ?? "");
+//   result.charDes3 = getDesc(blocks[2]?.[2] ?? "");
+
+//   // v2) 새 포맷: "이름" (단독 줄) 다음에 역할:/상황: 이 오는 형식
+//   if (!result.char1 && !result.char2 && !result.char3) {
+//     // B. 역할 섹션 전체를 따로 떼기
+//     const secMatch = T.match(new RegExp(
+//       String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:B\.\s*)?(?:🎭\s*)?역할\s*([\s\S]*?)${NEXT}`,
+//       "u"
+//     ));
+//     if (secMatch) {
+//       const sec = secMatch[1];
+
+//       // 엔트리: (이름) \n+ [역할: ... \n+] 상황: ...  (빈 줄로 다음 엔트리 구분)
+//       const entryRe =
+//         /(?:^|\n)\s*(?!역할:|상황:)([^\n:]+?)\s*\n+(?:(?:역할:)\s*([^\n]+)\s*\n+)?(?:상황:)\s*([\s\S]*?)(?=\n{2,}|$)/gu;
+
+//       const ents = [...sec.matchAll(entryRe)];
+
+//       const names = ents.map(m => m[1]?.trim()).filter(Boolean);
+//       const situations = ents.map(m => (m[3] ?? "").trim());
+
+//       [result.char1, result.char2, result.char3] = [
+//         names[0] || "",
+//         names[1] || "",
+//         names[2] || "",
+//       ];
+//       [result.charDes1, result.charDes2, result.charDes3] = [
+//         situations[0] || "",
+//         situations[1] || "",
+//         situations[2] || "",
+//       ];
+//     }
+//   }
+// }
+//   // // C. 상황 및 딜레마 질문
+//   // {
+//   //   const re = new RegExp(
+//   //     String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:C\.\s*)?(?:🎯\s*)?상황\s*및\s*딜레마\s*질문\s+([\s\S]*?)${NEXT}`,
+//   //     "u"
+//   //   );
+//   //   const m = T.match(re);
+//   //   if (m) {
+//   //     const block = m[1].trim();
+//   //     const q = block.match(/질문:\s*([^\n]+)/u);
+//   //     result.question = q?.[1]?.trim() ?? "";
+//   //     const withoutQ = block.replace(/질문:\s*[^\n]+/u, "").trim();
+//   //     result.dilemma_situation = splitSentences(withoutQ);
+//   //   } else {
+//   //     result.question = "";
+//   //     result.dilemma_situation = [];
+//   //   }
+//   // }
+//   // C. 상황 및 딜레마 질문
+// {
+//   const re = new RegExp(
+//     String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:C\.\s*)?(?:🎯\s*)?상황\s*및\s*딜레마\s*질문\s+([\s\S]*?)${NEXT}`,
+//     "u"
+//   );
+//   const m = T.match(re);
+//   if (m) {
+//     const block = m[1].trim();
+
+//     //  콜론(: 또는 ：), 따옴표(“ ” " '), 그리고 줄 끝까지를 모두 허용
+//     const QRE = /질문\s*[:：]\s*[“"']?(.+?)[”"']?(?:\n|$)/u;
+
+//     const q = block.match(QRE);
+//     result.question = q?.[1]?.trim() ?? "";
+
+//     // 질문 라인을 통째로 제거해 상황 서술만 남김
+//     const withoutQ = block.replace(QRE, "").trim();
+
+//     result.dilemma_situation = splitSentences(withoutQ);
+//   } else {
+//     result.question = "";
+//     result.dilemma_situation = [];
+//   }
+// }
+
+
+//   // D/E. 선택지 제목(레터/이모지/헤더 유연) + 각 블록 내 플립자료 추출
+//   {
+//     // 선택지 1
+//     const title1 = T.match(
+//       new RegExp(
+//         String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:D\.\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)`,
+//         "u"
+//       )
+//     );
+//     result.choice1 = title1?.[1]?.trim() ?? "";
+
+//     const block1 = T.match(
+//       new RegExp(
+//         String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:D\.\s*)?✅?\s*선택지\s*1\s*:[\s\S]*?${FLIP}\s*([\s\S]*?)${NEXT}`,
+//         "u"
+//       )
+//     );
+//     result.flips_agree_texts = block1 ? splitSentences(block1[1]) : [];
+
+//     // 선택지 2
+//     const title2 = T.match(
+//       new RegExp(
+//         String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:E\.\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)`,
+//         "u"
+//       )
+//     );
+//     result.choice2 = title2?.[1]?.trim() ?? "";
+
+//     const block2 = T.match(
+//       new RegExp(
+//         String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:E\.\s*)?✅?\s*선택지\s*2\s*:[\s\S]*?${FLIP}\s*([\s\S]*?)${NEXT}`,
+//         "u"
+//       )
+//     );
+//     result.flips_disagree_texts = block2 ? splitSentences(block2[1]) : [];
+//   }
+
+//   // F. 최종 멘트
+//   {
+//     const a = T.match(/선택지\s*1\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
+//     const d = T.match(/선택지\s*2\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
+//     result.agreeEnding = a?.[1]?.trim() ?? "";
+//     result.disagreeEnding = d?.[1]?.trim() ?? "";
+//   }
+
+//   return result;
+// }
+
 function parseDilemmaText(text) {
-  const result = {};
+  const out = {
+    opening: [],
+    char1: "", char2: "", char3: "",
+    charDes1: "", charDes2: "", charDes3: "",
+    dilemma_situation: [],
+    question: "",
+    choice1: "", choice2: "",
+    flips_agree_texts: [],
+    flips_disagree_texts: [],
+    agreeEnding: "",
+    disagreeEnding: "",
+  };
+
   const T = (text || "").replace(/\r/g, "");
+
+  // 보조: 문장 분리 (문장부호 기준 → 없으면 줄 기준)
   const splitSentences = (block) => {
     if (!block) return [];
-    const m = block.match(/[^.!?\n]+[.!?]/g);
+    const m = block.match(/[^.!?。\n]+[.!?。]/g);
     if (m) return m.map(s => s.trim()).filter(Boolean);
     return block.split(/\n+/).map(s => s.trim()).filter(Boolean);
   };
 
-  // 다음 섹션 헤더(lookahead) 후보들: 역할/상황및딜레마/선택지/최종멘트/레터헤더
-  const NEXT = String.raw`(?=\n\s*(?:#{1,6}\s*)?(?:[A-F]\.\s*)?(?:🎭\s*역할|역할|🎯\s*상황\s*및\s*딜레마\s*질문|상황\s*및\s*딜레마\s*질문|✅?\s*선택지\s*[12]|🌀\s*최종\s*멘트|$))`;
-  const FLIP = String.raw`📎\s*(?:\*\*)?\s*플립자료\s*:?\s*(?:\*\*)?`;
-
-  // A. 오프닝 멘트 (레터/이모지/헤더 유연)
-  {
+  // 공통: 섹션 추출 유틸 (헤더 ~ 다음 헤더 직전까지)
+  const getSection = (headerRe) => {
+    // 다음 섹션 헤더 후보들(룩어헤드)
+    const NEXT = String.raw`(?=\n\s*(?:#{1,6}\s*)?(?:🎬\s*오프닝\s*멘트|🎭\s*역할|🎯\s*상황\s*및\s*딜레마\s*질문|✅?\s*선택지\s*1|✅?\s*선택지\s*2|🌀\s*최종\s*멘트|$))`;
     const re = new RegExp(
-      String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:A\.\s*)?(?:🎬\s*)?오프닝\s*멘트\s+([\s\S]*?)${NEXT}`,
+      String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?${headerRe}\s*([\s\S]*?)${NEXT}`,
       "u"
     );
     const m = T.match(re);
-   result.opening = m ? splitSentences(m[1].trim()) : [];
-  }
-// B. 역할: "1. **이름**" 패턴 우선 시도 + 새 포맷(이름/역할/상황) 폴백
-{
-  // v1) 기존 포맷: "1. **이름**" 블록 내부에서 "상황:" 추출
-   const roleEntryRe = new RegExp(
-        String.raw`(?:^|\n)\s*\d+\.\s*\*\*(.*?)\*\*([\s\S]*?)(?=\n\s*\d+\.\s*\*\*|${NEXT})`,
-        "gu"
-      );
-      const blocks = [...T.matchAll(roleEntryRe)];
-    
-  const getDesc = (blk) => {
-    if (!blk) return "";
-    const mm = blk.match(/상황:\s*([\s\S]*?)(?:\n{2,}|$)/u);
-    return mm?.[1]?.trim() ?? "";
+    return m ? m[1].trim() : "";
   };
-  result.char1 = blocks[0]?.[1]?.trim() ?? "";
-  result.char2 = blocks[1]?.[1]?.trim() ?? "";
-  result.char3 = blocks[2]?.[1]?.trim() ?? "";
-  result.charDes1 = getDesc(blocks[0]?.[2] ?? "");
-  result.charDes2 = getDesc(blocks[1]?.[2] ?? "");
-  result.charDes3 = getDesc(blocks[2]?.[2] ?? "");
 
-  // v2) 새 포맷: "이름" (단독 줄) 다음에 역할:/상황: 이 오는 형식
-  if (!result.char1 && !result.char2 && !result.char3) {
-    // B. 역할 섹션 전체를 따로 떼기
-    const secMatch = T.match(new RegExp(
-      String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:B\.\s*)?(?:🎭\s*)?역할\s*([\s\S]*?)${NEXT}`,
-      "u"
-    ));
-    if (secMatch) {
-      const sec = secMatch[1];
+  // A. 🎬 오프닝 멘트
+  {
+    const sec = getSection(String.raw`(?:A\.\s*)?🎬\s*오프닝\s*멘트`);
+    out.opening = splitSentences(sec);
+  }
 
-      // 엔트리: (이름) \n+ [역할: ... \n+] 상황: ...  (빈 줄로 다음 엔트리 구분)
-      const entryRe =
-        /(?:^|\n)\s*(?!역할:|상황:)([^\n:]+?)\s*\n+(?:(?:역할:)\s*([^\n]+)\s*\n+)?(?:상황:)\s*([\s\S]*?)(?=\n{2,}|$)/gu;
+  // B. 🎭 역할  —  "1. [역할] - [설명]" 형태 3줄
+  {
+    const sec = getSection(String.raw`(?:B\.\s*)?🎭\s*역할`);
+    if (sec) {
+      const lines = sec.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      const roleLineRe = /^\d+\.\s*\[?([^\]\-]+?)\]?\s*(?:-\s*(.+))?$/u;
 
-      const ents = [...sec.matchAll(entryRe)];
-
-      const names = ents.map(m => m[1]?.trim()).filter(Boolean);
-      const situations = ents.map(m => (m[3] ?? "").trim());
-
-      [result.char1, result.char2, result.char3] = [
-        names[0] || "",
-        names[1] || "",
-        names[2] || "",
-      ];
-      [result.charDes1, result.charDes2, result.charDes3] = [
-        situations[0] || "",
-        situations[1] || "",
-        situations[2] || "",
-      ];
+      const roles = [];
+      for (const ln of lines) {
+        const m = ln.match(roleLineRe);
+        if (m) {
+          roles.push({ name: (m[1] || "").trim(), desc: (m[2] || "").trim() });
+        }
+      }
+      if (roles[0]) { out.char1 = roles[0].name; out.charDes1 = roles[0].desc; }
+      if (roles[1]) { out.char2 = roles[1].name; out.charDes2 = roles[1].desc; }
+      if (roles[2]) { out.char3 = roles[2].name; out.charDes3 = roles[2].desc; }
     }
   }
-}
-  // // C. 상황 및 딜레마 질문
-  // {
-  //   const re = new RegExp(
-  //     String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:C\.\s*)?(?:🎯\s*)?상황\s*및\s*딜레마\s*질문\s+([\s\S]*?)${NEXT}`,
-  //     "u"
-  //   );
-  //   const m = T.match(re);
-  //   if (m) {
-  //     const block = m[1].trim();
-  //     const q = block.match(/질문:\s*([^\n]+)/u);
-  //     result.question = q?.[1]?.trim() ?? "";
-  //     const withoutQ = block.replace(/질문:\s*[^\n]+/u, "").trim();
-  //     result.dilemma_situation = splitSentences(withoutQ);
-  //   } else {
-  //     result.question = "";
-  //     result.dilemma_situation = [];
-  //   }
-  // }
-  // C. 상황 및 딜레마 질문
-{
-  const re = new RegExp(
-    String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:C\.\s*)?(?:🎯\s*)?상황\s*및\s*딜레마\s*질문\s+([\s\S]*?)${NEXT}`,
-    "u"
-  );
-  const m = T.match(re);
-  if (m) {
-    const block = m[1].trim();
 
-    //  콜론(: 또는 ：), 따옴표(“ ” " '), 그리고 줄 끝까지를 모두 허용
-    const QRE = /질문\s*[:：]\s*[“"']?(.+?)[”"']?(?:\n|$)/u;
-
-    const q = block.match(QRE);
-    result.question = q?.[1]?.trim() ?? "";
-
-    // 질문 라인을 통째로 제거해 상황 서술만 남김
-    const withoutQ = block.replace(QRE, "").trim();
-
-    result.dilemma_situation = splitSentences(withoutQ);
-  } else {
-    result.question = "";
-    result.dilemma_situation = [];
-  }
-}
-
-
-  // D/E. 선택지 제목(레터/이모지/헤더 유연) + 각 블록 내 플립자료 추출
+  // C. 🎯 상황 및 딜레마 질문  —  첫 번째 물음표(?) 포함 줄을 질문으로, 나머지는 상황으로
   {
-    // 선택지 1
-    const title1 = T.match(
-      new RegExp(
-        String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:D\.\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)`,
-        "u"
-      )
-    );
-    result.choice1 = title1?.[1]?.trim() ?? "";
-
-    const block1 = T.match(
-      new RegExp(
-        String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:D\.\s*)?✅?\s*선택지\s*1\s*:[\s\S]*?${FLIP}\s*([\s\S]*?)${NEXT}`,
-        "u"
-      )
-    );
-    result.flips_agree_texts = block1 ? splitSentences(block1[1]) : [];
-
-    // 선택지 2
-    const title2 = T.match(
-      new RegExp(
-        String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:E\.\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)`,
-        "u"
-      )
-    );
-    result.choice2 = title2?.[1]?.trim() ?? "";
-
-    const block2 = T.match(
-      new RegExp(
-        String.raw`(?:^|\n)\s*(?:#{1,6}\s*)?(?:E\.\s*)?✅?\s*선택지\s*2\s*:[\s\S]*?${FLIP}\s*([\s\S]*?)${NEXT}`,
-        "u"
-      )
-    );
-    result.flips_disagree_texts = block2 ? splitSentences(block2[1]) : [];
+    const sec = getSection(String.raw`(?:C\.\s*)?🎯\s*상황\s*및\s*딜레마\s*질문`);
+    if (sec) {
+      const lines = sec.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      const qIdx = lines.findIndex(l => l.includes("?") || /[?？]$/.test(l));
+      if (qIdx >= 0) {
+        out.question = lines[qIdx];
+        const remain = lines.slice(0, qIdx).concat(lines.slice(qIdx + 1)).join("\n");
+        out.dilemma_situation = splitSentences(remain);
+      } else {
+        out.question = "";
+        out.dilemma_situation = splitSentences(sec);
+      }
+    }
   }
 
-  // F. 최종 멘트
+  // D. ✅ 선택지 1: [내용]  +  "플립자료: [내용]"
   {
-    const a = T.match(/선택지\s*1\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
-    const d = T.match(/선택지\s*2\s*최종선택:\s*[“"']([\s\S]*?)[”"']/u);
-    result.agreeEnding = a?.[1]?.trim() ?? "";
-    result.disagreeEnding = d?.[1]?.trim() ?? "";
+    const m = T.match(
+      /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)[\s\S]*?(?:플립자료\s*:\s*)([\s\S]*?)(?=\n\s*(?:✅?\s*선택지\s*2|🌀\s*최종|$))/u
+    );
+    if (m) {
+      out.choice1 = (m[1] || "").trim();
+      out.flips_agree_texts = splitSentences((m[2] || "").trim());
+    } else {
+      // 타이틀만 있는 경우(플립자료가 다른 줄에 분리된 케이스 대비)
+      const titleOnly = T.match(/(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)/u);
+      if (titleOnly) out.choice1 = titleOnly[1].trim();
+    }
   }
 
-  return result;
+  // E. ✅ 선택지 2: [내용]  +  "플립자료: [내용]"
+  {
+    const m = T.match(
+      /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)[\s\S]*?(?:플립자료\s*:\s*)([\s\S]*?)(?=\n\s*(?:🌀\s*최종|$))/u
+    );
+    if (m) {
+      out.choice2 = (m[1] || "").trim();
+      out.flips_disagree_texts = splitSentences((m[2] || "").trim());
+    } else {
+      const titleOnly = T.match(/(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)/u);
+      if (titleOnly) out.choice2 = titleOnly[1].trim();
+    }
+  }
+
+  // F. 🌀 최종 멘트 — 1줄째: 선택지1 최종, 2줄째: 선택지2 최종
+  {
+    const sec = getSection(String.raw`(?:F\.\s*)?🌀\s*최종\s*멘트`);
+    if (sec) {
+      const lines = sec.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      if (lines[0]) out.agreeEnding = lines[0];
+      if (lines[1]) out.disagreeEnding = lines[1];
+    }
+  }
+
+  return out;
 }
+
+
 function hasOpeningCue(s) {
   if (typeof s !== "string") return false;
   const clean = s.replace(/\*/g, ""); 
@@ -307,7 +430,7 @@ export default function ChatPage() {
       // 진희님 프롬프트 
       const prompt = {
         id: "pmpt_68c5008a398081948d5dc37bf1d1aec20557fb7a1f2f0442",
-        version: "2", 
+        version: "3", 
         messages: [
           { role: "system", content: "너는 교사가 AI 윤리 딜레마 기반 대화형 수업 게임을 설계하도록 돕는 어시스턴트 챗봇이야.너의 역할은 교사가 주제를 선택하고, 그 주제에서 발생할 수 있는 가치 충돌을 탐색하며, 딜레마 질문·역할·상황·최종 게임 스크립트까지 차례대로 완성할 수 있도록 단계별로 안내하는 것이야.  대화는 반드시 한국어 존댓말로, 따뜻하고 협업적인 톤을 유지하며, 중·고등학생도 이해할 수 있을 만큼 쉽게 설명해야 해. 전문 용어는 줄이고, 일상적 비유를 활용하며, 교사가 스스로 판단할 수 있도록 소크라테스식 질문을 섞어야 해.  진행 규칙은 다음과 같아:  ① 주제 선택 → ② 가치 충돌 질문 도출 → ③ 역할 설정 → ④ 상황 및 플립 구성 → ⑤ 최종 게임 스크립트 완성.  각 단계는 한 번에 하나씩만 진행하며, 다음 단계로 넘어가기 전에 반드시 교사의 의견이나 선택을 확인해야 해.  교사가 먼저 추천을 원한다고 요청하기 전에는, 주제·가치 갈등·역할·상황을 마음대로 자동으로 생성하지 말고, 교사가 아이디어를 제시하도록 기다려야 해.  결국 너의 업무는 교사가 주체적으로 차례대로 수업을 설계하도록 돕는 협력자이자 안내자로서, 구조적이면서도 자연스럽게 대화를 이어가는 것이야.   " },
           ...recentMessages,
@@ -367,28 +490,53 @@ export default function ChatPage() {
       //   localStorage.setItem("template", text);
       // }
 
-      // handleSend 안, 텍스트 정리
-        const cleanText = (typeof text === "string" ? text : "").replace(/\*/g, "");
+      // // handleSend 안, 텍스트 정리
+      //   const cleanText = (typeof text === "string" ? text : "").replace(/\*/g, "");
 
-        // 오프닝 큐(이미지 단계) 판단은 그대로
-         const openingArr = readJSON("opening", []);
-         const openingArrForCue = readJSON("opening", null);
-         const hasOpeningArr = Array.isArray(openingArrForCue) && openingArrForCue.length > 0;
-         const cue = hasOpeningCue(cleanText) || hasOpeningArr;
-         setShowImageButton(cue);
-         if (cue) {
-          setShowButton(false);
-          localStorage.setItem("template", text);
-        }
+      //   // 오프닝 큐(이미지 단계) 판단은 그대로
+      //    const openingArr = readJSON("opening", []);
+      //    const openingArrForCue = readJSON("opening", null);
+      //    const hasOpeningArr = Array.isArray(openingArrForCue) && openingArrForCue.length > 0;
+      //    const cue = hasOpeningCue(cleanText) || hasOpeningArr;
+      //    setShowImageButton(cue);
+      //    if (cue) {
+      //     setShowButton(false);
+      //     localStorage.setItem("template", text);
+      //   }
 
-        // '버튼을 눌러주세요' 또는 '템플릿 생성(하기)' 중 하나라도 있으면 버튼 표시
-        const BTN_RE = /버튼을\s*눌러\s*주세요[!！]?/u;
-        const TPL_RE = /템플릿\s*생성(?:하기)?/u;
+      //   // '버튼을 눌러주세요' 또는 '템플릿 생성(하기)' 중 하나라도 있으면 버튼 표시
+      //   const BTN_RE = /버튼을\s*눌러\s*주세요[!！]?/u;
+      //   const TPL_RE = /템플릿\s*생성(?:하기)?/u;
 
-        if (!cue && (BTN_RE.test(cleanText) || TPL_RE.test(cleanText))) {
-          setShowButton(true);
-          localStorage.setItem("template", text);
-        }
+      //   if (!cue && (BTN_RE.test(cleanText) || TPL_RE.test(cleanText))) {
+      //     setShowButton(true);
+      //     localStorage.setItem("template", text);
+      //   }
+      // 텍스트 정리
+const cleanText = (typeof text === "string" ? text : "").replace(/\*/g, "");
+
+// 1) "이대로 게임 초안을 확정할까요?" 문구 감지 → 이미지 버튼 노출, 템플릿 저장
+const READY_RE = /이대로\s*게임\s*초안을\s*확정할까요\?/u;
+const isReadyToConfirm = READY_RE.test(cleanText);
+
+if (isReadyToConfirm) {
+  // 응답 원문 자체도 저장(필요 시 재생성/전송용)
+  localStorage.setItem("template", text);
+
+  // 이미지 생성 버튼만 보여주고 템플릿 버튼은 숨김
+  setShowImageButton(true);
+  setShowButton(false);
+} else {
+  // 2) 기존 보조 트리거(원하면 유지/삭제 가능): 
+  //    '버튼을 눌러주세요' 또는 '템플릿 생성(하기)' 문구가 있으면 템플릿 버튼 노출
+  const BTN_RE = /버튼을\s*눌러\s*주세요[!！]?/u;
+  const TPL_RE = /템플릿\s*생성(?:하기)?/u;
+
+  if (BTN_RE.test(cleanText) || TPL_RE.test(cleanText)) {
+    setShowButton(true);
+    localStorage.setItem("template", text);
+  }
+}
 
       if (newContext && typeof newContext === "object") {
         setContext(newContext);

@@ -19,10 +19,29 @@ export default function WaitingRoom() {
   const location = useLocation();
   const navigate = useNavigate();
   // zoom 수정
-  const allTopics = ['안드로이드', '자율 무기 시스템'];
+  // const allTopics = ['안드로이드', '자율 무기 시스템'];
 
-  const initialTopic = location.state?.topic || '안드로이드';
-  const initialIndex = allTopics.indexOf(initialTopic);
+  // const initialTopic = location.state?.topic || '안드로이드';
+  // const initialIndex = allTopics.indexOf(initialTopic);
+
+  // zoom 수정
+// 기본 토픽 목록
+const defaultTopics = ['안드로이드', '자율 무기 시스템'];
+
+// custom 모드 여부 확인
+const isCustomMode = Boolean(localStorage.getItem('code'));
+const creatorTitle = localStorage.getItem('creatorTitle') || '커스텀 주제';
+
+// allTopics 설정
+const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
+
+// 초기 토픽 결정
+const initialTopic = isCustomMode 
+  ? creatorTitle 
+  : (location.state?.topic || defaultTopics[0]);
+
+const initialIndex = allTopics.indexOf(initialTopic);
+
  
   //룸코드 복사 
   const [copied, setCopied] = useState(false);

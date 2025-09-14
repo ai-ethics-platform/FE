@@ -127,7 +127,7 @@ export default function CreateDilemma({ onClose }) {
   const [name, setName] = useState('');
   const [school, setSchool] = useState('');
   const [email, setEmail] = useState('');
-  const GPTS_URL = 'https://chatgpt.com/g/g-68c54f94ce0c8191917ccadd5bb8fa7f-test-2';
+  const GPTS_URL = 'https://chatgpt.com/g/g-68c588a5afa881919352989f07138007-ai-yunri-dilrema-sinario-caesbos';
 
   function openNewTabSafely(url) {
     // 1) 가장 안정적인 직열기

@@ -349,8 +349,7 @@ export default function Create00() {
      useState(() => computeButtonVisibility());
   const [imgLoading, setImgLoading] = useState(false);
     const GPTS_URL =
-'https://chatgpt.com/g/g-68c588a5afa881919352989f07138007-test-kw-ver-17';
-
+'https://chatgpt.com/g/g-68c588a5afa881919352989f07138007-ai-yunri-dilrema-sinario-caesbos';
     function openNewTabSafely(url) {
     const w = window.open(url, '_blank', 'noopener,noreferrer');
     if (w) return;

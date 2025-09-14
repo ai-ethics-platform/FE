@@ -517,7 +517,7 @@ export default function Create00() {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, width: '100%' }}>
         <div style={{ alignSelf: 'stretch', marginTop: 10, }}>
             <h2 style={{ ...FontStyles.headlineSmall, color: Colors.grey07, marginBottom: 8 }}>
-            챗봇과 시나리오 사전 구상기
+            챗봇과 시나리오 사전 구상하기
             </h2>
 
              <p style={{ ...FontStyles.body, color: Colors.grey05, margin: 0 }}>

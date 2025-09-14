@@ -313,10 +313,10 @@ function persistParsedToLocalStorage(text) {
 function parsedReady() {
   const opening = readJSON('opening', []);
   const ds = readJSON('dilemma_situation', []);
-  const q = localStorage.getItem('question') || '';
-  const r = localStorage.getItem('agreeEnding') || '';
+  //const q = localStorage.getItem('question') || '';
+  //const r = localStorage.getItem('agreeEnding') || '';
 
-  return opening.length > 0 && ds.length > 0 && q.trim().length > 0;
+  return opening.length > 0 && ds.length > 0  > 0;
 }
 
 // 이미지 모두 준비됐는지(템플릿 생성 버튼 노출 조건)
@@ -522,7 +522,7 @@ export default function Create00() {
 
              <p style={{ ...FontStyles.body, color: Colors.grey05, margin: 0 }}>
             <span style={{ display: 'block', marginBottom: 6 }}>
-                챗봇이 만든 최종 결과를 아래 입력 박스에 그대로 붙여넣어 주세요.
+                챗봇이 만든 최종 결과를 아래 입력 박스에 그대로 붙여넣어 주세요. 
             </span>
             <span style={{ display: 'inline' }}>
                 혹시 챗봇을 실수로 종료하신 경우, 오른쪽 링크를 클릭해 주세요.{' '}

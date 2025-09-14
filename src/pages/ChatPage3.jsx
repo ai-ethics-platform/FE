@@ -22,9 +22,60 @@ const readJSON = (key, fallback = []) => {
   }
 };
 const trim1 = (s, max = 200) => (s || '').replace(/\s+/g, ' ').slice(0, max);
-
-// ---------- 파서(붙여넣은 텍스트 → 구조화) ----------
-function parseDilemmaText(text) {
+// ---------- 최종 멘트 파서 ( -- 블록 기준 ) ----------
+function parseFinalMentByDashes(input) {
+    const ZWS_RE = /[\u200B-\u200D\uFEFF]/g;
+    let s = String(input || '')
+      .replace(/\r/g, '')
+      .replace(/\\n/g, '\n')   // ★ 리터럴 개행을 실제 개행으로
+      .replace(/\uFF0D/g, '-') // 전각 하이픈 보정
+      .replace(ZWS_RE, '')
+      .trim();
+  
+    const dashRE = /^\s*--\s+/gm;
+    const m1 = dashRE.exec(s);
+    const m2 = dashRE.exec(s);
+  
+    const out = {};
+    if (!m1) return out;
+  
+    const agreeChunk = m2 ? s.slice(m1.index, m2.index) : s.slice(m1.index);
+    const disagreeChunk = m2 ? s.slice(m2.index) : '';
+  
+    const toOneLine = (chunk) => {
+      if (!chunk) return '';
+      const body = chunk.replace(/^\s*--\s+/, '');
+      const lines = body.split('\n');
+  
+      const first = (lines[0] || '').trim();
+      const titleMatch = first.match(/최\s*종\s*선\s*택\s*[:：]\s*(.*)$/u);
+      const title = titleMatch ? titleMatch[1].trim() : first;
+  
+      const rest = lines.slice(1).join(' ').trim();
+      const clean = (txt) => txt
+        .split('\n')
+        .map(l => l
+          .replace(/^\s*(?:--|-|•|\*|\d+\.)\s*/u, '')
+          .replace(/^["“”'‘’]+|["“”'‘’]+$/gu, '')
+          .trim()
+        )
+        .filter(Boolean)
+        .join(' ');
+  
+      return clean([title, rest].filter(Boolean).join(' '));
+    };
+  
+    const agree = toOneLine(agreeChunk);
+    if (agree) out.agreeEnding = agree;
+  
+    const disagree = toOneLine(disagreeChunk);
+    if (disagree) out.disagreeEnding = disagree;
+  
+    return out;
+  }
+  
+  // ---------- 본문 파서 ----------
+  function parseDilemmaText(text) {
     const out = {
       opening: [],
       char1: '', char2: '', char3: '',
@@ -40,8 +91,8 @@ function parseDilemmaText(text) {
   
     const T = (text || '')
       .replace(/\r/g, '')
-      // 다양한 대시/emdash/figure dash → 하이픈
-      .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-');
+      .replace(/\\n/g, '\n')  // ★ 리터럴 "\n"을 실제 개행으로 변환
+      .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212\uFF0D]/g, '-');
   
     const splitSentences = (block) => {
       if (!block) return [];
@@ -66,16 +117,12 @@ function parseDilemmaText(text) {
     // A. 오프닝
     out.opening = splitSentences(getSection(String.raw`(?:A\.\s*)?🎬\s*오프닝\s*멘트`));
   
-    // B. 역할 — 두 가지 방식 모두 지원
-    //  (1) 불릿 한 줄 패턴: -- '이름' : 설명
-    //  (2) 블록 패턴: 첫 줄=이름, 나머지 줄=설명
+    // B. 역할
     {
       const sec = getSection(String.raw`(?:B\.\s*)?🎭\s*역할`);
       if (sec) {
         const lines = sec.split(/\n+/u).map(s => s.trim()).filter(Boolean);
   
-        // 1) 우선: 한 줄 불릿 패턴을 최대한 뽑는다.
-        //    예) -- '교감 선생님' : 학교의 행정과...
         const bulletRoleRe = /^-{1,3}\s*['"]?(.+?)['"]?\s*:\s*(.+)$/u;
         const bulletRoles = [];
         for (const ln of lines) {
@@ -87,7 +134,6 @@ function parseDilemmaText(text) {
           }
         }
   
-        // 2) 불릿에서 3명 다 못 뽑았으면, 블록 패턴 백업
         let roles = bulletRoles.slice(0, 3);
         if (roles.length < 3) {
           const blocks = sec.split(/\n{2,}/u).map(b => b.trim()).filter(Boolean);
@@ -96,7 +142,6 @@ function parseDilemmaText(text) {
             const blines = b.split(/\n+/).map(x => x.trim()).filter(Boolean);
             if (!blines.length) continue;
   
-            // 첫 줄에 "이름 : 설명" 형태가 있을 수도 있으니 우선 분기
             const mInline = blines[0].match(bulletRoleRe);
             if (mInline) {
               const name = stripQuotes(mInline[1]);
@@ -105,7 +150,6 @@ function parseDilemmaText(text) {
               continue;
             }
   
-            // 일반 블록: 1행=이름(불릿/번호 제거), 2행~ = 설명
             let name = blines[0].replace(/^[•*\-\d.\s]+/, '').trim();
             name = stripQuotes(name);
             const desc = blines.slice(1).join(' ').trim();
@@ -119,7 +163,7 @@ function parseDilemmaText(text) {
       }
     }
   
-    // C. 상황+질문
+    // C. 상황 + 질문
     {
       const sec = getSection(String.raw`(?:C\.\s*)?🎯\s*상황\s*및\s*딜레마\s*질문`);
       if (sec) {
@@ -154,7 +198,7 @@ function parseDilemmaText(text) {
       }
     }
   
-    // D. 선택지1 + 플립자료(📎 플립자료: 라벨이 없어도 본문 전체를 플립으로 처리)
+    // D. 선택지1
     {
       const m = T.match(
         /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*1\s*:\s*([^\n]+)\n([\s\S]*?)(?=\n\s*(?:✅?\s*선택지\s*2|🌀\s*최종|$))/u
@@ -171,7 +215,7 @@ function parseDilemmaText(text) {
       }
     }
   
-    // E. 선택지2 + 플립자료
+    // E. 선택지2
     {
       const m = T.match(
         /(?:^|\n)\s*(?:#{1,6}\s*)?✅?\s*선택지\s*2\s*:\s*([^\n]+)\n([\s\S]*?)(?=\n\s*(?:🌀\s*최종|$))/u
@@ -187,87 +231,50 @@ function parseDilemmaText(text) {
         if (titleOnly) out.choice2 = titleOnly[1].trim();
       }
     }
-// F. 최종 멘트 — 초탄탄 버전(공백/괄호/콜론/제로폭 대응, 인덱스 기반)
-{
-    const sec = getSection(String.raw`(?:F\.\s*)?(?:🌀\s*)?최종\s*멘트?`);
-    if (sec) {
-      // 1) 원문 보존본 + 정규화본 둘 다 사용 (정규화본에서 인덱스 찾고, 그걸로 자름)
-      const raw  = sec.replace(/\r/g, '').trim();
   
-      // 유니코드 잡스러운 공백/제로폭/콜론/하이픈 정리 + 다중공백 축약
-      const normalize = (s) =>
-        s
-          .replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g, ' ')  // NBSP 등 → space
-          .replace(/[\u200B-\u200D\uFEFF]/g, '')                    // zero-width 제거
-          .replace(/[：]/g, ':')                                     // 전각 콜론 → 일반 콜론
-          .replace(/[‐-‒–—]/g, '-')                                  // 다양한 대시 통일
-          .replace(/[ \t]+/g, ' ')                                   // 다중 스페이스 축약
-          .replace(/\n[ \t]+/g, '\n');                               // 개행 뒤 공백 제거
-  
-      const norm = normalize(raw);
-  
-      // 2) 라벨 정규식(매우 느슨)
-      // - "선택지"와 숫자 사이 공백 허용, 괄호 라벨 옵션, '최종선택/최종 선택' 모두 허용, 콜론 유무/줄바꿈 허용
-      const RE1 = /선택지\s*1\s*(?:\([^)]*\)\s*)?최종\s*선택?/u;
-      const RE2 = /선택지\s*2\s*(?:\([^)]*\)\s*)?최종\s*선택?/u;
-  
-      // 3) 위치 찾기
-      const i1 = norm.search(RE1);
-      const i2 = norm.search(RE2);
-  
-      // 4) 라벨 문자열(정확히 매칭된 텍스트) 길이 구하기
-      const m1 = i1 >= 0 ? norm.slice(i1).match(RE1) : null;
-      const m2 = i2 >= 0 ? norm.slice(i2).match(RE2) : null;
-      const lab1len = m1 ? m1[0].length : 0;
-      const lab2len = m2 ? m2[0].length : 0;
-  
-      // 5) agree: [선택지1 라벨] 이후 ~ [선택지2 라벨 시작] 전
-      if (i1 >= 0) {
-        let body1 = norm.slice(i1 + lab1len, i2 >= 0 ? i2 : norm.length);
-        // 라벨과 같은 줄의 콜론 또는 다음 줄 콜론을 정리
-        body1 = body1.replace(/^[ \t]*:?\s*/u, '').replace(/^\s*\n+/, '');
-        out.agreeEnding = body1.trim();
-      }
-  
-      // 6) disagree: [선택지2 라벨] 이후 ~ 끝 (← 여기서 항상 끝까지 자르므로 안전)
-      if (i2 >= 0) {
-        let body2 = norm.slice(i2 + lab2len);
-        body2 = body2.replace(/^[ \t]*:?\s*/u, '').replace(/^\s*\n+/, '');
-        out.disagreeEnding = body2.trim();
-      }
-  
-      // 7) 마지막 클린업: 줄별 불릿/숫자 제거 + 양쪽 따옴표 제거
-      const clean = (s='') =>
-        s
-          .replace(/^\s*(?:[-–—•*]\s+|\d+\.\s*)/gm, '')
-          .replace(/^["“”'‘’]+|["“”'‘’]+$/g, '')
-          .trim();
-      if (out.agreeEnding)    out.agreeEnding    = clean(out.agreeEnding);
-      if (out.disagreeEnding) out.disagreeEnding = clean(out.disagreeEnding);
-  
-      // 8) 백업: 선택지2 라벨을 못 찾았을 때(아주 드문 케이스) — "2" 숫자 붙임/콜론 누락 등 느슨 매치
-      if (!out.disagreeEnding) {
-        // 선택지2 뒤 전부 잡기 (콜론/공백/개행 가리지 않음)
-        const m2b = norm.match(/선택지\s*2[\s\S]*?(?:최종\s*선택?)?[:：]?\s*([\s\S]*)$/u);
-        if (m2b) out.disagreeEnding = clean(m2b[1] || '');
-      }
-  
-      // 9) 그래도 비면 단락 백업(두 번째 단락=agree, 세 번째 단락=disagree)
-      if (!out.agreeEnding && !out.disagreeEnding) {
-        const paras = norm.split(/\n{2,}/u).map(s => s.trim()).filter(Boolean);
-        if (paras[1]) out.agreeEnding    = clean(paras[1]);
-        if (paras[2]) out.disagreeEnding = clean(paras[2]);
+    // F. 최종 멘트
+    {
+      const fin = getSection(String.raw`(?:F\.\s*)?🌀\s*최\s*종\s*멘\s*트?`);
+      if (fin) {
+        const ed = parseFinalMentByDashes(fin);
+        if (ed.agreeEnding) out.agreeEnding = ed.agreeEnding;
+        if (ed.disagreeEnding) out.disagreeEnding = ed.disagreeEnding;
       }
     }
-  }
-  
-  
   
     return out;
   }
   
+  
 
 function persistParsedToLocalStorage(text) {
+  // 원본을 그대로 저장해보자
+  localStorage.setItem('debug_raw_finalText', text);
+
+  // "-- 선택지1"부터 "-- 선택지2" 전까지를 agreeEnding으로 추출
+  const m = text.match(/--\s*선택지1[\s\S]*?(?=--\s*선택지2)/);
+  if (m) {
+    const agreeRaw = m[0]
+      .replace(/^--\s*선택지1\s*최종선택[:：]?\s*/m, '') // 라벨 제거
+      .trim();
+    localStorage.setItem('agreeEnding', agreeRaw);
+    console.log('[DEBUG] agreeEnding 저장됨:', agreeRaw);
+  } else {
+    localStorage.setItem('agreeEnding', '');
+    console.warn('[DEBUG] agreeEnding 못 찾음');
+  }
+
+ // -- 선택지2 ~ 끝까지 → disagreeEnding
+ const m2 = text.match(/--\s*선택지2[\s\S]*/);
+ if (m2) {
+   const disagreeRaw = m2[0]
+     .replace(/^--\s*선택지2\s*최종선택[:：]?\s*/m, '') // 라벨 제거
+     .trim();
+   localStorage.setItem('disagreeEnding', disagreeRaw);
+   console.log('[DEBUG] disagreeEnding 저장됨:', disagreeRaw);
+ } else {
+   console.warn('[DEBUG] disagreeEnding 못 찾음');
+ }
   const p = parseDilemmaText(text);
   console.log('[PARSE]', { 
     opening: p.opening, 
@@ -294,8 +301,12 @@ function persistParsedToLocalStorage(text) {
   localStorage.setItem('choice2', p.choice2 || '');
   localStorage.setItem('flips_agree_texts', JSON.stringify(p.flips_agree_texts || []));
   localStorage.setItem('flips_disagree_texts', JSON.stringify(p.flips_disagree_texts || []));
-  localStorage.setItem('agreeEnding', p.agreeEnding || '');
-  localStorage.setItem('disagreeEnding', p.disagreeEnding || '');
+  if (p.agreeEnding) {
+    localStorage.setItem('agreeEnding', p.agreeEnding);
+  }
+  if (p.disagreeEnding) {
+    localStorage.setItem('disagreeEnding', p.disagreeEnding);
+  }
 }
 
 // 필수 필드가 준비됐는지 판단(이미지 생성 버튼 노출 조건)

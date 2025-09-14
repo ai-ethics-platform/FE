@@ -524,6 +524,9 @@ export default function Create00() {
             <span style={{ display: 'block', marginBottom: 6 }}>
                 챗봇이 만든 최종 결과를 아래 입력 박스에 그대로 붙여넣어 주세요. 
             </span>
+            <span style={{ display: 'block', marginBottom: 6 }}>
+            '🎬 오프닝 멘트'부터 '🌀 최종 멘트'까지의 범위를 드래그 후 붙여넣어야 버튼이 생성됩니다.
+                        </span>
             <span style={{ display: 'inline' }}>
                 혹시 챗봇을 실수로 종료하신 경우, 오른쪽 링크를 클릭해 주세요.{' '}
             </span>

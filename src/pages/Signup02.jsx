@@ -70,7 +70,7 @@ useEffect(() => {
     setBirthError(isValid ? '' : '올바른 형식은 2001-01 입니다.');
   };
   // 계열 옵션 
-   const majorOptions = ['예술계열', '공학계열', '인문계열', '사회계열']
+  const majorOptions = ['예술계열', '공학계열', '인문계열', '사회계열', '교육계열', '자연계열'];
   // // 학년 옵션
   // const getGradeOptions = () => {
   //   if (education === '중학생' || education === '고등학생') {
@@ -474,7 +474,7 @@ useEffect(() => {
             </div>
             <div style={{ marginBottom: '2vh' }}>
               <SelectDrop
-                options={['중학생', '고등학생', '대학생','대학원생']}
+                options={['중학생', '고등학생', '대학생','대학원생','교사']}
                 value={education}
                 onSelect={(option) => {
                   setEducation(option);
@@ -489,7 +489,7 @@ useEffect(() => {
               />
             </div>
 
-            {(education == '대학생' || education== '대학원생')&&(
+            {(education == '대학생' || education== '대학원생'||education== '교사')&&(
               <div style={{ marginBottom: '4vh' }}>
                 <SelectDrop
                   options={majorOptions}

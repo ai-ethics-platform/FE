@@ -912,70 +912,7 @@ function parseFinalMentByDashes(input) {
   
     return out;
   }
-  
-  
 
-// function persistParsedToLocalStorage(text) {
-//   // 원본을 그대로 저장해보자
-//   localStorage.setItem('debug_raw_finalText', text);
-
-//   // "-- 선택지1"부터 "-- 선택지2" 전까지를 agreeEnding으로 추출
-//   const m = text.match(/--\s*선택지1[\s\S]*?(?=--\s*선택지2)/);
-//   if (m) {
-//     const agreeRaw = m[0]
-//       .replace(/^--\s*선택지1\s*최종선택[:：]?\s*/m, '') // 라벨 제거
-//       .trim();
-//     localStorage.setItem('agreeEnding', agreeRaw);
-//     console.log('[DEBUG] agreeEnding 저장됨:', agreeRaw);
-//   } else {
-//     localStorage.setItem('agreeEnding', '');
-//     console.warn('[DEBUG] agreeEnding 못 찾음');
-//   }
-
-//  // -- 선택지2 ~ 끝까지 → disagreeEnding
-//  const m2 = text.match(/--\s*선택지2[\s\S]*/);
-//  if (m2) {
-//    const disagreeRaw = m2[0]
-//      .replace(/^--\s*선택지2\s*최종선택[:：]?\s*/m, '') // 라벨 제거
-//      .trim();
-//    localStorage.setItem('disagreeEnding', disagreeRaw);
-//    console.log('[DEBUG] disagreeEnding 저장됨:', disagreeRaw);
-//  } else {
-//    console.warn('[DEBUG] disagreeEnding 못 찾음');
-//  }
-//   const p = parseDilemmaText(text);
-//   console.log('[PARSE]', { 
-//     opening: p.opening, 
-//     ds: p.dilemma_situation, 
-//     q: p.question 
-//   });
-//   // 배열은 JSON으로
-//   if (Array.isArray(p.opening) && p.opening.length) {
-//     localStorage.setItem('opening', JSON.stringify(p.opening));
-//   } else {
-//     localStorage.removeItem('opening');
-//   }
-
-//   localStorage.setItem('char1', p.char1 || '');
-//   localStorage.setItem('char2', p.char2 || '');
-//   localStorage.setItem('char3', p.char3 || '');
-//   localStorage.setItem('charDes1', p.charDes1 || '');
-//   localStorage.setItem('charDes2', p.charDes2 || '');
-//   localStorage.setItem('charDes3', p.charDes3 || '');
-
-//   localStorage.setItem('dilemma_situation', JSON.stringify(p.dilemma_situation || []));
-//   localStorage.setItem('question', p.question || '');
-//   localStorage.setItem('choice1', p.choice1 || '');
-//   localStorage.setItem('choice2', p.choice2 || '');
-//   localStorage.setItem('flips_agree_texts', JSON.stringify(p.flips_agree_texts || []));
-//   localStorage.setItem('flips_disagree_texts', JSON.stringify(p.flips_disagree_texts || []));
-//   if (p.agreeEnding) {
-//     localStorage.setItem('agreeEnding', p.agreeEnding);
-//   }
-//   if (p.disagreeEnding) {
-//     localStorage.setItem('disagreeEnding', p.disagreeEnding);
-//   }
-// }
 
 function persistParsedToLocalStorage(text) {
     // 원본을 그대로 저장해보자
@@ -1058,6 +995,7 @@ function imagesReady() {
     .every(k => !!localStorage.getItem(k));
 }
 
+// /chat/image 호출
 async function requestImage(input, size = '1867 × 955') {
     const body = { step: 'image', input, size };
     const { data } = await axiosInstance.post('/chat/image', body, {
@@ -1066,49 +1004,39 @@ async function requestImage(input, size = '1867 × 955') {
     return data?.image_data_url || data?.url || data?.image || null;
   }
   
-  // 이미지 다운로드 및 업로드하는 함수
-  async function downloadAndUploadImage(imageUrl) {
-    try {
-      // URL에서 이미지 다운로드 (Blob 형식으로 받기)
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-  
-      // FormData로 서버에 이미지 파일 업로드 요청
-      const formData = new FormData();
-      formData.append('file', blob, 'image.png');  // 이미지 파일 이름 지정
-  
-      // 서버에 업로드 요청 (이미지 저장 후 경로 반환)
-      const res = await axios.post('/custom-games/upload-image', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-  
-      // 서버에서 반환된 이미지 경로 (예: /static/images/cg_ab12cd34.png)
-      const imagePath = res.data.url;
-  
-      return imagePath;  // 반환된 경로를 프론트엔드에서 사용
-    } catch (error) {
-      console.error('이미지 다운로드 및 업로드 실패:', error);
-      throw error;
-    }
-  }
-  
-
   // 버튼 표시 상태 계산
   function computeButtonVisibility() {
-    const readyImgs = imagesReady();
     return {
-      showImage: parsedReady() && !readyImgs,
-      showTemplate: readyImgs,
+      showImage1: true,
+      showImage2: true,
+      showImage3: true,
+      showImage4: true,
     };
   }
 export default function Create00() {
-  const navigate = useNavigate();
-  const [finalText, setFinalText] = useState(localStorage.getItem(STORAGE_FINAL_TEXT) || '');
-   const [{ showImage: showImageBtn, showTemplate: showTemplateBtn }, setBtnState] =
-     useState(() => computeButtonVisibility());
-  const [imgLoading, setImgLoading] = useState(false);
+    const navigate = useNavigate();
+    const [finalText, setFinalText] = useState(localStorage.getItem(STORAGE_FINAL_TEXT) || '');
+    const [imgLoading, setImgLoading] = useState(false);
+    const [imageUrls, setImageUrls] = useState({
+        openingUrl: '',
+        situationUrl: '',
+        flip1Url: '',
+        flip2Url: '',
+      });
+      const [loadingState, setLoadingState] = useState({
+        opening: false,
+        situation: false,
+        flip1: false,
+        flip2: false,
+      });
+      const [btnState, setBtnState] = useState({
+        showImage1: true,
+        showImage2: true,
+        showImage3: true,
+        showImage4: true,
+      });
+  const [canEdit, setCanEdit] = useState(false);  // 편집화면 이동 버튼 활성화 상태
+
     const GPTS_URL =
 //'https://chatgpt.com/g/g-68c588a5afa881919352989f07138007-ai-yunri-dilrema-sinario-caesbos';
 'https://chatgpt.com/g/g-68c588a5afa881919352989f07138007-ai-yunri-dilrema-sinario-caesbos';  
@@ -1132,70 +1060,76 @@ function openNewTabSafely(url) {
     persistParsedToLocalStorage(v);
     setBtnState(computeButtonVisibility());
   };
-  const handleGenerateImages = async () => {
-    if (imgLoading) return;
-    setImgLoading(true);
+  const handleGenerateImage = async (type) => {
+    if (loadingState[type]) return; // 해당 이미지가 생성 중이라면 return
+
+    setLoadingState(prevState => ({
+      ...prevState,
+      [type]: true, // 해당 이미지의 로딩 상태를 true로 설정
+    }));
+
     try {
       const openingArr = readJSON('opening', []);
-      const openingText = openingArr.join(' ');
       const question = localStorage.getItem('question') || '';
       const ds = readJSON('dilemma_situation', []);
       const fa = readJSON('flips_agree_texts', []);
       const fd = readJSON('flips_disagree_texts', []);
   
-      // 1) 오프닝 이미지
-      if (openingArr.length) {
-        const input = `${IMG_STYLE}. 16:9 이미지. 오프닝 요약: ${openingArr}.`;
-        const url = await requestImage(input, '1792x1024');
-        if (url) {
-          const savedImagePath = await downloadAndUploadImage(url);
-          localStorage.setItem('dilemma_image_1', savedImagePath);  // 로컬 저장된 경로
-        }
-      }
+      let input = '';
+      let url = '';
   
-      // 2) 상황/질문 이미지
-      if (ds.length) {
-        const s = trim1(ds.slice(0, 2).join(' '));
-        const q = trim1(question || '', 120);
-        const input = `${IMG_STYLE}. 16:9.\n상황: ${s}\n질문: ${q}`;
-        const url = await requestImage(input, '1792x1024');
-        if (url) {
-          const savedImagePath = await downloadAndUploadImage(url);
-          localStorage.setItem('dilemma_image_3', savedImagePath);  // 로컬 저장된 경로
-        }
-      }
-  
-      // 3) 플립(찬성) 이미지
-      if (fa.length) {
-        const core = trim1(fa.slice(0, 3).join(' '));
-        const input = `${IMG_STYLE}. 선택지 1(찬성) 논거를 표현한 만화풍, 16:9.\n핵심 논거: ${core}`;
-        const url = await requestImage(input, '1792x1024');
-        if (url) {
-          const savedImagePath = await downloadAndUploadImage(url);
-          localStorage.setItem('dilemma_image_4_1', savedImagePath);  // 로컬 저장된 경로
-        }
-      }
-  
-      // 4) 플립(반대) 이미지
-      if (fd.length) {
-        const core = trim1(fd.slice(0, 3).join(' '));
-        const input = `${IMG_STYLE}. 선택지 2(반대) 논거를 표현한 만화풍, 16:9.\n핵심 논거: ${core}`;
-        const url = await requestImage(input, '1792x1024');
-        if (url) {
-          const savedImagePath = await downloadAndUploadImage(url);
-          localStorage.setItem('dilemma_image_4_2', savedImagePath);  // 로컬 저장된 경로
-        }
+      switch (type) {
+        case 'opening':
+          if (openingArr.length) {
+            input = `${IMG_STYLE}. 16:9 이미지. 오프닝 요약: ${openingArr.join(' ')}`;
+            url = await requestImage(input, '1792x1024');
+            setImageUrls((prev) => ({ ...prev, openingUrl: url }));
+          }
+          break;
+        case 'situation':
+          if (ds.length) {
+            input = `${IMG_STYLE}. 16:9.\n상황: ${ds.slice(0, 2).join(' ')}\n질문: ${question}`;
+            url = await requestImage(input, '1792x1024');
+            setImageUrls((prev) => ({ ...prev, situationUrl: url }));
+          }
+          break;
+        case 'flip1':
+          if (fa.length) {
+            input = `${IMG_STYLE}. 선택지 1(찬성) 논거를 표현한 만화풍, 16:9.\n핵심 논거: ${fa.slice(0, 3).join(' ')}`;
+            url = await requestImage(input, '1792x1024');
+            setImageUrls((prev) => ({ ...prev, flip1Url: url }));
+          }
+          break;
+        case 'flip2':
+          if (fd.length) {
+            input = `${IMG_STYLE}. 선택지 2(반대) 논거를 표현한 만화풍, 16:9.\n핵심 논거: ${fd.slice(0, 3).join(' ')}`;
+            url = await requestImage(input, '1792x1024');
+            setImageUrls((prev) => ({ ...prev, flip2Url: url }));
+          }
+          break;
+        default:
+          break;
       }
     } catch (e) {
       console.error('이미지 생성 오류:', e);
       alert('이미지 생성 중 문제가 발생했습니다.');
     } finally {
-      setImgLoading(false);
-      // 이미지 준비 완료되면 템플릿 버튼 ON, 이미지 버튼은 계속 노출해도 무방
-      setBtnState(computeButtonVisibility());
+      setLoadingState(prevState => ({
+        ...prevState,
+        [type]: false, // 해당 이미지의 로딩 상태를 false로 설정
+      }));
     }
   };
-  
+
+  // 이미지 저장: 링크 클릭 시 새 탭에서 URL 열기
+  const handleSaveImage = (url) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  useEffect(() => {
+    setBtnState(computeButtonVisibility());
+  }, [finalText]);
+
   // 템플릿 생성 → /custom-games POST 후 /create01 이동
   const handleTemplateCreate = async () => {
     try {
@@ -1273,6 +1207,7 @@ function openNewTabSafely(url) {
       alert('템플릿 생성 중 문제가 발생했습니다.');
     }
   };
+  
   useEffect(() => {
     // 외부에서 value가 세팅될 수도 있으니, finalText 변경 시 파싱 동기화
     persistParsedToLocalStorage(finalText);
@@ -1280,7 +1215,12 @@ function openNewTabSafely(url) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finalText]);
 
-
+  
+  // 4개의 이미지가 모두 생성되었는지 체크
+  useEffect(() => {
+    const allImagesCreated = Object.values(imageUrls).every(url => url !== '');
+    setCanEdit(allImagesCreated); // 이미지가 모두 생성되면 "편집화면 이동" 활성화
+  }, [imageUrls]);
   return (
     <CreatorLayout
       headerbar={1}
@@ -1291,35 +1231,30 @@ function openNewTabSafely(url) {
       frame={false}
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, width: '100%' }}>
-        <div style={{ alignSelf: 'stretch', marginTop: 10, }}>
-            <h2 style={{ ...FontStyles.headlineSmall, color: Colors.grey07, marginBottom: 8 }}>
+        <div style={{ alignSelf: 'stretch', marginTop: 10 }}>
+          <h2 style={{ ...FontStyles.headlineSmall, color: Colors.grey07, marginBottom: 8 }}>
             챗봇과 시나리오 사전 구상하기
-            </h2>
-
-             <p style={{ ...FontStyles.body, color: Colors.grey05, margin: 0 }}>
+          </h2>
+          <p style={{ ...FontStyles.body, color: Colors.grey05, margin: 0 }}>
             <span style={{ display: 'block', marginBottom: 6 }}>
-                챗봇이 만든 최종 결과를 아래 입력 박스에 그대로 붙여넣어 주세요. 
+              챗봇이 만든 최종 결과를 아래 입력 박스에 그대로 붙여넣어 주세요.
             </span>
             <span style={{ display: 'block', marginBottom: 6 }}>
-            '🎬 오프닝 멘트'부터 '🌀 최종 멘트'까지의 범위를 드래그 후 붙여넣어야 버튼이 생성됩니다.
-                        </span>
+              '🎬 오프닝 멘트'부터 '🌀 최종 멘트'까지의 범위를 드래그 후 붙여넣어야 버튼이 생성됩니다.
+            </span>
             <span style={{ display: 'inline' }}>
-                혹시 챗봇을 실수로 종료하신 경우, 오른쪽 링크를 클릭해 주세요.{' '}
+              혹시 챗봇을 실수로 종료하신 경우, 오른쪽 링크를 클릭해 주세요.{' '}
             </span>
             <a
-                href={GPTS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: 'underline', cursor: 'pointer' }}
-                onClick={(e) => {
-                e.preventDefault();
-                openNewTabSafely(GPTS_URL);
-                }}
+              href={GPTS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'underline', cursor: 'pointer' }}
             >
-                챗봇 바로가기
+              챗봇 바로가기
             </a>
-            </p>
-            </div>
+          </p>
+        </div>
 
         <div style={{ alignSelf: 'stretch' }}>
           <CustomInput
@@ -1327,51 +1262,102 @@ function openNewTabSafely(url) {
             height={240}
             placeholder="여기에 최종 결과를 붙여넣기 해주세요."
             value={finalText}
-            onChange={(e) => handleChange(e.target.value ?? '')}
+            onChange={(e) => handleChange(e.target.value)}
           />
         </div>
 
-        {/* 액션 버튼들 */}
-        <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
-          {/* {showImageBtn && (
-            <Continue
-              onClick={handleGenerateImages}
-              label={imgLoading ? '이미지 생성 중…' : '이미지 생성하기'}
-              disabled={imgLoading}
-              style={{ width: 220, height: 64, opacity: imgLoading ? 0.6 : 1 }}
-            />
-          )} */}
+        {/* 가로로 배치된 버튼 세트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 12 }}>
+          {/* 오프닝 이미지 생성 */}
+          {btnState.showImage1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Continue
+                onClick={() => handleGenerateImage('opening')}
+                label={loadingState.opening ? '생성중...' : (imageUrls.openingUrl ? '오프닝 이미지 생성 완료' : '오프닝 이미지 생성')}
+                disabled={loadingState.opening}
+              />
+              {imageUrls.openingUrl && (
+                <a
+                  href="#"
+                  onClick={() => handleSaveImage(imageUrls.openingUrl)}
+                  style={{ textDecoration: 'underline' }}
+                >
+                  이미지 저장
+                </a>
+              )}
+            </div>
+          )}
 
-{showImageBtn && (
-  <>
-    <div style={{ textAlign: "center" }}>
-      <Continue
-        onClick={handleGenerateImages}
-        label={imgLoading ? '이미지 생성 중…' : '이미지 생성하기'}
-        disabled={imgLoading}
-        style={{ width: 220, height: 64, opacity: imgLoading ? 0.6 : 1 }}
-      />
-      {imgLoading && (
-        <p style={{ ...FontStyles.body, color: Colors.creatorgrey07, marginTop: "8px" }}>
-          이미지 생성에는 최대 3분 정도 소요됩니다.
-        </p>
-      )}
-    </div>
-  </>
-)}
+          {/* 상황 이미지 생성 */}
+          {btnState.showImage2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Continue
+                onClick={() => handleGenerateImage('situation')}
+                label={loadingState.situation ? '생성중...' : (imageUrls.situationUrl ? '상황 이미지 생성 완료' : '상황 이미지 생성')}
+                disabled={loadingState.situation}
+              />
+              {imageUrls.situationUrl && (
+                <a
+                  href="#"
+                  onClick={() => handleSaveImage(imageUrls.situationUrl)}
+                  style={{ textDecoration: 'underline' }}
+                >
+                  이미지 저장
+                </a>
+              )}
+            </div>
+          )}
 
+          {/* 플립 1 이미지 생성 */}
+          {btnState.showImage3 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Continue
+                onClick={() => handleGenerateImage('flip1')}
+                label={loadingState.flip1 ? '생성중...' : (imageUrls.flip1Url ? '플립 1 이미지 생성 완료' : '플립 1 이미지 생성')}
+                disabled={loadingState.flip1}
+              />
+              {imageUrls.flip1Url && (
+                <a
+                  href="#"
+                  onClick={() => handleSaveImage(imageUrls.flip1Url)}
+                  style={{ textDecoration: 'underline' }}
+                >
+                  이미지 저장
+                </a>
+              )}
+            </div>
+          )}
 
+          {/* 플립 2 이미지 생성 */}
+          {btnState.showImage4 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Continue
+                onClick={() => handleGenerateImage('flip2')}
+                label={loadingState.flip2 ? '생성중...' : (imageUrls.flip2Url ? '플립 2 이미지 생성 완료' : '플립 2 이미지 생성')}
+                disabled={loadingState.flip2}
+              />
+              {imageUrls.flip2Url && (
+                <a
+                  href="#"
+                  onClick={() => handleSaveImage(imageUrls.flip2Url)}
+                  style={{ textDecoration: 'underline' }}
+                >
+                  이미지 저장
+                </a>
+              )}
+            </div>
+          )}
+        </div>
 
-          {showTemplateBtn && (
-            <Continue
+        {/* 편집화면 이동 버튼 */}
+        {canEdit && (
+          <Continue
               onClick={handleTemplateCreate}
               label="편집 페이지로 이동"
               style={{ width: 220, height: 64 }}
             />
-          )}
-        </div>
+        )}
       </div>
     </CreatorLayout>
   );
 }
-

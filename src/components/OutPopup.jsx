@@ -30,12 +30,12 @@ export default function OutPopup({ onClose }) {
       alert(message); // 사용자에게 메시지 표시
       clearAllLocalStorageKeys();  // 로컬 스토리지 정리 함수 호출
 
-      // ✅ 로컬 스토리지 정리
+      //  로컬 스토리지 정리
       localStorage.removeItem("room_code");
       localStorage.removeItem("category");
       localStorage.removeItem("subtopic");
   
-      // ✅ 경로 이동 처리
+      //  경로 이동 처리
       if (requires_lobby_redirect || room_deleted) {
         navigate("/selectroom");
       } else if (game_started) {

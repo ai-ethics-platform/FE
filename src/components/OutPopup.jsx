@@ -4,7 +4,7 @@ import SecondaryButton from './SecondaryButton';
 import { useNavigate } from 'react-router-dom';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance'; // ✅ 추가
-
+import { clearAllLocalStorageKeys } from '../utils/storage';
 export default function OutPopup({ onClose }) {
   const navigate = useNavigate();
   const handleLeaveRoom = async () => {
@@ -28,7 +28,8 @@ export default function OutPopup({ onClose }) {
       console.log("🚪 방 나가기 응답:", res.data);
   
       alert(message); // 사용자에게 메시지 표시
-  
+      clearAllLocalStorageKeys();  // 로컬 스토리지 정리 함수 호출
+
       // ✅ 로컬 스토리지 정리
       localStorage.removeItem("room_code");
       localStorage.removeItem("category");

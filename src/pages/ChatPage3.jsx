@@ -247,68 +247,133 @@ function parseFinalMentByDashes(input) {
   
   
 
+// function persistParsedToLocalStorage(text) {
+//   // 원본을 그대로 저장해보자
+//   localStorage.setItem('debug_raw_finalText', text);
+
+//   // "-- 선택지1"부터 "-- 선택지2" 전까지를 agreeEnding으로 추출
+//   const m = text.match(/--\s*선택지1[\s\S]*?(?=--\s*선택지2)/);
+//   if (m) {
+//     const agreeRaw = m[0]
+//       .replace(/^--\s*선택지1\s*최종선택[:：]?\s*/m, '') // 라벨 제거
+//       .trim();
+//     localStorage.setItem('agreeEnding', agreeRaw);
+//     console.log('[DEBUG] agreeEnding 저장됨:', agreeRaw);
+//   } else {
+//     localStorage.setItem('agreeEnding', '');
+//     console.warn('[DEBUG] agreeEnding 못 찾음');
+//   }
+
+//  // -- 선택지2 ~ 끝까지 → disagreeEnding
+//  const m2 = text.match(/--\s*선택지2[\s\S]*/);
+//  if (m2) {
+//    const disagreeRaw = m2[0]
+//      .replace(/^--\s*선택지2\s*최종선택[:：]?\s*/m, '') // 라벨 제거
+//      .trim();
+//    localStorage.setItem('disagreeEnding', disagreeRaw);
+//    console.log('[DEBUG] disagreeEnding 저장됨:', disagreeRaw);
+//  } else {
+//    console.warn('[DEBUG] disagreeEnding 못 찾음');
+//  }
+//   const p = parseDilemmaText(text);
+//   console.log('[PARSE]', { 
+//     opening: p.opening, 
+//     ds: p.dilemma_situation, 
+//     q: p.question 
+//   });
+//   // 배열은 JSON으로
+//   if (Array.isArray(p.opening) && p.opening.length) {
+//     localStorage.setItem('opening', JSON.stringify(p.opening));
+//   } else {
+//     localStorage.removeItem('opening');
+//   }
+
+//   localStorage.setItem('char1', p.char1 || '');
+//   localStorage.setItem('char2', p.char2 || '');
+//   localStorage.setItem('char3', p.char3 || '');
+//   localStorage.setItem('charDes1', p.charDes1 || '');
+//   localStorage.setItem('charDes2', p.charDes2 || '');
+//   localStorage.setItem('charDes3', p.charDes3 || '');
+
+//   localStorage.setItem('dilemma_situation', JSON.stringify(p.dilemma_situation || []));
+//   localStorage.setItem('question', p.question || '');
+//   localStorage.setItem('choice1', p.choice1 || '');
+//   localStorage.setItem('choice2', p.choice2 || '');
+//   localStorage.setItem('flips_agree_texts', JSON.stringify(p.flips_agree_texts || []));
+//   localStorage.setItem('flips_disagree_texts', JSON.stringify(p.flips_disagree_texts || []));
+//   if (p.agreeEnding) {
+//     localStorage.setItem('agreeEnding', p.agreeEnding);
+//   }
+//   if (p.disagreeEnding) {
+//     localStorage.setItem('disagreeEnding', p.disagreeEnding);
+//   }
+// }
+
 function persistParsedToLocalStorage(text) {
-  // 원본을 그대로 저장해보자
-  localStorage.setItem('debug_raw_finalText', text);
-
-  // "-- 선택지1"부터 "-- 선택지2" 전까지를 agreeEnding으로 추출
-  const m = text.match(/--\s*선택지1[\s\S]*?(?=--\s*선택지2)/);
-  if (m) {
-    const agreeRaw = m[0]
-      .replace(/^--\s*선택지1\s*최종선택[:：]?\s*/m, '') // 라벨 제거
-      .trim();
-    localStorage.setItem('agreeEnding', agreeRaw);
-    console.log('[DEBUG] agreeEnding 저장됨:', agreeRaw);
-  } else {
-    localStorage.setItem('agreeEnding', '');
-    console.warn('[DEBUG] agreeEnding 못 찾음');
+    // 원본을 그대로 저장해보자
+    localStorage.setItem('debug_raw_finalText', text);
+  
+    // "-- 선택지1"부터 "-- 선택지2" 전까지를 agreeEnding으로 추출
+    const m = text.match(/--\s*선택지1[\s\S]*?(?=--\s*선택지2)/);
+    if (m) {
+      const agreeRaw = m[0]
+        .replace(/^--\s*선택지1\s*최종선택[:：]?\s*/m, '') // 라벨 제거
+        .trim();
+      localStorage.setItem('agreeEnding', agreeRaw); // 줄바꿈 포함 텍스트 저장
+      console.log('[DEBUG] agreeEnding 저장됨:', agreeRaw);
+    } else {
+      localStorage.setItem('agreeEnding', '');
+      console.warn('[DEBUG] agreeEnding 못 찾음');
+    }
+  
+    // "-- 선택지2"부터 끝까지를 disagreeEnding으로 추출
+    const m2 = text.match(/--\s*선택지2[\s\S]*/);
+    if (m2) {
+      const disagreeRaw = m2[0]
+        .replace(/^--\s*선택지2\s*최종선택[:：]?\s*/m, '') // 라벨 제거
+        .trim();
+      localStorage.setItem('disagreeEnding', disagreeRaw); // 줄바꿈 포함 텍스트 저장
+      console.log('[DEBUG] disagreeEnding 저장됨:', disagreeRaw);
+    } else {
+      localStorage.setItem('disagreeEnding', '');
+      console.warn('[DEBUG] disagreeEnding 못 찾음');
+    }
+  
+    const p = parseDilemmaText(text);
+    console.log('[PARSE]', { 
+      opening: p.opening, 
+      ds: p.dilemma_situation, 
+      q: p.question 
+    });
+  
+    // 배열은 JSON으로 저장
+    if (Array.isArray(p.opening) && p.opening.length) {
+      localStorage.setItem('opening', JSON.stringify(p.opening));
+    } else {
+      localStorage.removeItem('opening');
+    }
+  
+    localStorage.setItem('char1', p.char1 || '');
+    localStorage.setItem('char2', p.char2 || '');
+    localStorage.setItem('char3', p.char3 || '');
+    localStorage.setItem('charDes1', p.charDes1 || '');
+    localStorage.setItem('charDes2', p.charDes2 || '');
+    localStorage.setItem('charDes3', p.charDes3 || '');
+  
+    localStorage.setItem('dilemma_situation', JSON.stringify(p.dilemma_situation || []));
+    localStorage.setItem('question', p.question || '');
+    localStorage.setItem('choice1', p.choice1 || '');
+    localStorage.setItem('choice2', p.choice2 || '');
+    localStorage.setItem('flips_agree_texts', JSON.stringify(p.flips_agree_texts || []));
+    localStorage.setItem('flips_disagree_texts', JSON.stringify(p.flips_disagree_texts || []));
+    if (p.agreeEnding) {
+      localStorage.setItem('agreeEnding', p.agreeEnding); // 로컬 저장에 줄바꿈 포함
+    }
+    if (p.disagreeEnding) {
+      localStorage.setItem('disagreeEnding', p.disagreeEnding); // 로컬 저장에 줄바꿈 포함
+    }
   }
-
- // -- 선택지2 ~ 끝까지 → disagreeEnding
- const m2 = text.match(/--\s*선택지2[\s\S]*/);
- if (m2) {
-   const disagreeRaw = m2[0]
-     .replace(/^--\s*선택지2\s*최종선택[:：]?\s*/m, '') // 라벨 제거
-     .trim();
-   localStorage.setItem('disagreeEnding', disagreeRaw);
-   console.log('[DEBUG] disagreeEnding 저장됨:', disagreeRaw);
- } else {
-   console.warn('[DEBUG] disagreeEnding 못 찾음');
- }
-  const p = parseDilemmaText(text);
-  console.log('[PARSE]', { 
-    opening: p.opening, 
-    ds: p.dilemma_situation, 
-    q: p.question 
-  });
-  // 배열은 JSON으로
-  if (Array.isArray(p.opening) && p.opening.length) {
-    localStorage.setItem('opening', JSON.stringify(p.opening));
-  } else {
-    localStorage.removeItem('opening');
-  }
-
-  localStorage.setItem('char1', p.char1 || '');
-  localStorage.setItem('char2', p.char2 || '');
-  localStorage.setItem('char3', p.char3 || '');
-  localStorage.setItem('charDes1', p.charDes1 || '');
-  localStorage.setItem('charDes2', p.charDes2 || '');
-  localStorage.setItem('charDes3', p.charDes3 || '');
-
-  localStorage.setItem('dilemma_situation', JSON.stringify(p.dilemma_situation || []));
-  localStorage.setItem('question', p.question || '');
-  localStorage.setItem('choice1', p.choice1 || '');
-  localStorage.setItem('choice2', p.choice2 || '');
-  localStorage.setItem('flips_agree_texts', JSON.stringify(p.flips_agree_texts || []));
-  localStorage.setItem('flips_disagree_texts', JSON.stringify(p.flips_disagree_texts || []));
-  if (p.agreeEnding) {
-    localStorage.setItem('agreeEnding', p.agreeEnding);
-  }
-  if (p.disagreeEnding) {
-    localStorage.setItem('disagreeEnding', p.disagreeEnding);
-  }
-}
-
+  
 // 필수 필드가 준비됐는지 판단(이미지 생성 버튼 노출 조건)
 function parsedReady() {
   const opening = readJSON('opening', []);
@@ -349,8 +414,9 @@ export default function Create00() {
      useState(() => computeButtonVisibility());
   const [imgLoading, setImgLoading] = useState(false);
     const GPTS_URL =
-'https://chatgpt.com/g/g-68c588a5afa881919352989f07138007-ai-yunri-dilrema-sinario-caesbos';
-    function openNewTabSafely(url) {
+//'https://chatgpt.com/g/g-68c588a5afa881919352989f07138007-ai-yunri-dilrema-sinario-caesbos';
+'https://chatgpt.com/g/g-68c588a5afa881919352989f07138007-ai-yunri-dilrema-sinario-caesbos';  
+function openNewTabSafely(url) {
     const w = window.open(url, '_blank', 'noopener,noreferrer');
     if (w) return;
     const a = document.createElement('a');
@@ -557,14 +623,34 @@ export default function Create00() {
 
         {/* 액션 버튼들 */}
         <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
-          {showImageBtn && (
+          {/* {showImageBtn && (
             <Continue
               onClick={handleGenerateImages}
               label={imgLoading ? '이미지 생성 중…' : '이미지 생성하기'}
               disabled={imgLoading}
               style={{ width: 220, height: 64, opacity: imgLoading ? 0.6 : 1 }}
             />
-          )}
+          )} */}
+
+{showImageBtn && (
+  <>
+    <div style={{ textAlign: "center" }}>
+      <Continue
+        onClick={handleGenerateImages}
+        label={imgLoading ? '이미지 생성 중…' : '이미지 생성하기'}
+        disabled={imgLoading}
+        style={{ width: 220, height: 64, opacity: imgLoading ? 0.6 : 1 }}
+      />
+      {imgLoading && (
+        <p style={{ ...FontStyles.body, color: Colors.creatorgrey07, marginTop: "8px" }}>
+          이미지 생성에는 최대 3분 정도 소요됩니다.
+        </p>
+      )}
+    </div>
+  </>
+)}
+
+
 
           {showTemplateBtn && (
             <Continue

@@ -53,7 +53,7 @@ export default function DilemmaDonePopUp({ onClose, onLogout, onConfirm }) {
           marginBottom: 32,
         }}
       >
-        전체 미리보기로 점검을 하셨나요? <br />
+        좌측 상단의 [미리보기모드]로 전체 내용을 점검을 하셨나요? <br />
         딜레마 게임 만들기를 완료하면 더 이상의 수정은 어렵습니다
       </div>
 

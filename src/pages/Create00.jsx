@@ -83,8 +83,10 @@ export default function Create00() {
     return () => { didCancel = true; };
   }, []);
 
-  const combinedText= '지금까지 만드신 딜레마 내용을 실제 게임 플레이 화면에 맞추어 수정하는 단계입니다. \n 딜레마 내용을 직접 수정하고, 내용과 함께 나올 그림을 추가할 수 있습니다. \n 아래의 [시작하기]버튼을 클릭하시면 미리보기 및 수정 단계가 시작됩니다. ';
-
+  const combinedText= 
+  "이제 만드신 딜레마 내용을 [편집 모드]에서 직접 수정하고, 내용과 함께 나올 \n" + " 그림을 추가할 수 있습니다. 또한 [미리보기 모드] 버튼을 통해 실제 게임에서의 \n" 
+  + "화면을 확인할 수 있어요.\n\n";
+  const orangeText = "최종 완성 전에 반드시 [미리보기 모드]로 전체를 검토하세요!";
 
   const handleNext = () => {
     // if (!createdCode) {
@@ -104,7 +106,7 @@ export default function Create00() {
       frame={false}
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
-        <CreatorContentBox topicText="게임 편집하기" text={combinedText} />
+        <CreatorContentBox topicText="게임 편집하기" text={combinedText} orangeText={orangeText}/>
 
         {errorMsg && (
           <div style={{ color: 'red', fontSize: 14 }}>{errorMsg}</div>

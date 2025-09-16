@@ -235,7 +235,7 @@ import eyeOffIcon from '../assets/eyeoff.svg';
 import axios from 'axios';
 import GuestLogin from '../components/GuestLogin';
 import { Colors, FontStyles } from '../components/styleConstants';
-
+import { clearAllLocalStorageKeys } from '../utils/storage';
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -255,7 +255,18 @@ export default function Login() {
       document.body.style.overflow = original;
     };
   }, []);
+  // 로그인 처음 들어갈 때 로컬값 초기화
+  useEffect(() => {
+    // 로그인 화면에 진입할 때 로컬값 초기화
+    clearAllLocalStorageKeys();
 
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, []);
+  
   // URL 쿼리에서 code 읽어 상태/로컬스토리지에 저장
   useEffect(() => {
     const params = new URLSearchParams(location.search);

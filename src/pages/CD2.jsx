@@ -315,7 +315,7 @@ export default function CD2() {
     return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
   };
 
-  // ✅ 커스텀 모드: 텍스트/이미지/서브토픽 교체
+  //  커스텀 모드: 텍스트/이미지/서브토픽 교체
   if (isCustomMode) {
     // 텍스트: charDes2 (단일 문자열)
     const charDes2 = (localStorage.getItem('charDes2') || '').trim();

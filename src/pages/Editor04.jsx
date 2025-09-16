@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import CreatorLayout from '../components/Expanded/EditorLayout';
 import { useNavigate } from 'react-router-dom';
-import create02Image from '../assets/images/Frame159.png';
+import create02Image from '../assets/images/default.png';
 import { Colors, FontStyles } from '../components/styleConstants';
 
 import contentBoxFrame from '../assets/contentBox4.svg';

@@ -598,7 +598,7 @@ import Continue from '../components/Continue';
 import { useNavigate } from 'react-router-dom';
 import CreateInput from '../components/Expanded/CreateInput';
 import inputPlusIcon from '../assets/inputplus.svg'; 
-import create02Image from '../assets/images/create02.png';
+import create02Image from '../assets/images/default.png';
 import { FontStyles, Colors } from '../components/styleConstants';
 import NextGreen from "../components/NextOrange";
 import axiosInstance from '../api/axiosInstance';

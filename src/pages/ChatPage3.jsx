@@ -1020,7 +1020,7 @@ function parsedReady() {
 
 // 이미지 모두 준비됐는지(템플릿 생성 버튼 노출 조건)
 function imagesReady() {
-  return ['dilemma_image_1', 'dilemma_image_3', 'dilemma_image_4_1', 'dilemma_image_4_2'].every(
+  return ['dilemma_image_url_1', 'dilemma_image_url_3', 'dilemma_image_url_4_1', 'dilemma_image_url_4_2'].every(
     (k) => !!localStorage.getItem(k)
   );
 }
@@ -1092,7 +1092,7 @@ function getSingleTask(kind) {
   
     if (kind === 'opening') {
       return {
-        keySimple: 'dilemma_image_1',
+        keySimple: 'dilemma_image_url_1',
         keyUrl: 'dilemma_image_url_1',
         prompt: openingArr.length
           ? `${IMG_STYLE}. 16:9 이미지. 오프닝 요약: ${openingArr}.`
@@ -1103,14 +1103,14 @@ function getSingleTask(kind) {
       const s = ds.length ? trim1(ds.slice(0, 2).join(' ')) : '기본 상황';
       const q = trim1(question || '질문', 120);
       return {
-        keySimple: 'dilemma_image_3',
+        keySimple: 'dilemma_image_url_3',
         keyUrl: 'dilemma_image_url_3',
         prompt: `${IMG_STYLE}. 16:9.\n상황: ${s}\n질문: ${q}`,
       };
     }
     if (kind === 'flip1') {
       return {
-        keySimple: 'dilemma_image_4_1',
+        keySimple: 'dilemma_image_url_4_1',
         keyUrl: 'dilemma_image_url_4_1',
         prompt: fa.length
           ? `${IMG_STYLE}. 선택지 1(찬성) 논거를 표현한 만화풍, 16:9.\n핵심 논거: ${trim1(fa.slice(0, 3).join(' '))}`
@@ -1119,7 +1119,7 @@ function getSingleTask(kind) {
     }
     // flip2
     return {
-      keySimple: 'dilemma_image_4_2',
+      keySimple: 'dilemma_image_url_4_2',
       keyUrl: 'dilemma_image_url_4_2',
       prompt: fd.length
         ? `${IMG_STYLE}. 선택지 2(반대) 논거를 표현한 만화풍, 16:9.\n핵심 논거: ${trim1(fd.slice(0, 3).join(' '))}`
@@ -1146,11 +1146,11 @@ function getSingleTask(kind) {
         setGenDone(true);
         setBtnState(computeButtonVisibility(true));
       } else {
-        alert('이미지 생성에 실패했어요. 문구를 조금 바꿔서 다시 시도해 주세요.');
+        alert('이미지 생성에 실패했어요.');
       }
     } catch (e) {
       console.error('[retry] error:', e);
-      alert('이미지 생성 중 오류가 발생했어요.');
+      alert('이미지 생성에 실패했어요.');
     } finally {
       setRetryLoading(prev => ({ ...prev, [kind]: false }));
     }
@@ -1196,14 +1196,14 @@ function getSingleTask(kind) {
       // 4개 모두 '시도' 보장
       const tasks = [
         {
-          keySimple: 'dilemma_image_1',
+          keySimple: 'dilemma_image_url_1',
           keyUrl: 'dilemma_image_url_1',
           prompt: openingArr.length
             ? `${IMG_STYLE}. 16:9 이미지. 오프닝 요약: ${openingArr}.`
             : `${IMG_STYLE}. 16:9 이미지. 오프닝 장면(간단한 배경, 인물 1~2명).`,
         },
         {
-          keySimple: 'dilemma_image_3',
+          keySimple: 'dilemma_image_url_3',
           keyUrl: 'dilemma_image_url_3',
           prompt: (() => {
             const s = ds.length ? trim1(ds.slice(0, 2).join(' ')) : '기본 상황';
@@ -1212,7 +1212,7 @@ function getSingleTask(kind) {
           })(),
         },
         {
-          keySimple: 'dilemma_image_4_1',
+          keySimple: 'dilemma_image_url_4_1',
           keyUrl: 'dilemma_image_url_4_1',
           prompt: fa.length
             ? `${IMG_STYLE}. 선택지 1(찬성) 논거를 표현한 만화풍, 16:9.\n핵심 논거: ${trim1(
@@ -1221,7 +1221,7 @@ function getSingleTask(kind) {
             : `${IMG_STYLE}. 선택지 1(찬성) 장면을 단순 묘사, 16:9.`,
         },
         {
-          keySimple: 'dilemma_image_4_2',
+          keySimple: 'dilemma_image_url_4_2',
           keyUrl: 'dilemma_image_url_4_2',
           prompt: fd.length
             ? `${IMG_STYLE}. 선택지 2(반대) 논거를 표현한 만화풍, 16:9.\n핵심 논거: ${trim1(
@@ -1253,7 +1253,7 @@ function getSingleTask(kind) {
       syncImageUrlsFromLocal();
     } catch (e) {
       console.error('이미지 생성 오류:', e);
-      alert('이미지 생성 중 문제가 발생했습니다.');
+      alert('이미지 생성에 실패했어요.');
     } finally {
       setImgLoading(false);
       // 생성 시도 완료(성공/실패 무관)
@@ -1287,10 +1287,10 @@ function getSingleTask(kind) {
       const disagreeEnding = localStorage.getItem('disagreeEnding') || '-';
 
       const representativeImages = {
-        dilemma_image_1: localStorage.getItem('dilemma_image_1') || '',
-        dilemma_image_3: localStorage.getItem('dilemma_image_3') || '',
-        dilemma_image_4_1: localStorage.getItem('dilemma_image_4_1') || '',
-        dilemma_image_4_2: localStorage.getItem('dilemma_image_4_2') || '',
+        dilemma_image_1:  '',
+        dilemma_image_3:  '',
+        dilemma_image_4_1: '',
+        dilemma_image_4_2:  '',
       };
       Object.keys(representativeImages).forEach((k) => {
         if (!representativeImages[k]) delete representativeImages[k];
@@ -1416,7 +1416,7 @@ function getSingleTask(kind) {
       />
       {imgLoading && (
         <p style={{ ...FontStyles.body, color: Colors.grey06, marginTop: '8px' }}>
-          이미지 생성에는 시간이 걸릴 수 있어요.
+           이미지 생성에는 최대 3분 정도 소요됩니다.
         </p>
       )}
     </div>

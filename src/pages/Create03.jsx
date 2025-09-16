@@ -512,7 +512,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontStyles, Colors } from '../components/styleConstants';
 import CreateInput from '../components/Expanded/CreateInput';
 import inputPlusIcon from '../assets/inputplus.svg';
-import create02Image from '../assets/images/create02.png';
+import create02Image from '../assets/images/default.png';
 import NextGreen from "../components/NextOrange";
 import BackOrange from "../components/Expanded/BackOrange";
 import axiosInstance from '../api/axiosInstance';

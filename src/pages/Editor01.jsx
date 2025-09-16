@@ -2,7 +2,7 @@ import { useState } from 'react';
 import CreatorLayout from '../components/Expanded/EditorLayout';
 import { useNavigate } from 'react-router-dom';
 import CreateTextBox from "../components/Expanded/CreateTextBox";
-import create02Image from '../assets/images/create02.png';
+import create02Image from '../assets/images/default.png';
 import { Colors, FontStyles } from '../components/styleConstants';
 import axiosInstance from '../api/axiosInstance'; 
 

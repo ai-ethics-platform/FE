@@ -79,11 +79,7 @@ export default function CreatorContentBox({
   const typedText = useTypingEffect(text, typingSpeed); // 첫 번째 타이핑 효과
   const orangeTypedText = useTypingEffect(orangeText, typingSpeed); // 두 번째 타이핑 효과
 
-  useEffect(() => {
-    if (typedText === text) {  // 첫 번째 타이핑이 완료되면 오렌지 텍스트를 시작
-      setShowOrangeText(true);
-    }
-  }, [typedText, text]);
+
 
   return (
     <div style={{
@@ -136,11 +132,11 @@ export default function CreatorContentBox({
         padding: '20px 30px',
         zIndex: 1,
       }}>
-        {typedText}
+        {text}
       </div>
 
       {/* 오렌지 색 텍스트가 나타나는 부분 */}
-      {showOrangeText && orangeText && (
+      { orangeText && (
         <div style={{
           position: 'relative',
           lineHeight: '28px',
@@ -149,7 +145,7 @@ export default function CreatorContentBox({
           textAlign: 'center',
           zIndex: 1,
         }}>
-          {orangeTypedText}
+          {orangeText}
         </div>
       )}
     </div>

@@ -518,7 +518,6 @@ import BackOrange from "../components/Expanded/BackOrange";
 import axiosInstance from '../api/axiosInstance';
 
 
- // 파일 상단 import 근처
 // === 이미지 축소 유틸 시작 ===
 // 목표 바이트(1차/2차), 리사이즈 기준(긴 변), JPEG 품질을 상황에 맞게 조절
 const IMG_COMPRESS_PRESET_1 = { maxEdge: 2000, quality: 0.85, targetBytes: 1.8 * 1024 * 1024 }; // ~1.8MB

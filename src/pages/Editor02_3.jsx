@@ -8,6 +8,83 @@ import charBg from '../assets/charbg1.svg'; // ← 경로 확인
 import { Colors, FontStyles } from '../components/styleConstants';
 import axiosInstance from '../api/axiosInstance';
 
+// === 이미지 축소 유틸 시작 ===
+// 목표 바이트(1차/2차), 리사이즈 기준(긴 변), JPEG 품질을 상황에 맞게 조절
+const IMG_COMPRESS_PRESET_1 = { maxEdge: 2000, quality: 0.85, targetBytes: 1.8 * 1024 * 1024 }; // ~1.8MB
+const IMG_COMPRESS_PRESET_2 = { maxEdge: 1280, quality: 0.75, targetBytes: 0.9 * 1024 * 1024 }; // ~0.9MB
+
+// 이미지 File|Blob -> HTMLImageElement 로드
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = (e) => {
+      URL.revokeObjectURL(url);
+      reject(e);
+    };
+    img.src = url;
+  });
+}
+
+// (너비, 높이) 비율 유지하며 긴 변을 maxEdge로 리사이즈
+function calcSizeKeepRatio(w, h, maxEdge) {
+  const longEdge = Math.max(w, h);
+  if (longEdge <= maxEdge) return { width: w, height: h };
+  const scale = maxEdge / longEdge;
+  return { width: Math.round(w * scale), height: Math.round(h * scale) };
+}
+
+// 캔버스로 리사이즈 + JPEG 압축 → Blob
+async function resizeAndCompressToBlob(file, { maxEdge, quality }) {
+  const img = await loadImageFromFile(file);
+  const { width, height } = calcSizeKeepRatio(img.width, img.height, maxEdge);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  canvas.width = width;
+  canvas.height = height;
+  ctx.drawImage(img, 0, 0, width, height);
+  return new Promise((resolve) => {
+    canvas.toBlob(
+      (blob) => resolve(blob),
+      'image/jpeg',
+      quality
+    );
+  });
+}
+
+// Blob -> File 로 감싸기(서버에 file 필드 필요)
+function blobToFile(blob, fileName = 'image.jpg') {
+  return new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+}
+
+// 2차 축소 로직:
+// 1) 파일이 크면 1차(큰 리사이즈)로 줄이고,
+// 2) 아직 크거나 서버가 413이면 2차(더 강한 리사이즈) 적용
+async function twoStepCompress(file, { preset1 = IMG_COMPRESS_PRESET_1, preset2 = IMG_COMPRESS_PRESET_2 } = {}) {
+  let working = file;
+
+  // 원본이 너무 크면 1차 축소
+  if (working.size > preset1.targetBytes) {
+    const blob1 = await resizeAndCompressToBlob(working, preset1);
+    if (blob1 && blob1.size < working.size) {
+      working = blobToFile(blob1, working.name.replace(/\.\w+$/, '') + '_c1.jpg');
+    }
+  }
+
+  // 그래도 크면 2차 축소
+  if (working.size > preset2.targetBytes) {
+    const blob2 = await resizeAndCompressToBlob(working, preset2);
+    if (blob2 && blob2.size < working.size) {
+      working = blobToFile(blob2, working.name.replace(/\.\w+$/, '') + '_c2.jpg');
+    }
+  }
+
+  return working;
+}
 // 로컬스토리지 키 (1번 슬롯만 사용)
 const ROLE_IMG_KEY_2 = 'role_image_3';
 
@@ -27,7 +104,7 @@ async function uploadRoleImageSlot1(file) {
   if (!code) throw new Error('게임 코드가 없습니다. (code)');
   const form = new FormData();
   form.append('file', file);
-  const res = await axiosInstance.post(
+  const res = await axiosInstance.put(
     `/custom-games/${code}/role-images/3`,
     form,
     { headers: { 'Content-Type': 'multipart/form-data' } }
@@ -95,7 +172,8 @@ export default function Editor02_1() {
       if (!file) return;
       try {
         setFallback1(false);
-        const rawUrl = await uploadRoleImageSlot1(file);
+        const uploadTarget = await twoStepCompress(file).catch(() => file);
+        const rawUrl = await uploadRoleImageSlot1(uploadTarget);        localStorage.setItem(ROLE_IMG_KEY_2, rawUrl);
         localStorage.setItem(ROLE_IMG_KEY_2, rawUrl);
         const resolved = resolveImageUrl(rawUrl);
         setImg1(resolved);

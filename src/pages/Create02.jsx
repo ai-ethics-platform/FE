@@ -8,7 +8,6 @@ import NextGreen from "../components/NextOrange";
 import BackOrange from "../components/Expanded/BackOrange";
 import axiosInstance from '../api/axiosInstance';
 
-
 // === 이미지 축소 유틸 시작 ===
 const IMG_COMPRESS_PRESET_1 = { maxEdge: 2000, quality: 0.85, targetBytes: 1.8 * 1024 * 1024 }; // ~1.8MB
 const IMG_COMPRESS_PRESET_2 = { maxEdge: 1280, quality: 0.75, targetBytes: 0.9 * 1024 * 1024 };  // ~0.9MB

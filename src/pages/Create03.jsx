@@ -5,10 +5,89 @@
 // import { FontStyles, Colors } from '../components/styleConstants';
 // import CreateInput from '../components/Expanded/CreateInput';
 // import inputPlusIcon from '../assets/inputplus.svg';
-// import create02Image from '../assets/images/create02.png';
+// import create02Image from '../assets/images/default.png';
 // import NextGreen from "../components/NextOrange";
 // import BackOrange from "../components/Expanded/BackOrange";
 // import axiosInstance from '../api/axiosInstance';
+
+
+// // === 이미지 축소 유틸 시작 ===
+// // 목표 바이트(1차/2차), 리사이즈 기준(긴 변), JPEG 품질을 상황에 맞게 조절
+// const IMG_COMPRESS_PRESET_1 = { maxEdge: 2000, quality: 0.85, targetBytes: 1.8 * 1024 * 1024 }; // ~1.8MB
+// const IMG_COMPRESS_PRESET_2 = { maxEdge: 1280, quality: 0.75, targetBytes: 0.9 * 1024 * 1024 }; // ~0.9MB
+
+// // 이미지 File|Blob -> HTMLImageElement 로드
+// function loadImageFromFile(file) {
+//   return new Promise((resolve, reject) => {
+//     const url = URL.createObjectURL(file);
+//     const img = new Image();
+//     img.onload = () => {
+//       URL.revokeObjectURL(url);
+//       resolve(img);
+//     };
+//     img.onerror = (e) => {
+//       URL.revokeObjectURL(url);
+//       reject(e);
+//     };
+//     img.src = url;
+//   });
+// }
+
+// // (너비, 높이) 비율 유지하며 긴 변을 maxEdge로 리사이즈
+// function calcSizeKeepRatio(w, h, maxEdge) {
+//   const longEdge = Math.max(w, h);
+//   if (longEdge <= maxEdge) return { width: w, height: h };
+//   const scale = maxEdge / longEdge;
+//   return { width: Math.round(w * scale), height: Math.round(h * scale) };
+// }
+
+// // 캔버스로 리사이즈 + JPEG 압축 → Blob
+// async function resizeAndCompressToBlob(file, { maxEdge, quality }) {
+//   const img = await loadImageFromFile(file);
+//   const { width, height } = calcSizeKeepRatio(img.width, img.height, maxEdge);
+//   const canvas = document.createElement('canvas');
+//   const ctx = canvas.getContext('2d', { alpha: false });
+//   canvas.width = width;
+//   canvas.height = height;
+//   ctx.drawImage(img, 0, 0, width, height);
+//   return new Promise((resolve) => {
+//     canvas.toBlob(
+//       (blob) => resolve(blob),
+//       'image/jpeg',
+//       quality
+//     );
+//   });
+// }
+
+// // Blob -> File 로 감싸기(서버에 file 필드 필요)
+// function blobToFile(blob, fileName = 'image.jpg') {
+//   return new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+// }
+
+// // 2차 축소 로직:
+// // 1) 파일이 크면 1차(큰 리사이즈)로 줄이고,
+// // 2) 아직 크거나 서버가 413이면 2차(더 강한 리사이즈) 적용
+// async function twoStepCompress(file, { preset1 = IMG_COMPRESS_PRESET_1, preset2 = IMG_COMPRESS_PRESET_2 } = {}) {
+//   let working = file;
+
+//   // 원본이 너무 크면 1차 축소
+//   if (working.size > preset1.targetBytes) {
+//     const blob1 = await resizeAndCompressToBlob(working, preset1);
+//     if (blob1 && blob1.size < working.size) {
+//       working = blobToFile(blob1, working.name.replace(/\.\w+$/, '') + '_c1.jpg');
+//     }
+//   }
+
+//   // 그래도 크면 2차 축소
+//   if (working.size > preset2.targetBytes) {
+//     const blob2 = await resizeAndCompressToBlob(working, preset2);
+//     if (blob2 && blob2.size < working.size) {
+//       working = blobToFile(blob2, working.name.replace(/\.\w+$/, '') + '_c2.jpg');
+//     }
+//   }
+
+//   return working;
+// }
 
 // // 절대 URL 보정
 // const resolveImageUrl = (raw) => {
@@ -20,17 +99,7 @@
 //   return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
 // };
 
-// // 이미지 업로드
-// async function uploadRepresentativeImage(file) {
-//   const form = new FormData();
-//   form.append('file', file);
-//   const res = await axiosInstance.post('/custom-games/upload-image', form, {
-//     headers: { 'Content-Type': 'multipart/form-data' },
-//   });
-//   const url = res?.data?.url || res?.data?.image_url;
-//   if (!url) throw new Error('업로드 응답에 url이 없습니다.');
-//   return url;
-// }
+
 
 // // 서버 응답에서 키를 다층으로 탐색
 // const pickStringFrom = (game, key) => {
@@ -53,7 +122,7 @@
 
 // async function fetchRepresentativeImages(code) {
 //   if (!code) throw new Error('게임 코드가 없습니다. (code)');
-//   const res = await axiosInstance.get(`/custom-games/${code}/representative-images`, {
+//    const res = await axiosInstance.get(`/custom-games/${code}/dilemma-images`, {
 //     headers: { 'Content-Type': 'application/json' },
 //   });
 //   const images = res?.data?.images || {};
@@ -69,16 +138,46 @@
 //   return images;
 // }
 
-// // ✅ 대표 이미지 맵 PUT (부분 업데이트 가능)
-// async function putRepresentativeImages(code, imagesMap) {
-//   if (!code) throw new Error('게임 코드가 없습니다. (code)');
-//   const payload = { images: imagesMap };
-//   await axiosInstance.put(
-//     `/custom-games/${code}/dilemma-images`,
-//     payload,
-//     { headers: { 'Content-Type': 'application/json' } }
-//   );
+// async function putRepresentativeImageFile(code, slot, file) {
+//   if (!code || !slot) throw new Error('code와 slot은 필수입니다.');
+//     // 0) 업로드 전 사전 2차 축소
+//     const preCompressed = await twoStepCompress(file);
+//     const form = new FormData();
+//     form.append('file', preCompressed); // 서버 요구 필드명 'file'
+  
+//     try {
+//       const res = await axiosInstance.put(
+//         `/custom-games/${code}/dilemma-images/${slot}`,
+//         form,
+//         { headers: { 'Content-Type': 'multipart/form-data' } }
+//       );
+//       const url = res?.data?.url || res?.data?.image_url;
+//       if (url) localStorage.setItem(slot, url);
+//       return url || null;
+//     } catch (err) {
+//       // 413이면 한 번 더 강하게 축소 후 재시도
+//       if (err?.response?.status === 413) {
+//         const stronger = await twoStepCompress(preCompressed, {
+//           preset1: { maxEdge: 1280, quality: 0.75, targetBytes: 0.9 * 1024 * 1024 },
+//           preset2: { maxEdge: 960,  quality: 0.70, targetBytes: 0.6 * 1024 * 1024 },
+//         });
+//         const form2 = new FormData();
+//         form2.append('file', stronger);
+//         const retry = await axiosInstance.put(
+//           `/custom-games/${code}/dilemma-images/${slot}`,
+//           form2,
+//           { headers: { 'Content-Type': 'multipart/form-data' } }
+//         );
+//         const url2 = retry?.data?.url || retry?.data?.image_url;
+//         if (url2) localStorage.setItem(slot, url2);
+//         return url2 || null;
+//       }
+//       throw err;
+//     }
+
+
 // }
+
 
 // export default function Create03() {
 //   const navigate = useNavigate();
@@ -328,14 +427,11 @@
 //     try {
 //       setUseFallback(false);
 
-//       // 1) 업로드로 서버에 이미지 파일 전송 → URL 획득
-//       const url = await uploadRepresentativeImage(file); // 예: "/static/images/cg_xxx1.png" 또는 절대 URL
-
-//       // 2) 대표 이미지 맵 PUT: 이 화면에서는 dilemma_image_1만 갱신
-//       await putRepresentativeImages(code, { dilemma_image_3: url });
-
-//       // 3) 로컬/화면 반영
-//       localStorage.setItem('dilemma_image_3', url);
+//      // (옵션) 업로드 전 사전 축소. 아래 줄은 없어도 putRepresentativeImageFile 내부에서 수행됨.
+//       // const pre = await twoStepCompress(file);
+//       // const url = await putRepresentativeImageFile(code, 'dilemma_image_3', pre);
+//       const url = await putRepresentativeImageFile(code, 'dilemma_image_3', file);
+//       if (url) localStorage.setItem('dilemma_image_3', url);
 //       const resolved = resolveImageUrl(url);
 //       setImageUrl(resolved);
 //       setUseFallback(!resolved);
@@ -504,6 +600,7 @@
 //     </CreatorLayout>
 //   );
 // }
+// 이미지 없을 경우 디폴트 이미지 보내기 
 
 // 이미지 처리 - 로컬 우선, 모두 있으면 GET 스킵
 import { useEffect, useState, useRef } from 'react';
@@ -517,38 +614,28 @@ import NextGreen from "../components/NextOrange";
 import BackOrange from "../components/Expanded/BackOrange";
 import axiosInstance from '../api/axiosInstance';
 
-
-// === 이미지 축소 유틸 시작 ===
-// 목표 바이트(1차/2차), 리사이즈 기준(긴 변), JPEG 품질을 상황에 맞게 조절
+/* =========================
+   이미지 축소 유틸
+   ========================= */
+// 목표 바이트(1차/2차), 리사이즈 기준(긴 변), JPEG 품질
 const IMG_COMPRESS_PRESET_1 = { maxEdge: 2000, quality: 0.85, targetBytes: 1.8 * 1024 * 1024 }; // ~1.8MB
 const IMG_COMPRESS_PRESET_2 = { maxEdge: 1280, quality: 0.75, targetBytes: 0.9 * 1024 * 1024 }; // ~0.9MB
 
-// 이미지 File|Blob -> HTMLImageElement 로드
 function loadImageFromFile(file) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve(img);
-    };
-    img.onerror = (e) => {
-      URL.revokeObjectURL(url);
-      reject(e);
-    };
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
     img.src = url;
   });
 }
-
-// (너비, 높이) 비율 유지하며 긴 변을 maxEdge로 리사이즈
 function calcSizeKeepRatio(w, h, maxEdge) {
   const longEdge = Math.max(w, h);
   if (longEdge <= maxEdge) return { width: w, height: h };
   const scale = maxEdge / longEdge;
   return { width: Math.round(w * scale), height: Math.round(h * scale) };
 }
-
-// 캔버스로 리사이즈 + JPEG 압축 → Blob
 async function resizeAndCompressToBlob(file, { maxEdge, quality }) {
   const img = await loadImageFromFile(file);
   const { width, height } = calcSizeKeepRatio(img.width, img.height, maxEdge);
@@ -558,45 +645,32 @@ async function resizeAndCompressToBlob(file, { maxEdge, quality }) {
   canvas.height = height;
   ctx.drawImage(img, 0, 0, width, height);
   return new Promise((resolve) => {
-    canvas.toBlob(
-      (blob) => resolve(blob),
-      'image/jpeg',
-      quality
-    );
+    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
   });
 }
-
-// Blob -> File 로 감싸기(서버에 file 필드 필요)
 function blobToFile(blob, fileName = 'image.jpg') {
   return new File([blob], fileName, { type: blob.type || 'image/jpeg' });
 }
-
-// 2차 축소 로직:
-// 1) 파일이 크면 1차(큰 리사이즈)로 줄이고,
-// 2) 아직 크거나 서버가 413이면 2차(더 강한 리사이즈) 적용
 async function twoStepCompress(file, { preset1 = IMG_COMPRESS_PRESET_1, preset2 = IMG_COMPRESS_PRESET_2 } = {}) {
   let working = file;
-
-  // 원본이 너무 크면 1차 축소
   if (working.size > preset1.targetBytes) {
     const blob1 = await resizeAndCompressToBlob(working, preset1);
     if (blob1 && blob1.size < working.size) {
       working = blobToFile(blob1, working.name.replace(/\.\w+$/, '') + '_c1.jpg');
     }
   }
-
-  // 그래도 크면 2차 축소
   if (working.size > preset2.targetBytes) {
     const blob2 = await resizeAndCompressToBlob(working, preset2);
     if (blob2 && blob2.size < working.size) {
       working = blobToFile(blob2, working.name.replace(/\.\w+$/, '') + '_c2.jpg');
     }
   }
-
   return working;
 }
 
-// 절대 URL 보정
+/* =========================
+   URL 보정/업로드 헬퍼
+   ========================= */
 const resolveImageUrl = (raw) => {
   if (!raw || raw === '-' || String(raw).trim() === '') return null;
   const u = String(raw).trim();
@@ -606,9 +680,49 @@ const resolveImageUrl = (raw) => {
   return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
 };
 
+async function putRepresentativeImageFile(code, slot, file) {
+  if (!code || !slot) throw new Error('code와 slot은 필수입니다.');
 
+  // 0) 업로드 전 사전 2차 축소
+  const preCompressed = await twoStepCompress(file);
 
-// 서버 응답에서 키를 다층으로 탐색
+  const form = new FormData();
+  form.append('file', preCompressed); // 서버 요구 필드명 'file'
+
+  try {
+    const res = await axiosInstance.put(
+      `/custom-games/${code}/dilemma-images/${slot}`,
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    const url = res?.data?.url || res?.data?.image_url;
+    if (url) localStorage.setItem(slot, url);
+    return url || null;
+  } catch (err) {
+    // 413이면 한 번 더 강하게 축소 후 재시도
+    if (err?.response?.status === 413) {
+      const stronger = await twoStepCompress(preCompressed, {
+        preset1: { maxEdge: 1280, quality: 0.75, targetBytes: 0.9 * 1024 * 1024 },
+        preset2: { maxEdge: 960,  quality: 0.70, targetBytes: 0.6 * 1024 * 1024 },
+      });
+      const form2 = new FormData();
+      form2.append('file', stronger);
+      const retry = await axiosInstance.put(
+        `/custom-games/${code}/dilemma-images/${slot}`,
+        form2,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      const url2 = retry?.data?.url || retry?.data?.image_url;
+      if (url2) localStorage.setItem(slot, url2);
+      return url2 || null;
+    }
+    throw err;
+  }
+}
+
+/* =========================
+   서버 응답 파서/이미지 일괄 GET
+   ========================= */
 const pickStringFrom = (game, key) => {
   const layers = [game, game?.data, game?.images, game?.data?.images, game?.dilemma, game?.data?.dilemma];
   for (const l of layers) {
@@ -625,67 +739,59 @@ const pickArrayFrom = (game, key) => {
   }
   return null;
 };
-// 대표 이미지 맵 GET → localStorage 저장
 
 async function fetchRepresentativeImages(code) {
   if (!code) throw new Error('게임 코드가 없습니다. (code)');
-   const res = await axiosInstance.get(`/custom-games/${code}/dilemma-images`, {
+  const res = await axiosInstance.get(`/custom-games/${code}/dilemma-images`, {
     headers: { 'Content-Type': 'application/json' },
   });
   const images = res?.data?.images || {};
-
-  // 4개 키를 모두 저장
   const keys = ['dilemma_image_1', 'dilemma_image_3', 'dilemma_image_4_1', 'dilemma_image_4_2'];
   keys.forEach((k) => {
     if (images[k] !== undefined) {
       localStorage.setItem(k, images[k] ?? '');
     }
   });
-
   return images;
 }
 
-async function putRepresentativeImageFile(code, slot, file) {
-  if (!code || !slot) throw new Error('code와 slot은 필수입니다.');
-    // 0) 업로드 전 사전 2차 축소
-    const preCompressed = await twoStepCompress(file);
-    const form = new FormData();
-    form.append('file', preCompressed); // 서버 요구 필드명 'file'
-  
-    try {
-      const res = await axiosInstance.put(
-        `/custom-games/${code}/dilemma-images/${slot}`,
-        form,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
-      const url = res?.data?.url || res?.data?.image_url;
-      if (url) localStorage.setItem(slot, url);
-      return url || null;
-    } catch (err) {
-      // 413이면 한 번 더 강하게 축소 후 재시도
-      if (err?.response?.status === 413) {
-        const stronger = await twoStepCompress(preCompressed, {
-          preset1: { maxEdge: 1280, quality: 0.75, targetBytes: 0.9 * 1024 * 1024 },
-          preset2: { maxEdge: 960,  quality: 0.70, targetBytes: 0.6 * 1024 * 1024 },
-        });
-        const form2 = new FormData();
-        form2.append('file', stronger);
-        const retry = await axiosInstance.put(
-          `/custom-games/${code}/dilemma-images/${slot}`,
-          form2,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
-        const url2 = retry?.data?.url || retry?.data?.image_url;
-        if (url2) localStorage.setItem(slot, url2);
-        return url2 || null;
+/* =========================
+   기본 이미지 자동 업로드(dilemma_image_3)
+   ========================= */
+const DEFAULT_UPLOAD_FLAG_3 = 'dilemma_image_3';
+
+async function uploadDefaultDilemmaImage3(onApplied) {
+  if (localStorage.getItem(DEFAULT_UPLOAD_FLAG_3) === '1') return null; // 중복 업로드 방지
+  const code = localStorage.getItem('code');
+  if (!code) return null;
+
+  try {
+    // 번들된 기본 이미지를 Blob으로 가져오기
+    const resp = await fetch(create02Image);
+    let file = new File([await resp.blob()], 'default.png', { type: 'image/png' });
+
+    // 2단계 축소(내부적으로 JPEG로 전환될 수 있음)
+    file = await twoStepCompress(file).catch(() => file);
+
+    // dilemma_image_3 슬롯에 업로드
+    const url = await putRepresentativeImageFile(code, 'dilemma_image_3', file);
+    if (url) {
+      localStorage.setItem('dilemma_image_3', url);
+      localStorage.setItem(DEFAULT_UPLOAD_FLAG_3, '1');
+      if (typeof onApplied === 'function') {
+        onApplied(resolveImageUrl(url));
       }
-      throw err;
     }
-
-
+    return url;
+  } catch (e) {
+    console.error('기본 대표 이미지(3) 업로드 실패:', e);
+    return null;
+  }
 }
 
-
+/* =========================
+   컴포넌트
+   ========================= */
 export default function Create03() {
   const navigate = useNavigate();
   const [title, setTitle] = useState(localStorage.getItem("creatorTitle") || "");
@@ -721,15 +827,9 @@ export default function Create03() {
     if (typeof agree === 'string') localStorage.setItem('agree_label', agree);
     if (typeof disagree === 'string') localStorage.setItem('disagree_label', disagree);
   };
-  const persistQuestion = (v) => {
-    localStorage.setItem('question', v ?? '');
-  };
-  const persistAgreeLabel = (v) => {
-    localStorage.setItem('agree_label', v ?? '');
-  };
-  const persistDisagreeLabel = (v) => {
-    localStorage.setItem('disagree_label', v ?? '');
-  };
+  const persistQuestion = (v) => { localStorage.setItem('question', v ?? ''); };
+  const persistAgreeLabel = (v) => { localStorage.setItem('agree_label', v ?? ''); };
+  const persistDisagreeLabel = (v) => { localStorage.setItem('disagree_label', v ?? ''); };
   const isNonEmptyString = (v) => typeof v === 'string' && v.trim().length > 0;
   const isValidSituation = (arr) => Array.isArray(arr) && arr.length > 0 && arr.every(s => isNonEmptyString(s));
 
@@ -745,26 +845,38 @@ export default function Create03() {
       localSituation = raw ? JSON.parse(raw) : null;
     } catch {}
 
-    // ✅ 대표 이미지: 로컬 우선, 없으면 GET
-      const localImage = resolveImageUrl(localStorage.getItem('dilemma_image_3'));
-      if (localImage) {
-        setImageUrl(localImage);
-        setUseFallback(false);
-      } else if (code) {
-        (async () => {
-          try {
-            const images = await fetchRepresentativeImages(code);
-            const img3 = images?.dilemma_image_3 ?? localStorage.getItem('dilemma_image_3') ?? '';
-            const resolved = resolveImageUrl(img3);
+    // ✅ 대표 이미지: 로컬 우선, 없으면 GET → 그래도 없으면 기본 이미지 업로드
+    const localImage = resolveImageUrl(localStorage.getItem('dilemma_image_3'));
+    if (localImage) {
+      setImageUrl(localImage);
+      setUseFallback(false);
+    } else if (code) {
+      (async () => {
+        try {
+          const images = await fetchRepresentativeImages(code);
+          const img3 = images?.dilemma_image_3 ?? localStorage.getItem('dilemma_image_3') ?? '';
+          const resolved = resolveImageUrl(img3);
+          if (resolved) {
             setImageUrl(resolved);
-            setUseFallback(!resolved);
-          } catch (err) {
-            console.error('대표 이미지 로드 실패:', err);
-            setImageUrl(null);
-            setUseFallback(true);
+            setUseFallback(false);
+          } else {
+            // 서버/로컬 모두 없으면 기본 이미지 업로드
+            await uploadDefaultDilemmaImage3((resolvedUrl) => {
+              setImageUrl(resolvedUrl);
+              setUseFallback(!resolvedUrl);
+            });
           }
-        })();
-      }
+        } catch (err) {
+          console.error('대표 이미지 로드 실패:', err);
+          // 실패 시에도 기본 이미지 업로드 시도
+          await uploadDefaultDilemmaImage3((resolvedUrl) => {
+            setImageUrl(resolvedUrl);
+            setUseFallback(!resolvedUrl);
+          });
+        }
+      })();
+    }
+
     const localQuestion = localStorage.getItem('question') || '';
     const localAgree    = localStorage.getItem('agree_label') || '';
     const localDisagree = localStorage.getItem('disagree_label') || '';
@@ -794,14 +906,19 @@ export default function Create03() {
       setOption1(localAgree);
       setOption2(localDisagree);
       persistAll({ situationInputs: built, question: localQuestion, agree: localAgree, disagree: localDisagree });
-      return; 
+      return;
     }
 
     (async () => {
       try {
         if (!code) {
           // code 없으면 GET 불가 → 로컬/폴백만 마무리
-          setImageUrl(localImage); setUseFallback(!localImage);
+          if (!localImage) {
+            // 업로드는 code 없으므로 스킵. 화면만 폴백.
+            setImageUrl(null); setUseFallback(true);
+          } else {
+            setImageUrl(localImage); setUseFallback(false);
+          }
 
           if (isValidSituation(localSituation)) {
             setInputs(localSituation.map((text, idx) => ({
@@ -824,10 +941,8 @@ export default function Create03() {
         const game = res?.data || {};
         const serverDilemma = game?.dilemma || game?.data?.dilemma || {};
 
-        // 이미지: 대표이미지 대신 전용 키 우선(dilemma_image_3)
-        const rawImg =
-          pickStringFrom(game, 'dilemma_image_3') ||
-          null; // 필요 시 다른 백워드 키 추가 가능
+        // 이미지: 전용 키 우선(dilemma_image_3)
+        const rawImg = pickStringFrom(game, 'dilemma_image_3') || null;
 
         // 텍스트들
         const serverSituation = pickArrayFrom(serverDilemma, 'situation');
@@ -835,11 +950,18 @@ export default function Create03() {
         const serverAgree     = serverDilemma?.options?.agree_label;
         const serverDisagree  = serverDilemma?.options?.disagree_label;
 
-        // 각 항목은 "없을 때만" 채움 + 로컬 저장 승격
-        // 이미지
+        // 이미지 결정
         const finalImg = localImage || resolveImageUrl(rawImg);
-        setImageUrl(finalImg); setUseFallback(!finalImg);
-        if (!localImage && rawImg) localStorage.setItem('dilemma_image_3', rawImg);
+        if (finalImg) {
+          setImageUrl(finalImg); setUseFallback(false);
+          if (!localImage && rawImg) localStorage.setItem('dilemma_image_3', rawImg);
+        } else {
+          // 서버/로컬 모두 없으면 기본 이미지 업로드
+          await uploadDefaultDilemmaImage3((resolvedUrl) => {
+            setImageUrl(resolvedUrl);
+            setUseFallback(!resolvedUrl);
+          });
+        }
 
         // 상황 배열
         const finalSituation = isValidSituation(localSituation)
@@ -870,8 +992,16 @@ export default function Create03() {
 
       } catch (e) {
         console.error('GET 실패:', e);
-        // 실패 시 로컬/폴백 유지
-        setImageUrl(localImage); setUseFallback(!localImage);
+        // 실패 시에도 기본 이미지 업로드 시도
+        if (!localImage) {
+          await uploadDefaultDilemmaImage3((resolvedUrl) => {
+            setImageUrl(resolvedUrl);
+            setUseFallback(!resolvedUrl);
+          });
+        } else {
+          setImageUrl(localImage); setUseFallback(false);
+        }
+
         if (isValidSituation(localSituation)) {
           const built = localSituation.map((text, idx) => ({
             id: idx + 1,
@@ -916,41 +1046,37 @@ export default function Create03() {
       return next;
     });
   };
-// --- 이미지 변경 ---
-const handleImageChange = () => {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    const code = localStorage.getItem('code');
-    if (!code) {
-      alert('게임 코드가 없습니다.');
-      return;
-    }
+  // --- 이미지 변경 ---
+  const handleImageChange = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-    try {
-      setUseFallback(false);
+      const code = localStorage.getItem('code');
+      if (!code) {
+        alert('게임 코드가 없습니다.');
+        return;
+      }
 
-     // (옵션) 업로드 전 사전 축소. 아래 줄은 없어도 putRepresentativeImageFile 내부에서 수행됨.
-      // const pre = await twoStepCompress(file);
-      // const url = await putRepresentativeImageFile(code, 'dilemma_image_3', pre);
-      const url = await putRepresentativeImageFile(code, 'dilemma_image_3', file);
-      if (url) localStorage.setItem('dilemma_image_3', url);
-      const resolved = resolveImageUrl(url);
-      setImageUrl(resolved);
-      setUseFallback(!resolved);
-    } catch (err) {
-      console.error(err);
-      alert('이미지 업로드/저장에 실패했습니다.');
-      setUseFallback(true);
-    }
+      try {
+        setUseFallback(false);
+        const url = await putRepresentativeImageFile(code, 'dilemma_image_3', file);
+        if (url) localStorage.setItem('dilemma_image_3', url);
+        const resolved = resolveImageUrl(url);
+        setImageUrl(resolved);
+        setUseFallback(!resolved);
+      } catch (err) {
+        console.error(err);
+        alert('이미지 업로드/저장에 실패했습니다.');
+        setUseFallback(true);
+      }
+    };
+    input.click();
   };
-  input.click();
-};
-
 
   // 서버 PUT
   const putDilemma = async ({ situation, question, options }) => {

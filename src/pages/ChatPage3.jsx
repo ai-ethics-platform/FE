@@ -1579,7 +1579,7 @@ function getSingleTask(kind) {
 </div>
 
 {/* 편집 버튼은 아래에 별도 줄로 */}
-<div style={{ display: 'flex', gap: 8, marginTop: -4, alignItems: 'center' }}>
+<div style={{ display: 'flex', gap: 8, marginTop: 4, alignItems: 'center' }}>
   {showTemplateBtn && (
     <Continue
       onClick={handleTemplateCreate}

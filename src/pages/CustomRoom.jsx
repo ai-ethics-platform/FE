@@ -43,7 +43,6 @@ export default function SelectRoom() {
     setStr('creatorTitle', title || data?.title || '');
 
     // 이미지(대표)
-    // 요구사항: create01에서 로컬에 `repersentative_image_url`로 저장 (요청 그대로 철자 사용)
     setStr('repersentative_image_url', representative_image_url || '');
 
     // 이미지(대표 묶음)

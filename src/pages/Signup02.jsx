@@ -92,10 +92,11 @@ useEffect(() => {
     !passwordError &&
     Boolean(birthYear.trim()) &&
     Boolean(birthMonth.trim()) &&
+    !birthError&&
     (gender === '남' || gender === '여') &&
     Boolean(education) &&
     (
-      (education === '중학생' || education === '고등학생')
+      (education === '중학생' || education === '고등학생' || education ==='기타')
       ? true
       : Boolean(major)
     )
@@ -448,17 +449,29 @@ useEffect(() => {
             >
               성별 *
             </div>
-            <div style={{ display: 'flex', gap: '1vw', marginBottom: '1vh' }}>
-              {['남', '여'].map((g) => (
-                <div
-                  key={g}
-                  onClick={() => setGender(g)}
-                  style={gender === g ? selectedGenderStyle : unselectedGenderStyle}
-                >
-                  {g}
-                </div>
-              ))}
-            </div>
+            <div style={{ display: 'flex', gap: '1vw', marginBottom: 0 }}>
+            {['남', '여'].map((g) => (
+              <div
+                key={g}
+                onClick={() => setGender(g)}
+                style={{
+                  ...(gender === g ? selectedGenderStyle : unselectedGenderStyle),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flex: 1,                 // 두 버튼 같은 너비
+                  height: 50,              // 원하는 높이
+                  ...FontStyles.body,
+                  cursor: 'pointer',
+                  boxSizing: 'border-box',
+                  padding: '0 16px',
+                }}
+              >
+                {g}
+              </div>
+            ))}
+          </div>
+
           </div>
 
           <div style={{ marginBottom: '0vh' }}>
@@ -470,11 +483,11 @@ useEffect(() => {
                 color: Colors.grey07,
               }}
             >
-              현재 학업 상태
+            회원 유형
             </div>
             <div style={{ marginBottom: '2vh' }}>
               <SelectDrop
-                options={['중학생', '고등학생', '대학생','대학원생','교사']}
+                options={['중학생', '고등학생', '대학생','대학원생','교사','기타']}
                 value={education}
                 onSelect={(option) => {
                   setEducation(option);

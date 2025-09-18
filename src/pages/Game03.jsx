@@ -509,14 +509,13 @@ export default function Game03() {
 
   const [round, setRound] = useState(1);
   useEffect(() => {
-    const completed  = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-    const calculated = completed.length + 1;
-    setRound(calculated);
-    localStorage.setItem('currentRound', calculated.toString());
-    return () => clearTimeout(pollingRef.current);
+    const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+    const nextRound = completed.length + 1;
+    setRound(nextRound);
+    localStorage.setItem('currentRound', String(nextRound));
   }, []);
 
-  const { isConnected, sessionId, sendMessage } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
   useWebSocketNavigation(nav, { nextPagePath: '/game04', infoPath: '/game04' });
@@ -536,14 +535,15 @@ export default function Game03() {
     setConnectionStatus(newStatus);
     console.log('🔧 [Game03] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
+
   useEffect(() => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket 연결 끊김 감지됨');
-      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+    if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+      console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+      alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
       clearAllLocalStorageKeys();
       navigate('/');
     }
-  }, [isConnected]);
+  }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
   // step 1: 개인 동의/비동의 POST 후 consensus 폴링 시작
   const handleSubmitChoice = async () => {
     const choiceInt = agree === 'agree' ? 1 : 2;

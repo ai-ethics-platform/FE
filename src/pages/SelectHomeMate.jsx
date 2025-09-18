@@ -175,18 +175,35 @@ export default function SelectHomeMate() {
 
   const images = getImages();
 
-  const paragraphs = [
-    {
-      main: '  여러분이 생각하는 HomeMate는 어떤 형태인가요?',
-      sub: isHost 
-        ? arrivalStatus.all_arrived 
-          ? '(함께 토론한 후 방장이 선택하고, "다음" 버튼을 클릭해주세요)' 
-          : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`
-        : arrivalStatus.all_arrived
-          ? '(방장이 캐릭터를 선택할 때까지 기다려주세요)'
-          : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`,
-    },
-  ];
+  // const paragraphs = [
+  //   {
+  //     main: '  여러분이 생각하는 HomeMate는 어떤 형태인가요?',
+  //     sub: isHost 
+  //       ? arrivalStatus.all_arrived 
+  //         ? '(함께 토론한 후 방장이 선택하고, "다음" 버튼을 클릭해주세요)' 
+  //         : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`
+  //       : arrivalStatus.all_arrived
+  //         ? '(방장이 캐릭터를 선택할 때까지 기다려주세요)'
+  //         : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`,
+  //   },
+  // ];
+const isAWS = category === '자율 무기 시스템';
+
+const paragraphs = [
+  {
+    main: isAWS
+      ? '  여러분이 생각하는 자율 무기 시스템은 어떤 형태인가요?'
+      : '  여러분이 생각하는 HomeMate는 어떤 형태인가요?',
+    sub: isHost
+      ? arrivalStatus.all_arrived
+        ? '(함께 토론한 후 방장이 선택하고, "다음" 버튼을 클릭해주세요)'
+        : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`
+      : arrivalStatus.all_arrived
+        ? '(방장이 캐릭터를 선택할 때까지 기다려주세요)'
+        : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`,
+  },
+];
+
 
   // 방장 전용 캐릭터 선택 핸들러 (모든 유저 도착 후에만 활성화)
   const handleCharacterSelect = (idx) => {
@@ -268,7 +285,6 @@ export default function SelectHomeMate() {
         />
       </div>
     )}
-
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>      
         <div style={{
           position: 'fixed',

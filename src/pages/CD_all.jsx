@@ -1,182 +1,3 @@
-// import { useState, useEffect } from 'react';
-// import Layout from '../components/Layout';
-// import { useNavigate } from 'react-router-dom';
-// import ContentTextBox from "../components/ContentTextBox2";
-// import { Colors, FontStyles } from '../components/styleConstants';
-// import create02Image from '../assets/images/Frame235.png';
-
-// import player1DescImg_title1 from '../assets/1player_des1.svg';
-// import player1DescImg_title2 from '../assets/1player_des2.svg';
-// import player1DescImg_title3 from '../assets/1player_des3.svg';
-// import AWS_1 from "../assets/1player_AWS_1.svg";
-// import AWS_2 from "../assets/1player_AWS_2.svg";
-// import AWS_3 from "../assets/1player_AWS_3.svg";
-// import AWS_4 from "../assets/1player_AWS_4.svg";
-// import AWS_5 from "../assets/1player_AWS_5.svg";
-// import player2DescImg_title1 from '../assets/2player_des1.svg';
-// import player2DescImg_title2 from '../assets/2player_des2.svg';
-// import player2DescImg_title3 from '../assets/2player_des3.svg';
-// import AWS_1_2 from "../assets/2player_AWS_1.svg";
-// import AWS_2_2 from "../assets/2player_AWS_2.svg";
-// import AWS_3_2 from "../assets/2player_AWS_3.svg";
-// import AWS_4_2 from "../assets/2player_AWS_4.svg";
-// import AWS_5_2 from "../assets/2player_AWS_5.svg";
-// import player3DescImg_title1 from '../assets/3player_des1.svg';
-// import player3DescImg_title2 from '../assets/3player_des2.svg';
-// import player3DescImg_title3 from '../assets/3player_des3.svg';
-// import AWS_1_3 from "../assets/3player_AWS_1.svg";
-// import AWS_2_3 from "../assets/3player_AWS_2.svg";
-// import AWS_3_3 from "../assets/3player_AWS_3.svg";
-// import AWS_4_3 from "../assets/3player_AWS_4.svg";
-// import AWS_5_3 from "../assets/3player_AWS_5.svg";
-
-// import bubbleSvg from '../assets/bubble.svg';
-// import bubblePolygonSvg from '../assets/bubble_polygon.svg';
-// export default function Editor02() {
-//   const navigate = useNavigate();
-
-//   const [title, setTitle] = useState(localStorage.getItem("title") || "");
-//   const [category, setCategory] = useState(localStorage.getItem("category") || "");
-//   const [subtopic, setSubtopic] = useState(localStorage.getItem("subtopic") || "");
-//   const [currentIndex, setCurrentIndex] = useState(0);
-//   const myRoleId = localStorage.getItem('myrole_id');
-
-//   const [image1, setImage1] = useState(null);
-//   const [image2, setImage2] = useState(null);
-//   const [image3, setImage3] = useState(null);
-
-//   const [isDefaultImage1, setIsDefaultImage1] = useState(true);
-//   const [isDefaultImage2, setIsDefaultImage2] = useState(true);
-//   const [isDefaultImage3, setIsDefaultImage3] = useState(true);
-
-//     const [openProfile, setOpenProfile] = useState(null);
-  
-//   const paragraphs = [
-//     { main: '각자 맡은 역할에 대해 돌아가면서 소개해 보세요' },
-//   ];
-
-//   const round = Number(localStorage.getItem('currentRound'));
-
-//   const STAGE_MAX_WIDTH = 1060;
-//   const MEDIA_WIDTH = 260;
-//   const MEDIA_HEIGHT = 330;
-
-//   useEffect(() => {
-//     let imagePath = [];
-
-//     // Update images based on category and title
-//     if (category === '안드로이드') {
-//       if (title === '가정') {
-//         imagePath = [player1DescImg_title1, player2DescImg_title1, player3DescImg_title1];
-//       } else if (title === '국가 인공지능 위원회') {
-//         imagePath = [player1DescImg_title2, player2DescImg_title2, player3DescImg_title2];
-//       } else if (title === '국제 인류 발전 위원회') {
-//         imagePath = [player1DescImg_title3, player2DescImg_title3, player3DescImg_title3];
-//       }
-//     } else if (category === '자율 무기 시스템') {
-//       if (subtopic === 'AI 알고리즘 공개') {
-//         imagePath = [AWS_1, AWS_1_2, AWS_1_3];
-//       } else if (subtopic === 'AWS의 권한') {
-//         imagePath = [AWS_2, AWS_2_2, AWS_2_3];
-//       } else if (subtopic === '사람이 죽지 않는 전쟁') {
-//         imagePath = [AWS_3, AWS_3_2, AWS_3_3];
-//       } else if (subtopic === 'AI의 권리와 책임') {
-//         imagePath = [AWS_4, AWS_4_2, AWS_4_3];
-//       } else if (subtopic === 'AWS 규제') {
-//         imagePath = [AWS_5, AWS_5_2, AWS_5_3];
-//       }
-//     }
-
-//     setImage1(imagePath[0]);
-//     setImage2(imagePath[1]);
-//     setImage3(imagePath[2]);
-//   }, [category, title, subtopic]);
-
-
-//   const handleBackClick = () => {
-//     navigate(`/character_description${myRoleId}`);  };
-
-//   return (
-//       <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}  onBackClick={handleBackClick} >
-//       <div style={{ display: 'flex', justifyContent: 'center' }}>
-//         <div style={{ width: '100%', maxWidth: STAGE_MAX_WIDTH, boxSizing: 'border-box' }}>
-//           <div
-//             style={{
-//               display: 'flex',
-//               justifyContent: 'center',
-//               alignItems: 'flex-start',
-//               gap: 10,
-//               marginTop: 8,
-//               marginBottom: 16,
-//             }}
-//           >
-//             {[
-//               { image: image1, setImage: setImage1, isDefault: isDefaultImage1, setIsDefault: setIsDefaultImage1 },
-//               { image: image2, setImage: setImage2, isDefault: isDefaultImage2, setIsDefault: setIsDefaultImage2 },
-//               { image: image3, setImage: setImage3, isDefault: isDefaultImage3, setIsDefault: setIsDefaultImage3 },
-//             ].map(({ image, setImage, isDefault, setIsDefault }, idx) => (
-//               <div
-//                 key={idx}
-//                 style={{
-//                   width: MEDIA_WIDTH,
-//                   height: MEDIA_HEIGHT,
-//                   border: '2px solid #ddd',
-//                   backgroundColor: '#f8f9fa',
-//                   overflow: 'hidden',
-//                   position: 'relative',
-//                   borderRadius: 2,
-//                   boxShadow: '0 8px 16px rgba(0,0,0,0.06)',
-//                 }}
-//               >
-//                 <img
-//                   src={image || (isDefault ? create02Image : '')}
-//                   alt={`역할 이미지 ${idx + 1}`}
-//                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-//                 />
-
-//               </div>
-//             ))}
-//           </div>
-//            {/* Bubble SVG와 텍스트 배치 */}
-//            <div
-//             style={{
-//               position: 'absolute',
-//               top: '480px',  // 고정된 px 값으로 위치 조정
-//               left: '30px',
-//               transform: 'translateX(-80%)',
-//               zIndex: 10,
-//               textAlign: 'center',
-//             }}
-//           >
-//             <img src={bubbleSvg} alt="Bubble" style={{ width: '250px' }} />
-//             <span
-//               style={{
-//                 width:"100%",
-//                 position: 'absolute',
-//                 top: '50%',
-//                 left: '50%',
-//                 transform: 'translate(-50%, -50%)',
-//                 color: '#fff',
-//                 ...FontStyles.caption
-//               }}
-//             >
-//              <>
-//              캐릭터 패널을 클릭하면 <br/>해당 캐릭터의 정보를 볼 수 있습니다. 
-//              </>
-//             </span>
-//           </div>
-
-//           <div style={{ width: '100%' }}>
-//             <ContentTextBox
-//               paragraphs={paragraphs}
-//               onContinue={() => navigate('/game02')}
-//             />
-//           </div>
-//         </div>
-//       </div>
-//     </Layout>
-//   );
-// }
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useNavigate } from 'react-router-dom';
@@ -225,7 +46,7 @@ export default function Editor02() {
   const [image1, setImage1] = useState(null);
   const [image2, setImage2] = useState(null);
   const [image3, setImage3] = useState(null);
-
+ const [round,setRound]=useState();
   const [isDefaultImage1, setIsDefaultImage1] = useState(true);
   const [isDefaultImage2, setIsDefaultImage2] = useState(true);
   const [isDefaultImage3, setIsDefaultImage3] = useState(true);
@@ -235,8 +56,16 @@ export default function Editor02() {
   const isCustomMode = !!localStorage.getItem('code');
   const creatorTitle = localStorage.getItem('creatorTitle') || '';
 
+ // 1. 라운드 계산
+  useEffect(() => {
+    const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+    const nextRound = completed.length + 1;
+    setRound(nextRound);
+    localStorage.setItem('currentRound', String(nextRound));
+  }, []);
+
   // 기본 문구
-  let paragraphs = [{ main: '각자 맡은 역할에 대해 돌아가면서 소개해 보세요' }];
+  let paragraphs = [{ main: '각자 맡은 역할에 대해 돌아가면서 소개해 보세요.' }];
 
   // 커스텀 모드면 문구 교체
   if (isCustomMode) {
@@ -244,7 +73,7 @@ export default function Editor02() {
     const guideText = '각자의 역할을 소개하는 시간을 가져보세요.';
     paragraphs = [{ main: [guideText].filter(Boolean).join('\n\n') }];
   }
-  const round = Number(localStorage.getItem('currentRound'));
+
   const STAGE_MAX_WIDTH = 1060;
   const MEDIA_WIDTH = 260;
   const MEDIA_HEIGHT = 330;
@@ -364,15 +193,14 @@ export default function Editor02() {
 
           {/* Bubble SVG와 텍스트 배치 (기존 유지) */}
           <div
-            style={{
-              position: 'absolute',
-              top: '480px',
-              left: '30px',
-              transform: 'translateX(-80%)',
-              zIndex: 10,
-              textAlign: 'center',
-            }}
-          >
+          style={{
+            position: 'fixed', 
+            bottom: '190px',     
+            left: '-200px',       
+            zIndex: 1000,        
+            textAlign: 'center',
+          }}
+        >
             <img src={bubbleSvg} alt="Bubble" style={{ width: '250px' }} />
             <span
               style={{

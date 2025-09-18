@@ -220,6 +220,7 @@
 //     </Background>
 //   );
 // }
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Background from '../components/Background';
@@ -380,6 +381,7 @@ export default function Login() {
             bgColor={Colors.componentBackgroundFloat}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            
             style={{
               width: '100%',
               height: '8vh',

@@ -189,7 +189,7 @@ const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img 
 export default function Game02() {
   const navigate = useNavigate();
 
-  const { isConnected } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
   useWebSocketNavigation(navigate, { nextPagePath: '/game03', infoPath: '/game03' });
@@ -210,14 +210,16 @@ export default function Game02() {
     setConnectionStatus(newStatus);
     console.log('[game02] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
-  useEffect(() => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket 연결 끊김 감지됨');
-      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-      clearAllLocalStorageKeys();
-      navigate('/');
-    }
-  }, [isConnected]);
+  
+  // useEffect(() => {
+  //   if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+  //     console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+  //     alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
+  //     clearAllLocalStorageKeys();
+  //     navigate('/');
+  //   }
+  // }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
+
   // 로컬 설정
   const category = localStorage.getItem('category');
   const mode = localStorage.getItem('mode') ?? 'neutral';
@@ -298,12 +300,14 @@ export default function Game02() {
     }
   }, [roomCode]);
 
-  // mateName 반영 (✅ 커스텀 모드에서는 실행 안 함)
   useEffect(() => {
     if (isCustomMode) return;
-    if (mateName) setParagraphs(resolveParagraphs(rawParagraphs, mateName));
+    if (mateName) {
+      const resolved = resolveParagraphs(rawParagraphs, mateName);
+      setParagraphs(resolved);
+    }
   }, [isCustomMode, mateName, rawParagraphs]);
-
+  
   const handleContinue = () => {
     navigate('/game03');
   };
@@ -311,7 +315,7 @@ export default function Game02() {
     navigate('/character_all');
   };
 
-  // ✅ 렌더 이미지 결정 (커스텀: 한 장 고정 / 기본: 페이지별)
+  //  렌더 이미지 결정 (커스텀: 한 장 고정 / 기본: 페이지별)
   const imageSrc = isCustomMode ? customImage : comicImages[currentIndex];
 
   return (

@@ -1,6 +1,8 @@
 import React from 'react';
 import char1 from '../assets/CharacterPopUp1.svg';
 import char2 from '../assets/CharacterPopUp2.svg';
+import char2_AWS from '../assets/CharacterPopUp2_AWS.svg';
+
 import char3 from '../assets/CharacterPopUp3.svg';
 import closeIcon from "../assets/close.svg";
 
@@ -8,15 +10,28 @@ import { Colors, FontStyles } from './styleConstants';
 
 export default function CharacterPopup({ subtopic, roleId, mateName, onClose }) {
   // 1) SVG 선택
-  const bgSvg = {
-    1: char1,
-    2: char2,
-    3: char3,
-  }[roleId] || char1;
+  // const bgSvg = {
+  //   1: char1,
+  //   2: char2,
+  //   3: char3,
+  // }[roleId] || char1;
 
   // 2) category 값에 따른 타이틀 및 본문 텍스트 설정
   const category = localStorage.getItem('category'); // 로컬에서 category 값 가져오기
 
+  const bgSvg = (() => {
+    switch (roleId) {
+      case 1:
+        return char1;
+      case 2:
+        return category === '자율 무기 시스템' ? char2_AWS : char2;
+      case 3:
+        return char3;
+      default:
+        return char1;
+    }
+  })();
+  
   let titleText = '';
   let mainText = '';
 

@@ -170,6 +170,7 @@
 //     </>
 //   );
 // }
+
 // pages/Game06.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -191,7 +192,7 @@ import { clearAllLocalStorageKeys } from '../utils/storage';
 
 export default function Game06() {
   const navigate = useNavigate();
-  const { isConnected, disconnect } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts,disconnect } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost } = useHostActions();
 
@@ -220,16 +221,18 @@ export default function Game06() {
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     setCompletedTopics(saved);
-    setCurrentRound(saved.length + 1);
+    setCurrentRound(saved.length );
   }, []);
+
   useEffect(() => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket 연결 끊김 감지됨');
-      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+    if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+      console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+      alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
       clearAllLocalStorageKeys();
       navigate('/');
     }
-  }, [isConnected]);
+  }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
+  
   //  기본(템플릿) 엔딩 텍스트 준비
   useEffect(() => {
     const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];

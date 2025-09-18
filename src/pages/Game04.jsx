@@ -320,7 +320,7 @@ export default function Game04() {
   const { state } = useLocation();
   const navigate   = useNavigate();
 
-  const { isConnected, sessionId, sendMessage } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
   useWebSocketNavigation(navigate, { nextPagePath: '/game05', infoPath: '/game05' });
@@ -341,14 +341,17 @@ export default function Game04() {
     setConnectionStatus(newStatus);
     console.log('[Game04] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
+
   useEffect(() => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket 연결 끊김 감지됨');
-      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+    if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+      console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+      alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
       clearAllLocalStorageKeys();
       navigate('/');
     }
-  }, [isConnected]);
+  }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
+  
+
   const myVote   = state?.agreement ?? null;
 
   // 기본 로컬 값들
@@ -495,7 +498,7 @@ export default function Game04() {
   // 최종 사용 라벨
   const subtopicMap = isAWS ? subtopicMapAWS : subtopicMapAndroid;
 
-  // ✅ 커스텀/기본 라벨 선택
+  //  커스텀/기본 라벨 선택
   const labels = isCustomMode
     ? { agree: customAgreeLabel, disagree: customDisagreeLbl }
     : (subtopicMap[rawSubtopic]?.labels ?? { agree: '동의', disagree: '비동의' });

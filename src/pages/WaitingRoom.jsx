@@ -27,21 +27,53 @@ export default function WaitingRoom() {
   // zoom 수정
 // 기본 토픽 목록
 const defaultTopics = ['안드로이드', '자율 무기 시스템'];
-
+const [category,setCategory] = useState();
 // custom 모드 여부 확인
 const isCustomMode = Boolean(localStorage.getItem('code'));
 const creatorTitle = localStorage.getItem('creatorTitle') || '커스텀 주제';
 
-// allTopics 설정
+// // allTopics 설정
+// const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
+
+// // 초기 토픽 결정
+// const initialTopic = isCustomMode 
+//   ? creatorTitle 
+//   : (location.state?.topic || defaultTopics[0]);
+
+// const initialIndex = allTopics.indexOf(initialTopic);
+
+
+
+// allTopics는 기존 그대로
 const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
 
-// 초기 토픽 결정
-const initialTopic = isCustomMode 
-  ? creatorTitle 
-  : (location.state?.topic || defaultTopics[0]);
+//  최초 렌더에서 localStorage.category를 우선 반영
+const [currentIndex, setCurrentIndex] = useState(() => {
+  const stored = localStorage.getItem('category');
+  const i = stored ? allTopics.indexOf(stored) : -1;
+  if (i >= 0) return i;
 
-const initialIndex = allTopics.indexOf(initialTopic);
+  const fallback = isCustomMode
+    ? creatorTitle
+    : (location.state?.topic || allTopics[0]);
 
+  const fi = allTopics.indexOf(fallback);
+  return fi >= 0 ? fi : 0;
+});
+
+//  로컬(category) → UI 인덱스 동기화
+const syncTopicFromLocal = (value) => {
+  const cat = (value != null ? value : localStorage.getItem('category')) || '';
+  const idx = allTopics.indexOf(cat);
+  if (idx >= 0 && idx !== currentIndex) {
+    setCurrentIndex(idx);
+  }
+};
+
+// 마운트 직후 한 번 더 동기화 
+useEffect(() => {
+  syncTopicFromLocal();
+}, []);
  
   //룸코드 복사 
   const [copied, setCopied] = useState(false);
@@ -52,16 +84,16 @@ const initialIndex = allTopics.indexOf(initialTopic);
       setTimeout(() => setCopied(false), 1000); // 1초 후 사라짐
     });
   };
-  const setCategoryFromRoom = (room) => {
-    if (room && typeof room.title === 'string' && room.title.length > 0) {
-      localStorage.setItem('category', room.title);
-    }
-  };
+  // const setCategoryFromRoom = (room) => {
+  //   if (room && typeof room.title === 'string' && room.title.length > 0) {
+  //     localStorage.setItem('category', room.title);
+  //   }
+  // };
   //  useRef로 폴링 타이머 ID 관리
   const pollingIntervalRef = useRef(null);
 
   // 1) UI 상태
-  const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 ? initialIndex : 0);
+  //const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 ? initialIndex : 0);
   const [showMicPopup, setShowMicPopup] = useState(false);
   const [showOutPopup, setShowOutPopup] = useState(false);
   const [myStatusIndex, setMyStatusIndex] = useState(0);
@@ -119,10 +151,17 @@ const loadMyInfo = async () => {
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
       console.log(`API 응답:`, room);
-      setCategoryFromRoom(room);
-
+      if (room?.title) {
+          localStorage.setItem('category', room.title);
+          if(isCustomMode){
+          localStorage.setItem('creatorTitle', room.title);
+        }
+      }
       setParticipants(room.participants);
-      
+       if (room && typeof room.title === 'string' && room.title.length > 0) {
+           localStorage.setItem('category', room.title);
+           syncTopicFromLocal(room.title);   // ← 저장 직후 UI 인덱스 동기화
+        }
       const hostUserId = room.created_by;
       setHostUserId(String(hostUserId));
 

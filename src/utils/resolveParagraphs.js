@@ -30,17 +30,52 @@ function attachJosa(name, pattern) {
   }
 }
 
+// export function resolveParagraphs(rawParagraphs, mateName) {
+//   const replaceHomeMate = (text) => {
+//     if (!text) return '';
+//     return text
+//       .replace(/Homemate\(([^)]+)\)/g, (_, pattern) => attachJosa(mateName, pattern))
+//       .replace(/Homemate/g, mateName);
+//   };
+
+//   return rawParagraphs.map((para) => ({
+//     ...para,
+//     ...(para.main && { main: replaceHomeMate(para.main) }),
+//     ...(para.sub && { sub: replaceHomeMate(para.sub) }),
+//   }));
+// }
+
 export function resolveParagraphs(rawParagraphs, mateName) {
-  const replaceHomeMate = (text) => {
+  const category = localStorage.getItem('category') || '';
+
+  const replaceDynamic = (text) => {
     if (!text) return '';
-    return text
-      .replace(/Homemate\(([^)]+)\)/g, (_, pattern) => attachJosa(mateName, pattern))
-      .replace(/Homemate/g, mateName);
+
+    if (category === '안드로이드') {
+      // Homemate → mateName
+      text = text.replace(/Homemate\(([^)]+)\)/g, (_, pattern) =>
+        attachJosa(mateName, pattern)
+      );
+      text = text.replace(/Homemate/g, mateName);
+    }
+
+    if (category === '자율 무기 시스템') {
+      // 조사 붙은 경우
+      text = text.replace(/자율\s*무기\s*시스템\s*\(AWS\)\(([^)]+)\)/g, (_, pattern) =>
+        attachJosa(mateName, pattern)
+      );
+    
+      // 기본 치환
+      text = text.replace(/자율\s*무기\s*시스템\s*\(AWS\)/g, mateName);
+    }
+    
+
+    return text;
   };
 
   return rawParagraphs.map((para) => ({
     ...para,
-    ...(para.main && { main: replaceHomeMate(para.main) }),
-    ...(para.sub && { sub: replaceHomeMate(para.sub) }),
+    ...(para.main && { main: replaceDynamic(para.main) }),
+    ...(para.sub && { sub: replaceDynamic(para.sub) }),
   }));
 }

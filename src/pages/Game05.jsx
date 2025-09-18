@@ -135,7 +135,7 @@ import { clearAllLocalStorageKeys } from '../utils/storage';
 export default function Game05() {
   const navigate = useNavigate();
 
-  const { isConnected } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
   useWebSocketNavigation(navigate, { nextPagePath: '/game05_1', infoPath: '/game05_1' });
@@ -198,15 +198,18 @@ export default function Game05() {
     setRound(calculatedRound);
     localStorage.setItem('currentRound', calculatedRound.toString());
   }, []);
+
+
+
   useEffect(() => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket 연결 끊김 감지됨');
-      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+    if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+      console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+      alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
       clearAllLocalStorageKeys();
       navigate('/');
     }
-  }, [isConnected]);
-  // 텍스트/이미지 세팅
+  }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
+    // 텍스트/이미지 세팅
   useEffect(() => {
     if (isCustomMode) {
       // 커스텀 텍스트 배열 파싱
@@ -224,7 +227,7 @@ export default function Game05() {
       setParagraphs(nextParagraphs);
       setCurrentIndex(0);
     } else {
-      // ✅ 일반 모드: mateName 치환
+      //  일반 모드: mateName 치환
       const fetchMateName = async () => {
         try {
           const { data } = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });

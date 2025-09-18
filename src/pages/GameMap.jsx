@@ -14,10 +14,9 @@ import { FontStyles,Colors } from '../components/styleConstants';
 export default function GameMap() {
   const navigate = useNavigate();
   const subtopic = '라운드 선택';
-  const round = Number(localStorage.getItem('currentRound') ?? 1);
 
   const { isInitialized: webrtcInitialized } = useWebRTC();
-  const { isConnected: websocketConnected } = useWebSocket();
+  const { isConnected: websocketConnected, } = useWebSocket();
   const { isHost, sendNextPage } = useHostActions();
   useWebSocketNavigation(navigate, { nextPagePath: '/game01' });
 
@@ -28,6 +27,12 @@ export default function GameMap() {
   //  카테고리 읽기(가볍게)
   const category = localStorage.getItem('category') || '안드로이드';
   const isAWS = category === '자율 무기 시스템';
+
+  // 라운드
+  const [round, setRound] = useState(() => {
+    const c = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+    return c.length + 1;
+  });
 
   useEffect(() => {
     const newStatus = {

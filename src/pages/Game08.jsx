@@ -28,7 +28,7 @@ import { clearAllLocalStorageKeys } from '../utils/storage';
 
 export default function Game08() {
   const navigate = useNavigate();
-  const { isConnected, disconnect } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts,disconnect } = useWebSocket();
   //const { isInitialized: webrtcInitialized } = useWebRTC();
 
   //음성 녹음 종료를 위한 실험 코드 
@@ -70,14 +70,18 @@ export default function Game08() {
       ready: isConnected && webrtcInitialized
     });
   }, [isConnected, webrtcInitialized]);
+  
+  
     useEffect(() => {
-      if (!isConnected) {
-        console.warn('❌ WebSocket 연결 끊김 감지됨');
-        alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+      if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+        console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+        alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
         clearAllLocalStorageKeys();
         navigate('/');
       }
-    }, [isConnected]);
+    }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
+    
+
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     const results   = JSON.parse(localStorage.getItem('subtopicResults') ?? '{}');

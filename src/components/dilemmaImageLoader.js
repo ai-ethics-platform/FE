@@ -12,6 +12,12 @@ const subtopicToBaseIndex = {
   '아이들을 위한 서비스': 7,
   '설명 가능한 AI': 10,
   '지구, 인간, AI': 13,
+
+  'AI 알고리즘 공개': 1,
+  'AWS의 권한': 4,
+  '사람이 죽지 않는 전쟁': 7,
+  'AI의 권리와 책임': 10,
+  'AWS 규제': 13,
 };
 
 const modeToOffset = {

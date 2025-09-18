@@ -18,7 +18,7 @@ export default function Game01() {
   // WebSocket과 WebRTC 상태 가져오기
   const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
   const myRoleId = localStorage.getItem('myrole_id');
-  const { isConnected, sessionId, sendMessage } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts } = useWebSocket();
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -107,14 +107,16 @@ export default function Game01() {
     ready: true,
   });
 
+
   useEffect(() => {
-    if (!isConnected) {
-      console.warn('❌ WebSocket 연결 끊김 감지됨');
-      alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
+    if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+      console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+      alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
       clearAllLocalStorageKeys();
       navigate('/');
     }
-  }, [isConnected]);
+  }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
+  
 
   // 🔧 연결 상태 모니터링
   useEffect(() => {

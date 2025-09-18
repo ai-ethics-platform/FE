@@ -5,6 +5,7 @@ import GameFrame from '../components/GameFrame';
 import { useVoiceRoleStates } from '../hooks/useVoiceRoleStates';
 import voiceManager from '../utils/voiceManager';
 import BackButton from './BackButton';
+import hostInfoSvg from '../assets/host_info.svg'; // 상단 import 필요
 
 // Character popup components
 import CharacterPopup1 from '../components/CharacterPopUp';
@@ -20,7 +21,9 @@ export default function Layout({
   nodescription = false,
   onBackClick,
   showBackButton = true,
-  allowScroll = false
+  allowScroll = false,
+  hostmessage = false,   
+
 }) {
   // Zoom for responsive scaling
   const [zoom, setZoom] = useState(1);
@@ -213,6 +216,26 @@ export default function Layout({
             </div>
           </div>
         )}
+         {hostmessage && hostId === myRoleId && (
+          <div
+            style={{
+              position: 'fixed',  
+              top: -110,
+              right: 0,
+              zIndex: 2000,  
+            }}
+          >
+            <img
+              src={hostInfoSvg}
+              alt="Host Info"
+              style={{
+                width: '300px', 
+                height: '300px', 
+              }}
+            />
+          </div>
+        )}
+
         <style>{`
           html, body, #root {
             margin: 0;
@@ -243,7 +266,7 @@ export default function Layout({
             width: 1060px;
             height: 720px;
             position: absolute;
-            top: 52%;
+            top: 48%;
             left: 50%;
             transform: translate(-50%, -50%) scale(${zoom});
             transform-origin: top center;

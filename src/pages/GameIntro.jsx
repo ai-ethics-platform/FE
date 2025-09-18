@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import UserProfile from '../components/Userprofile';
 import gameIntro from '../assets/images/gameintro.png';
-import ContentBox2 from '../components/ContentBox2';
+import ContentBox4 from '../components/ContentBox4';
 import Continue from '../components/Continue';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
@@ -21,7 +21,7 @@ import { clearAllLocalStorageKeys } from '../utils/storage';
 export default function GameIntro() {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { isConnected, addMessageHandler, removeMessageHandler, sendMessage, initializeVoiceWebSocket } = useWebSocket();
+  const { isConnected, addMessageHandler, removeMessageHandler, sendMessage, initializeVoiceWebSocket,reconnectAttempts, maxReconnectAttempts  } = useWebSocket();
   
   const { 
     isInitialized: webrtcInitialized, 
@@ -65,23 +65,24 @@ export default function GameIntro() {
   const connectionEstablishedRef = useRef(false);
   const initMessageSentRef = useRef(false);
   const sendMessageRef = useRef(null);
-  const category = localStorage.getItem('category') || '안드로이드';
+  const category = localStorage.getItem('category');
 const isAWS = category === '자율 무기 시스템';
-// 안드로이드용 텍스트 (기존 그대로)
+// 안드로이드용 텍스트 
 const ANDROID_TEXT =
   `          지금은 20XX년, 국내 최대 로봇 개발사 A가 다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
   `    이 로봇의 기능은 아래와 같습니다.\n\n` +
   `     • 가족의 감정, 건강 상태, 생활 습관 등을 입력하면\n 맞춤형 알림, 식단 제안 등의 서비스를 제공\n\n` +
   `     • 기타 업데이트 시 정교화된 서비스 추가 가능`;
 
-// 자율 무기 시스템용 텍스트 (요청하신 문구)
+// 자율 무기 시스템용 텍스트 
 const AWS_TEXT =
   `로봇 개발사 A가 자율 무기 시스템(Autonomous Weapon Systems, AWS)을 개발 중입니다.\n` +
-  `이 로봇의 기능은 아래와 같습니다.\n\n` +
-  `실시간 데이터 수집 및 분석\n` +
-  `인간 병사의 개입 없이 자동화된 의사결정 시스템으로 운영\n` +
-  `적군과 비전투원 구별\n` +
-  `목표를 선정해 정밀 타격 수행 가능`;
+  `이 로봇의 기능은 아래와 같습니다.\n\n`;
+
+const AWS_TEXT_LEFT =  `1. 실시간 데이터 수집 및 분석\n` +
+`2. 인간 병사의 개입 없이 자동화된 의사결정 시스템으로 운영\n` +
+`3. 적군과 비전투원 구별\n` +
+`4. 목표를 선정해 정밀 타격 수행 가능`;
 
  const TEACHER_TEXT = 
 '👋 안녕하세요! AI 윤리 딜레마 게임에 오신 걸 환영합니다.\n\n' + 
@@ -355,53 +356,6 @@ const isCustomMode = !!localStorage.getItem('code');
 
   return (
     <Background bgIndex={2}>
-      {/* 연결 상태 디버깅 정보 */}
-      {/* <div style={{
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
-        background: 'rgba(0,0,0,0.8)',
-        color: 'white',
-        padding: '12px',
-        borderRadius: '6px',
-        fontSize: '11px',
-        zIndex: 1000,
-        maxWidth: '350px',
-        fontFamily: 'monospace'
-      }}>
-        <div style={{color: '#00ff00'}}>🔍 [GameIntro] Client: {clientId}</div>
-        <div style={{color: connectionStatus.websocket ? '#00ff00' : '#ff0000'}}>
-          WebSocket: {connectionStatus.websocket ? '✅' : '❌'} {isConnected ? '(Connected)' : '(Disconnected)'}
-        </div>
-        <div style={{color: connectionStatus.webrtc ? '#00ff00' : '#ff0000'}}>
-          WebRTC: {connectionStatus.webrtc ? '✅' : '❌'} {webrtcInitialized ? '(Init)' : '(Waiting)'}
-        </div>
-        <div style={{color: connectionStatus.voice ? '#00ff00' : '#ff0000'}}>
-          Voice: {connectionStatus.voice ? '✅' : '❌'} {voiceInitialized ? '(Ready)' : '(Waiting)'}
-        </div>
-        <div style={{color: '#00ffff'}}>
-          P2P 연결: {peerConnections.size}/2 ({Array.from(peerConnections.keys()).join(', ')})
-        </div>
-        <div style={{color: signalingConnected ? '#00ff00' : '#ff0000'}}>
-          시그널링: {signalingConnected ? '✅ Connected' : '❌ Disconnected'}
-        </div>
-        <div style={{color: '#ffff00'}}>
-          내 역할: {currentMyRoleId || localStorage.getItem('myrole_id') || 'NULL'}
-        </div>
-        <div style={{color: '#ff00ff'}}>
-          호스트 역할: {hostId || localStorage.getItem('host_id') || 'NULL'}
-        </div>
-        <div style={{color: micPermissionGranted ? '#00ff00' : '#ff0000'}}>
-          마이크 권한: {micPermissionGranted ? 'GRANTED' : 'DENIED'}
-        </div>
-        <div style={{color: '#ffdddd'}}>
-          🔧 voice_status_update 전송 제거됨
-        </div>
-        {/* 🎤 내 음성 상태 (로컬 전용) */}
-         {/* <div style={{color: myVoiceSessionStatus.isSpeaking ? '#00ff00' : '#888888'}}>
-          내 음성: {myVoiceSessionStatus.isSpeaking ? '🗣️ 말하는 중' : '🤐 조용함'}
-        </div>
-      </div> */} 
 
       <div
         style={{
@@ -460,7 +414,7 @@ const isCustomMode = !!localStorage.getItem('code');
             padding: '0 16px',
           }}
         >
-          <ContentBox2 text={fullText} />
+        <ContentBox4 text={fullText} leftText={isAWS} leftTextContent={isAWS? AWS_TEXT_LEFT : ''} />
           <div style={{ marginTop: 20 }}>
             <Continue
               width={264}

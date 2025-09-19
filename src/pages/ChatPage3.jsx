@@ -1027,7 +1027,7 @@ function imagesReady() {
 
 // /chat/image 호출
 async function requestImage(input, size = '1867 × 955') {
-  const body = { step: 'image', input, size };
+  const body = {input, size };
   const { data } = await axiosInstance.post('/chat/image', body, {
     headers: { 'Content-Type': 'application/json' },
   });

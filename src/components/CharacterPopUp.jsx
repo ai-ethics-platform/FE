@@ -18,20 +18,20 @@ export default function CharacterPopup({ subtopic, roleId, mateName, onClose }) 
 
   // 2) category 값에 따른 타이틀 및 본문 텍스트 설정
   const category = localStorage.getItem('category'); // 로컬에서 category 값 가져오기
-
+  const subtopic1 = localStorage.getItem('subtopic');
   const bgSvg = (() => {
     switch (roleId) {
       case 1:
         return char1;
       case 2:
-        return category === '자율 무기 시스템' ? char2_AWS : char2;
+        return (subtopic1 === 'AI의 개인 정보 수집'|| subtopic1 === '안드로이드의 감정 표현') ? char2 : char2_AWS;
       case 3:
         return char3;
       default:
         return char1;
     }
   })();
-  
+
   let titleText = '';
   let mainText = '';
 

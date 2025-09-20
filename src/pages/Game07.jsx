@@ -277,7 +277,7 @@ export default function Game07() {
 
   // 기존 흐름 유지용 핸들러
   const handleNextRound = () => {
-    localStorage.removeItem('category');
+    //localStorage.removeItem('category');
     localStorage.removeItem('subtopic');
     localStorage.removeItem('mode');
     navigate('/gamemap');

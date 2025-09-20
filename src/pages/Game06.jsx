@@ -215,7 +215,7 @@ export default function Game06() {
   const [openProfile, setOpenProfile] = useState(null);
 
   // 결과보기 버튼 노출 조건(기존 로직)
-  const hasCompletedInternational = completedTopics.includes('지구, 인간, AI');
+  const hasCompletedInternational = completedTopics.includes('지구, 인간, AI')||completedTopics.includes('AWS 규제');
   const showResultButton = hasCompletedInternational;
 
   useEffect(() => {

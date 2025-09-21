@@ -44,7 +44,7 @@ export default function Game05_01() {
     localStorage.setItem('currentRound', String(round));
   }, [round]);
 
-  const { isConnected, reconnectAttempts, maxReconnectAttempts } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
   const [openProfile, setOpenProfile] = useState(null);
@@ -74,7 +74,45 @@ export default function Game05_01() {
     //     navigate('/');
     //   }
     // }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
-    
+    useEffect(() => {
+          let cancelled = false;
+          const isReloadingGraceLocal = () => {
+            const flag = sessionStorage.getItem('reloading') === 'true';
+            const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+            if (!flag) return false;
+            if (Date.now() > expire) {
+              sessionStorage.removeItem('reloading');
+              sessionStorage.removeItem('reloading_expire_at');
+              return false;
+            }
+            return true;
+          };
+        
+          if (!isConnected) {
+            // 1) reloading-grace가 켜져 있으면 finalize 억제
+            if (isReloadingGraceLocal()) {
+              console.log('♻️ reloading grace active — finalize 억제');
+              return;
+            }
+        
+            // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+            const DEBOUNCE_MS = 1200;
+            const timer = setTimeout(() => {
+              if (cancelled) return;
+              if (!isConnected && !isReloadingGraceLocal()) {
+                console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+                finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+              } else {
+                console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+              }
+            }, DEBOUNCE_MS);
+        
+            return () => {
+              cancelled = true;
+              clearTimeout(timer);
+            };
+          }
+        }, [isConnected, finalizeDisconnection]);
   // // 도착 상태
   const [arrivalStatus, setArrivalStatus] = useState({
     arrived_users: 0,

@@ -18,7 +18,7 @@ export default function Game01() {
   // WebSocket과 WebRTC 상태 가져오기
   const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
   const myRoleId = localStorage.getItem('myrole_id');
-  const { isConnected, reconnectAttempts, maxReconnectAttempts } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -62,7 +62,47 @@ export default function Game01() {
   } catch (e) {
     console.warn('opening 파싱 실패:', e);
   }
-
+  // 새로고침 시 재연결 로직 
+useEffect(() => {
+    let cancelled = false;
+    const isReloadingGraceLocal = () => {
+      const flag = sessionStorage.getItem('reloading') === 'true';
+      const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+      if (!flag) return false;
+      if (Date.now() > expire) {
+        sessionStorage.removeItem('reloading');
+        sessionStorage.removeItem('reloading_expire_at');
+        return false;
+      }
+      return true;
+    };
+  
+    if (!isConnected) {
+      // 1) reloading-grace가 켜져 있으면 finalize 억제
+      if (isReloadingGraceLocal()) {
+        console.log('♻️ reloading grace active — finalize 억제');
+        return;
+      }
+  
+      // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+      const DEBOUNCE_MS = 1200;
+      const timer = setTimeout(() => {
+        if (cancelled) return;
+        if (!isConnected && !isReloadingGraceLocal()) {
+          console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+          finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+        } else {
+          console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+        }
+      }, DEBOUNCE_MS);
+  
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
+    }
+  }, [isConnected, finalizeDisconnection]);
+  
   // 1. 라운드 계산
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');

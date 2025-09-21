@@ -16,9 +16,11 @@ import AWS_4 from '../assets/3player_AWS_4.svg';
 import AWS_5 from '../assets/3player_AWS_5.svg';
 
 import axiosInstance from '../api/axiosInstance';
+import { useWebSocket } from '../WebSocketProvider';
 
 export default function CD3() {
   const navigate = useNavigate();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
 
   const category = localStorage.getItem('category') || '안드로이드';
   const isAWS = category === '자율 무기 시스템';
@@ -40,6 +42,47 @@ export default function CD3() {
     localStorage.setItem('currentRound', String(nextRound));
   }, []);
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
+
+   // 새로고침 시 재연결 로직 
+    useEffect(() => {
+        let cancelled = false;
+        const isReloadingGraceLocal = () => {
+          const flag = sessionStorage.getItem('reloading') === 'true';
+          const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+          if (!flag) return false;
+          if (Date.now() > expire) {
+            sessionStorage.removeItem('reloading');
+            sessionStorage.removeItem('reloading_expire_at');
+            return false;
+          }
+          return true;
+        };
+      
+        if (!isConnected) {
+          // 1) reloading-grace가 켜져 있으면 finalize 억제
+          if (isReloadingGraceLocal()) {
+            console.log('♻️ reloading grace active — finalize 억제');
+            return;
+          }
+      
+          // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+          const DEBOUNCE_MS = 1200;
+          const timer = setTimeout(() => {
+            if (cancelled) return;
+            if (!isConnected && !isReloadingGraceLocal()) {
+              console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+              finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+            } else {
+              console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+            }
+          }, DEBOUNCE_MS);
+      
+          return () => {
+            cancelled = true;
+            clearTimeout(timer);
+          };
+        }
+      }, [isConnected, finalizeDisconnection]);
 
   // WebRTC audio state (필요 시 사용)
   const { voiceSessionStatus, roleUserMapping, myUserId } = useWebRTC();
@@ -84,7 +127,7 @@ export default function CD3() {
           '당신은 자율 무기 시스템 TALOS 도입 이후 작전 효율성과 병사들의 변화 양상을 모두 지켜보고 있는 군 지휘관입니다. ' +
           '당신은 두 병사의 입장을 듣고, 군 전체가 나아갈 방향을 모색하려 합니다.';
         break;
-      case subtopic === '사람이 죽지 않는 경쟁':
+      case subtopic === '사람이 죽지 않는 전쟁':
         descImg = AWS_3;
         mainText =
           '당신은 본 회의를 진행하는 국가 인공지능 위원회의 대표입니다. ' +

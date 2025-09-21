@@ -320,7 +320,7 @@ export default function Game04() {
   const { state } = useLocation();
   const navigate   = useNavigate();
 
-  const { isConnected, reconnectAttempts, maxReconnectAttempts } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
   useWebSocketNavigation(navigate, { nextPagePath: '/game05', infoPath: '/game05' });
@@ -342,14 +342,53 @@ export default function Game04() {
     console.log('[Game04] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
 
+  // useEffect(() => {
+  //   if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+  //     console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+  //     alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
+  //     clearAllLocalStorageKeys();
+  //     navigate('/');
+  //   }
+  // }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
   useEffect(() => {
-    if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
-      console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
-      alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
-      clearAllLocalStorageKeys();
-      navigate('/');
-    }
-  }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
+        let cancelled = false;
+        const isReloadingGraceLocal = () => {
+          const flag = sessionStorage.getItem('reloading') === 'true';
+          const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+          if (!flag) return false;
+          if (Date.now() > expire) {
+            sessionStorage.removeItem('reloading');
+            sessionStorage.removeItem('reloading_expire_at');
+            return false;
+          }
+          return true;
+        };
+      
+        if (!isConnected) {
+          // 1) reloading-grace가 켜져 있으면 finalize 억제
+          if (isReloadingGraceLocal()) {
+            console.log('♻️ reloading grace active — finalize 억제');
+            return;
+          }
+      
+          // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+          const DEBOUNCE_MS = 1200;
+          const timer = setTimeout(() => {
+            if (cancelled) return;
+            if (!isConnected && !isReloadingGraceLocal()) {
+              console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+              finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+            } else {
+              console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+            }
+          }, DEBOUNCE_MS);
+      
+          return () => {
+            cancelled = true;
+            clearTimeout(timer);
+          };
+        }
+      }, [isConnected, finalizeDisconnection]);
   
 
   const myVote   = state?.agreement ?? null;

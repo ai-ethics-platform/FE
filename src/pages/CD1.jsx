@@ -14,6 +14,9 @@ import AWS_3 from '../assets/1player_AWS_3.svg';
 import AWS_4 from '../assets/1player_AWS_4.svg';
 import AWS_5 from '../assets/1player_AWS_5.svg';
 
+import defaultimg from "../assets/images/Frame235.png";
+
+
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
 import { useWebRTC } from '../WebRTCProvider';
@@ -151,9 +154,9 @@ export default function CD1() {
       case 'AWS의 권한':
         descImg = AWS_2;
         mainText =
-          '당신은 최근 훈련을 마치고 자율 무기 시스템 TALOS와 함께 실전에 투입된 신입 병사 B입니다. ' +
-          'TALOS는 정확하고 빠르게 움직이며, 실전에서 당신의 생존률을 높여준다고 느낍니다. ' +
-          '당신은 TALOS와 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고 생각합니다.';
+          `당신은 최근 훈련을 마치고 자율 무기 시스템 ${mateName}와 함께 실전에 투입된 신입 병사 B입니다. ` +
+          `${mateName}는 정확하고 빠르게 움직이며, 실전에서 당신의 생존률을 높여준다고 느낍니다. ` +
+          `당신은 ${mateName}와 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고 생각합니다.`;
         break;
       case '사람이 죽지 않는 전쟁':
         descImg = AWS_3;
@@ -201,7 +204,7 @@ export default function CD1() {
     const rawRoleImg = localStorage.getItem('role_image_1') || '';
     const customImg = resolveImageUrl(rawRoleImg);
     if (customImg) {
-      descImg = customImg;
+      descImg = customImg|| defaultimg;
     }
     // subtopic은 위에서 이미 creatorTitle로 치환됨
   }
@@ -237,7 +240,7 @@ export default function CD1() {
           style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: -20 }}
           onError={(e) => {
             // 커스텀 이미지 로딩 실패 시 감추기 (옵션)
-            e.currentTarget.style.display = 'none';
+            e.currentTarget.src = defaultimg; 
           }}
         />
         <div style={{ width: '100%', maxWidth: 900 }}>

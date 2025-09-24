@@ -1,4 +1,3 @@
-// 게스트 로그인 부분 nickname 수정해야됨 
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -31,17 +30,6 @@ const [category,setCategory] = useState();
 // custom 모드 여부 확인
 const isCustomMode = Boolean(localStorage.getItem('code'));
 const creatorTitle = localStorage.getItem('creatorTitle') || '커스텀 주제';
-
-// // allTopics 설정
-// const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
-
-// // 초기 토픽 결정
-// const initialTopic = isCustomMode 
-//   ? creatorTitle 
-//   : (location.state?.topic || defaultTopics[0]);
-
-// const initialIndex = allTopics.indexOf(initialTopic);
-
 
 
 // allTopics는 기존 그대로
@@ -327,6 +315,16 @@ const loadMyInfo = async () => {
   useEffect(() => {
     console.log('✅ myStatusIndex 변경됨:', myStatusIndex);
   }, [myStatusIndex]);
+  useEffect(() => {
+    if (participants.length === 3 && myPlayerId === hostUserId) {
+      const hasApiRoles = participants.every(p => p.role_id != null);
+      if (!hasApiRoles) {
+        console.log('useEffect 트리거: 역할 없음 → assignRoles 실행');
+        assignRoles();
+      }
+    }
+  }, [participants, myPlayerId, hostUserId]);
+  
   //  폴링 함수 - 방 상태를 주기적으로 확인
   const pollRoomStatus = async () => {
 
@@ -352,7 +350,29 @@ const loadMyInfo = async () => {
           }
         }
       }
-      
+       // 🆕 추가: 참가자 수 줄어들면 역할 초기화
+    if (room.participants.length < 3) {
+      console.log('참가자가 나갔습니다. 역할 초기화');
+      localStorage.removeItem('role1_user_id');
+      localStorage.removeItem('role2_user_id');
+      localStorage.removeItem('role3_user_id');
+      localStorage.removeItem('myrole_id');
+      localStorage.removeItem('host_id');
+
+      setAssignments([]);
+      setHasAssignedRoles(false);
+    }
+
+    // 🆕 추가: 다시 3명 복귀 + 역할 없음 → 방장이 재배정
+    if (
+      room.participants.length === 3 &&
+      !room.participants.every(p => p.role_id != null)
+    ) {
+      if (String(myPlayerId) === String(room.created_by)) {
+        console.log('3명 다시 모임 → 역할 재배정 시작');
+        assignRoles();
+      }
+    }
       // 4. 역할 배정 확인 및 적용
       const hasApiRoles = room.participants.length === 3 && 
       room.participants.every(p => p.role_id != null);
@@ -707,20 +727,19 @@ const loadMyInfo = async () => {
       }}>
         <GameFrame
           topic={allTopics[currentIndex]}
-          onLeftClick={() => {
-            const next = Math.max(currentIndex - 1, 0);
-            setCurrentIndex(next);
-            localStorage.setItem('category', allTopics[next]);
-          }}
-          onRightClick={() => {
-            const next = Math.min(currentIndex + 1, allTopics.length - 1);
-            setCurrentIndex(next);
-            localStorage.setItem('category', allTopics[next]);
-          }}
-          disableLeft={currentIndex === 0}
-          disableRight={currentIndex === allTopics.length - 1}
-          
-          hideArrows={false}
+          // onLeftClick={() => {
+          //   const next = Math.max(currentIndex - 1, 0);
+          //   setCurrentIndex(next);
+          //   localStorage.setItem('category', allTopics[next]);
+          // }}
+          // onRightClick={() => {
+          //   const next = Math.min(currentIndex + 1, allTopics.length - 1);
+          //   setCurrentIndex(next);
+          //   localStorage.setItem('category', allTopics[next]);
+          // }}
+          // disableLeft={currentIndex === 0}
+          // disableRight={currentIndex === allTopics.length - 1}
+           hideArrows={true}
 
         />
       </div>

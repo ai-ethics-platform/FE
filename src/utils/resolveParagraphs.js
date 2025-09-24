@@ -60,13 +60,20 @@ export function resolveParagraphs(rawParagraphs, mateName) {
     }
 
     if (category === '자율 무기 시스템') {
-      // 조사 붙은 경우
       text = text.replace(/자율\s*무기\s*시스템\s*\(AWS\)\(([^)]+)\)/g, (_, pattern) =>
         attachJosa(mateName, pattern)
       );
-    
+      text = text.replace(/ARIA\(([^)]+)\)/g, (_, pattern) =>
+        attachJosa(mateName, pattern)
+      );
+      text = text.replace(/TALOS\(([^)]+)\)/g, (_, pattern) =>
+        attachJosa(mateName, pattern)
+      );
+
       // 기본 치환
       text = text.replace(/자율\s*무기\s*시스템\s*\(AWS\)/g, mateName);
+      text = text.replace(/ARIA/g, mateName);
+      text = text.replace(/TALOS/g, mateName);
     }
     
 

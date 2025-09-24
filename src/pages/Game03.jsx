@@ -1,7 +1,6 @@
 // // pages/Game03.jsx
 // import React, { useState, useEffect, useRef } from 'react';
 // import { useNavigate } from 'react-router-dom';
-
 // import Layout from '../components/Layout';
 // import SelectCardToggle from '../components/SelectButton';
 // import Continue from '../components/Continue';
@@ -12,8 +11,9 @@
 // import { useWebSocket } from '../WebSocketProvider';
 // import { useWebRTC } from '../WebRTCProvider';
 // import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
-// import { FontStyles,Colors } from '../components/styleConstants';
+// import { FontStyles, Colors } from '../components/styleConstants';
 // import { clearAllLocalStorageKeys } from '../utils/storage';
+
 // const CARD_W = 640;
 // const CARD_H = 170;
 // const CIRCLE = 16;
@@ -28,13 +28,18 @@
 //   const roleId        = Number(localStorage.getItem('myrole_id'));
 //   const roomCode      = localStorage.getItem('room_code') ?? '';
 //   const category      = localStorage.getItem('category') ?? '안드로이드';
-//   const subtopic      = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
 //   const mode          = 'neutral';
 //   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
 //   const [openProfile, setOpenProfile] = useState(null);
 //   const isAWS = category === '자율 무기 시스템';
-  
-//   // 역할 이름 가져오기  
+
+//   //  커스텀 모드 여부
+//   const isCustomMode = !!localStorage.getItem('code');
+//   const rawSubtopic = localStorage.getItem('subtopic');
+//   const creatorTitle = localStorage.getItem('creatorTitle') || '';
+//   const subtopic = isCustomMode ? creatorTitle : (rawSubtopic || '');
+
+//   // -------- 안드로이드 역할명 --------
 //   const getRoleNameBySubtopicAndroid = (subtopic, roleId) => {
 //     switch (subtopic) {
 //       case 'AI의 개인 정보 수집':
@@ -52,9 +57,9 @@
 //       default:
 //         return '';
 //     }
-//   }
+//   };
 
-//   // -------- AWS 역할명(카테고리: 자율 무기 시스템) --------
+//   // -------- AWS 역할명 --------
 //   const getRoleNameBySubtopicAWS = (subtopic, roleId) => {
 //     const idx = Math.max(0, Math.min(2, (roleId ?? 1) - 1)); // 1→0, 2→1, 3→2
 //     const map = {
@@ -68,7 +73,7 @@
 //     return Array.isArray(arr) ? arr[idx] : '';
 //   };
 
-//   // -------- 질문/라벨(안드로이드 기존) --------
+//   // -------- 질문/라벨(안드로이드 기본) --------
 //   const subtopicMapAndroid = {
 //     'AI의 개인 정보 수집': {
 //       question: '24시간 개인정보 수집 업데이트에 동의하시겠습니까?',
@@ -117,14 +122,46 @@
 //     },
 //   };
 
-//   // 최종 역할명/질문/라벨 선택
-//   const roleName = isAWS
+//   // 기본(비커스텀) 역할명/질문/라벨
+//   const defaultRoleName = isAWS
 //     ? getRoleNameBySubtopicAWS(subtopic, roleId)
 //     : getRoleNameBySubtopicAndroid(subtopic, roleId);
-
 //   const subtopicMap = isAWS ? subtopicMapAWS : subtopicMapAndroid;
 
+//   //  커스텀 모드 값들 (질문/라벨/역할명/이미지)
+//   const char1 = (localStorage.getItem('char1') || '').trim();
+//   const char2 = (localStorage.getItem('char2') || '').trim();
+//   const char3 = (localStorage.getItem('char3') || '').trim();
+//   const customRoleName = roleId === 1 ? char1 : roleId === 2 ? char2 : char3;
+
+//   const customQuestion = (localStorage.getItem('question') || '').trim();
+//   const customAgree = (localStorage.getItem('agree_label') || '').trim();
+//   const customDisagree = (localStorage.getItem('disagree_label') || '').trim();
+
+//   // 최종 표시 텍스트
+//   const roleName = isCustomMode ? (customRoleName || defaultRoleName) : defaultRoleName;
+//   const finalQuestion = isCustomMode
+//     ? customQuestion
+//     : (subtopicMap[subtopic]?.question || '');
+//   const finalAgree = isCustomMode
+//     ? (customAgree || '동의')
+//     : (subtopicMap[subtopic]?.labels.agree || '동의');
+//   const finalDisagree = isCustomMode
+//     ? (customDisagree || '비동의')
+//     : (subtopicMap[subtopic]?.labels.disagree || '비동의');
+
+//   // 이미지 세팅
 //   const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
+//   const resolveImageUrl = (raw) => {
+//     if (!raw || raw === '-' || String(raw).trim() === '') return null;
+//     const u = String(raw).trim();
+//     if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
+//     const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
+//     if (!base) return u;
+//     return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
+//   };
+//   const customImage = resolveImageUrl(localStorage.getItem('dilemma_image_3') || '');
+//   const displayImages = isCustomMode ? (customImage ? [customImage] : []) : comicImages;
 
 //   // 상태
 //   const [step, setStep]         = useState(1);
@@ -135,25 +172,23 @@
 
 //   const [round, setRound] = useState(1);
 //   useEffect(() => {
-//     const completed  = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-//     const calculated = completed.length + 1;
-//     setRound(calculated);
-//     localStorage.setItem('currentRound', calculated.toString());
-//     return () => clearTimeout(pollingRef.current);
+//     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+//     const nextRound = completed.length + 1;
+//     setRound(nextRound);
+//     localStorage.setItem('currentRound', String(nextRound));
 //   }, []);
 
-//   const { isConnected, sessionId, sendMessage } = useWebSocket();
+//   const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
 //   const { isInitialized: webrtcInitialized } = useWebRTC();
 //   const { isHost, sendNextPage } = useHostActions();
 //   useWebSocketNavigation(nav, { nextPagePath: '/game04', infoPath: '/game04' });
-  
-//  // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
+
+//   // 연결 상태 관리
 //   const [connectionStatus, setConnectionStatus] = useState({
 //     websocket: true,
 //     webrtc: true,
 //     ready: true
 //   });
-  
 //   useEffect(() => {
 //     const newStatus = {
 //       websocket: isConnected,
@@ -163,15 +198,54 @@
 //     setConnectionStatus(newStatus);
 //     console.log('🔧 [Game03] 연결 상태 업데이트:', newStatus);
 //   }, [isConnected, webrtcInitialized]);
-//     //  useEffect(() => {
-//     //     if (!isConnected) {
-//     //       console.warn('❌ WebSocket 연결 끊김 감지됨');
-//     //       alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
-//     //       clearAllLocalStorageKeys();     
-//     //       nav('/');
-//     //     }
-//     //   }, [isConnected]);
 
+//   useEffect(() => {
+//     if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+//       console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+//       alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
+//       clearAllLocalStorageKeys();
+//       navigate('/');
+//     }
+//   }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
+//   useEffect(() => {
+//         let cancelled = false;
+//         const isReloadingGraceLocal = () => {
+//           const flag = sessionStorage.getItem('reloading') === 'true';
+//           const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+//           if (!flag) return false;
+//           if (Date.now() > expire) {
+//             sessionStorage.removeItem('reloading');
+//             sessionStorage.removeItem('reloading_expire_at');
+//             return false;
+//           }
+//           return true;
+//         };
+      
+//         if (!isConnected) {
+//           // 1) reloading-grace가 켜져 있으면 finalize 억제
+//           if (isReloadingGraceLocal()) {
+//             console.log('♻️ reloading grace active — finalize 억제');
+//             return;
+//           }
+      
+//           // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+//           const DEBOUNCE_MS = 1200;
+//           const timer = setTimeout(() => {
+//             if (cancelled) return;
+//             if (!isConnected && !isReloadingGraceLocal()) {
+//               console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+//               finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+//             } else {
+//               console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+//             }
+//           }, DEBOUNCE_MS);
+      
+//           return () => {
+//             cancelled = true;
+//             clearTimeout(timer);
+//           };
+//         }
+//       }, [isConnected, finalizeDisconnection]);
 //   // step 1: 개인 동의/비동의 POST 후 consensus 폴링 시작
 //   const handleSubmitChoice = async () => {
 //     const choiceInt = agree === 'agree' ? 1 : 2;
@@ -215,42 +289,56 @@
 //         { round_number: round, confidence: conf, subtopic: subtopic }
 //       );
 //       nav('/game04');
-//       } catch (err) {
+//     } catch (err) {
 //       console.error('확신 전송 중 오류:', err);
 //     }
 //   };
+
 //   const handleBackClick = () => {
 //     nav('/game02'); 
 //   };
+
 //   return (
-//     <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile}  onBackClick={handleBackClick} >
-      
+//     <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile} onBackClick={handleBackClick}>
 //       {step === 1 && (
 //         <>
-//           <div style={{ marginTop: 60 ,display:'flex', justifyContent:'center', gap:10 }}>
-//             {comicImages.map((img, idx) => (
-//               <img key={idx} src={img} alt={`설명 이미지 ${idx+1}`} style={{ width:250, height:139,  }} />
+//           <div style={{ marginTop: 60, display: 'flex', justifyContent: 'center', gap: 10 }}>
+//             {displayImages.map((img, idx) => (
+//               <img key={idx} src={img} alt={`설명 이미지 ${idx + 1}`} style={{ width: 250, height: 139 }} />
 //             ))}
 //           </div>
 
-//           <Card width={936} height={216} extraTop={30} >
-//           <p style={title}>
-//           당신은 {roleName}입니다.
-//           {subtopicMap[subtopic]?.question && (
-//             <>
-//               <br />
-//               {subtopicMap[subtopic].question}
-//             </>
-//           )}
-//         </p>
-//             <div style={{ display:'flex', gap:24 }}>
-//               <SelectCardToggle   label={subtopicMap[subtopic]?.labels.agree || '동의'}  selected={agree==='agree'} onClick={()=>setAgree('agree')} width={330} height={62} />
-//               <SelectCardToggle   label={subtopicMap[subtopic]?.labels.disagree || '비동의'} selected={agree==='disagree'} onClick={()=>setAgree('disagree')} width={330} height={62} />
+//           <Card width={936} height={216} extraTop={30}>
+//             <p style={title}>
+//               당신은 {roleName}입니다.
+//               {finalQuestion && (
+//                 <>
+//                   <br />
+//                   {finalQuestion}
+//                 </>
+//               )}
+//             </p>
+//             <div style={{ display: 'flex', gap: 24 }}>
+//               <SelectCardToggle
+//                 label={finalAgree}
+//                 selected={agree === 'agree'}
+//                 onClick={() => setAgree('agree')}
+//                 width={330}
+//                 height={62}
+//               />
+//               <SelectCardToggle
+//                 label={finalDisagree}
+//                 selected={agree === 'disagree'}
+//                 onClick={() => setAgree('disagree')}
+//                 width={330}
+//                 height={62}
+//               />
 //             </div>
 //           </Card>
-//           <div style={{ marginTop:40, textAlign:'center' }}>
+
+//           <div style={{ marginTop: 40, textAlign: 'center' }}>
 //             {isWaiting
-//               ? <p>다른 플레이어 선택을 기다리는 중…</p>
+//               ? <p style={{...FontStyles.body}}>다른 플레이어 선택을 기다리는 중…</p>
 //               : <Continue width={264} height={72} step={1} disabled={!agree} onClick={handleSubmitChoice} />
 //             }
 //           </div>
@@ -259,61 +347,58 @@
 
 //       {step === 2 && (
 //         <>
-//           <Card width={936} height={216} extraTop={150} >
+//           <Card width={936} height={216} extraTop={150}>
 //             <p style={title}>당신의 선택에 얼마나 확신을 가지고 있나요?</p>
-//                        <div style={{ position: 'relative', width: '80%', minWidth: 300}}>
-//                        <div
-//                          style={{
-//                            position: 'absolute',
-//                            top: 8,
-//                            left: 0,
-//                            right: 0,
-//                            height: LINE,
-//                            background: Colors.grey03,
-//                            zIndex: 0, // 가장 아래
-//                          }}
-//                        />
-           
-//                        <div
-//                          style={{
-//                            position: 'absolute',
-//                            top: 8,
-//                            left: 0,
-//                            width: `${pct}%`,
-//                            height: LINE,
-//                            background: Colors.brandPrimary,
-//                            zIndex: 1, // 중간
-//                          }}
-//                        />
-           
-//                        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
-//                          {[1, 2, 3, 4, 5].map((n) => {
-//                            const isFilled = n <= conf;
-           
-//                            return (
-//                              <div key={n} style={{ textAlign: 'center' }}>
-//                                <div
-//                                  onClick={() => setConf(n)}
-//                                  style={{
-//                                    width: CIRCLE,
-//                                    height: CIRCLE,
-//                                    borderRadius: '50%',
-//                                    background: isFilled ? Colors.brandPrimary : Colors.grey03,
-//                                    cursor: 'pointer',
-//                                    margin: '0 auto',
-//                                  }}
-//                                />
-//                                <span style={{ ...FontStyles.caption, color: Colors.grey06, marginTop: 4, display: 'inline-block' }}>
-//                                  {n}
-//                                </span>
-//                              </div>
-//                            );
-//                          })}
-//                      </div>
-//                      </div>
+//             <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
+//               <div
+//                 style={{
+//                   position: 'absolute',
+//                   top: 8,
+//                   left: 0,
+//                   right: 0,
+//                   height: LINE,
+//                   background: Colors.grey03,
+//                   zIndex: 0,
+//                 }}
+//               />
+//               <div
+//                 style={{
+//                   position: 'absolute',
+//                   top: 8,
+//                   left: 0,
+//                   width: `${pct}%`,
+//                   height: LINE,
+//                   background: Colors.brandPrimary,
+//                   zIndex: 1,
+//                 }}
+//               />
+//               <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
+//                 {[1, 2, 3, 4, 5].map((n) => {
+//                   const isFilled = n <= conf;
+//                   return (
+//                     <div key={n} style={{ textAlign: 'center' }}>
+//                       <div
+//                         onClick={() => setConf(n)}
+//                         style={{
+//                           width: CIRCLE,
+//                           height: CIRCLE,
+//                           borderRadius: '50%',
+//                           background: isFilled ? Colors.brandPrimary : Colors.grey03,
+//                           cursor: 'pointer',
+//                           margin: '0 auto',
+//                         }}
+//                       />
+//                       <span style={{ ...FontStyles.caption, color: Colors.grey06, marginTop: 4, display: 'inline-block' }}>
+//                         {n}
+//                       </span>
+//                     </div>
+//                   );
+//                 })}
+//               </div>
+//             </div>
 //           </Card>
-//           <div style={{ marginTop:80 }}>
-//             <Continue width={264} height={72} step={2} disabled={conf===0} onClick={handleSubmitConfidence} />
+//           <div style={{ marginTop: 80 }}>
+//             <Continue width={264} height={72} step={2} disabled={conf === 0} onClick={handleSubmitConfidence} />
 //           </div>
 //         </>
 //       )}
@@ -321,20 +406,31 @@
 //   );
 // }
 
-// function Card({ children, extraTop=0, width=CARD_W, height=CARD_H, style={} }) {
+// function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style = {} }) {
 //   return (
-//     <div style={{ width, height, marginTop:extraTop, position:'relative', ...style }}>
-//       <img src={contentBoxFrame} alt="" style={{ width:'100%', height:'100%', objectFit:'fill' }} />
-//       <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:24, padding:'0 24px' }}>
+//     <div style={{ width, height, marginTop: extraTop, position: 'relative', ...style }}>
+//       <img src={contentBoxFrame} alt="" style={{ width: '100%', height: '100%', objectFit: 'fill' }} />
+//       <div
+//         style={{
+//           position: 'absolute',
+//           inset: 0,
+//           display: 'flex',
+//           flexDirection: 'column',
+//           justifyContent: 'center',
+//           alignItems: 'center',
+//           gap: 24,
+//           padding: '0 24px',
+//         }}
+//       >
 //         {children}
 //       </div>
 //     </div>
 //   );
 // }
 
-// const title = { ...FontStyles.title, color:Colors.grey06, textAlign:'center' };
+// const title = { ...FontStyles.title, color: Colors.grey06, textAlign: 'center' };
 
-
+// 디폴트 이미지 수정 
 // pages/Game03.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -350,7 +446,7 @@ import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { FontStyles, Colors } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
-
+import defaultImg from '../assets/images/default.png';
 const CARD_W = 640;
 const CARD_H = 170;
 const CIRCLE = 16;
@@ -498,8 +594,9 @@ export default function Game03() {
     return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
   };
   const customImage = resolveImageUrl(localStorage.getItem('dilemma_image_3') || '');
-  const displayImages = isCustomMode ? (customImage ? [customImage] : []) : comicImages;
-
+  const displayImages = isCustomMode
+    ? [customImage || defaultImg]   // ✅ 없으면 defaultImg
+    : comicImages;
   // 상태
   const [step, setStep]         = useState(1);
   const [agree, setAgree]       = useState(null);
@@ -641,7 +738,7 @@ export default function Game03() {
         <>
           <div style={{ marginTop: 60, display: 'flex', justifyContent: 'center', gap: 10 }}>
             {displayImages.map((img, idx) => (
-              <img key={idx} src={img} alt={`설명 이미지 ${idx + 1}`} style={{ width: 250, height: 139 }} />
+              <img key={idx} src={img} alt={`설명 이미지 ${idx + 1}`} style={{ width: 250, height: 139 }}     onError={(e) => { e.currentTarget.src = defaultImg; }} />
             ))}
           </div>
 
@@ -675,7 +772,7 @@ export default function Game03() {
 
           <div style={{ marginTop: 40, textAlign: 'center' }}>
             {isWaiting
-              ? <p>다른 플레이어 선택을 기다리는 중…</p>
+              ? <p style={{...FontStyles.body}}>다른 플레이어 선택을 기다리는 중…</p>
               : <Continue width={264} height={72} step={1} disabled={!agree} onClick={handleSubmitChoice} />
             }
           </div>

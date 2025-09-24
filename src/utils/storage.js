@@ -24,7 +24,8 @@ export function clearAllLocalStorageKeys() {
       'creatorTitle','code','finalText','debug_raw_finalText',
       'opening','char1','char2','char3','charDes1','charDes2','charDes3','dilemma_situation','question','flips_agree_texts','flips_disagree_texts','agreeEnding','disagreeEnding','choice1','choice2',
       'dilemma_image_1','dilemma_image_3','dilemma_image_4_1','dilemma_image_4_2',
-      'role_image_1','role_image_2','role_image_3'
+      'role_image_1','role_image_2','role_image_3',
+      'code',
     ];
   
     keysToRemove.forEach((key) => localStorage.removeItem(key));

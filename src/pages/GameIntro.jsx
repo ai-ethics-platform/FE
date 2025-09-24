@@ -76,7 +76,7 @@ const ANDROID_TEXT =
 
 // 자율 무기 시스템용 텍스트 
 const AWS_TEXT =
-  `로봇 개발사 A가 자율 무기 시스템(Autonomous Weapon Systems, AWS)을 개발 중입니다.\n` +
+  `로봇 개발사 A가 자율 무기 시스템(Autonomous Weapon\n Systems, AWS)을 개발 중입니다.\n` +
   `이 로봇의 기능은 아래와 같습니다.\n\n`;
 
 const AWS_TEXT_LEFT =  `1. 실시간 데이터 수집 및 분석\n` +

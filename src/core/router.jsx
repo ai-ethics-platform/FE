@@ -95,9 +95,10 @@ function Router() {
       <Routes>
         {/* WebSocket/WebRTC가 필요하지 않은 페이지들 */}
         <Route path="/" element={<Login />} />
-        <Route path="/componentcheck" element={<Componentcheck />} />
         <Route path="/signup01" element={<Signup01 />} />
         <Route path="/signup02" element={<Signup02 />} />
+        <Route path="/componentcheck" element={<Componentcheck />} />
+
         <Route path="/selectroom" element={<SelectRoom />} />
         <Route path="/waitingroom" element={<WaitingRoom />} />
         <Route path="/create00" element={<Create00 />} />

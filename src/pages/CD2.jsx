@@ -20,6 +20,7 @@ import AWS_3 from "../assets/2player_AWS_3.svg";
 import AWS_4 from "../assets/2player_AWS_4.svg";
 import AWS_5 from "../assets/2player_AWS_5.svg";
 import { useWebSocket } from '../WebSocketProvider';
+import defaultimg from "../assets/images/Frame235.png";
 
 import axiosInstance from '../api/axiosInstance';
 
@@ -156,7 +157,7 @@ export default function CD2() {
         descImg = AWS_2;
         mainText =
           '당신은 수년간 작전을 수행해 온 베테랑 병사 A입니다. ' +
-          '자율 무기 시스템 TALOS는 전장에서 병사보다 빠르고 정확하지만, ' +
+          `자율 무기 시스템 ${mateName}는 전장에서 병사보다 빠르고 정확하지만,` +
           '그로 인해 병사들이 판단하지 않는 습관에 빠지고 있다고 느낍니다.';
         break;
 
@@ -211,7 +212,7 @@ export default function CD2() {
     const rawRoleImg = localStorage.getItem('role_image_2') || '';
     const customImg = resolveImageUrl(rawRoleImg);
     if (customImg) {
-      descImg = customImg;
+      descImg = customImg||defaultimg;
     }
     // subtopic은 위에서 creatorTitle로 이미 치환됨
   }
@@ -245,7 +246,7 @@ export default function CD2() {
             style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: -20 }}
             onError={(e) => {
               // 커스텀 이미지 로딩 실패 시 감추기 (옵션)
-              e.currentTarget.style.display = 'none';
+            e.currentTarget.src = defaultimg; 
             }}
           />
           <div style={{ width: '100%', maxWidth: 900 }}>

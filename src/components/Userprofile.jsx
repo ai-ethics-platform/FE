@@ -23,10 +23,10 @@ import profile3MicOn from '../assets/3playerprofilemikeon.svg';
 
 // 생성 모드용 이미지
 import frame235 from '../assets/creatorprofiledefault.svg';
-
+import defaultimg from "../assets/images/Frame235.png";
 import crownIcon from '../assets/crown.svg';
 import isMeIcon from '../assets/speaking.svg';
-
+import axiosInstance from "../api/axiosInstance";
 const colorMap = {
   '1P': Colors.player1P,
   '2P': Colors.player2P,
@@ -66,6 +66,7 @@ export default function UserProfile({
   const hasSubtopic = Boolean(subtopic);
   const roleNum = parseInt(player.replace('P', ''), 10);
   let mappedDesc = '';
+
 
   // 1) description prop이 있으면 우선 사용
   if (description && description.trim() !== '') {
@@ -126,44 +127,61 @@ export default function UserProfile({
   // 디테일 여부: create 모드가 아닐 때만 description 표시
   const isDetailed = !nodescription && mappedDesc !== '';
   const finalDesc = isDetailed ? mappedDesc : '';
+// 로컬 읽기(따옴표 JSON 저장 대비)
+const resolveImageSrc = (raw) => {
+  if (!raw || raw === '-' || String(raw).trim() === '') return null;
+  const u = String(raw).trim();
+  if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
+  const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
+  if (!base) return u;
+  return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
+};
+const readLocalUrl = (key) => {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  let val = raw.trim();
+  try {
+    const parsed = JSON.parse(val);
+    if (typeof parsed === 'string') val = parsed.trim();
+  } catch (_) {}
+  return val || null;
+};
 
-  // // 아이콘 결정
-  // const getIcon = () => {
-  //   // create 모드일 때는 모든 캐릭터에 frame235.png 사용
-  //   if (create) {
-  //     return frame235;
-  //   }
-  //   // 기존 로직
-  //   if (isDetailed) return isSpeaking ? profileMicOnMap[player] : profileMap[player];
-  //   return isSpeaking ? iconMicOnMap[player] : iconMap[player];
-  // };
+const customRoleImageMap = {
+  '1P': readLocalUrl('role_image_1'),
+  '2P': readLocalUrl('role_image_2'),
+  '3P': readLocalUrl('role_image_3'),
+};
 
-  // === getIcon 함수 수정 ===
 const getIcon = () => {
-  // create 모드일 때는 모든 캐릭터에 frame235 사용
-  if (create) {
-    return frame235;
+  if (create) return frame235;
+
+  // ✅ 커스텀 모드면 role_image_* 무조건 우선 (nodescription 여부 상관 X)
+  if (isCustomMode) {
+    const customImg = customRoleImageMap[player];
+    if (customImg) {
+      return resolveImageSrc(customImg);
+    } else {
+      // 커스텀 모드인데 로컬 이미지 없음 → defaultimg 강제 사용
+      return defaultimg;
+    }    
   }
 
-  if (isDetailed) {
-    // 🔹 2P일 때 subtopic별로 분기
+  // 상세 아이콘(프로필) 로직
+  if (!nodescription && mappedDesc !== '') {
     if (player === '2P') {
       if (subtopic === 'AI의 개인 정보 수집' || subtopic === '안드로이드의 감정 표현') {
-        // 기존 2P 프로필 그대로
         return isSpeaking ? profile2MicOn : profile2;
       } else {
-        // 나머지 subtopic은 디폴트 버전 사용
         return isSpeaking ? profile2Micon_default : profile2_default;
       }
     }
-    // 1P, 3P는 기존 로직 유지
     return isSpeaking ? profileMicOnMap[player] : profileMap[player];
   }
 
-  // description 없는 경우 → 기본 아이콘 사용
+  // 기본(동그란) 아이콘
   return isSpeaking ? iconMicOnMap[player] : iconMap[player];
 };
-
   const icon = getIcon();
 
   const { style: externalStyle, ...divProps } = rest;
@@ -205,6 +223,7 @@ const getIcon = () => {
           src={icon}
           alt={`${player} 아이콘`}
           style={{ width: 70, height: 70, objectFit: 'cover', borderRadius: '50%' }}
+          onError={(e) => { e.currentTarget.src = defaultimg; }} 
         />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 12 }}>

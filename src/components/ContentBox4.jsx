@@ -47,7 +47,7 @@ export default function ContentBox4({ text, leftText = false, leftTextContent = 
           textAlign: leftText ? 'left' : 'center', // 정렬 변경
           wordBreak: 'keep-all',
           whiteSpace: 'pre-line',
-          maxWidth: 750,
+          maxWidth: 1000,
           padding: '40px 60px',
           zIndex: 1,
         }}
@@ -67,7 +67,7 @@ export default function ContentBox4({ text, leftText = false, leftTextContent = 
                 textAlign: 'left',
                 marginLeft: 40,   
                 marginTop: 0,    
-                maxWidth: 600,    
+                maxWidth: 700,    
                 }}
             >
                 {leftTypedText}

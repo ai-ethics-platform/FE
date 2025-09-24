@@ -14,6 +14,7 @@ import AWS_2 from '../assets/3player_AWS_2.svg';
 import AWS_3 from '../assets/3player_AWS_3.svg';
 import AWS_4 from '../assets/3player_AWS_4.svg';
 import AWS_5 from '../assets/3player_AWS_5.svg';
+import defaultimg from "../assets/images/Frame235.png";
 
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
@@ -124,7 +125,7 @@ export default function CD3() {
       case subtopic === 'AWS의 권한':
         descImg = AWS_2;
         mainText =
-          '당신은 자율 무기 시스템 TALOS 도입 이후 작전 효율성과 병사들의 변화 양상을 모두 지켜보고 있는 군 지휘관입니다. ' +
+          `당신은 자율 무기 시스템 ${mateName} 도입 이후 작전 효율성과 병사들의 변화 양상을 모두 지켜보고 있는 군 지휘관입니다. ` +
           '당신은 두 병사의 입장을 듣고, 군 전체가 나아갈 방향을 모색하려 합니다.';
         break;
       case subtopic === '사람이 죽지 않는 전쟁':
@@ -173,7 +174,7 @@ export default function CD3() {
     const rawRoleImg = localStorage.getItem('role_image_3') || '';
     const customImg = resolveImageUrl(rawRoleImg);
     if (customImg) {
-      descImg = customImg;
+      descImg = customImg||defaultimg;
     }
     // subtopic은 위에서 creatorTitle로 이미 치환됨
   }
@@ -202,7 +203,7 @@ export default function CD3() {
           style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: -20 }}
           onError={(e) => {
             // 커스텀 이미지 로딩 실패 시 감추기 (옵션)
-            e.currentTarget.style.display = 'none';
+            e.currentTarget.src = defaultimg; 
           }}
         />
         <div style={{ width: '100%', maxWidth: 900 }}>

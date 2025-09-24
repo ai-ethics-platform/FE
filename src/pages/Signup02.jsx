@@ -204,13 +204,20 @@ useEffect(() => {
       "data_consent": true,
       "voice_consent": true
     };
-    console.log('데이터:', requestBody);  
+    //console.log('데이터:', requestBody);  
     try {
       const response = await axios.post('https://dilemmai.org/auth/signup', requestBody, {
         headers: { 'Content-Type': 'application/json' },
       });
-      console.log('회원가입 성공:', response.data);
-      navigate('/');
+      //console.log('회원가입 성공:', response.data);
+      const codeToUse =  localStorage.getItem('code');
+
+      if (codeToUse) {
+        navigate('/customroom');
+      } else {
+        navigate('/');
+      }
+      //navigate('/');
     } catch (error) {
       console.error('회원가입 실패:', error.response?.data || error.message);
       alert(`회원가입 오류: ${JSON.stringify(error.response?.data?.detail || '')}`);

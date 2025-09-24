@@ -28,21 +28,34 @@ export default function OutPopup({ onClose }) {
       console.log("🚪 방 나가기 응답:", res.data);
   
       alert(message); // 사용자에게 메시지 표시
-      clearAllLocalStorageKeys();  // 로컬 스토리지 정리 함수 호출
+      //clearAllLocalStorageKeys();  // 로컬 스토리지 정리 함수 호출
 
       //  로컬 스토리지 정리
       localStorage.removeItem("room_code");
       localStorage.removeItem("category");
       localStorage.removeItem("subtopic");
-  
-      //  경로 이동 처리
-      if (requires_lobby_redirect || room_deleted) {
-        navigate("/selectroom");
-      } else if (game_started) {
-        navigate("/");  // 게임 중 나간 경우 처리용 페이지가 있다면
-      } else {
-        navigate("/selectroom");  // 대기실에서 나간 경우
-      }
+      localStorage.removeItem('myrole_id');
+      localStorage.removeItem('host_id');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('role1_user_id');
+      localStorage.removeItem('role2_user_id');
+      localStorage.removeItem('role3_user_id');
+      localStorage.removeItem('creatorTitle');
+      localStorage.removeItem('nickname');
+
+     //  code 값 확인
+     const code = localStorage.getItem("code");
+
+     //  경로 이동 처리
+     if (code) {
+       navigate("/customroom");   // code가 있으면 customroom
+     } else if (requires_lobby_redirect || room_deleted) {
+       navigate("/selectroom");
+     } else if (game_started) {
+       navigate("/selectroom");  // 게임 중 나간 경우 처리용 페이지가 있다면
+     } else {
+       navigate("/selectroom");  // 대기실에서 나간 경우
+     }
     } catch (err) {
       console.error("❌ 방 나가기 실패:", err);
       alert("방 나가기 실패: " +  err.response.data);

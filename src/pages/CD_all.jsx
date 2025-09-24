@@ -227,7 +227,10 @@ export default function Editor02() {
                   src={image || (isDefault ? create02Image : '')}
                   alt={`역할 이미지 ${idx + 1}`}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
+                  onError={(e) => {
+                    e.currentTarget.src = create02Image;  // 깨지면 기본 이미지로 교체
+                  }}
+               />
               </div>
             ))}
           </div>

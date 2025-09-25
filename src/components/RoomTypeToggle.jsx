@@ -10,9 +10,9 @@ export default function RoomTypeToggle({ isPublic, setIsPublic }) {
     <div
       style={{
         display: 'flex',
-        width: 264,
+        width: 260,
         height: 50,
-        border: '1.5px solid #0D575C',
+        border: '1.2px solid #0D575C',
         overflow: 'hidden',
         marginBottom: 32,
         gap: 0,
@@ -26,7 +26,8 @@ export default function RoomTypeToggle({ isPublic, setIsPublic }) {
         <img
           src={isPublic ? privateInactive : privateActive}
           alt="비공개 방"
-          style={{ width: '100%', height: '100%', display: 'block'  }}
+          style={{ width: '100%', height: '100%', display: 'block',objectFit: 'cover', objectPosition: 'center',  }}
+        
         />
       </div>
       <div

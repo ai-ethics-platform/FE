@@ -485,12 +485,12 @@ export const WebSocketProvider = ({ children }) => {
           }
         };
         sendMessage(initPayload);
-        pingIntervalRef.current = setInterval(() => {
-          if (ws.current?.readyState === WebSocket.OPEN) {
-            ws.current.send(JSON.stringify({ type: 'ping' }));
-            console.log(`🏓 ping 전송`);
-          }
-        }, 30000);
+        // pingIntervalRef.current = setInterval(() => {
+        //   if (ws.current?.readyState === WebSocket.OPEN) {
+        //     ws.current.send(JSON.stringify({ type: 'ping' }));
+        //     console.log(`🏓 ping 전송`);
+        //   }
+        // }, 30000);
       };
 
       socket.onmessage = (event) => {

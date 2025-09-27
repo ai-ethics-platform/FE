@@ -7,18 +7,39 @@ import { useNavigate } from 'react-router-dom';
 export default function ResultPopup({ onClose }) {
   const navigate = useNavigate();
 
+  // const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+
+  // const allRequired = [
+  //   'AI의 개인 정보 수집',
+  //   '아이들을 위한 서비스',
+  //   '지구, 인간, AI',
+  // ];
+
+  // const optionalTopics = [
+  //   { label: '안드로이드의 감정 표현', value: '안드로이드의 감정 표현' },
+  //   { label: '설명 가능한 AI', value: '설명 가능한 AI' },
+  // ];
+
+  // const unplayedOptions = optionalTopics.filter(
+  //   (opt) => !completedTopics.includes(opt.value)
+  // );
   const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+  const category = localStorage.getItem('category') ?? '';
 
-  const allRequired = [
-    'AI의 개인 정보 수집',
-    '아이들을 위한 서비스',
-    '지구, 인간, AI',
-  ];
+  const allRequired = category === '자율 무기 시스템'
+    ? ['AI 알고리즘 공개', '사람이 죽지 않는 전쟁', 'AWS 규제']
+    : ['AI의 개인 정보 수집', '아이들을 위한 서비스', '지구, 인간, AI'];
 
-  const optionalTopics = [
-    { label: '안드로이드의 감정 표현', value: '안드로이드의 감정 표현' },
-    { label: '설명 가능한 AI', value: '설명 가능한 AI' },
-  ];
+  const optionalTopics =
+    category === '자율 무기 시스템'
+      ? [
+          { label: 'AWS의 권한', value: 'AWS의 권한' },
+          { label: 'AI의 권리와 책임', value: 'AI의 권리와 책임' },
+        ]
+      : [
+          { label: '안드로이드의 감정 표현', value: '안드로이드의 감정 표현' },
+          { label: '설명 가능한 AI', value: '설명 가능한 AI' },
+        ];
 
   const unplayedOptions = optionalTopics.filter(
     (opt) => !completedTopics.includes(opt.value)

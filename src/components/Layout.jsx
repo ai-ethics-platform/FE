@@ -13,6 +13,8 @@ import CharacterPopup2 from '../components/CharacterPopUp';
 import CharacterPopup3 from '../components/CharacterPopUp';
 import closeIcon from "../assets/close.svg";
 import { FontStyles,Colors } from './styleConstants';
+import ExtraPopup from '../components/ExtraPopup1'; // ✅ 여기 import 필요
+
 export default function Layout({
   subtopic ,
   onProfileClick,
@@ -23,6 +25,8 @@ export default function Layout({
   showBackButton = true,
   allowScroll = false,
   hostmessage = false,   
+
+  popupStep = null,   // ✅ 추가
 
 }) {
   // Zoom for responsive scaling
@@ -198,6 +202,7 @@ export default function Layout({
         </div>
       )}
       <Background bgIndex={2}>
+     
       {showBackButton && ( 
           <div
             style={{
@@ -235,7 +240,26 @@ export default function Layout({
             />
           </div>
         )}
-
+{/* {popupStep && (
+  <div
+    style={{
+      position: 'fixed',
+      zIndex: 3000,
+      ...(popupStep === 2
+        ? {
+          top: '68%', 
+          right:'13%'     
+          }
+        : {
+            top: '30%',      
+            right: 10,
+          }),
+    }}
+  >
+    <ExtraPopup mode={popupStep}
+    />
+  </div>
+)} */}
         <style>{`
           html, body, #root {
             margin: 0;
@@ -313,7 +337,6 @@ export default function Layout({
         <div className="layout-viewport" style={viewportOverride}>
         {!nodescription && (
           <div className="profile-hint">
-            프로필을 선택하면 <br /> 역할 설명을 볼 수 있습니다
           </div>
         )}
           <aside className="layout-sidebar">

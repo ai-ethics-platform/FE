@@ -152,16 +152,50 @@ export default function Game04() {
           setSelectedMode('disagree');
         }
 
-      //  만장일치 여부 저장
+   
+      //  unanimousCounters = {
+      //   "unanimousCount": 2,
+      //   "nonUnanimousCount": 1
+      // }
+      // unanimousHistory = [
+      //   { "round": 1, "isUnanimous": true,  "nthUnanimous": 1, "nthNonUnanimous": null },
+      //   { "round": 2, "isUnanimous": false, "nthUnanimous": null, "nthNonUnanimous": 1 },
+      //   { "round": 3, "isUnanimous": true,  "nthUnanimous": 2, "nthNonUnanimous": null }
+      // ]
+
       const total = agreeList.length + disagreeList.length;
-      const isUnanimous =
-        total === 3 && (agreeList.length === 0 || disagreeList.length === 0);
-
+      const isUnanimous = total === 3 && (agreeList.length === 0 || disagreeList.length === 0);
+      
+      // 기존 히스토리 불러오기
+      let history = JSON.parse(localStorage.getItem('unanimousHistory') || '[]');
+      
+      // 현재 라운드 기존 기록 제거 (있을 수도 있음)
+      history = history.filter(h => h.round !== round);
+      
+      // 지금까지의 개수 계산
+      const unanimousSoFar = history.filter(h => h.isUnanimous).length;
+      const nonUnanimousSoFar = history.filter(h => !h.isUnanimous).length;
+      
+      // 이번 라운드 nth 결정
+      let nthUnanimous = null;
+      let nthNonUnanimous = null;
+      if (isUnanimous) {
+        nthUnanimous = unanimousSoFar + 1;     
+      } else {
+        nthNonUnanimous = nonUnanimousSoFar + 1; 
+      }
+      
+      // 새 엔트리
+      const newEntry = { round, isUnanimous, nthUnanimous, nthNonUnanimous };
+      
+      // 히스토리에 추가
+      history.push(newEntry);
+      
+      // 저장
       localStorage.setItem('unanimous', JSON.stringify(isUnanimous));
-      console.log('[Game04] 만장일치 여부:', isUnanimous);
- 
-
-      } catch (err) {
+      localStorage.setItem('unanimousHistory', JSON.stringify(history));
+      
+      console.log('[Game04] 만장일치 기록 업데이트:', history); } catch (err) {
         console.error(' [Game04] 동의 상태 조회 실패:', err);
       }
     };

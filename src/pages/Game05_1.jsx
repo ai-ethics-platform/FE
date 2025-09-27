@@ -14,6 +14,7 @@
 // import { FontStyles, Colors } from '../components/styleConstants';
 // import { clearAllLocalStorageKeys } from '../utils/storage';
 // import hostInfoSvg from '../assets/host_info.svg';
+// import defaultImg from '../assets/images/default.png';
 
 // const CARD_W = 640;
 // const CARD_H = 170;
@@ -65,7 +66,6 @@
 //     console.log('[game05_1] 연결 상태 업데이트:', newStatus);
 //   }, [isConnected, webrtcInitialized]);
  
-
 //     // useEffect(() => {
 //     //   if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
 //     //     console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
@@ -178,11 +178,17 @@
 //   const neutralLast = neutralImgs[neutralImgs.length - 1];
 //   const agreeLast   = agreeImgs[agreeImgs.length - 1];
 
-//   //  커스텀 모드일 때 mode 기준으로 사용할 로컬 이미지 선택
-//   const localAgreeImg    = resolveImageUrl(localStorage.getItem('dilemma_image_4_1'));
-//   const localDisagreeImg = resolveImageUrl(localStorage.getItem('dilemma_image_4_2'));
+//   const rawAgreeImg = localStorage.getItem('dilemma_image_4_1') || '';
+//   const rawDisagreeImg = localStorage.getItem('dilemma_image_4_2') || '';
+//   const localAgreeImg = resolveImageUrl(rawAgreeImg);
+//   const localDisagreeImg = resolveImageUrl(rawDisagreeImg);
+  
 //   const selectedLocalImg =
-//     mode === 'agree' ? localAgreeImg : mode === 'disagree' ? localDisagreeImg : null;
+//     mode === 'agree'
+//       ? (localAgreeImg || defaultImg)
+//       : mode === 'disagree'
+//       ? (localDisagreeImg || defaultImg)
+//       : defaultImg;
 
 //   // 단계/확신/합의
 //   const [step, setStep] = useState(1);
@@ -321,10 +327,12 @@
 //                 src={selectedLocalImg}
 //                 alt="합의 결과 미리보기"
 //                 style={{ width: 400, height: 200, objectFit: 'cover', borderRadius: 8 }}
-//                 />
+//                 onError={(e) => { e.currentTarget.src = defaultImg; }}
+
+//                />
 //             </div>
 //           ) : (
-//             // 폴백: 기존 두 장 미리보기(네추럴, 합의쪽)
+//             // 기존 두 장 미리보기(네추럴, 합의쪽)
 //             <div style={{ marginTop: 0, display: 'flex', justifyContent: 'center', gap: 16 }}>
 //               {[neutralLast, agreeLast].map((img, idx) => (
 //                 <img
@@ -332,6 +340,8 @@
 //                   src={img}
 //                   alt={`설명 이미지 ${idx + 1}`}
 //                   style={{ width: 400, height: 200, objectFit: 'fill' }}
+//                   onError={(e) => { e.currentTarget.src = defaultImg; }}
+
 //                 />
 //               ))}
 //             </div>
@@ -422,6 +432,9 @@
 // }
 
 // const title = { ...FontStyles.title, color: Colors.grey06, textAlign: 'center' };
+
+// 팝업 보여주는 코드 
+// 시간 조정하기 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -439,6 +452,7 @@ import { FontStyles, Colors } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
 import hostInfoSvg from '../assets/host_info.svg';
 import defaultImg from '../assets/images/default.png';
+import ExtraPopup from '../components/ExtraPopup1';
 
 const CARD_W = 640;
 const CARD_H = 170;
@@ -460,6 +474,7 @@ export default function Game05_01() {
   const nav = useNavigate();
   const pollingRef = useRef(null);
 
+  
   // 라운드
   const [round, setRound] = useState(() => {
     const c = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -473,6 +488,55 @@ export default function Game05_01() {
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
   const [openProfile, setOpenProfile] = useState(null);
+  const getUnanimousRecord = (round) => {
+    try {
+      const history = JSON.parse(localStorage.getItem('unanimousHistory') || '[]');
+      if (!Array.isArray(history)) return null;
+      return history.find(h => Number(h.round) === Number(round)) || null;
+    } catch {
+      return null;
+    }
+  };
+  
+  const getUnanimousCounters = () => {
+    try {
+      return JSON.parse(
+        localStorage.getItem('unanimousCounters') || '{"unanimousCount":0,"nonUnanimousCount":0}'
+      );
+    } catch {
+      return { unanimousCount: 0, nonUnanimousCount: 0 };
+    }
+  };
+  const [extraStep, setExtraStep] = useState(null);  // 1,2,4 또는 null
+  const [showExtra, setShowExtra] = useState(false); //  팝업 열림/닫힘
+
+  useEffect(() => {
+    const rec = getUnanimousRecord(round);
+    if (!rec) { setExtraStep(null); setShowExtra(false); return; }
+  
+    if (rec.isUnanimous) {
+      if (rec.nthUnanimous === 1||rec.nthUnanimous === 3) {
+        // step1: 3분 후 팝업
+        setExtraStep(1);
+        setShowExtra(false);
+        const t = setTimeout(() => setShowExtra(true), 3*1000);
+        return () => clearTimeout(t);
+      }
+      if (rec.nthUnanimous === 2) {
+        // step2: 팝업은 "다음 버튼"에서 열리도록, 여기서는 세팅만
+        setExtraStep(2);
+        setShowExtra(false);
+      }
+    } else {
+      if (rec.nthNonUnanimous === 1) {
+        // step4: 2분 후 팝업
+        setExtraStep(4);
+        setShowExtra(false);
+        const t = setTimeout(() => setShowExtra(true), 2*1000);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [round]);
 
   // 연결 상태(로그용)
   const [connectionStatus, setConnectionStatus] = useState({
@@ -490,7 +554,6 @@ export default function Game05_01() {
     console.log('[game05_1] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
  
-
     // useEffect(() => {
     //   if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
     //     console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
@@ -561,6 +624,7 @@ export default function Game05_01() {
   const creatorTitle  = localStorage.getItem('creatorTitle') || '';
   const headerSubtopic = isCustomMode ? (creatorTitle || subtopic) : subtopic;
 
+  
   // 질문/라벨(기존 맵)
   const subtopicMapAndroid = {
     'AI의 개인 정보 수집': { question: '24시간 개인정보 수집 업데이트에 동의하시겠습니까?', labels: { agree: '동의', disagree: '비동의' } },
@@ -690,26 +754,57 @@ export default function Game05_01() {
   // next_page 브로드캐스트 수신
   useWebSocketMessage('next_page', () => {
     console.log(' next_page 수신됨');
-    if (step === 1) setStep(2);
+    // if (step === 1) setStep(2);
+    if (step === 1) {
+      if (extraStep === 2) {
+        // 팝업 + 1분 잠금
+        setShowExtra(true);
+        setNextDisabled(true);
+        setTimeout(() => {
+          setShowExtra(false);
+          setNextDisabled(false);
+          setStep(2);   // 팝업 닫힌 후 Step2로 이동
+        }, 6 * 1000); 
+      } else {
+        // 그냥 바로 Step2 이동
+        setStep(2);
+      }
+    } 
     else if (step === 2) {
       const nextRoute = consensusChoice === 'agree' ? '/game06' : '/game07';
       nav(nextRoute, { state: { consensus: consensusChoice } });
     }
   });
+  const [nextDisabled, setNextDisabled] = useState(false);
+
 
   // Step1 → Step2
   const handleStep1Continue = async () => {
-    if (!isHost) return alert('⚠️ 방장만 다음 단계로 진행할 수 있습니다.');
-    if (!consensusChoice) return alert('⚠️ 먼저 동의 혹은 비동의를 선택해주세요.');
+    if (!isHost) return alert('⚠️ 방장만 진행할 수 있습니다.');
+    if (!consensusChoice) return alert('⚠️ 동의/비동의 먼저 선택해주세요.');
+  
     try {
       const choice = consensusChoice === 'agree' ? 1 : 2;
       await axiosInstance.post(`/rooms/rooms/round/${roomCode}/consensus`, {
         round_number: round,
         choice,
-        subtopic, // 서버로는 기존 subtopic 유지
+        subtopic,
       });
-      // 성공 시 step2로 진행 브로드캐스트
-      sendNextPage();
+  
+      if (extraStep === 2) {
+        sendNextPage(); // Step2(확신도 페이지)로 이동
+        //  step2 케이스일 때만 팝업 + 1분 버튼 잠금
+        setShowExtra(true);
+        setNextDisabled(true);
+        setTimeout(() => {
+          setShowExtra(false);
+          setNextDisabled(false);
+        }, 2*1000);
+      } else {
+        // 다른 경우는 그냥 바로 넘어감
+        sendNextPage();
+      }
+  
     } catch (e) {
       console.error('합의 POST 실패:', e);
     }
@@ -741,8 +836,8 @@ export default function Game05_01() {
   const canClickStep1Next = Boolean(consensusChoice) && arrivalStatus.all_arrived && isHost;
 
   return (
-    <Layout subtopic={headerSubtopic} round={round} onProfileClick={setOpenProfile} onBackClick={handleBackClick} hostmessage={true}>
-   
+    <>
+    <Layout subtopic={headerSubtopic} round={round} onProfileClick={setOpenProfile} onBackClick={handleBackClick} hostmessage={true}  popupStep={extraStep}>
       {step === 1 && (
         <>
           {/*  커스텀 모드 && 로컬 지정 이미지가 있을 때는 해당 1장만 표시 */}
@@ -771,7 +866,6 @@ export default function Game05_01() {
               ))}
             </div>
           )}
-
           <Card width={936} height={216} extraTop={30}>
             <p style={title}>
               {questionText || ''} <br/> 합의를 통해 최종 결정 하세요.
@@ -797,7 +891,7 @@ export default function Game05_01() {
           </Card>
 
           <div style={{ marginTop: 40 }}>
-            <Continue2 width={264} height={72} disabled={!canClickStep1Next} onClick={handleStep1Continue} />
+            <Continue2 width={264} height={72} disabled={!canClickStep1Next||nextDisabled} onClick={handleStep1Continue} />
           </div>
         </>
       )}
@@ -806,7 +900,6 @@ export default function Game05_01() {
         <>
           <Card width={936} height={216} extraTop={150}>
             <p style={title}> 여러분의 선택에 당신은 얼마나 확신을 가지고 있나요?</p>
-
             <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
               <div style={{ position: 'absolute', top: 8, left: 0, right: 0, height: LINE, background: Colors.grey03, zIndex: 0 }} />
               <div style={{ position: 'absolute', top: 8, left: 0, width: `${pct}%`, height: LINE, background: Colors.brandPrimary, zIndex: 1 }} />
@@ -841,9 +934,21 @@ export default function Game05_01() {
           </div>
         </>
       )}
+       
     </Layout>
+    {extraStep && showExtra && (
+      <ExtraPopup
+        open={showExtra}
+        onClose={() => setShowExtra(false)}
+        mode={extraStep}
+        popupStep={extraStep}
+      />
+    )}
+    </>
   );
+ 
 }
+
 
 function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style = {} }) {
   return (

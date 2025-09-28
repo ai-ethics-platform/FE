@@ -87,46 +87,46 @@ export default function MateName() {
 //       clearAllLocalStorageKeys();
 //       navigate('/');
 //     }
-//   }, [websocketConnected]);
-useEffect(() => {
-    let cancelled = false;
-    const isReloadingGraceLocal = () => {
-      const flag = sessionStorage.getItem('reloading') === 'true';
-      const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-      if (!flag) return false;
-      if (Date.now() > expire) {
-        sessionStorage.removeItem('reloading');
-        sessionStorage.removeItem('reloading_expire_at');
-        return false;
-      }
-      return true;
-    };
+// //   }, [websocketConnected]);
+// useEffect(() => {
+//     let cancelled = false;
+//     const isReloadingGraceLocal = () => {
+//       const flag = sessionStorage.getItem('reloading') === 'true';
+//       const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+//       if (!flag) return false;
+//       if (Date.now() > expire) {
+//         sessionStorage.removeItem('reloading');
+//         sessionStorage.removeItem('reloading_expire_at');
+//         return false;
+//       }
+//       return true;
+//     };
   
-    if (!websocketConnected) {
-      // 1) reloading-grace가 켜져 있으면 finalize 억제
-      if (isReloadingGraceLocal()) {
-        console.log('♻️ reloading grace active — finalize 억제');
-        return;
-      }
+//     if (!websocketConnected) {
+//       // 1) reloading-grace가 켜져 있으면 finalize 억제
+//       if (isReloadingGraceLocal()) {
+//         console.log('♻️ reloading grace active — finalize 억제');
+//         return;
+//       }
   
-      // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-      const DEBOUNCE_MS = 1200;
-      const timer = setTimeout(() => {
-        if (cancelled) return;
-        if (!websocketConnected && !isReloadingGraceLocal()) {
-          console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-          finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-        } else {
-          console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-        }
-      }, DEBOUNCE_MS);
+//       // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+//       const DEBOUNCE_MS = 1200;
+//       const timer = setTimeout(() => {
+//         if (cancelled) return;
+//         if (!websocketConnected && !isReloadingGraceLocal()) {
+//           console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+//           finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+//         } else {
+//           console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+//         }
+//       }, DEBOUNCE_MS);
   
-      return () => {
-        cancelled = true;
-        clearTimeout(timer);
-      };
-    }
-  }, [websocketConnected, finalizeDisconnection]);
+//       return () => {
+//         cancelled = true;
+//         clearTimeout(timer);
+//       };
+//     }
+//   }, [websocketConnected, finalizeDisconnection]);
   
   
 
@@ -250,7 +250,7 @@ useEffect(() => {
             label=""
             labelWidth={0}
             placeholder={uiText.placeholder}
-            width={520}
+            width={550}
             height={64}
             value={name}
             onChange={handleNameChange}

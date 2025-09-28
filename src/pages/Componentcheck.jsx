@@ -234,7 +234,11 @@ export default function Componentcheck() {
   roleId={3}
   mateName="단밤이" 
 />
-<ExtraPopup mode={4} />
-    </Background>
+
+<ExtraPopup
+        open={open}
+        onClose={() => setOpen(false)}
+        mode={2}    
+      />    </Background>
     );
   }

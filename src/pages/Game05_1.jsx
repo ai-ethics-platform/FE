@@ -509,7 +509,7 @@ export default function Game05_01() {
   };
   const [extraStep, setExtraStep] = useState(null);  // 1,2,4 또는 null
   const [showExtra, setShowExtra] = useState(false); //  팝업 열림/닫힘
-
+ 
   useEffect(() => {
     const rec = getUnanimousRecord(round);
     if (!rec) { setExtraStep(null); setShowExtra(false); return; }
@@ -519,7 +519,7 @@ export default function Game05_01() {
         // step1: 3분 후 팝업
         setExtraStep(1);
         setShowExtra(false);
-        const t = setTimeout(() => setShowExtra(true), 3*1000);
+        const t = setTimeout(() => setShowExtra(true), 3*60*1000);
         return () => clearTimeout(t);
       }
       if (rec.nthUnanimous === 2) {
@@ -532,7 +532,7 @@ export default function Game05_01() {
         // step4: 2분 후 팝업
         setExtraStep(4);
         setShowExtra(false);
-        const t = setTimeout(() => setShowExtra(true), 2*1000);
+        const t = setTimeout(() => setShowExtra(true), 2*60*1000);
         return () => clearTimeout(t);
       }
     }
@@ -609,7 +609,7 @@ export default function Game05_01() {
   });
 
   // 로컬 저장값
-  const myRoleId        = Number(localStorage.getItem('myrole_id'));
+  const roleId        = Number(localStorage.getItem('myrole_id'));
   const roomCode      = localStorage.getItem('room_code') ?? '';
   const mainTopic     = localStorage.getItem('category');
   const subtopic      = localStorage.getItem('subtopic');
@@ -623,6 +623,39 @@ export default function Game05_01() {
   const isCustomMode  = !!localStorage.getItem('code');
   const creatorTitle  = localStorage.getItem('creatorTitle') || '';
   const headerSubtopic = isCustomMode ? (creatorTitle || subtopic) : subtopic;
+  // -------- 안드로이드 역할명 --------
+  const getRoleNameBySubtopicAndroid = (subtopic, roleId) => {
+    switch (subtopic) {
+      case 'AI의 개인 정보 수집':
+      case '안드로이드의 감정 표현':
+        return roleId === 1 ? '요양보호사 K' : roleId === 2 ? '노모 L' : '자녀 J';
+      case '아이들을 위한 서비스':
+      case '설명 가능한 AI':
+        return roleId === 1 ? '로봇 제조사 연합회 대표'
+             : roleId === 2 ? '소비자 대표'
+             : '국가 인공지능 위원회 대표';
+      case '지구, 인간, AI':
+        return roleId === 1 ? '기업 연합체 대표'
+             : roleId === 2 ? '국제 환경단체 대표'
+             : '소비자 대표';
+      default:
+        return '';
+    }
+  };
+
+  // -------- AWS 역할명 --------
+  const getRoleNameBySubtopicAWS = (subtopic, roleId) => {
+    const idx = Math.max(0, Math.min(2, (roleId ?? 1) - 1)); // 1→0, 2→1, 3→2
+    const map = {
+      'AI 알고리즘 공개':     ['지역 주민', '병사 J', '군사 AI 윤리 전문가'],
+      'AWS의 권한':         ['신입 병사', '베테랑 병사 A', '군 지휘관'],
+      '사람이 죽지 않는 전쟁': ['개발자', '국방부 장관', '국가 인공지능 위원회 대표'],
+      'AI의 권리와 책임':   ['개발자', '국방부 장관', '국가 인공지능 위원회 대표'],
+      'AWS 규제':          ['국방 기술 고문', '국제기구 외교 대표', '글로벌 NGO 활동가'],
+    };
+    const arr = map[subtopic];
+    return Array.isArray(arr) ? arr[idx] : '';
+  };
 
   
   // 질문/라벨(기존 맵)
@@ -640,12 +673,23 @@ export default function Game05_01() {
     'AI의 권리와 책임': { question: 'AWS에게, 인간처럼 권리를 부여할 수 있을까요?', labels: { agree: '그렇다', disagree: '아니다' } },
     'AWS 규제': { question: 'AWS는 국제 사회에서 계속 유지되어야 할까요, 아니면 글로벌 규제를 통해 제한되어야 할까요?', labels: { agree: '유지', disagree: '제한' } },
   };
+    // 기본(비커스텀) 역할명/질문/라벨
+    const defaultRoleName = isAWS
+    ? getRoleNameBySubtopicAWS(subtopic, roleId)
+    : getRoleNameBySubtopicAndroid(subtopic, roleId);
   const subtopicMap = isAWS ? subtopicMapAWS : subtopicMapAndroid;
+
+  //  커스텀 모드 값들 (질문/라벨/역할명/이미지)
+  const char1 = (localStorage.getItem('char1') || '').trim();
+  const char2 = (localStorage.getItem('char2') || '').trim();
+  const char3 = (localStorage.getItem('char3') || '').trim();
+  const customRoleName = roleId === 1 ? char1 : roleId === 2 ? char2 : char3;
 
   //  커스텀 질문/라벨 가져오기
   const customQuestion = (localStorage.getItem('question') || '').trim();
   const customAgree    = (localStorage.getItem('agree_label') || '').trim();
   const customDisagree = (localStorage.getItem('disagree_label') || '').trim();
+  const roleName = isCustomMode ? (customRoleName || defaultRoleName) : defaultRoleName;
 
   //  실제 표시할 질문/라벨 확정
   const questionText = isCustomMode
@@ -757,14 +801,27 @@ export default function Game05_01() {
     // if (step === 1) setStep(2);
     if (step === 1) {
       if (extraStep === 2) {
-        // 팝업 + 1분 잠금
-        setShowExtra(true);
-        setNextDisabled(true);
-        setTimeout(() => {
-          setShowExtra(false);
-          setNextDisabled(false);
-          setStep(2);   // 팝업 닫힌 후 Step2로 이동
-        }, 6 * 1000); 
+        // // 팝업 + 1분 잠금
+        // setShowExtra(true);
+        // setNextDisabled(true);
+        // setTimeout(() => {
+        //   setShowExtra(false);
+        //   setNextDisabled(false);
+        //   setStep(2);   // 팝업 닫힌 후 Step2로 이동
+        // }, 60 * 1000); 
+        if (!isHost) {
+          // 게스트만 팝업 + 1분 잠금
+          setShowExtra(true);
+          setNextDisabled(true);
+          setTimeout(() => {
+            setShowExtra(false);
+            setNextDisabled(false);
+            setStep(2);   // 팝업 닫힌 후 Step2로 이동
+          }, 60 * 1000); 
+        } else {
+          // 호스트는 이미 handleStep1Continue에서 처리했으니 그냥 Step2로 이동
+          setStep(2);
+        }
       } else {
         // 그냥 바로 Step2 이동
         setStep(2);
@@ -799,7 +856,7 @@ export default function Game05_01() {
         setTimeout(() => {
           setShowExtra(false);
           setNextDisabled(false);
-        }, 2*1000);
+        }, 60*1000);
       } else {
         // 다른 경우는 그냥 바로 넘어감
         sendNextPage();
@@ -868,7 +925,9 @@ export default function Game05_01() {
           )}
           <Card width={936} height={216} extraTop={30}>
             <p style={title}>
-              {questionText || ''} <br/> 합의를 통해 최종 결정 하세요.
+            당신은 {roleName}입니다.
+            <br />
+            {questionText || ''} <br/> 합의를 통해 최종 결정 하세요.
             </p>
             <div style={{ display: 'flex', gap: 24 }}>
               <SelectCardToggle

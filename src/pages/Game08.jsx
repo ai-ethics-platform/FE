@@ -146,7 +146,7 @@ export default function Game08() {
       if (has('AI 알고리즘 공개') && has('AWS의 권한')) {
         const safer    = pick(rExplain, '안전해', '책임 규명이 명확해');
         const powerStr = pick(rPower, '강화되어 여러분의 동료처럼', '제한되어 인간의 보조 도구로서');
-        p1 = `여러분의 결정으로 자율 무기 시스템은 보다 ${safer}졌고, AWS의 권한은 ${powerStr} 제 역할을 다하고 있습니다.`;
+        p1 = `여러분의 결정으로 자율 무기 시스템은 보다 ${safer}졌고,\n AWS의 권한은 ${powerStr} 제 역할을 다하고 있습니다.`;
       } else if (has('AI 알고리즘 공개')) {
         const safer = pick(rExplain, '안전해', '책임 규명이 명확해');
         p1 = `여러분의 결정으로 자율 무기 시스템은 보다 ${safer}졌습니다.`;
@@ -158,9 +158,9 @@ export default function Game08() {
       // 2) 문장 2
       let p2;
       if (has('사람이 죽지 않는 전쟁') && has('AI의 권리와 책임')) {
-        const warPart    = pick(rZeroWar, '점점 AWS끼리만 일어나게 되었고', '여전히 인간 병력이 투입되고 있고');
+        const warPart    = pick(rZeroWar, '점점 AWS끼리만 일어나게 되었고\n', '여전히 인간 병력이 투입되고 있고\n');
         const rightsPart = pick(rRights, '부여할 수 있다', '부여할 수 없다');
-        p2 = `국가 차원에서 전쟁은 ${warPart}, 자율 무기 시스템에 권리를 ${rightsPart}는 논의가 진행되고 있습니다.`;
+        p2 = `국가 차원에서 전쟁은 ${warPart}, 자율 무기 시스템에 권리를 ${rightsPart}는 논의가 \n진행되고 있습니다.`;
       } else if (has('사람이 죽지 않는 전쟁')) {
         const warOnly = pick(rZeroWar, '점점 AWS끼리만 일어나게 되었습니다.', '여전히 인간 병력이 투입되고 있습니다.');
         p2 = `국가 차원에서 전쟁은 ${warOnly}`;
@@ -182,7 +182,7 @@ export default function Game08() {
       }
   
       // 4) 문장 4
-      const p4 = '여러분이 선택한 가치가 모여 하나의 미래를 만들었습니다. 그 미래에 여러분은 함께할 준비가 되었나요?';
+      const p4 = '여러분이 선택한 가치가 모여 하나의 미래를 만들었습니다.\n 그 미래에 여러분은 함께할 준비가 되었나요?';
   
       setParagraphs([p1, p2, p3, p4]);
       return;
@@ -217,7 +217,7 @@ export default function Game08() {
       ? `그리고 세계는 지금, ${earth==='agree'?'기술적 발전을 조금 늦추었지만 \n 환경과 미래를 위해 나아가고 있죠':'기술적 편리함을 누리며 \n 점점 빠른 발전을 이루고 있죠'}.`
       : '그리고 세계는 지금, 기술적 발전을 조금 늦추었지만 환경과 미래를 위해 나아가고 있죠.';
     // 4th
-    const p4 = '여러분이 선택한 가치가 모여 하나의 미래를 만들었습니다. \n 그 미래에 여러분은 함께할 준비가 되었나요?';
+    const p4 = '여러분이 선택한 가치가 모여 하나의 미래를 만들었습니다. \n그 미래에 여러분은 함께할 준비가 되었나요?';
   
     setParagraphs([p1, p2, p3, p4]);
   }, []);

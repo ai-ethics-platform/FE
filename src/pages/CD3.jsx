@@ -126,7 +126,7 @@ export default function CD3() {
         descImg = AWS_2;
         mainText =
           `당신은 자율 무기 시스템 ${mateName} 도입 이후 작전 효율성과 병사들의 변화 양상을 모두 지켜보고 있는 군 지휘관입니다. ` +
-          '당신은 두 병사의 입장을 듣고, 군 전체가 나아갈 방향을 모색하려 합니다.';
+          '당신은 두 병사의 입장을 듣고, 군 전체가 나아갈 \n 방향을 모색하려 합니다.';
         break;
       case subtopic === '사람이 죽지 않는 전쟁':
         descImg = AWS_3;

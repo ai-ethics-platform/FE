@@ -138,7 +138,7 @@ const loadMyInfo = async () => {
   const loadParticipants = async () => {
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
-      console.log(`API 응답:`, room);
+     // console.log(`API 응답:`, room);
       if (room?.title) {
           localStorage.setItem('category', room.title);
           if(isCustomMode){
@@ -261,12 +261,12 @@ const loadMyInfo = async () => {
 
   const assignRoles = async () => {
     if (myPlayerId !== hostUserId) {
-      console.log(`방장이 아니므로 역할 배정 스킵`);
+     // console.log(`방장이 아니므로 역할 배정 스킵`);
       return;
     }
 
     if (hasAssignedRoles || checkIfRolesAlreadyAssigned()) {
-      console.log(`역할이 이미 배정되어 있음`);
+      //console.log(`역할이 이미 배정되어 있음`);
       setHasAssignedRoles(true);
       return;
     }
@@ -300,7 +300,7 @@ const loadMyInfo = async () => {
           localStorage.setItem('host_id', String(hostAssignment.role_id));
         }
         
-        console.log(` 방장: 로컬스토리지 저장 완료`);
+       // console.log(` 방장: 로컬스토리지 저장 완료`);
       }
       
       setTimeout(() => {
@@ -319,7 +319,7 @@ const loadMyInfo = async () => {
     if (participants.length === 3 && myPlayerId === hostUserId) {
       const hasApiRoles = participants.every(p => p.role_id != null);
       if (!hasApiRoles) {
-        console.log('useEffect 트리거: 역할 없음 → assignRoles 실행');
+        //console.log('useEffect 트리거: 역할 없음 → assignRoles 실행');
         assignRoles();
       }
     }
@@ -423,10 +423,10 @@ const loadMyInfo = async () => {
       
       // 5. 모든 유저가 준비 완료되었는지 확인 - 최우선 체크
       const readyCount = room.participants.filter(p => p.is_ready).length;
-      console.log(`준비 완료 현황: ${readyCount}/${room.participants.length}`);
+    //  console.log(`준비 완료 현황: ${readyCount}/${room.participants.length}`);
       
       if (readyCount === room.participants.length && room.participants.length === 3) {
-        console.log(`모두 준비 완료`);
+       // console.log(`모두 준비 완료`);
         stopPolling();
         
         // 게임 화면으로 이동
@@ -533,7 +533,7 @@ const loadMyInfo = async () => {
     try {
       console.log(`준비하기 API 호출`);
       const { data } = await axiosInstance.post('/rooms/ready', { room_code });
-      console.log('✅ 준비 눌림 → 상태 1로 설정 시도');
+     // console.log('✅ 준비 눌림 → 상태 1로 설정 시도');
 
       setMyStatusIndex(1);
       setShowMicPopup(false);
@@ -562,7 +562,7 @@ const loadMyInfo = async () => {
     // participants가 있으면 항상 3명을 표시 (assignments가 없어도)
     if (!myPlayerId || participants.length !== 3) {
       const playerIds = participants.map(p => p.user_id);
-      console.log(`조건 미충족, 기본 순서 반환:`, playerIds);
+      //console.log(`조건 미충족, 기본 순서 반환:`, playerIds);
       return playerIds;
     }
 
@@ -596,17 +596,17 @@ const loadMyInfo = async () => {
       }),
       
       forcePoll: () => {
-        console.log('폴링 실행');
+        //console.log('폴링 실행');
         pollRoomStatus();
       },
       
       startPolling: () => {
-        console.log(' 폴링 시작');
+       // console.log(' 폴링 시작');
         startPolling();
       },
       
       stopPolling: () => {
-        console.log(' 폴링 중지');
+       // console.log(' 폴링 중지');
         stopPolling();
       }
     };

@@ -57,7 +57,7 @@ export default function GameIntro() {
   // 디버깅을 위한 고유 클라이언트 ID
   const [clientId] = useState(() => {
     const id = Math.random().toString(36).substr(2, 9);
-    console.log(`🔍 [GameIntro] 클라이언트 ID: ${id}`);
+   // console.log(`🔍 [GameIntro] 클라이언트 ID: ${id}`);
     return id;
   });
 
@@ -114,10 +114,10 @@ const isCustomMode = !!localStorage.getItem('code');
     setHostId(storedHost);
     setCurrentMyRoleId(storedMyRole);
 
-    console.log(`역할 정보 로드:`, {
-      hostId: storedHost,
-      myRoleId: storedMyRole,
-    });
+    // console.log(`역할 정보 로드:`, {
+    //   hostId: storedHost,
+    //   myRoleId: storedMyRole,
+    // });
   }, [clientId]);
 
   // 내 음성 세션 상태 업데이트 
@@ -176,7 +176,7 @@ const isCustomMode = !!localStorage.getItem('code');
     }
 
     const isHost = hostId === myRoleId;
-    console.log(`ebSocket 연결 시작:`, { userId, myRoleId, hostId, isHost });
+    console.log(`WebSocket 연결 시작:`, { userId, myRoleId, hostId, isHost });
 
     // connection_established 메시지 핸들러 등록
     const handlerId = "connection-established";
@@ -421,6 +421,8 @@ const isCustomMode = !!localStorage.getItem('code');
               height={72}
               step={1}
               onClick={handleContinue}
+              disabled={!connectionEstablishedRef.current || !webrtcInitialized}
+
             />
           </div>
         </div>

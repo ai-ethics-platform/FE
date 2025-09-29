@@ -54,8 +54,7 @@ export default function Login() {
   }, [location.search]);
 
   const handleLogin = async () => {
-    console.log('입력된 username:', username);
-    console.log('입력된 password:', password);
+
 
     try {
       const form = new URLSearchParams();

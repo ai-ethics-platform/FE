@@ -510,30 +510,50 @@ export default function Game05_01() {
   const [extraStep, setExtraStep] = useState(null);  // 1,2,4 또는 null
   const [showExtra, setShowExtra] = useState(false); //  팝업 열림/닫힘
  
+  // useEffect(() => {
+  //   const rec = getUnanimousRecord(round);
+  //   if (!rec) { setExtraStep(null); setShowExtra(false); return; }
+  
+  //   if (rec.isUnanimous) {
+  //     if (rec.nthUnanimous === 1||rec.nthUnanimous === 3) {
+  //       // step1: 3분 후 팝업
+  //       setExtraStep(1);
+  //       setShowExtra(false);
+  //       const t = setTimeout(() => setShowExtra(true), 3*60*1000);
+  //       return () => clearTimeout(t);
+  //     }
+  //     if (rec.nthUnanimous === 2) {
+  //       // step2: 팝업은 "다음 버튼"에서 열리도록, 여기서는 세팅만
+  //       setExtraStep(2);
+  //       setShowExtra(false);
+  //     }
+  //   } else {
+  //     if (rec.nthNonUnanimous === 1) {
+  //       // step4: 2분 후 팝업
+  //       setExtraStep(4);
+  //       setShowExtra(false);
+  //       const t = setTimeout(() => setShowExtra(true), 2*60*1000);
+  //       return () => clearTimeout(t);
+  //     }
+  //   }
+  // }, [round]);
   useEffect(() => {
     const rec = getUnanimousRecord(round);
     if (!rec) { setExtraStep(null); setShowExtra(false); return; }
   
     if (rec.isUnanimous) {
-      if (rec.nthUnanimous === 1||rec.nthUnanimous === 3) {
-        // step1: 3분 후 팝업
+      if (rec.nthUnanimous === 1 || rec.nthUnanimous === 3) {
         setExtraStep(1);
         setShowExtra(false);
-        const t = setTimeout(() => setShowExtra(true), 3*60*1000);
-        return () => clearTimeout(t);
       }
       if (rec.nthUnanimous === 2) {
-        // step2: 팝업은 "다음 버튼"에서 열리도록, 여기서는 세팅만
         setExtraStep(2);
         setShowExtra(false);
       }
     } else {
       if (rec.nthNonUnanimous === 1) {
-        // step4: 2분 후 팝업
         setExtraStep(4);
         setShowExtra(false);
-        const t = setTimeout(() => setShowExtra(true), 2*60*1000);
-        return () => clearTimeout(t);
       }
     }
   }, [round]);
@@ -796,42 +816,58 @@ export default function Game05_01() {
   }, []);
 
   // next_page 브로드캐스트 수신
-  useWebSocketMessage('next_page', () => {
-    console.log(' next_page 수신됨');
-    // if (step === 1) setStep(2);
-    if (step === 1) {
-      if (extraStep === 2) {
-        // // 팝업 + 1분 잠금
-        // setShowExtra(true);
-        // setNextDisabled(true);
-        // setTimeout(() => {
-        //   setShowExtra(false);
-        //   setNextDisabled(false);
-        //   setStep(2);   // 팝업 닫힌 후 Step2로 이동
-        // }, 60 * 1000); 
-        if (!isHost) {
-          // 게스트만 팝업 + 1분 잠금
-          setShowExtra(true);
-          setNextDisabled(true);
-          setTimeout(() => {
-            setShowExtra(false);
-            setNextDisabled(false);
-            setStep(2);   // 팝업 닫힌 후 Step2로 이동
-          }, 60 * 1000); 
-        } else {
-          // 호스트는 이미 handleStep1Continue에서 처리했으니 그냥 Step2로 이동
+  // useWebSocketMessage('next_page', () => {
+  //   console.log(' next_page 수신됨');
+  //   // if (step === 1) setStep(2);
+  //   if (step === 1) {
+  //     if (extraStep === 2) {
+
+  //       if (!isHost) {
+  //         // 게스트만 팝업 + 1분 잠금
+  //         setShowExtra(true);
+  //         setNextDisabled(true);
+  //         setTimeout(() => {
+  //           setShowExtra(false);
+  //           setNextDisabled(false);
+  //           setStep(2);   // 팝업 닫힌 후 Step2로 이동
+  //         }, 60 * 1000); 
+  //       } else {
+  //         // 호스트는 이미 handleStep1Continue에서 처리했으니 그냥 Step2로 이동
+  //         setStep(2);
+  //       }
+  //     } else {
+  //       // 그냥 바로 Step2 이동
+  //       setStep(2);
+  //     }
+  //   } 
+  //   else if (step === 2) {
+  //     const nextRoute = consensusChoice === 'agree' ? '/game06' : '/game07';
+  //     nav(nextRoute, { state: { consensus: consensusChoice } });
+  //   }
+  // });
+  // 🔹 next_page 수신 로직 통일
+useWebSocketMessage('next_page', () => {
+  console.log(' next_page 수신됨');
+  if (step === 1) {
+    if ([1,2,4].includes(extraStep)) {
+      if (!isHost) {
+        setShowExtra(true);
+        setNextDisabled(true);
+        setTimeout(() => {
+          setShowExtra(false);
+          setNextDisabled(false);
           setStep(2);
-        }
-      } else {
-        // 그냥 바로 Step2 이동
-        setStep(2);
-      }
-    } 
-    else if (step === 2) {
-      const nextRoute = consensusChoice === 'agree' ? '/game06' : '/game07';
-      nav(nextRoute, { state: { consensus: consensusChoice } });
+        }, 10 * 1000);
+      } 
+    } else {
+      setStep(2);
     }
-  });
+  } 
+  else if (step === 2) {
+    const nextRoute = consensusChoice === 'agree' ? '/game06' : '/game07';
+    nav(nextRoute, { state: { consensus: consensusChoice } });
+  }
+});
   const [nextDisabled, setNextDisabled] = useState(false);
 
 
@@ -848,15 +884,14 @@ export default function Game05_01() {
         subtopic,
       });
   
-      if (extraStep === 2) {
+      if ([1,2,4].includes(extraStep)) {
         sendNextPage(); // Step2(확신도 페이지)로 이동
-        //  step2 케이스일 때만 팝업 + 1분 버튼 잠금
         setShowExtra(true);
         setNextDisabled(true);
         setTimeout(() => {
-          setShowExtra(false);
           setNextDisabled(false);
-        }, 60*1000);
+          setStep(2);   // 👉 여기서 Step2로 전환
+        }, 10*1000);
       } else {
         // 다른 경우는 그냥 바로 넘어감
         sendNextPage();

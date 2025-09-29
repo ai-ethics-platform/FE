@@ -158,9 +158,9 @@ export default function Game08() {
       // 2) 문장 2
       let p2;
       if (has('사람이 죽지 않는 전쟁') && has('AI의 권리와 책임')) {
-        const warPart    = pick(rZeroWar, '점점 AWS끼리만 일어나게 되었고\n', '여전히 인간 병력이 투입되고 있고\n');
+        const warPart    = pick(rZeroWar, '점점 AWS끼리만 일어나게 되었고', '여전히 인간 병력이 투입되고 있고');
         const rightsPart = pick(rRights, '부여할 수 있다', '부여할 수 없다');
-        p2 = `국가 차원에서 전쟁은 ${warPart}, 자율 무기 시스템에 권리를 ${rightsPart}는 논의가 \n진행되고 있습니다.`;
+        p2 = `국가 차원에서 전쟁은 ${warPart},\n 자율 무기 시스템에 권리를 ${rightsPart}는 논의가 \n진행되고 있습니다.`;
       } else if (has('사람이 죽지 않는 전쟁')) {
         const warOnly = pick(rZeroWar, '점점 AWS끼리만 일어나게 되었습니다.', '여전히 인간 병력이 투입되고 있습니다.');
         p2 = `국가 차원에서 전쟁은 ${warOnly}`;

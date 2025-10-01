@@ -37,7 +37,7 @@ export default function Game09() {
           const { data } = await axiosInstance.get(
             `/rooms/rooms/statistics/subtopic/${encodeURIComponent(topic)}`,
             {
-              params: { exclude_dummy: false }
+              params: { exclude_dummy: true }
             }
           );
 

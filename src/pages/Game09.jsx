@@ -46,12 +46,17 @@ export default function Game09() {
           const disagreePct = data.choice_2_percentage ?? 0;
           
           // agreePct와 disagreePct 중 더 큰 값을 기준으로 isSelected 결정
-          const isSelected = agreePct >= disagreePct ? 'agree' : 'disagree';
-
+        //  const isSelected = agreePct >= disagreePct ? 'agree' : 'disagree';
+          // localStorage에서 내가 선택한 값 불러오기
+          let myChoice = "disagree";
+          try {
+            const stored = JSON.parse(localStorage.getItem("subtopicResults") ?? "{}");
+            myChoice = stored?.[topic] ?? "disagree";
+          } catch {}
           results[topic] = {
             agreePct,
             disagreePct,
-            isSelected, // isSelected 추가
+            isSelected:myChoice, // isSelected 추가
           };
         }
         setStats(results);

@@ -205,9 +205,11 @@ useEffect(() => {
   const isInternationalUnlocked = isAWS
     ? isCompleted('사람이 죽지 않는 전쟁')          // AWS 2-1 완료 시 3프레임
     : isCompleted('아이들을 위한 서비스');          // Android 2-1 완료 시 3프레임
-
+    const handleBackClick = () => {
+      window.history.back(); 
+    };
   return (
-    <Layout subtopic={subtopic} nodescription={true} showBackButton={false}>
+    <Layout subtopic={subtopic} nodescription={true} onBackClick={handleBackClick}> 
       <div style={{
         width: 500,
         minHeight: 0,

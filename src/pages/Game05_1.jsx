@@ -937,7 +937,7 @@ useWebSocketMessage('next_page', () => {
         setTimeout(() => {
           setNextDisabled(false);
           setStep(2);   // 👉 여기서 Step2로 전환
-        }, 10*1000);
+        }, 50*1000);
       } else {
         // 다른 경우는 그냥 바로 넘어감
         sendNextPage();

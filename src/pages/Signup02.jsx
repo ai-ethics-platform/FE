@@ -205,6 +205,7 @@ useEffect(() => {
       "voice_consent": true
     };
     //console.log('데이터:', requestBody);  
+    //다시 https로 back
     try {
       const response = await axios.post('https://dilemmai.org/auth/signup', requestBody, {
         headers: { 'Content-Type': 'application/json' },

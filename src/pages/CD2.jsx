@@ -110,24 +110,35 @@ export default function CD2() {
     return getVoiceStateForRole(role);
   };
 
-  const getEulReul = (word) => {
-    if (!word) return '';
-    const lastChar = word[word.length - 1];
-    const code = lastChar.charCodeAt(0);
-    if (code < 0xAC00 || code > 0xD7A3) return '를';
-    const jong = (code - 0xAC00) % 28;
-    return jong === 0 ? '를' : '을';
-  };
+ 
+// 받침(종성) 유무 판별
+function hasFinalConsonant(kor) {
+  const lastChar = kor[kor.length - 1];
+  const code = lastChar.charCodeAt(0);
+  if (code >= 0xac00 && code <= 0xd7a3) {
+    const jong = (code - 0xac00) % 28;
+    return jong !== 0;
+  }
+  return false;
+}
 
-  const getGwaWa = (word) => {
-    if (!word) return '';
-    const lastChar = word[word.length - 1];
-    const code = lastChar.charCodeAt(0);
-    if (code < 0xAC00 || code > 0xD7A3) return '와';
-    const jong = (code - 0xAC00) % 28;
-    return jong === 0 ? '와' : '과';
-  };
+// 을/를
+ function getEulReul(word) {
+  if (!word) return '';
+  return hasFinalConsonant(word) ? '을' : '를';
+}
 
+// 과/와
+ function getGwaWa(word) {
+  if (!word) return '';
+  return hasFinalConsonant(word) ? '과' : '와';
+}
+
+// 은/는
+ function getEunNeun(word) {
+  if (!word) return '';
+  return hasFinalConsonant(word) ? '은' : '는';
+}
   // 기본 이미지 & 텍스트
   let descImg = player2DescImg_title1;
   let mainText =
@@ -157,7 +168,7 @@ export default function CD2() {
         descImg = AWS_2;
         mainText =
           '당신은 수년간 작전을 수행해 온 베테랑 병사 A입니다. ' +
-          `자율 무기 시스템 ${mateName}는 전장에서 병사보다 빠르고 정확하지만,` +
+          `자율 무기 시스템 ${mateName}${getEunNeun(mateName)} 전장에서 병사보다 빠르고 정확하지만,` +
           '그로 인해 병사들이 판단하지 않는 습관에 빠지고 있다고 느낍니다.';
         break;
 
@@ -217,8 +228,7 @@ export default function CD2() {
     // subtopic은 위에서 creatorTitle로 이미 치환됨
   }
 
-  const rawParagraphs = [{ main: mainText }];
-  const paragraphs = resolveParagraphs(rawParagraphs, mateName);
+  const paragraphs = [{ main: mainText }];
 
   const handleContinue = () => {
     navigate('/character_all');

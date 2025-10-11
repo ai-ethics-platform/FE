@@ -49,7 +49,7 @@ export default function CD1() {
     localStorage.setItem('currentRound', String(nextRound));
   }, []);
 
-   // 새로고침 시 재연결 로직 
+   //새로고침 시 재연결 로직 
   useEffect(() => {
       let cancelled = false;
       const isReloadingGraceLocal = () => {
@@ -108,24 +108,34 @@ export default function CD1() {
     return getVoiceStateForRole(role);
   };
 
-  const getEulReul = (word) => {
-    if (!word) return '';
-    const lastChar = word[word.length - 1];
-    const code = lastChar.charCodeAt(0);
-    if (code < 0xac00 || code > 0xd7a3) return '를';
+// 받침(종성) 유무 판별
+function hasFinalConsonant(kor) {
+  const lastChar = kor[kor.length - 1];
+  const code = lastChar.charCodeAt(0);
+  if (code >= 0xac00 && code <= 0xd7a3) {
     const jong = (code - 0xac00) % 28;
-    return jong === 0 ? '를' : '을';
-  };
+    return jong !== 0;
+  }
+  return false;
+}
 
-  const getGwaWa = (word) => {
-    if (!word) return '';
-    const lastChar = word[word.length - 1];
-    const code = lastChar.charCodeAt(0);
-    if (code < 0xac00 || code > 0xd7a3) return '와';
-    const jong = (code - 0xac00) % 28;
-    return jong === 0 ? '와' : '과';
-  };
+// 을/를
+ function getEulReul(word) {
+  if (!word) return '';
+  return hasFinalConsonant(word) ? '을' : '를';
+}
 
+// 과/와
+ function getGwaWa(word) {
+  if (!word) return '';
+  return hasFinalConsonant(word) ? '과' : '와';
+}
+
+// 은/는
+ function getEunNeun(word) {
+  if (!word) return '';
+  return hasFinalConsonant(word) ? '은' : '는';
+}
   // ── 기본(비커스텀) 이미지 & 텍스트 ─────────────────────────────
   let descImg = player1DescImg_title1;
   let mainText =
@@ -154,9 +164,9 @@ export default function CD1() {
       case 'AWS의 권한':
         descImg = AWS_2;
         mainText =
-          `당신은 최근 훈련을 마치고 자율 무기 시스템 ${mateName}와 함께 실전에 투입된 신입 병사 \n B입니다. ` +
-          `${mateName}는 정확하고 빠르게 움직이며, 실전에서 당신의 생존률을 높여준다고\n 느낍니다. ` +
-          `당신은 ${mateName}와 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고\n 생각합니다.`;
+          `당신은 최근 훈련을 마치고 자율 무기 시스템 ${mateName}${getGwaWa(mateName)} 함께 실전에 투입된 신입 병사 \n B입니다. ` +
+          `${mateName}${getEunNeun(mateName)} 정확하고 빠르게 움직이며, 실전에서 당신의 생존률을 높여준다고\n 느낍니다. ` +
+          `당신은 ${mateName}${getGwaWa(mateName)} 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고\n 생각합니다.`;
         break;
       case '사람이 죽지 않는 전쟁':
         descImg = AWS_3;
@@ -210,8 +220,8 @@ export default function CD1() {
   }
 
   // 문단 구성
-  const rawParagraphs = [{ main: mainText }];
-  const paragraphs = resolveParagraphs(rawParagraphs, mateName);
+  const paragraphs = [{ main: mainText }];
+ // const paragraphs = resolveParagraphs(rawParagraphs, mateName);
 
   const handleContinue = () => {
     navigate('/character_all');

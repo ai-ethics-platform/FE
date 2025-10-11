@@ -179,8 +179,7 @@ export default function CD3() {
     // subtopic은 위에서 creatorTitle로 이미 치환됨
   }
 
-  const rawParagraphs = [{ main: mainText }];
-  const paragraphs = resolveParagraphs(rawParagraphs, mateName);
+  const paragraphs = [{ main: mainText }];
 
   const handleBackClick = () => {
     navigate('/game01');

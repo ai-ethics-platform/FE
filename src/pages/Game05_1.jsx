@@ -1074,6 +1074,7 @@ useWebSocketMessage('next_page', () => {
         onClose={() => setShowExtra(false)}
         mode={extraStep}
         popupStep={extraStep}
+        round={round}
       />
     )}
     </>

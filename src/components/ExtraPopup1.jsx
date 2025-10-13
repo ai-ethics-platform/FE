@@ -5,7 +5,7 @@ import popup1 from '../assets/popup1.svg';
 import popup2 from '../assets/popup2.svg';
 import closeIcon from '../assets/close.svg';
 
-export default function ExtraPopupModal({ open, onClose, mode = 1, popupStep }) {
+export default function ExtraPopupModal({ open, onClose, mode = 1, popupStep, round }) {
   if (!open) return null;
 
   const bgImage = mode === 2 ? popup2 : popup1;
@@ -21,33 +21,13 @@ export default function ExtraPopupModal({ open, onClose, mode = 1, popupStep }) 
     }
   }, [mode]);
 
-  const message = useMemo(() => {
-    switch (mode) {
-      case 1:
-        return pick([
-          '당신이 이 중 다른 역할이었다면 어떠한 선택을 했을지 이야기해 보세요',
-          '놓친 선택에서 얻을 수 있었던 건 무엇일까요?',
-        ]);
-      case 2:
-        return '이 쟁점과 관련되어 있지만 여기에 없는 다른 이해관계자를 지목하고, 그들이 제기할 반대 의견은 무엇일지 논의해 보세요';
-      case 4:
-        return '이제 당신은 반대 의견을 낸 플레이어의 편에서 30초간 말해 보고 설득할 이유 하나를 덧붙여 보세요';
-      default:
-        return '';
-    }
-  }, [mode]);
   // const message = useMemo(() => {
-  //   const messages = [
-  //     '당신이 이 중 다른 역할이었다면 어떠한 선택을 했을지 이야기해 보세요',
-  //     '놓친 선택에서 얻을 수 있었던 건 무엇일까요?',
-  //   ];
-
   //   switch (mode) {
-  //     case 1: {
-  //       const pattern = [0, 1, 1, 0, 0, 1];
-  //       const index = pattern[(round * 3 + popupStep) % pattern.length];
-  //       return messages[index];
-  //     }
+  //     case 1:
+  //       return pick([
+  //         '당신이 이 중 다른 역할이었다면 어떠한 선택을 했을지 이야기해 보세요',
+  //         '놓친 선택에서 얻을 수 있었던 건 무엇일까요?',
+  //       ]);
   //     case 2:
   //       return '이 쟁점과 관련되어 있지만 여기에 없는 다른 이해관계자를 지목하고, 그들이 제기할 반대 의견은 무엇일지 논의해 보세요';
   //     case 4:
@@ -55,7 +35,27 @@ export default function ExtraPopupModal({ open, onClose, mode = 1, popupStep }) 
   //     default:
   //       return '';
   //   }
-  // }, [mode, popupStep, round]);
+  // }, [mode]);
+  const message = useMemo(() => {
+    const messages = [
+      '당신이 이 중 다른 역할이었다면 어떠한 선택을 했을지 이야기해 보세요',
+      '놓친 선택에서 얻을 수 있었던 건 무엇일까요?',
+    ];
+
+    switch (mode) {
+      case 1: {
+        const pattern = [0, 1, 1, 0, 0, 1];
+        const index = pattern[(round * 3 + popupStep) % pattern.length];
+        return messages[index];
+      }
+      case 2:
+        return '이 쟁점과 관련되어 있지만 여기에 없는 다른 이해관계자를 지목하고, 그들이 제기할 반대 의견은 무엇일지 논의해 보세요';
+      case 4:
+        return '이제 당신은 반대 의견을 낸 플레이어의 편에서 30초간 말해 보고 설득할 이유 하나를 덧붙여 보세요';
+      default:
+        return '';
+    }
+  }, [mode, popupStep, round]);
 
 
   // 위치 스타일

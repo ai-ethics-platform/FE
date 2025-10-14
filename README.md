@@ -6,8 +6,6 @@
 호스트의 진행에 따라 AI 윤리적 문제를 논의하는
 인터랙티브 실시간 웹 서비스 
 
-⸻
-
 ### 핵심 기술 (Core Technologies)
 	•	 WebSocket — 3명의 유저가 하나의 세션(Room)에 동시 접속
     → 실시간 상태 동기화 및 이벤트 전달
@@ -16,7 +14,6 @@
 	•	 VoiceManager — 녹음/업로드/마이크 제어 통합 관리
 	•	 React Context API — WebSocket·WebRTC 상태 공유 및 전역 관리
 
-⸻
 
 ### 주요 흐름 
 
@@ -38,7 +35,7 @@
 5️⃣ 통계 페이지
 → 다른 팀의 선택과 결과를 비교·시각화
 
-⸻
+
 ## 실행 방법
 1️⃣ 설치
 ```  npm install ```
@@ -48,7 +45,7 @@
 
 3️⃣ 배포 빌드
 ``` npm run build ```
-⸻
+
 
 ### 🗂️ 디렉토리 구조
 ```
@@ -70,7 +67,7 @@ src/
 └── WebRTCProvider.jsx            # WebRTC P2P 오디오 스트림 관리
 ```
 
-⸻
+
 
 ### 시스템 동작 흐름 (System Flow)
 
@@ -82,8 +79,6 @@ src/
     ↓
 [게임 종료 또는 연결 해제] → [정리 및 업로드]
 
-
-⸻
 
 ### 기술 요약 
 
@@ -97,7 +92,6 @@ src/
 | **Deployment** | Vercel / Custom Server |
 
 
-⸻
 #### 페이지별 주요 역할
 
 | 구분 | 설명 |
@@ -109,7 +103,6 @@ src/
 | **ChatPage** | 교사용 편집툴 내 챗봇 개발 페이지 |
 | **Game09** | 통계 페이지 (다른 팀의 선택 비교) |
 
-⸻
 #### 디버깅 명령어 (Debug Utilities)
 
 ```
@@ -119,5 +112,4 @@ window.debugWebRTC.debugConnections()	PeerConnection 상태 출력
 window.stopAllOutgoingAudioGlobal()	송신 중인 모든 오디오 트랙 중단
 window.terminateWebRTCSession()	세션 종료 및 녹음 업로드 실행
 ```
-⸻
 

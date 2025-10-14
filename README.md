@@ -53,9 +53,10 @@ src/
 ├── api/
 │   └── axiosInstance.js          # API 통신 모듈 (JWT 토큰 관리 포함)
 │
+├── assets/                   # svg 
+│   └── images/                 # 이미지
 ├── components/                   # 공통 UI 컴포넌트
 │   └── Expanded/                 # 교사용 편집 툴 컴포넌트
-│
 ├── pages/                        # 게임 단계별 화면 구성 (Game01~Game09 등)
 │
 ├── utils/

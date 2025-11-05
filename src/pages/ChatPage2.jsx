@@ -12,7 +12,7 @@ import DilemmaOutPopup from '../components/DilemmaOutPopup';
 const STORAGE_KEY = "dilemma.flow.v1";
 const ORDER = ["opening", "dilemma", "flip", "roles", "ending"];
 
-const HISTORY_LIMIT = 5;
+const HISTORY_LIMIT = 1;
 function buildInputWithHistory(msgs, raw, isInit, limit = HISTORY_LIMIT) {
   const recent = msgs.filter(m => m.role !== "system").slice(-limit);
   const lines = recent.map(m => `${m.role}: ${m.content}`);
@@ -67,10 +67,10 @@ export default function ChatPage() {
       keysToClear.forEach(k => localStorage.removeItem(k));
     };
   
-    // 🔹 페이지 새로고침 시마다 실행
+    //  페이지 새로고침 시마다 실행
     window.addEventListener('beforeunload', clearOnReload);
   
-    // 🔹 첫 진입 시에도 기존 데이터 제거 (완전 새 세션)
+    //  첫 진입 시에도 기존 데이터 제거 
     clearOnReload();
   
     return () => {
@@ -83,7 +83,6 @@ export default function ChatPage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, context, messages }));
   }, [step, context, messages]);
 
-  // 스크롤 아래로
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
@@ -99,13 +98,9 @@ export default function ChatPage() {
     if (!step) return;
     if (step === "opening") return;
   
-    // ✅ 이미 init 메시지가 있다면 중복 방지
     const hasInit = messages.some(m => m.role === "assistant" && m.content.includes("세션 시작"));
     if (hasInit) return;
-  
-    console.log(`[AUTO INIT] step changed to ${step}, sending __INIT__`);
-    handleSend("__INIT__");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      handleSend("__INIT__");
   }, [step]);
   useEffect(() => {
     if (step !== "opening") return;
@@ -116,12 +111,9 @@ export default function ChatPage() {
   
     const text = lastMsg.content.trim();
   
-    // 🔍 "당신이 선택하신 주제는 ..." 문장이 포함되어 있을 때만 작동
     if (!text.includes("당신이 선택하신 주제는")) return;
   
-    // ✅ 굵은 텍스트(**...**) 안의 주제 추출
     const boldMatch = text.match(/당신이 선택하신 주제는\s+\*\*(.+?)\*\*\s*입니다/);
-    // ✅ 일반 텍스트 버전 대응 ("당신이 선택하신 주제는 AI 리더십입니다.")
     const plainMatch = text.match(/당신이 선택하신 주제는\s+(.+?)입니다/);
   
     let parsedTopic = null;
@@ -131,12 +123,11 @@ export default function ChatPage() {
       parsedTopic = plainMatch[1].trim();
     }
   
-    //  정확한 조건일 때만 context 저장 + 버튼 표시
     if (parsedTopic) {
       setContext(prev => ({ ...prev, topic: parsedTopic }));
       setNextReady(true);
     } else {
-      setNextReady(false); // 다른 메시지일 때는 버튼 숨김
+      setNextReady(false); 
     }
   }, [messages, step]);
    const placeholder = useMemo(() => {
@@ -183,10 +174,8 @@ export default function ChatPage() {
       .replace(/_(.*?)_/g, "$1")
   }
   function parseDilemmaResponse(text) {
-    // 줄바꿈 및 불필요한 공백 정리
     const clean = text.replace(/\r?\n+/g, "\n").trim();
   
-    // Markdown 포함된 패턴 대응
     const topicMatch = clean.match(/[-–—]?\s*\**주제\**\s*[:：]\s*(.+)/);
     const questionMatch = clean.match(/[-–—]?\s*\**질문\**\s*[:：]\s*(.+)/);
     const choice1Match = clean.match(/[-–—]?\s*\**선택지\s*1\**\s*[:：]\s*(.+)/);
@@ -208,13 +197,10 @@ export default function ChatPage() {
     return null;
   }
   function parseFlipResponse(text) {
-    // 불필요한 줄바꿈 정리
     const clean = text.replace(/\r?\n+/g, "\n").trim();
   
-    // "시나리오와 플립 상황을 결정했습니다." 이후의 내용만 추출
     const afterHeader = clean.split("시나리오와 플립 상황을 결정했습니다")[1]?.trim() || "";
   
-    // 공통 패턴: 콜론(:)이 없고 줄바꿈으로 구분될 수도 있으므로, 다음 줄 내용을 가져오도록 처리
     const scenarioMatch = afterHeader.match(/상황\s*시나리오[:：]?\s*\n?(.+?)(?=\n\s*질문|$)/s);
     const questionMatch = afterHeader.match(/질문[:：]?\s*\n?(.+?)(?=\n\s*[-–—]?\s*선택지\s*1|$)/s);
   
@@ -251,24 +237,18 @@ export default function ChatPage() {
     return structure;
   }
   function parseRolesResponse(text) {
-    // 1️⃣ 줄바꿈 / 마크다운 정리
     const clean = text
       .replace(/\r?\n+/g, "\n")
       .replace(/\*\*(.*?)\*\*/g, "$1")
       .trim();
   
-    // 2️⃣ "역할을 결정했습니다" 또는 "할을 결정했습니다" 이후 텍스트 추출
     let afterHeader =
       clean.split(/(?:역할|할)을\s*결정했습니다\.?/)[1]?.trim() || clean;
   
-    // 3️⃣ 안내 문구 제거
     afterHeader = afterHeader
       .replace(/이대로\s*확정해도[\s\S]*$/g, "")
       .trim();
-  
-    // 4️⃣ 역할 블록 분리 (번호 or dash 기반 구분)
-    //    → "- 역할 1:", "역할 1:", "1. " 등 다양한 형태 지원
-    const roleBlocks = afterHeader
+      const roleBlocks = afterHeader
     .split(/\n(?=(?:[-–—•]?\s*)?-?\s*역할\s*\d+[:：])/g)
     .filter(Boolean);
   
@@ -277,13 +257,13 @@ export default function ChatPage() {
     roleBlocks.forEach((block, i) => {
       const trimmed = block.trim();
   
-      // 이름 (역할명)
+      
       const nameMatch =
         trimmed.match(/역할\s*\d+\s*[:：]\s*(.+?)(?:\n|$)/) ||
         trimmed.match(/[-–—•]?\s*([^:\n]+?)\s*(?:\n|$)/);
       const name = nameMatch ? nameMatch[1].trim() : "";
   
-      // 설명
+    
       const descMatch = trimmed.match(/배경\s*설명[:：]?\s*([\s\S]+)/);
       const description = descMatch ? descMatch[1].trim() : "";
   
@@ -298,15 +278,13 @@ export default function ChatPage() {
     if (loading) return;
     setError("");
   
-    const raw = (userText ?? input).trim(); // 입력값 정리
+    const raw = (userText ?? input).trim(); 
     const isInit = raw === "__INIT__";
   
-    //  사용자가 "다음단계" 또는 "다음 단계"를 입력했을 때 바로 다음으로 이동
     if (/^다음\s*단계$/.test(raw)) {   // 공백 허용
       setMessages(prev => [...prev, { role: "user", content: raw }]);
       setNextReady(false);
   
-      // 🔁 현재 단계가 ORDER 배열 안에 있을 때만 이동
       setStep(prev => {
         const idx = ORDER.indexOf(prev);
         if (idx >= 0 && idx < ORDER.length - 1) {
@@ -316,7 +294,7 @@ export default function ChatPage() {
       });
   
       setInput("");
-      return; // ✅ API 호출하지 않음
+      return; 
     }
   
     setLoading(true);
@@ -372,7 +350,7 @@ export default function ChatPage() {
           prompt: {
             id: prompt.id,
             version: prompt.version,
-            variables: { structure: JSON.stringify(context.structure) }, // JSON 문자열로 전달
+            variables: { structure: JSON.stringify(context.structure) },
           },
         };
       }
@@ -412,19 +390,18 @@ export default function ChatPage() {
             ...prev,
             topic: parsed.topic,
             question: parsed.question,
-            choice1: parsed.choice1, // "선택지1"
-            choice2: parsed.choice2, // "선택지2"
+            choice1: parsed.choice1, 
+            choice2: parsed.choice2, 
           }));
-          setNextReady(true); // 다음 단계 버튼 표시
+          setNextReady(true); 
         }
       }
-      // ✅ flip 단계 파싱
         if (step === "flip" && text.includes("시나리오와 플립 상황을 결정했습니다")) {
           const parsed = parseFlipResponse(text);
           if (parsed) {
             setContext(prev => ({
               ...prev,
-              structure: parsed, // 구조 전체 저장
+              structure: parsed, 
             }));
             setNextReady(true);
           }
@@ -436,7 +413,6 @@ export default function ChatPage() {
           setNextReady(true);
         }
       }
-      // Ending 단계 감지
         if (
           step === "ending" &&
           text.includes("최종 초안을 작성해드리겠습니다")
@@ -496,7 +472,6 @@ export default function ChatPage() {
       return idx >= 0 && idx < ORDER.length - 1 ? ORDER[idx + 1] : prev;
     });
   }
-  // 템플릿 생성 → /custom-games POST 후 /create01 이동
   const handleTemplateCreate = async () => {
     try {
       const teacher_name = localStorage.getItem('teacher_name') || '-';
@@ -632,7 +607,7 @@ export default function ChatPage() {
       {/* 오류 표시 */}
       {error && <div className="error">{error}</div>}
   
-      {/* ✅ 템플릿 생성 버튼 */}
+      {/* 템플릿 생성 버튼 */}
       {showTemplateButton && (
         <div className="template-btn-container">
           <button
@@ -648,7 +623,7 @@ export default function ChatPage() {
         </div>
       )}
   
-      {/* ✅ 입력창 */}
+      {/* 입력창 */}
       <form
         className="chat-input"
         onSubmit={(e) => {
@@ -711,16 +686,16 @@ export default function ChatPage() {
     onClick={() => setShowOutPopup(false)}
     style={{
       position: 'fixed',
-      inset: 0,                        // top/right/bottom/left: 0
-      background: 'rgba(0,0,0,0.35)',  // 반투명 배경
+      inset: 0,                        
+      background: 'rgba(0,0,0,0.35)',  
       display: 'grid',
-      placeItems: 'center',            // 가운데 정렬
-      zIndex: 10000                    // 헤더(100)보다 확실히 높게
+      placeItems: 'center',            
+      zIndex: 10000                    
     }}
   >
     <div
       onClick={(e) => e.stopPropagation()}
-      style={{ pointerEvents: 'auto' }} // 내부 클릭은 유지
+      style={{ pointerEvents: 'auto' }} 
     >
       <DilemmaOutPopup
         onClose={() => setShowOutPopup(false)}

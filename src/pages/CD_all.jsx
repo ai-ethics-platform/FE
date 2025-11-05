@@ -1,3 +1,4 @@
+//캐릭터끼리 설명하세요 페이지 
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useNavigate } from 'react-router-dom';

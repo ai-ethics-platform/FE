@@ -93,7 +93,7 @@ export default function Create00() {
     //   alert('초기 게임 생성이 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.');
     //   return;
     // }
-    navigate('/create01');
+    navigate('/editor01');
   };
 
   return (
@@ -101,7 +101,7 @@ export default function Create00() {
       headerbar={1}
       headerLeftType="home"
       headerNextDisabled={creating}
-      onHeaderLeftClick={() => navigate('/chatpage3')}
+      onHeaderLeftClick={() => navigate('/chatpage2')}
       onHeaderNextClick={handleNext}
       frame={false}
     >

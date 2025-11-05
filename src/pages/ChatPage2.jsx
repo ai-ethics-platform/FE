@@ -46,6 +46,37 @@ export default function ChatPage() {
       }
     }
   }, []);
+  useEffect(() => {
+    // ✅ 완전 초기화: 새로고침 시 이전 세션 정보 제거
+    const clearOnReload = () => {
+      console.log("🔄 새로고침 감지 → 세션 초기화 중...");
+  
+      // 저장된 딜레마 진행 데이터 제거
+      localStorage.removeItem(STORAGE_KEY);
+  
+      // templateparsing 결과 변수들 모두 제거
+      const keysToClear = [
+        'opening', 'char1', 'char2', 'char3',
+        'charDes1', 'charDes2', 'charDes3',
+        'dilemma_situation', 'question',
+        'choice1', 'choice2',
+        'flips_agree_texts', 'flips_disagree_texts',
+        'agreeEnding', 'disagreeEnding',
+        'code', 'url'
+      ];
+      keysToClear.forEach(k => localStorage.removeItem(k));
+    };
+  
+    // 🔹 페이지 새로고침 시마다 실행
+    window.addEventListener('beforeunload', clearOnReload);
+  
+    // 🔹 첫 진입 시에도 기존 데이터 제거 (완전 새 세션)
+    clearOnReload();
+  
+    return () => {
+      window.removeEventListener('beforeunload', clearOnReload);
+    };
+  }, []);
 
   // 자동 저장
   useEffect(() => {

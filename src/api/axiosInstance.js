@@ -141,7 +141,7 @@ instance.interceptors.response.use(
 );
 
 export async function callChatbot({ step, input, context, prompt }) {
-  const payload = { step, input, context, prompt }; // ← 스펙 고정
+  const payload = { step, input, context, prompt }; 
   const { data } = await instance.post(
     "/chat/with-prompt",
     payload,

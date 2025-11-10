@@ -12,7 +12,7 @@ import DilemmaOutPopup from '../components/DilemmaOutPopup';
 const STORAGE_KEY = "dilemma.flow.v1";
 const ORDER = ["opening", "dilemma", "flip", "roles", "ending"];
 
-const HISTORY_LIMIT = 1;
+const HISTORY_LIMIT = 5;
 function buildInputWithHistory(msgs, raw, isInit, limit = HISTORY_LIMIT) {
   const recent = msgs.filter(m => m.role !== "system").slice(-limit);
   const lines = recent.map(m => `${m.role}: ${m.content}`);
@@ -20,7 +20,7 @@ function buildInputWithHistory(msgs, raw, isInit, limit = HISTORY_LIMIT) {
   return lines.join("\n");
 }
 
-export default function ChatPage() {
+export default function ChatPage2() {
   const navigate = useNavigate();
   const [step, setStep] = useState("opening");
   const [context, setContext] = useState({});
@@ -31,7 +31,7 @@ export default function ChatPage() {
   const bottomRef = useRef(null);
   const [nextReady, setNextReady] = useState(false);
   const [showTemplateButton, setShowTemplateButton] = useState(false);
-    const [showOutPopup, setShowOutPopup] = useState(false); 
+  const [showOutPopup, setShowOutPopup] = useState(false); 
   
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);

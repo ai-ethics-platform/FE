@@ -36,8 +36,8 @@ export default function CreateRoom2({ onClose }) {
       //   description,
       //   topic,
       //   allow_random_matching: true
-
       // });
+      
       const endpoint = isPublic ? '/rooms/create/public' : '/rooms/create/private';
       const response = await axiosInstance.post(endpoint, {
         title,

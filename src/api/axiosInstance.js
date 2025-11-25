@@ -140,21 +140,42 @@ instance.interceptors.response.use(
   }
 );
 
-export async function callChatbot({ step, input, context, prompt }) {
-  const payload = { step, input, context, prompt }; 
+// export async function callChatbot({ step, input, context, prompt }) {
+//   const payload = { step, input, context, prompt }; 
+//   const { data } = await instance.post(
+//     "/chat/with-prompt",
+//     payload,
+//     {
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//     }
+//   );
+//   // 서버 응답 예:
+//   // { "step": "question", "text": "...", "raw": {...} }
+//   return data;
+// }
+export async function callChatbot({ session_id, user_input, step, variable, context }) {
+  const payload = {
+    session_id,
+    user_input,
+    step,
+    variable,
+    context
+  };
+
   const { data } = await instance.post(
-    "/chat/with-prompt",
+    "/chat/multi-step",
     payload,
     {
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" }
     }
   );
-  // 서버 응답 예:
-  // { "step": "question", "text": "...", "raw": {...} }
+
   return data;
 }
+
+
 
 
 export default instance;

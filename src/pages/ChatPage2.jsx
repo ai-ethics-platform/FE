@@ -791,8 +791,32 @@ export default function ChatPage2() {
   const [showTemplateButton, setShowTemplateButton] = useState(false);
   const [showOutPopup, setShowOutPopup] = useState(false);
 
-  // --- INIT 호출 ----------------------------------------------------------
+ // --- 🔥 화면 진입 시 context 및 관련 데이터 초기화 ----------------------------------------------------------
   useEffect(() => {
+    // context 관련 localStorage 모두 삭제
+    const keysToClear = [
+      STORAGE_KEY,
+      "final_dilemma_payload",
+      "opening",
+      "char1", "char2", "char3",
+      "charDes1", "charDes2", "charDes3",
+      "dilemma_situation",
+      "question",
+      "choice1", "choice2",
+      "flips_agree_texts",
+      "flips_disagree_texts",
+      "agreeEnding", "disagreeEnding",
+      "agree_label", "disagree_label",
+      "topic", "dilemma_topic",
+      "chat_session_id"
+    ];
+    
+    keysToClear.forEach((k) => localStorage.removeItem(k));
+    
+    // context 상태 초기화
+    setContext({});
+    
+    // 초기화 후 INIT 호출
     handleInit();
   }, []);
 

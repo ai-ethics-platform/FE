@@ -1,6 +1,6 @@
 // api/axiosInstance.js
 import axios from 'axios';
-const API_BASE = 'https://dilemmai.org';
+const API_BASE = 'https://dilemmai-idl.com';
 
 // 메인 axios 인스턴스 생성
 const instance = axios.create({

@@ -107,7 +107,7 @@ export default function CreateRoom2({ onClose }) {
       <div style={{ color: Colors.grey05, marginBottom: 32 }}>
         이번 게임에서 플레이할 주제를 선택해 주세요.
       </div>
-      <RoomTypeToggle isPublic={isPublic} setIsPublic={setIsPublic} />
+     {/* <RoomTypeToggle isPublic={isPublic} setIsPublic={setIsPublic} /> */}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
         {topics.map((topic) => (

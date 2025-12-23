@@ -84,45 +84,45 @@ export default function SelectHomeMate() {
   //     finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
   //   }
   // }, [websocketConnected, isPageReloading, finalizeDisconnection]);
-  useEffect(() => {
-    let cancelled = false;
-    const isReloadingGraceLocal = () => {
-      const flag = sessionStorage.getItem('reloading') === 'true';
-      const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-      if (!flag) return false;
-      if (Date.now() > expire) {
-        sessionStorage.removeItem('reloading');
-        sessionStorage.removeItem('reloading_expire_at');
-        return false;
-      }
-      return true;
-    };
+  // useEffect(() => {
+  //   let cancelled = false;
+  //   const isReloadingGraceLocal = () => {
+  //     const flag = sessionStorage.getItem('reloading') === 'true';
+  //     const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+  //     if (!flag) return false;
+  //     if (Date.now() > expire) {
+  //       sessionStorage.removeItem('reloading');
+  //       sessionStorage.removeItem('reloading_expire_at');
+  //       return false;
+  //     }
+  //     return true;
+  //   };
   
-    if (!websocketConnected) {
-      // 1) reloading-grace가 켜져 있으면 finalize 억제
-      if (isReloadingGraceLocal()) {
-        console.log('♻️ reloading grace active — finalize 억제');
-        return;
-      }
+  //   if (!websocketConnected) {
+  //     // 1) reloading-grace가 켜져 있으면 finalize 억제
+  //     if (isReloadingGraceLocal()) {
+  //       console.log('♻️ reloading grace active — finalize 억제');
+  //       return;
+  //     }
   
-      // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-      const DEBOUNCE_MS = 1200;
-      const timer = setTimeout(() => {
-        if (cancelled) return;
-        if (!websocketConnected && !isReloadingGraceLocal()) {
-          console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-          finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-        } else {
-          console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-        }
-      }, DEBOUNCE_MS);
+  //     // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+  //     const DEBOUNCE_MS = 1200;
+  //     const timer = setTimeout(() => {
+  //       if (cancelled) return;
+  //       if (!websocketConnected && !isReloadingGraceLocal()) {
+  //         console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+  //         finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+  //       } else {
+  //         console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+  //       }
+  //     }, DEBOUNCE_MS);
   
-      return () => {
-        cancelled = true;
-        clearTimeout(timer);
-      };
-    }
-  }, [websocketConnected, finalizeDisconnection]);
+  //     return () => {
+  //       cancelled = true;
+  //       clearTimeout(timer);
+  //     };
+  //   }
+  // }, [websocketConnected, finalizeDisconnection]);
   
   
 
@@ -248,7 +248,7 @@ const paragraphs = [
       : '  여러분이 생각하는 HomeMate는 어떤 형태인가요?',
     sub: isHost
       ? arrivalStatus.all_arrived
-        ? '(함께 토론한 후 방장이 선택하고, "다음" 버튼을 클릭해주세요)'
+        ? `(함께 토론한 후 방장이 선택하고, '다음' 버튼을 클릭해주세요)`
         : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`
       : arrivalStatus.all_arrived
         ? '(방장이 캐릭터를 선택할 때까지 기다려주세요)'

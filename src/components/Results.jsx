@@ -45,8 +45,32 @@ export default function ResultPopup({ onClose }) {
     (opt) => !completedTopics.includes(opt.value)
   );
 
+  const getTitleForSubtopic = (cat, subtopic) => {
+    // GameMap.jsx의 섹션(title)-옵션 매핑과 동일하게 유지
+    const titleByCategory = {
+      안드로이드: {
+        'AI의 개인 정보 수집': '가정',
+        '안드로이드의 감정 표현': '가정',
+        '아이들을 위한 서비스': '국가 인공지능 위원회',
+        '설명 가능한 AI': '국가 인공지능 위원회',
+        '지구, 인간, AI': '국제 인류 발전 위원회',
+      },
+      '자율 무기 시스템': {
+        'AI 알고리즘 공개': '주거, 군사 지역',
+        'AWS의 권한': '주거, 군사 지역',
+        '사람이 죽지 않는 전쟁': '국가 인공지능 위원회',
+        'AI의 권리와 책임': '국가 인공지능 위원회',
+        'AWS 규제': '국제 인류 발전 위원회',
+      },
+    };
+
+    return titleByCategory?.[cat]?.[subtopic] ?? '';
+  };
+
   const handleGoToSubtopic = (subtopic) => {
     localStorage.setItem('subtopic', subtopic);
+    const title = getTitleForSubtopic(category, subtopic);
+    if (title) localStorage.setItem('title', title);
     localStorage.setItem('mode', 'neutral');
     navigate('/game02');
   };

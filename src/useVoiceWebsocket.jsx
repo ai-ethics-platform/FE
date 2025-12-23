@@ -19,7 +19,7 @@ export default function useVoiceWebSocket(room_code, onParticipantsUpdate) {
       const accessToken = localStorage.getItem('access_token');
 
       ws.current = new WebSocket(
-        `wss://dilemmai.org/ws/voice/${session_id}?token=${accessToken}`
+        `wss://dilemmai-idl.com/ws/voice/${session_id}?token=${accessToken}`
       );
 
       ws.current.onopen = () => {

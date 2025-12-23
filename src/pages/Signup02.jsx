@@ -169,7 +169,7 @@ useEffect(() => {
   
     try {
       const res = await axios.post(
-        'https://dilemmai.org/auth/check-username',
+        'https://dilemmai-idl.com/auth/check-username',
         { username: trimmedUsername },
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -207,7 +207,7 @@ useEffect(() => {
     //console.log('데이터:', requestBody);  
     //다시 https로 back
     try {
-      const response = await axios.post('https://dilemmai.org/auth/signup', requestBody, {
+      const response = await axios.post('https://dilemmai-idl.com/auth/signup', requestBody, {
         headers: { 'Content-Type': 'application/json' },
       });
       //console.log('회원가입 성공:', response.data);

@@ -85,7 +85,8 @@ const handleContinueClick = () => {
           justifyContent: 'space-between',
           minHeight: 150,
           zIndex: 1,
-          wordBreak: 'keep-all',
+          wordBreak: 'normal',
+          overflowWrap: 'anywhere',
           whiteSpace: 'normal',
         }}
       >

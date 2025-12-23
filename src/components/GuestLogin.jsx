@@ -12,7 +12,7 @@ export default function GuestLogin({ onClose }) {
   const handleJoin = async () => {
     if (!isValid) return;
     try {
-      // axiosInstance 기준 (baseURL이 dilemmai.org로 설정되어 있다고 가정)
+      // axiosInstance 기준 (baseURL이 dilemmai-idl.com로 설정되어 있다고 가정)
       const { data } = await axiosInstance.post('/auth/guest', {
         guest_id: guestId.trim(),
       });

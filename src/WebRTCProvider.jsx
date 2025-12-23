@@ -227,7 +227,7 @@ const WebRTCProvider = ({ children }) => {
       connectionAttemptedRef.current = true;
 
       const urlsToTry = [
-        `wss://dilemmai.org/ws/signaling?room_code=${roomCode}&token=${token}`,
+        `wss://dilemmai-idl.com/ws/signaling?room_code=${roomCode}&token=${token}`,
       ];
       
       console.log(`🔌 [${providerId}] 시그널링 WebSocket 연결 시작 (User 토큰 기반)`);

@@ -438,7 +438,7 @@ export const WebSocketProvider = ({ children }) => {
 
     try {
       console.log(`🔌 [${providerId}] WebSocket 연결 시도:`, currentSessionId);
-      const wsUrl = `wss://dilemmai.org/ws/voice/${currentSessionId}?token=${accessToken}`;
+      const wsUrl = `wss://dilemmai-idl.com/ws/voice/${currentSessionId}?token=${accessToken}`;
       console.log(`🔗 [${providerId}] WebSocket URL:`, wsUrl.replace(accessToken, 'TOKEN_HIDDEN'));
       
       const socket = new WebSocket(wsUrl);

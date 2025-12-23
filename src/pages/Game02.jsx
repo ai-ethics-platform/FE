@@ -269,46 +269,46 @@ export default function Game02() {
     console.log('[game02] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
 
-   // 새로고침 시 재연결 로직 
-  useEffect(() => {
-      let cancelled = false;
-      const isReloadingGraceLocal = () => {
-        const flag = sessionStorage.getItem('reloading') === 'true';
-        const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-        if (!flag) return false;
-        if (Date.now() > expire) {
-          sessionStorage.removeItem('reloading');
-          sessionStorage.removeItem('reloading_expire_at');
-          return false;
-        }
-        return true;
-      };
+  //  // 새로고침 시 재연결 로직 
+  // useEffect(() => {
+  //     let cancelled = false;
+  //     const isReloadingGraceLocal = () => {
+  //       const flag = sessionStorage.getItem('reloading') === 'true';
+  //       const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+  //       if (!flag) return false;
+  //       if (Date.now() > expire) {
+  //         sessionStorage.removeItem('reloading');
+  //         sessionStorage.removeItem('reloading_expire_at');
+  //         return false;
+  //       }
+  //       return true;
+  //     };
     
-      if (!isConnected) {
-        // 1) reloading-grace가 켜져 있으면 finalize 억제
-        if (isReloadingGraceLocal()) {
-          console.log('♻️ reloading grace active — finalize 억제');
-          return;
-        }
+  //     if (!isConnected) {
+  //       // 1) reloading-grace가 켜져 있으면 finalize 억제
+  //       if (isReloadingGraceLocal()) {
+  //         console.log('♻️ reloading grace active — finalize 억제');
+  //         return;
+  //       }
     
-        // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-        const DEBOUNCE_MS = 1200;
-        const timer = setTimeout(() => {
-          if (cancelled) return;
-          if (!isConnected && !isReloadingGraceLocal()) {
-            console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-            finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-          } else {
-            console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-          }
-        }, DEBOUNCE_MS);
+  //       // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+  //       const DEBOUNCE_MS = 1200;
+  //       const timer = setTimeout(() => {
+  //         if (cancelled) return;
+  //         if (!isConnected && !isReloadingGraceLocal()) {
+  //           console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+  //           finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+  //         } else {
+  //           console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+  //         }
+  //       }, DEBOUNCE_MS);
     
-        return () => {
-          cancelled = true;
-          clearTimeout(timer);
-        };
-      }
-    }, [isConnected, finalizeDisconnection]);
+  //       return () => {
+  //         cancelled = true;
+  //         clearTimeout(timer);
+  //       };
+  //     }
+  //   }, [isConnected, finalizeDisconnection]);
     
 
   // 로컬 설정
@@ -405,7 +405,9 @@ useEffect(() => {
     navigate('/game03');
   };
   const handleBackClick = () => {
-    navigate('/character_all');
+    const idx = window.history.state?.idx ?? 0;
+    if (idx > 0) navigate(-1);
+    else navigate('/character_all');
   };
 
   //  렌더 이미지 결정 (커스텀: 한 장 고정 / 기본: 페이지별)

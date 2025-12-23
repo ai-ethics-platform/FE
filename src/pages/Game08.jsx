@@ -80,45 +80,47 @@ export default function Game08() {
     //     navigate('/');
     //   }
     // }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
-    useEffect(() => {
-            let cancelled = false;
-            const isReloadingGraceLocal = () => {
-              const flag = sessionStorage.getItem('reloading') === 'true';
-              const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-              if (!flag) return false;
-              if (Date.now() > expire) {
-                sessionStorage.removeItem('reloading');
-                sessionStorage.removeItem('reloading_expire_at');
-                return false;
-              }
-              return true;
-            };
+    
+    // 수정 끝나면 돌아와야함 
+    // useEffect(() => {
+    //         let cancelled = false;
+    //         const isReloadingGraceLocal = () => {
+    //           const flag = sessionStorage.getItem('reloading') === 'true';
+    //           const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+    //           if (!flag) return false;
+    //           if (Date.now() > expire) {
+    //             sessionStorage.removeItem('reloading');
+    //             sessionStorage.removeItem('reloading_expire_at');
+    //             return false;
+    //           }
+    //           return true;
+    //         };
           
-            if (!isConnected) {
-              // 1) reloading-grace가 켜져 있으면 finalize 억제
-              if (isReloadingGraceLocal()) {
-                console.log('♻️ reloading grace active — finalize 억제');
-                return;
-              }
+    //         if (!isConnected) {
+    //           // 1) reloading-grace가 켜져 있으면 finalize 억제
+    //           if (isReloadingGraceLocal()) {
+    //             console.log('♻️ reloading grace active — finalize 억제');
+    //             return;
+    //           }
           
-              // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-              const DEBOUNCE_MS = 1200;
-              const timer = setTimeout(() => {
-                if (cancelled) return;
-                if (!isConnected && !isReloadingGraceLocal()) {
-                  console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-                  finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-                } else {
-                  console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-                }
-              }, DEBOUNCE_MS);
+    //           // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+    //           const DEBOUNCE_MS = 1200;
+    //           const timer = setTimeout(() => {
+    //             if (cancelled) return;
+    //             if (!isConnected && !isReloadingGraceLocal()) {
+    //               console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+    //               finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+    //             } else {
+    //               console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+    //             }
+    //           }, DEBOUNCE_MS);
           
-              return () => {
-                cancelled = true;
-                clearTimeout(timer);
-              };
-            }
-          }, [isConnected, finalizeDisconnection]);
+    //           return () => {
+    //             cancelled = true;
+    //             clearTimeout(timer);
+    //           };
+    //         }
+    //       }, [isConnected, finalizeDisconnection]);
       
     
 
@@ -205,7 +207,7 @@ export default function Game08() {
     const expl = results['설명 가능한 AI'];
     let p2;
     if (completed.includes('아이들을 위한 서비스') && completed.includes('설명 가능한 AI')) {
-      p2 = `국가 내에서는 아이들을 위해 ${kids==='agree'?'제한된':'다양한'} 서비스를 제공하며, \n 가정용 로봇의 알고리즘은 ${expl==='agree'?'투명하게 공개되었습니다':'기업의 보호 하에 빠르게 발전하였습니다'}.`;
+      p2 = `국가 내에서는 아이들을 위해 ${kids==='agree'?'제한된':'다양한'} 서비스를 제공하며, \n 가정용 로봇의 알고리즘은 ${expl==='agree'?'투명하게 공개되었습니다':'기업의 보호 하에 빠르게 \n발전하였습니다'}.`;
     } else if (completed.includes('아이들을 위한 서비스')) {
       p2 = `국가 내에서는 아이들을 위해 ${kids==='agree'?'제한된':'다양한'} 서비스를 제공하게 되었습니다.`;
     } else {
@@ -215,7 +217,7 @@ export default function Game08() {
     const earth = results['지구, 인간, AI'];
     const p3 = completed.includes('지구, 인간, AI')
       ? `그리고 세계는 지금, ${earth==='agree'?'기술적 발전을 조금 늦추었지만 \n 환경과 미래를 위해 나아가고 있죠':'기술적 편리함을 누리며 \n 점점 빠른 발전을 이루고 있죠'}.`
-      : '그리고 세계는 지금, 기술적 발전을 조금 늦추었지만 환경과 미래를 위해 나아가고 있죠.';
+      : '그리고 세계는 지금, 기술적 발전을 조금 늦추었지만 환경과 미래를 위해 \n나아가고 있죠.';
     // 4th
     const p4 = '여러분이 선택한 가치가 모여 하나의 미래를 만들었습니다. \n그 미래에 여러분은 함께할 준비가 되었나요?';
   
@@ -259,33 +261,20 @@ const handleExit = async () => {
     // STEP 7: 다시 한번 강제 정리 (더미 스트림 없이!)
     console.log('🚨 최종 강제 정리...');
     await forceBrowserCleanupWithoutDummy();
-    
-    // STEP 8: WebSocket 연결 해제
-    if (disconnect) {
-      console.log('🔌 WebSocket 연결 해제');
-      disconnect();
-    }
-    
-    // STEP 9: 최종 확인
-    setTimeout(async () => {
-      console.log('=== 최종 상태 확인 (1초 후) ===');
-      await debugMediaState('최종');
-      
-      clearGameSession();
-      console.log('✅ 모든 정리 작업 완료');
-      
-      //  핵심: 더미 스트림 생성 없이 바로 페이지 이동
-      console.log('🔄 페이지 즉시 이동...');
-      window.location.href = '/';
-      
-    }, 1000);
+
+    // ✅ 의도적 '나가기'는 finalizeDisconnection으로 통일
+    // - disconnect()를 직접 호출하면 Provider 쪽에서 "연결 끊김/게임 초기화" 알럿이 뜰 수 있음
+    // - finalizeDisconnection은 중복 호출을 막고, 메시지도 여기서 지정 가능
+    console.log('✅ 나가기 완료 → 메인으로 이동');
+    await finalizeDisconnection?.('게임을 나갔습니다.');
+    return;
     
   } catch (error) {
     console.error('❌ 게임 종료 중 오류:', error);
     // 오류가 발생해도 강제 정리 시도 (더미 스트림 없이!)
     await forceBrowserCleanupWithoutDummy();
-    clearGameSession();
-    window.location.href = '/';
+    await finalizeDisconnection?.('게임을 나갔습니다.');
+    return;
   }
 };
 

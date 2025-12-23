@@ -1258,97 +1258,109 @@ export default function Create01() {
         },
       }}
     >
-      {/* A 영역 - 오프닝/제목 멘트 */}
-      <div style={{ marginTop: -30, marginBottom: '30px' }}>
-        <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '16px', color: Colors.grey07 }}>
-          오프닝 멘트
-        </h2>
-        <p style={{ ...FontStyles.title, color: Colors.grey05, lineHeight: 1.5, marginBottom: '32px' }}>
-          딜레마 상황이 발생하는 기술과 관련된 사회적인 배경, 맥락을 간략하게 소개해 주세요.
-        </p>
-      </div>
-
-      {/* B, C 영역 */}
-      <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', marginBottom: '20px' }}>
-        {/* B: 이미지 */}
-        <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div
-            style={{
-              width: '100%',
-              height: '180px',
-              border: '2px solid #ddd',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#f8f9fa',
-              overflow: 'hidden'
-            }}
-          >
-            <img
-              src={!useFallback && imageUrl ? imageUrl : create02Image}
-              alt="딜레마 이미지"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
-              onError={() => setUseFallback(true)}
-              onLoad={() => setUseFallback(false)}
-            />
-          </div>
-
-          <div style={{ textAlign: 'center' }}>
-            <span
-              onClick={handleImageChange}
-              style={{
-                color: '#333',
-                fontSize: '14px',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-                textUnderlineOffset: '3px'
-              }}
-            >
-              이미지 변경
-            </span>
-          </div>
-
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ color: Colors.systemRed, ...FontStyles.bodyBold, margin: 0, lineHeight: 1.4 }}>
-              (*권장 이미지 비율 2:1)
-            </p>
-          </div>
+      {/* 큰 화면에서도 전체가 위로 몰리지 않도록: 가운데 느낌(상/하 여백 균형) */}
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          paddingTop: 'clamp(0px, 0vh, 96px)',
+          paddingBottom: 'clamp(0px, 6vh, 96px)',
+        }}
+      >
+        {/* A 영역 - 오프닝/제목 멘트 */}
+        <div style={{ marginTop: 0, marginBottom: '20px' }}>
+          <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '16px', color: Colors.grey07 }}>
+            오프닝 멘트
+          </h2>
+          <p style={{ ...FontStyles.title, color: Colors.grey05, lineHeight: 1.5, marginBottom: '32px' }}>
+            딜레마 상황이 발생하는 기술과 관련된 사회적인 배경, 맥락을 간략하게 소개해 주세요.
+          </p>
         </div>
 
-        {/* C: 입력 필드 */}
-        <div style={{ flex: '1', marginTop: -10 }}>
-          {inputs.map((input) => (
-            <CreateInput
-              key={input.id}
-              label={input.label}
-              value={input.value}
-              onChange={(e) => handleInputChange(input.id, e.target.value)}
-              placeholder={input.placeholder}
-              onDelete={input.canDelete ? () => handleDeleteInput(input.id) : undefined}
-            />
-          ))}
+        {/* B, C 영역 */}
+        <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', marginBottom: '20px' }}>
+          {/* B: 이미지 */}
+          <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div
+              style={{
+                width: '100%',
+                height: '180px',
+                border: '2px solid #ddd',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f8f9fa',
+                overflow: 'hidden'
+              }}
+            >
+              <img
+                src={!useFallback && imageUrl ? imageUrl : create02Image}
+                alt="딜레마 이미지"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
+                onError={() => setUseFallback(true)}
+                onLoad={() => setUseFallback(false)}
+              />
+            </div>
 
-          {inputs.length < 5 && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-              <button
-                onClick={handleAddInput}
+            <div style={{ textAlign: 'center' }}>
+              <span
+                onClick={handleImageChange}
                 style={{
-                  width: '40px',
-                  height: '40px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
+                  color: '#333',
+                  fontSize: '14px',
                   cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 0
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3px'
                 }}
               >
-                <img src={inputPlusIcon} alt="입력 필드 추가" style={{ width: '40px', height: '40px' }} />
-              </button>
+                이미지 변경
+              </span>
             </div>
-          )}
+
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ color: Colors.systemRed, ...FontStyles.bodyBold, margin: 0, lineHeight: 1.4 }}>
+                (*권장 이미지 비율 2:1)
+              </p>
+            </div>
+          </div>
+
+          {/* C: 입력 필드 */}
+          <div style={{ flex: '1', marginTop: 0 }}>
+            {inputs.map((input) => (
+              <CreateInput
+                key={input.id}
+                label={input.label}
+                value={input.value}
+                onChange={(e) => handleInputChange(input.id, e.target.value)}
+                placeholder={input.placeholder}
+                onDelete={input.canDelete ? () => handleDeleteInput(input.id) : undefined}
+              />
+            ))}
+
+            {inputs.length < 5 && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <button
+                  onClick={handleAddInput}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0
+                  }}
+                >
+                  <img src={inputPlusIcon} alt="입력 필드 추가" style={{ width: '40px', height: '40px' }} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

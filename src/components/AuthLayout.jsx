@@ -7,9 +7,9 @@ export default function AuthLayout({ children }) {
   useEffect(() => {
     const handleResize = () => {
       const wRatio = window.innerWidth / 1280;
-      const hRatio = window.innerHeight / 720;
+      const hRatio = window.innerHeight / 800; // 여백 고려
       const scale = Math.min(wRatio, hRatio, 1);
-      setZoom(scale);
+      setZoom(Math.max(scale, 0.6)); // 최소 60% 크기 보장
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -32,40 +32,36 @@ export default function AuthLayout({ children }) {
           display: flex;
           justify-content: center;
           align-items: center;
-          overflow: hidden;
+          overflow: auto; /* 스크롤 허용 */
         }
         /* 1280×720 캔버스 */
         .auth-root {
           width: 1280px;
-          height: 720px;
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform-origin: top left;
+          min-height: 720px;
+          height: auto;
+          position: relative;
+          transform: scale(${zoom});
+          transform-origin: center center;
+          margin: 40px auto;
         }
         /* 반응형(너비 ≤1024px일 때) */
         @media (max-width: 1024px) {
           .auth-root {
             width: 100%;
-            height: auto;
-            transform: none !important;
-            top: 0;
-            left: 0;
+            max-width: 1280px;
+            transform: scale(${zoom});
+            margin: 20px auto;
           }
         }
       `}</style>
 
       <div className="auth-viewport">
-        <div
-          className="auth-root"
-          style={{
-            transform: `translate(-50%, -50%) scale(${zoom})`,
-          }}
-        >
+        <div className="auth-root">
           <div
             style={{
               width: '100%',
               height: '100%',
+              minHeight: '720px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',

@@ -51,7 +51,8 @@ export default function CreatorLayout({
           alignItems: 'center',
           justifyContent: frame ? 'flex-start' : 'center',
           overflowY: 'auto',
-          padding: frame ? '26px 0 30px' : 0,
+          overflowX: 'hidden',
+          padding: frame ? '26px 16px 30px' : '0 16px',
           gap: frame ? 26 : 0,
         }}
       >
@@ -60,6 +61,7 @@ export default function CreatorLayout({
             style={{
               width: '100%',
               maxWidth: 500,
+              minWidth: 0, // flex 자식이 부모를 넘지 않도록
             }}
           >
             <MakeFrame {...mergedFrameProps} />
@@ -70,6 +72,7 @@ export default function CreatorLayout({
           style={{
             width: '100%',
             maxWidth: 1060,
+            minWidth: 0, // flex 자식이 부모를 넘지 않도록
           }}
         >
           {children}

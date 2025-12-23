@@ -111,31 +111,9 @@ export default function EditorLayout({
           left: 0,
           right: 0,
           bottom: 0,
-          overflow: 'hidden',
+          overflow: 'auto', /* 스크롤 허용 */
         }}
       >
-        {/* 좌측 프로필 */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '37.5%',
-            left: leftInset + 10,
-            transform: 'translateY(-50%) scale(0.7)',
-            transformOrigin: 'left center',
-            width: 220,
-            padding: '20px 0',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 24,
-            alignItems: 'flex-start',
-            zIndex: 10,
-          }}
-        >
-          <UserProfile isLeader player="1P" create description={roleDescs[0]} />
-          <UserProfile player="2P" create description={roleDescs[1]} />
-          <UserProfile player="3P" create description={roleDescs[2]} />
-        </div>
-
         {/* 흰색 테두리 프레임 */}
         <div
           style={{
@@ -150,6 +128,28 @@ export default function EditorLayout({
             overflow: 'hidden',
           }}
         >
+          {/* 좌측 프로필 - 흰색 박스 내부로 이동 */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '37.5%',
+              left: frameBorder + 20,
+              transform: 'translateY(-50%) scale(0.7)',
+              transformOrigin: 'left center',
+              width: 220,
+              padding: '20px 0',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 24,
+              alignItems: 'flex-start',
+              zIndex: 10,
+            }}
+          >
+            <UserProfile isLeader player="1P" create description={roleDescs[0]} />
+            <UserProfile player="2P" create description={roleDescs[1]} />
+            <UserProfile player="3P" create description={roleDescs[2]} />
+          </div>
+          {/* 내부 프레임 */}
           <div
             style={{
               position: 'absolute',
@@ -182,6 +182,7 @@ export default function EditorLayout({
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center', // 세로 중앙 정렬 추가
                 padding: '26px 20px',
               }}
             >
@@ -191,7 +192,7 @@ export default function EditorLayout({
                 </div>
               )}
 
-              <div style={{ width: '100%', maxWidth: 1060, flex: 1 }}>
+              <div style={{ width: '100%', maxWidth: 1060 }}>
                 {children}
               </div>
             </div>

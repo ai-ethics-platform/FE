@@ -14,6 +14,8 @@ import axios from 'axios';
 import GuestLogin from '../components/GuestLogin';
 import { Colors, FontStyles } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
+import FindIdModal from '../components/FindIdModal';
+import FindPasswordModal from '../components/FindPasswordModal';
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,6 +24,8 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showGuestLogin, setShowGuestLogin] = useState(false);
+  const [showFindId, setShowFindId] = useState(false);
+  const [showFindPw, setShowFindPw] = useState(false);
 
   // 쿼리에서 code를 상태로 보관(초기값은 로컬스토리지)
   const [inviteCode, setInviteCode] = useState(() => localStorage.getItem('code') || '');
@@ -61,7 +65,7 @@ export default function Login() {
       form.append('username', username);
       form.append('password', password);
 
-      const response = await axios.post('https://dilemmai.org/auth/login', form, {
+      const response = await axios.post('https://dilemmai-idl.com/auth/login', form, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
 
@@ -186,7 +190,8 @@ export default function Login() {
             }}
           >
             <TextButton onClick={() => navigate('/signup01')}>회원가입</TextButton>
-            <TextButton onClick={() => { /* TODO: 비밀번호 찾기 */ }}>비밀번호 찾기</TextButton>
+            <TextButton onClick={() => setShowFindId(true)}>아이디 찾기</TextButton>
+            {/* <TextButton onClick={() => setShowFindPw(true)}>비밀번호 찾기</TextButton> */}
           </div>
 
           <SecondaryButton
@@ -198,7 +203,7 @@ export default function Login() {
               marginTop: '2vh',
             }}
             onClick={() => setShowGuestLogin(true)}
-           disabled={true}
+            disabled={true}
           >
             Guest로 로그인
           </SecondaryButton>
@@ -218,6 +223,44 @@ export default function Login() {
               <GuestLogin onClose={() => setShowGuestLogin(false)} />
             </div>
           )}
+
+          {showFindId && (
+            <div
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.45)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 9999,
+              }}
+              onClick={() => setShowFindId(false)}
+            >
+              <div onClick={(e) => e.stopPropagation()}>
+                <FindIdModal onClose={() => setShowFindId(false)} />
+              </div>
+            </div>
+          )}
+          {/* 비밀번호 찾기 기능 비활성화 */}
+          {/* {showFindPw && (
+            <div
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.45)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 9999,
+              }}
+              onClick={() => setShowFindPw(false)}
+            >
+              <div onClick={(e) => e.stopPropagation()}>
+                <FindPasswordModal onClose={() => setShowFindPw(false)} />
+              </div>
+            </div>
+          )} */}
         </div>
       </div>
     </Background>

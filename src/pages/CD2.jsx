@@ -54,46 +54,46 @@ export default function CD2() {
       localStorage.setItem('currentRound', String(nextRound));
     }, []);
   const { isHost, sendNextPage } = useHostActions();
- // 새로고침 시 재연결 로직 
-  useEffect(() => {
-      let cancelled = false;
-      const isReloadingGraceLocal = () => {
-        const flag = sessionStorage.getItem('reloading') === 'true';
-        const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-        if (!flag) return false;
-        if (Date.now() > expire) {
-          sessionStorage.removeItem('reloading');
-          sessionStorage.removeItem('reloading_expire_at');
-          return false;
-        }
-        return true;
-      };
+//  // 새로고침 시 재연결 로직 
+//   useEffect(() => {
+//       let cancelled = false;
+//       const isReloadingGraceLocal = () => {
+//         const flag = sessionStorage.getItem('reloading') === 'true';
+//         const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+//         if (!flag) return false;
+//         if (Date.now() > expire) {
+//           sessionStorage.removeItem('reloading');
+//           sessionStorage.removeItem('reloading_expire_at');
+//           return false;
+//         }
+//         return true;
+//       };
     
-      if (!isConnected) {
-        // 1) reloading-grace가 켜져 있으면 finalize 억제
-        if (isReloadingGraceLocal()) {
-          console.log('♻️ reloading grace active — finalize 억제');
-          return;
-        }
+//       if (!isConnected) {
+//         // 1) reloading-grace가 켜져 있으면 finalize 억제
+//         if (isReloadingGraceLocal()) {
+//           console.log('♻️ reloading grace active — finalize 억제');
+//           return;
+//         }
     
-        // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-        const DEBOUNCE_MS = 1200;
-        const timer = setTimeout(() => {
-          if (cancelled) return;
-          if (!isConnected && !isReloadingGraceLocal()) {
-            console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-            finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-          } else {
-            console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-          }
-        }, DEBOUNCE_MS);
+//         // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+//         const DEBOUNCE_MS = 1200;
+//         const timer = setTimeout(() => {
+//           if (cancelled) return;
+//           if (!isConnected && !isReloadingGraceLocal()) {
+//             console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+//             finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+//           } else {
+//             console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+//           }
+//         }, DEBOUNCE_MS);
     
-        return () => {
-          cancelled = true;
-          clearTimeout(timer);
-        };
-      }
-    }, [isConnected, finalizeDisconnection]);
+//         return () => {
+//           cancelled = true;
+//           clearTimeout(timer);
+//         };
+//       }
+//     }, [isConnected, finalizeDisconnection]);
 
   // WebRTC audio state
   const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
@@ -142,7 +142,7 @@ function hasFinalConsonant(kor) {
   // 기본 이미지 & 텍스트
   let descImg = player2DescImg_title1;
   let mainText =
-    `당신은 자녀 J씨의 노모입니다.\n 가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다.`;
+    `당신은 자녀 J씨의 노모입니다.\n 가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 \n있습니다.`;
 
   if (!isAWS) {
     if (subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {

@@ -49,46 +49,46 @@ export default function CD1() {
     localStorage.setItem('currentRound', String(nextRound));
   }, []);
 
-   //새로고침 시 재연결 로직 
-  useEffect(() => {
-      let cancelled = false;
-      const isReloadingGraceLocal = () => {
-        const flag = sessionStorage.getItem('reloading') === 'true';
-        const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-        if (!flag) return false;
-        if (Date.now() > expire) {
-          sessionStorage.removeItem('reloading');
-          sessionStorage.removeItem('reloading_expire_at');
-          return false;
-        }
-        return true;
-      };
+  //  //새로고침 시 재연결 로직 
+  // useEffect(() => {
+  //     let cancelled = false;
+  //     const isReloadingGraceLocal = () => {
+  //       const flag = sessionStorage.getItem('reloading') === 'true';
+  //       const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+  //       if (!flag) return false;
+  //       if (Date.now() > expire) {
+  //         sessionStorage.removeItem('reloading');
+  //         sessionStorage.removeItem('reloading_expire_at');
+  //         return false;
+  //       }
+  //       return true;
+  //     };
     
-      if (!isConnected) {
-        // 1) reloading-grace가 켜져 있으면 finalize 억제
-        if (isReloadingGraceLocal()) {
-          console.log('♻️ reloading grace active — finalize 억제');
-          return;
-        }
+  //     if (!isConnected) {
+  //       // 1) reloading-grace가 켜져 있으면 finalize 억제
+  //       if (isReloadingGraceLocal()) {
+  //         console.log('♻️ reloading grace active — finalize 억제');
+  //         return;
+  //       }
     
-        // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-        const DEBOUNCE_MS = 1200;
-        const timer = setTimeout(() => {
-          if (cancelled) return;
-          if (!isConnected && !isReloadingGraceLocal()) {
-            console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-            finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-          } else {
-            console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-          }
-        }, DEBOUNCE_MS);
+  //       // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+  //       const DEBOUNCE_MS = 1200;
+  //       const timer = setTimeout(() => {
+  //         if (cancelled) return;
+  //         if (!isConnected && !isReloadingGraceLocal()) {
+  //           console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+  //           finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+  //         } else {
+  //           console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+  //         }
+  //       }, DEBOUNCE_MS);
     
-        return () => {
-          cancelled = true;
-          clearTimeout(timer);
-        };
-      }
-    }, [isConnected, finalizeDisconnection]);
+  //       return () => {
+  //         cancelled = true;
+  //         clearTimeout(timer);
+  //       };
+  //     }
+  //   }, [isConnected, finalizeDisconnection]);
     
 
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
@@ -141,14 +141,14 @@ function hasFinalConsonant(kor) {
   let mainText =
     `당신은 어머니를 10년 이상 돌본 요양보호사 K입니다.\n` +
     ` 최근 ${mateName}${getEulReul(mateName)} 도입한 후 전일제에서 하루 2시간 근무로 전환되었습니다.\n` +
-    ` 당신은 로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}${getGwaWa(mateName)} 협업해야 하는 상황이 많습니다.`;
+    ` 당신은 로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}${getGwaWa(mateName)} 협업해야 하는 \n상황이 많습니다.`;
 
   if (!isAWS) {
     if (subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {
       descImg = player1DescImg_title2;
       mainText =
         `당신은 국내 대규모 로봇 제조사 소속이자, 로봇 제조사 연합회의 대표입니다.\n` +
-        ` 당신은 국가적 로봇 산업의 긍정적인 발전과 활용을 위한 목소리를 내기 위하여 참여했습니다.`;
+        ` 당신은 국가적 로봇 산업의 긍정적인 발전과 활용을 위한 목소리를 내기 위하여 \n참여했습니다.`;
     } else if (subtopic === '지구, 인간, AI') {
       descImg = player1DescImg_title3;
       mainText =

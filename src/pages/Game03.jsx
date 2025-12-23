@@ -633,53 +633,46 @@ export default function Game03() {
     console.log('🔧 [Game03] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
 
+
   // useEffect(() => {
-  //   if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
-  //     console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
-  //     alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
-  //     clearAllLocalStorageKeys();
-  //     navigate('/');
-  //   }
-  // }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
-  useEffect(() => {
-        let cancelled = false;
-        const isReloadingGraceLocal = () => {
-          const flag = sessionStorage.getItem('reloading') === 'true';
-          const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-          if (!flag) return false;
-          if (Date.now() > expire) {
-            sessionStorage.removeItem('reloading');
-            sessionStorage.removeItem('reloading_expire_at');
-            return false;
-          }
-          return true;
-        };
+  //       let cancelled = false;
+  //       const isReloadingGraceLocal = () => {
+  //         const flag = sessionStorage.getItem('reloading') === 'true';
+  //         const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+  //         if (!flag) return false;
+  //         if (Date.now() > expire) {
+  //           sessionStorage.removeItem('reloading');
+  //           sessionStorage.removeItem('reloading_expire_at');
+  //           return false;
+  //         }
+  //         return true;
+  //       };
       
-        if (!isConnected) {
-          // 1) reloading-grace가 켜져 있으면 finalize 억제
-          if (isReloadingGraceLocal()) {
-            console.log('♻️ reloading grace active — finalize 억제');
-            return;
-          }
+  //       if (!isConnected) {
+  //         // 1) reloading-grace가 켜져 있으면 finalize 억제
+  //         if (isReloadingGraceLocal()) {
+  //           console.log('♻️ reloading grace active — finalize 억제');
+  //           return;
+  //         }
       
-          // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-          const DEBOUNCE_MS = 1200;
-          const timer = setTimeout(() => {
-            if (cancelled) return;
-            if (!isConnected && !isReloadingGraceLocal()) {
-              console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-              finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-            } else {
-              console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-            }
-          }, DEBOUNCE_MS);
+  //         // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+  //         const DEBOUNCE_MS = 1200;
+  //         const timer = setTimeout(() => {
+  //           if (cancelled) return;
+  //           if (!isConnected && !isReloadingGraceLocal()) {
+  //             console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+  //             finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+  //           } else {
+  //             console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+  //           }
+  //         }, DEBOUNCE_MS);
       
-          return () => {
-            cancelled = true;
-            clearTimeout(timer);
-          };
-        }
-      }, [isConnected, finalizeDisconnection]);
+  //         return () => {
+  //           cancelled = true;
+  //           clearTimeout(timer);
+  //         };
+  //       }
+  //     }, [isConnected, finalizeDisconnection]);
   // step 1: 개인 동의/비동의 POST 후 consensus 폴링 시작
   const handleSubmitChoice = async () => {
     const choiceInt = agree === 'agree' ? 1 : 2;
@@ -729,7 +722,9 @@ export default function Game03() {
   };
 
   const handleBackClick = () => {
-    nav('/game02'); 
+    const idx = window.history.state?.idx ?? 0;
+    if (idx > 0) nav(-1);
+    else nav('/game02');
   };
 
   return (
@@ -781,58 +776,82 @@ export default function Game03() {
 
       {step === 2 && (
         <>
-          <Card width={936} height={216} extraTop={150}>
-            <p style={title}>당신의 선택에 얼마나 확신을 가지고 있나요?</p>
-            <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 8,
-                  left: 0,
-                  right: 0,
-                  height: LINE,
-                  background: Colors.grey03,
-                  zIndex: 0,
-                }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 8,
-                  left: 0,
-                  width: `${pct}%`,
-                  height: LINE,
-                  background: Colors.brandPrimary,
-                  zIndex: 1,
-                }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
-                {[1, 2, 3, 4, 5].map((n) => {
-                  const isFilled = n <= conf;
-                  return (
-                    <div key={n} style={{ textAlign: 'center' }}>
-                      <div
-                        onClick={() => setConf(n)}
-                        style={{
-                          width: CIRCLE,
-                          height: CIRCLE,
-                          borderRadius: '50%',
-                          background: isFilled ? Colors.brandPrimary : Colors.grey03,
-                          cursor: 'pointer',
-                          margin: '0 auto',
-                        }}
-                      />
-                      <span style={{ ...FontStyles.caption, color: Colors.grey06, marginTop: 4, display: 'inline-block' }}>
-                        {n}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+          {/* ✅ 확신도 선택 박스를 "Round 박스(상단) ↔ 다음(하단)" 사이 중앙에 배치 */}
+          <div
+            style={{
+              width: '100%',
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            {/* 중앙 영역(카드) */}
+            <div
+              style={{
+                flex: 1,
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Card width={936} height={216} extraTop={0}>
+                <p style={title}>당신의 선택에 얼마나 확신을 가지고 있나요?</p>
+                <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      left: 0,
+                      right: 0,
+                      height: LINE,
+                      background: Colors.grey03,
+                      zIndex: 0,
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      left: 0,
+                      width: `${pct}%`,
+                      height: LINE,
+                      background: Colors.brandPrimary,
+                      zIndex: 1,
+                    }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
+                    {[1, 2, 3, 4, 5].map((n) => {
+                      const isFilled = n <= conf;
+                      return (
+                        <div key={n} style={{ textAlign: 'center' }}>
+                          <div
+                            onClick={() => setConf(n)}
+                            style={{
+                              width: CIRCLE,
+                              height: CIRCLE,
+                              borderRadius: '50%',
+                              background: isFilled ? Colors.brandPrimary : Colors.grey03,
+                              cursor: 'pointer',
+                              margin: '0 auto',
+                            }}
+                          />
+                          <span style={{ ...FontStyles.caption, color: Colors.grey06, marginTop: 4, display: 'inline-block' }}>
+                            {n}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </Card>
             </div>
-          </Card>
-          <div style={{ marginTop: 80 }}>
-            <Continue width={264} height={72} step={2} disabled={conf === 0} onClick={handleSubmitConfidence} />
+
+            {/* 하단 영역(다음) */}
+            <div style={{ marginBottom: 8 }}>
+              <Continue width={264} height={72} step={2} disabled={conf === 0} onClick={handleSubmitConfidence} />
+            </div>
           </div>
         </>
       )}

@@ -35,7 +35,11 @@ export default function ContentBox2({ text, typingSpeed = 70 }) {
         alignItems: 'center',       
         justifyContent: 'center',   
         textAlign: 'center',
-        wordBreak: 'keep-all',
+        // ✅ 타이핑 중 어절이 오른쪽 끝에서 깜빡였다가 내려가는 현상 방지
+        // - keep-all은 "어절을 절대 쪼개지 않음"이라 리플로우가 크게 보임
+        // - anywhere는 공간이 부족할 때만 글자 단위로 유연하게 줄바꿈
+        wordBreak: 'normal',
+        overflowWrap: 'anywhere',
         whiteSpace: 'pre-line',
         maxWidth: 900,
         padding: '40px 60px',

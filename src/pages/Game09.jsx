@@ -69,7 +69,9 @@ export default function Game09() {
   }, []);
 
   const handleBackClick = () => {
-    navigate('/game08');
+    const idx = window.history.state?.idx ?? 0;
+    if (idx > 0) navigate(-1);
+    else navigate('/game08');
   };
 
   return (

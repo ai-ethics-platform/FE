@@ -232,45 +232,46 @@ export default function Game06() {
   //     navigate('/');
   //   }
   // }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
-  useEffect(() => {
-        let cancelled = false;
-        const isReloadingGraceLocal = () => {
-          const flag = sessionStorage.getItem('reloading') === 'true';
-          const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-          if (!flag) return false;
-          if (Date.now() > expire) {
-            sessionStorage.removeItem('reloading');
-            sessionStorage.removeItem('reloading_expire_at');
-            return false;
-          }
-          return true;
-        };
+  //수정 끝나면 다시 풀어야함 !! 
+  // useEffect(() => {
+  //       let cancelled = false;
+  //       const isReloadingGraceLocal = () => {
+  //         const flag = sessionStorage.getItem('reloading') === 'true';
+  //         const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+  //         if (!flag) return false;
+  //         if (Date.now() > expire) {
+  //           sessionStorage.removeItem('reloading');
+  //           sessionStorage.removeItem('reloading_expire_at');
+  //           return false;
+  //         }
+  //         return true;
+  //       };
       
-        if (!isConnected) {
-          // 1) reloading-grace가 켜져 있으면 finalize 억제
-          if (isReloadingGraceLocal()) {
-            console.log('♻️ reloading grace active — finalize 억제');
-            return;
-          }
+  //       if (!isConnected) {
+  //         // 1) reloading-grace가 켜져 있으면 finalize 억제
+  //         if (isReloadingGraceLocal()) {
+  //           console.log('♻️ reloading grace active — finalize 억제');
+  //           return;
+  //         }
       
-          // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-          const DEBOUNCE_MS = 1200;
-          const timer = setTimeout(() => {
-            if (cancelled) return;
-            if (!isConnected && !isReloadingGraceLocal()) {
-              console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-              finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-            } else {
-              console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-            }
-          }, DEBOUNCE_MS);
+  //         // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+  //         const DEBOUNCE_MS = 1200;
+  //         const timer = setTimeout(() => {
+  //           if (cancelled) return;
+  //           if (!isConnected && !isReloadingGraceLocal()) {
+  //             console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+  //             finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+  //           } else {
+  //             console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+  //           }
+  //         }, DEBOUNCE_MS);
       
-          return () => {
-            cancelled = true;
-            clearTimeout(timer);
-          };
-        }
-      }, [isConnected, finalizeDisconnection]);
+  //         return () => {
+  //           cancelled = true;
+  //           clearTimeout(timer);
+  //         };
+  //       }
+  //     }, [isConnected, finalizeDisconnection]);
   
   //  기본(템플릿) 엔딩 텍스트 준비
   useEffect(() => {
@@ -332,7 +333,11 @@ export default function Game06() {
     }
   };
 
-  const handleBackClick = () => navigate('/game05_1');
+  const handleBackClick = () => {
+    const idx = window.history.state?.idx ?? 0;
+    if (idx > 0) navigate(-1);
+    else navigate('/game05_1');
+  };
 
   // ===== Game08의 “나가기” 종료 루틴 이식 (로그인 페이지로 이동) =====
   function clearGameSession() {

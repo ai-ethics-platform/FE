@@ -15,7 +15,8 @@ export default function InputBoxSmall({
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const isTyping = isFocused && value.length > 0;
+  // ✅ 포커스(클릭)되면 값 유무와 상관없이 placeholder를 숨겨 커서만 보이도록
+  const isTyping = isFocused;
   const isCompleted = !isFocused && value.length > 0;
   const isError = errorMessage !== '';
 

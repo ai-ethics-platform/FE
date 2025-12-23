@@ -88,9 +88,12 @@ export default function Layout({
       }
     });
 
-    // 윈도우 크기에 따라 zoom 계산
+    // 윈도우 크기에 따라 zoom 계산 (최소 0.6 보장)
     const onResize = () => {
-      setZoom(Math.min(window.innerWidth / 1280, window.innerHeight / 720, 1));
+      const widthRatio = window.innerWidth / 1480;  // 좌측 사이드바 고려 (220 + 1060 + 여백)
+      const heightRatio = window.innerHeight / 800; // 상하 여백 고려
+      const scale = Math.min(widthRatio, heightRatio, 1);
+      setZoom(Math.max(scale, 0.6)); // 최소 60% 크기 보장
     };
     onResize();
     window.addEventListener('resize', onResize);
@@ -131,6 +134,14 @@ export default function Layout({
         height: "100vh",
       }
     : {};
+  const effectiveViewportOverride = allowScroll
+    ? viewportOverride
+    : {
+        ...viewportOverride,
+        // ✅ 기본은 잘림 없이 '고정 레이아웃 + 스케일' 유지
+        // 최소 스케일(0.6)까지 내려간 상황에선 화면에 다 안 들어갈 수 있어 스크롤 허용
+        overflow: zoom <= 0.61 ? "auto" : "hidden",
+      };
 
   const stageOverride = allowScroll
     ? {
@@ -225,9 +236,11 @@ export default function Layout({
           <div
             style={{
               position: 'fixed',  
-              top: -110,
-              right: 0,
-              zIndex: 2000,  
+              top: '50%',
+              left: '20px',
+              transform: `translateY(calc(-50% + 200px)) scale(${zoom})`,
+              transformOrigin: 'left top',
+              zIndex: 10,  // 유저 프로필(z-index: 10)보다 높음  
             }}
           >
             <img
@@ -265,35 +278,38 @@ export default function Layout({
             margin: 0;
             padding: 0;
             height: 100%;
+            overflow: hidden;
           }
 
           .layout-viewport {
             position: fixed;
             inset: 0;
-            overflow: hidden;
+            overflow: hidden; /* 기본은 숨김, 필요 시 inline style로 auto */
           }
 
           .layout-sidebar {
             position: fixed;
-            top: 38.5%;
+            top: 50%;
             left: 0;
-            transform: translateY(-50%);
+            transform: translateY(-50%) scale(${zoom});
+            transform-origin: left center;
             width: 220px;
             padding: 20px 0;
             display: flex;
             flex-direction: column;
             gap: 24px;
             align-items: flex-start;
+            z-index: 10;
           }
 
           .layout-stage {
             width: 1060px;
             height: 720px;
             position: absolute;
-            top: 48%;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(${zoom});
-            transform-origin: top center;
+            transform-origin: center center;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -306,35 +322,21 @@ export default function Layout({
             margin-bottom: 10px;
           }
 
-          @media (max-width: 1024px) {
-            .layout-sidebar {
-              position: static;
-              transform: none;
-              width: 100%;
-              flex-direction: row;
-              justify-content: center;
-              padding: 12px 0;
-            }
-            .layout-stage {
-              position: static;
-              width: 100%;
-              height: auto;
-              transform: none !important;
-              padding: 24px 16px;
-            }
-          } .profile-hint {
+          /* ✅ 레이아웃은 항상 동일(왼쪽 사이드바 + 중앙 스테이지), 크기만 scale로 반응 */
+          
+          .profile-hint {
             position: absolute;
-            top: 20px;         /* 상단에서의 위치 */
+            top: 20px;
             left: 6%;
             transform: translateX(-50%);
-            font-size: 14px;   /* 글씨 크기 */
+            font-size: 14px;
             color: ${Colors.grey06};
             text-align: center;
             opacity: 0.8;
           }
             
         `}</style>
-        <div className="layout-viewport" style={viewportOverride}>
+        <div className="layout-viewport" style={effectiveViewportOverride}>
         {!nodescription && (
           <div className="profile-hint">
           </div>

@@ -45,7 +45,8 @@ export default function ContentBox4({ text, leftText = false, leftTextContent = 
           color: Colors.grey06,
           ...FontStyles.headlineSmall,
           textAlign: leftText ? 'left' : 'center', // 정렬 변경
-          wordBreak: 'keep-all',
+          wordBreak: 'normal',
+          overflowWrap: 'anywhere',
           whiteSpace: 'pre-line',
           maxWidth: 1000,
           padding: '40px 60px',

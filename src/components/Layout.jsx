@@ -6,6 +6,7 @@ import { useVoiceRoleStates } from '../hooks/useVoiceRoleStates';
 import voiceManager from '../utils/voiceManager';
 import BackButton from './BackButton';
 import hostInfoSvg from '../assets/host_info.svg'; // 상단 import 필요
+import HostInfoBadge from '../components/HostInfoBadge';
 
 // Character popup components
 import CharacterPopup1 from '../components/CharacterPopUp';
@@ -27,6 +28,7 @@ export default function Layout({
   hostmessage = false,   
 
   popupStep = null,   // ✅ 추가
+  sidebarExtra = null,
 
 }) {
   // Zoom for responsive scaling
@@ -126,32 +128,24 @@ export default function Layout({
     // 다른 사람 역할이면 WebSocket 상태 반환
     return getVoiceStateForRole(roleId);
   };
+  // allowScroll 페이지(Game09 등): 화면 상단부터 자연스럽게 스크롤되도록 viewport 정렬만 조정
+  // (position/inset/transform을 덮어써서 레이아웃이 깨지지 않게 최소 override만 적용)
   const viewportOverride = allowScroll
     ? {
-        position: "relative",
-        top: "auto", right: "auto", bottom: "auto", left: "auto",
         overflowY: "auto",
-        height: "100vh",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        paddingTop: 24,
+        paddingBottom: 24,
       }
     : {};
-  const effectiveViewportOverride = allowScroll
-    ? viewportOverride
-    : {
-        ...viewportOverride,
-        // ✅ 기본은 잘림 없이 '고정 레이아웃 + 스케일' 유지
-        // 최소 스케일(0.6)까지 내려간 상황에선 화면에 다 안 들어갈 수 있어 스크롤 허용
-        overflow: zoom <= 0.61 ? "auto" : "hidden",
-      };
 
+  // allowScroll 페이지: width는 반응형(100% + maxWidth)로 두고, transform은 건드리지 않음(zoom scale 유지)
   const stageOverride = allowScroll
     ? {
-        position: "relative",
-        top: "auto",
-        left: "50%",
-        transform: "translateX(-50%)",       // 스케일 제거
-        width: "1060px",
+        width: "100%",
+        maxWidth: "1060px",
         minHeight: "720px",
-        padding: "42px 24px 32px",
       }
     : {};
   return (
@@ -243,13 +237,12 @@ export default function Layout({
               zIndex: 10,  // 유저 프로필(z-index: 10)보다 높음  
             }}
           >
-            <img
+            <HostInfoBadge
               src={hostInfoSvg}
               alt="Host Info"
-              style={{
-                width: '300px', 
-                height: '300px', 
-              }}
+              preset="hostInfo"
+              width={300}
+              height={300}
             />
           </div>
         )}
@@ -284,7 +277,11 @@ export default function Layout({
           .layout-viewport {
             position: fixed;
             inset: 0;
-            overflow: hidden; /* 기본은 숨김, 필요 시 inline style로 auto */
+            overflow: auto; /* 스크롤 허용 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column; /* 모바일/allowScroll에서도 깨지지 않게 기본은 column */
           }
 
           .layout-sidebar {
@@ -297,23 +294,37 @@ export default function Layout({
             padding: 20px 0;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 0px;
             align-items: flex-start;
             z-index: 10;
           }
 
+          .layout-sidebar-profiles {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: flex-start;
+            width: 100%;
+          }
+
+          .layout-sidebar-extra {
+            margin-top: 10px; /* 유저프로필 바로 아래 */
+            margin-left: 14px; /* 살짝 오른쪽 */
+            align-self: flex-start;
+          }
+
           .layout-stage {
             width: 1060px;
-            height: 720px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(${zoom});
+            min-height: 720px;
+            height: auto;
+            position: relative;
+            transform: scale(${zoom});
             transform-origin: center center;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 42px 24px 32px;
+            margin: 40px auto;
           }
 
           .layout-gameframe {
@@ -322,7 +333,42 @@ export default function Layout({
             margin-bottom: 10px;
           }
 
-          /* ✅ 레이아웃은 항상 동일(왼쪽 사이드바 + 중앙 스테이지), 크기만 scale로 반응 */
+          @media (max-width: 1024px) {
+            .layout-sidebar {
+              position: static;
+              transform: scale(${zoom});
+              transform-origin: top center;
+              width: 100%;
+              left: auto;
+              top: auto;
+              flex-direction: column;
+              justify-content: flex-start;
+              padding: 12px 0;
+              margin-bottom: 20px;
+              align-items: center;
+            }
+
+            .layout-sidebar-profiles {
+              flex-direction: row;
+              justify-content: center;
+              align-items: flex-start;
+              width: 100%;
+            }
+
+            .layout-sidebar-extra {
+              margin-left: 0;
+              align-self: center;
+            }
+
+            .layout-stage {
+              position: static;
+              width: 100%;
+              max-width: 1060px;
+              transform: scale(${zoom});
+              padding: 24px 16px;
+              margin: 20px auto;
+            }
+          }
           
           .profile-hint {
             position: absolute;
@@ -336,52 +382,60 @@ export default function Layout({
           }
             
         `}</style>
-        <div className="layout-viewport" style={effectiveViewportOverride}>
+        <div className="layout-viewport" style={viewportOverride}>
         {!nodescription && (
           <div className="profile-hint">
           </div>
         )}
           <aside className="layout-sidebar">
-            <UserProfile
-              player="1P"
-              isLeader={hostId === '1'}
-              isMe={myRoleId === '1'}
-              isSpeaking={getVoiceStateForRoleWithMyStatus(1).is_speaking}
-              isMicOn={getVoiceStateForRoleWithMyStatus(1).is_mic_on}
-              nickname={getVoiceStateForRoleWithMyStatus(1).nickname}
-              nodescription={nodescription}
-              {...(onProfileClick && {
-                onClick: () => setOpenProfile('1P'),
-                style: { cursor: 'pointer' },
-              })}
-            />
-            <UserProfile
-              player="2P"
-              isLeader={hostId === '2'}
-              isMe={myRoleId === '2'}
-              isSpeaking={getVoiceStateForRoleWithMyStatus(2).is_speaking}
-              isMicOn={getVoiceStateForRoleWithMyStatus(2).is_mic_on}
-              nickname={getVoiceStateForRoleWithMyStatus(2).nickname}
-              nodescription={nodescription}
-              {...(onProfileClick && {
-                onClick: () => setOpenProfile('2P'),
-                style: { cursor: 'pointer' },
-              })}
-            />
-            <UserProfile
-              player="3P"
-              characterDesc="자녀 J"
-              isLeader={hostId === '3'}
-              isMe={myRoleId === '3'}
-              isSpeaking={getVoiceStateForRoleWithMyStatus(3).is_speaking}
-              isMicOn={getVoiceStateForRoleWithMyStatus(3).is_mic_on}
-              nickname={getVoiceStateForRoleWithMyStatus(3).nickname}
-              nodescription={nodescription}
-              {...(onProfileClick && {
-                onClick: () =>setOpenProfile('3P'),
-                style: { cursor: 'pointer' },
-              })}
-            />
+            <div className="layout-sidebar-profiles">
+              <UserProfile
+                player="1P"
+                isLeader={hostId === '1'}
+                isMe={myRoleId === '1'}
+                isSpeaking={getVoiceStateForRoleWithMyStatus(1).is_speaking}
+                isMicOn={getVoiceStateForRoleWithMyStatus(1).is_mic_on}
+                nickname={getVoiceStateForRoleWithMyStatus(1).nickname}
+                nodescription={nodescription}
+                {...(onProfileClick && {
+                  onClick: () => setOpenProfile('1P'),
+                  style: { cursor: 'pointer' },
+                })}
+              />
+              <UserProfile
+                player="2P"
+                isLeader={hostId === '2'}
+                isMe={myRoleId === '2'}
+                isSpeaking={getVoiceStateForRoleWithMyStatus(2).is_speaking}
+                isMicOn={getVoiceStateForRoleWithMyStatus(2).is_mic_on}
+                nickname={getVoiceStateForRoleWithMyStatus(2).nickname}
+                nodescription={nodescription}
+                {...(onProfileClick && {
+                  onClick: () => setOpenProfile('2P'),
+                  style: { cursor: 'pointer' },
+                })}
+              />
+              <UserProfile
+                player="3P"
+                characterDesc="자녀 J"
+                isLeader={hostId === '3'}
+                isMe={myRoleId === '3'}
+                isSpeaking={getVoiceStateForRoleWithMyStatus(3).is_speaking}
+                isMicOn={getVoiceStateForRoleWithMyStatus(3).is_mic_on}
+                nickname={getVoiceStateForRoleWithMyStatus(3).nickname}
+                nodescription={nodescription}
+                {...(onProfileClick && {
+                  onClick: () =>setOpenProfile('3P'),
+                  style: { cursor: 'pointer' },
+                })}
+              />
+            </div>
+
+            {sidebarExtra && (
+              <div className="layout-sidebar-extra">
+                {sidebarExtra}
+              </div>
+            )}
           </aside>
 
           <section className="layout-stage"style={stageOverride}>

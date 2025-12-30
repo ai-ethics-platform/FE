@@ -54,14 +54,12 @@ import ChatPage from "../pages/ChatPage";
 import ChatPage2 from "../pages/ChatPage2";
 import ChatPage3 from "../pages/ChatPage3";
 
-import VoiceTestSimulator from '../pages/VoiceTestSimulator';
 // WebSocket/WebRTC가 필요한 페이지들을 감싸는 컴포넌트
 function GameRoutes() {
   return (
     <WebSocketProvider>
       <WebRTCProvider>
         <Routes>
-          <Route path="/voicetestsimulator" element={<VoiceTestSimulator />} />
           <Route path="/gameintro" element={<GameIntro />} />
           <Route path="/gameintro2" element={<GameIntro2 />} />
           <Route path="/selecthomemate" element={<SelectHomeMate />} />

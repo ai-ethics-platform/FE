@@ -193,6 +193,38 @@ export default function Editor02() {
       round={round}
       onProfileClick={setOpenProfile}
       onBackClick={handleBackClick}
+      sidebarExtra={
+        <div
+          style={{
+            position: 'relative',
+            textAlign: 'center',
+            width: 'clamp(190px, 18vw, 250px)',
+            pointerEvents: 'none', // 프로필 클릭을 가리지 않도록
+          }}
+        >
+          <img
+            src={bubbleSvg}
+            alt="Bubble"
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+          />
+          <span
+            style={{
+              width: '100%',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              color: '#fff',
+              ...FontStyles.caption,
+            }}
+          >
+            <>
+              캐릭터 패널을 클릭하면 <br />
+              해당 캐릭터의 정보를 볼 수 있습니다.
+            </>
+          </span>
+        </div>
+      }
     >
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <div style={{ width: '100%', maxWidth: STAGE_MAX_WIDTH, boxSizing: 'border-box' }}>
@@ -234,35 +266,6 @@ export default function Editor02() {
                />
               </div>
             ))}
-          </div>
-
-          {/* Bubble SVG와 텍스트 배치 (기존 유지) */}
-          <div
-          style={{
-            position: 'fixed', 
-            bottom: '190px',     
-            left: '-200px',       
-            zIndex: 1000,        
-            textAlign: 'center',
-          }}
-        >
-            <img src={bubbleSvg} alt="Bubble" style={{ width: '250px' }} />
-            <span
-              style={{
-                width: '100%',
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                color: '#fff',
-                ...FontStyles.caption,
-              }}
-            >
-              <>
-                캐릭터 패널을 클릭하면 <br />
-                해당 캐릭터의 정보를 볼 수 있습니다.
-              </>
-            </span>
           </div>
 
           <div style={{ width: '100%' }}>

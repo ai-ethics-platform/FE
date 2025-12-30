@@ -141,14 +141,14 @@ function hasFinalConsonant(kor) {
   let mainText =
     `당신은 어머니를 10년 이상 돌본 요양보호사 K입니다.\n` +
     ` 최근 ${mateName}${getEulReul(mateName)} 도입한 후 전일제에서 하루 2시간 근무로 전환되었습니다.\n` +
-    ` 당신은 로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}${getGwaWa(mateName)} 협업해야 하는 \n상황이 많습니다.`;
+    ` 당신은 로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}${getGwaWa(mateName)} 협업해야 하는 상황이 많습니다.`;
 
   if (!isAWS) {
     if (subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {
       descImg = player1DescImg_title2;
       mainText =
         `당신은 국내 대규모 로봇 제조사 소속이자, 로봇 제조사 연합회의 대표입니다.\n` +
-        ` 당신은 국가적 로봇 산업의 긍정적인 발전과 활용을 위한 목소리를 내기 위하여 \n참여했습니다.`;
+        ` 당신은 국가적 로봇 산업의 긍정적인 발전과 활용을 위한 목소리를 내기 위하여 참여했습니다.`;
     } else if (subtopic === '지구, 인간, AI') {
       descImg = player1DescImg_title3;
       mainText =
@@ -164,9 +164,9 @@ function hasFinalConsonant(kor) {
       case 'AWS의 권한':
         descImg = AWS_2;
         mainText =
-          `당신은 최근 훈련을 마치고 자율 무기 시스템 ${mateName}${getGwaWa(mateName)} 함께 실전에 투입된 신입 병사 \n B입니다. ` +
-          `${mateName}${getEunNeun(mateName)} 정확하고 빠르게 움직이며, 실전에서 당신의 생존률을 높여준다고\n 느낍니다. ` +
-          `당신은 ${mateName}${getGwaWa(mateName)} 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고\n 생각합니다.`;
+          `당신은 최근 훈련을 마치고 자율 무기 시스템 ${mateName}${getGwaWa(mateName)} 함께 실전에 투입된 신입 병사 B입니다. ` +
+          `${mateName}${getEunNeun(mateName)} 정확하고 빠르게 움직이며, 실전에서 당신의 생존률을 높여준다고 느낍니다. ` +
+          `당신은 ${mateName}${getGwaWa(mateName)} 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고 생각합니다.`;
         break;
       case '사람이 죽지 않는 전쟁':
         descImg = AWS_3;
@@ -184,7 +184,7 @@ function hasFinalConsonant(kor) {
         descImg = AWS_5;
         mainText =
           '당신은 AWS 기술 보유 중인 중견국 A의 국방 기술 고문입니다. ' +
-          'AWS가 기회가 될지 \n위험이 될지 판단하고자 국제 인류 발전 위원회에 참석했습니다.';
+          'AWS가 기회가 될지 위험이 될지 판단하고자 국제 인류 발전 위원회에 참석했습니다.';
         break;
       default:
         mainText = '자율 무기 시스템 시나리오입니다. 먼저, 역할을 확인하세요.';
@@ -213,9 +213,8 @@ function hasFinalConsonant(kor) {
     // 이미지: role_image_1 (문자열 경로)
     const rawRoleImg = localStorage.getItem('role_image_1') || '';
     const customImg = resolveImageUrl(rawRoleImg);
-    if (customImg) {
-      descImg = customImg|| defaultimg;
-    }
+    // ✅ 커스텀 모드에서는 role_image가 없으면 기본 이미지(Frame235)로 표시
+    descImg = customImg ?? defaultimg;
     // subtopic은 위에서 이미 creatorTitle로 치환됨
   }
 

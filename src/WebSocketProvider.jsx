@@ -121,7 +121,7 @@ export const WebSocketProvider = ({ children }) => {
   const sendMessage = (message) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(message));
-      console.log(`📤 [${providerId}] WebSocket 메시지 전송:`, message);
+     // console.log(`📤 [${providerId}] WebSocket 메시지 전송:`, message);
       return true;
     } else {
       console.warn(`⚠️ [${providerId}] WebSocket 연결되지 않음. 메시지 전송 실패:`, message);
@@ -496,19 +496,19 @@ export const WebSocketProvider = ({ children }) => {
       socket.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
-          console.log(`📨 [${providerId}] WebSocket 메시지 수신:`, msg);
+         // console.log(`📨 [${providerId}] WebSocket 메시지 수신:`, msg);
 
                  // ① 서버가 보낸 앱-레벨 ping 에는 즉시 pong으로 응답
         if (msg.type === 'ping') {
           if (ws.current?.readyState === WebSocket.OPEN) {
             ws.current.send(JSON.stringify({ type: 'pong' }));
-            console.log('🏓 pong 전송 (서버 ping 응답)');
+           // console.log('🏓 pong 전송 (서버 ping 응답)');
           }
           return; // 핸들러들로 전달하지 않고 종료
         }
 
           if (msg.type === 'pong') {
-            console.log(`🏓 [${providerId}] pong 응답 수신 - 백엔드와 정상 통신 확인됨`);
+           // console.log(`🏓 [${providerId}] pong 응답 수신 - 백엔드와 정상 통신 확인됨`);
             return;
           }
 

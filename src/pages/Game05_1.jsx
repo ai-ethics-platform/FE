@@ -14,8 +14,9 @@ import { useWebRTC } from '../WebRTCProvider';
 import { useHostActions, useWebSocketMessage } from '../hooks/useWebSocketMessage';
 import { FontStyles, Colors } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
-import hostInfoSvg from '../assets/host_info.svg';
+import hostInfoSvg from '../assets/host_info2.svg';
 import defaultImg from '../assets/images/default.png';
+import HostInfoBadge from '../components/HostInfoBadge';
 
 const CARD_W = 640;
 const CARD_H = 170;
@@ -369,13 +370,12 @@ export default function Game05_01() {
             pointerEvents: 'auto',
           }}
         >
-          <img
+          <HostInfoBadge
             src={hostInfoSvg}
             alt="Host Info"
-            style={{
-              width: '300px',
-              height: '300px',
-            }}
+            preset="hostInfo"
+            width={300}
+            height={300}
           />
         </div>,
         document.body

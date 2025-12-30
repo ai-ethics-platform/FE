@@ -25,6 +25,7 @@ import { FontStyles,Colors } from '../components/styleConstants';
 import HostCheck1 from '../components/HostCheck1';
 
 import hostInfoSvg from '../assets/host_info.svg';
+import HostInfoBadge from '../components/HostInfoBadge';
 
 export default function SelectHomeMate() {
   const navigate = useNavigate();
@@ -307,6 +308,15 @@ const paragraphs = [
       //  2) WebSocket으로 다음 페이지 브로드캐스트
       sendNextPage();
     } catch (err) {
+      // 서버에 이미 저장된 상태(중복 저장)로 400이 오는 경우: 로컬만 저장하고 그대로 진행
+      const status = err?.response?.status;
+      if (status === 400) {
+        console.warn('[SelectHomeMate] AI 선택: 이미 저장된 것으로 판단(400) → 로컬 저장 후 진행', err?.response?.data);
+        localStorage.setItem('selectedCharacterIndex', String(activeIndex));
+        sendNextPage();
+        return;
+      }
+
       console.error('[SelectHomeMate] AI 선택 실패:', err);
       alert('메이트 선택 실패');
     }
@@ -327,13 +337,12 @@ const paragraphs = [
           zIndex: 10, 
         }}
       >
-        <img 
-          src={hostInfoSvg} 
+        <HostInfoBadge
+          src={hostInfoSvg}
           alt="Host Info"
-          style={{
-            width: '300px', 
-            height: '300px', 
-          }}
+          preset="hostInfo"
+          width={300}
+          height={300}
         />
       </div>
     )}

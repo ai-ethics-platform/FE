@@ -1,5 +1,8 @@
-function hasFinalConsonant(kor) {
-  const lastChar = kor[kor.length - 1];
+export function hasFinalConsonant(kor) {
+  const trimmed = String(kor ?? '').trim();
+  if (!trimmed) return false;
+
+  const lastChar = trimmed[trimmed.length - 1];
   const code = lastChar.charCodeAt(0);
 
   // 한글 범위 체크
@@ -9,7 +12,7 @@ function hasFinalConsonant(kor) {
   }
 
   // 영어 받침 규칙 (자음으로 끝나는 경우)
-  if (/[a-zA-Z]$/.test(kor)) {
+  if (/[a-zA-Z]$/.test(trimmed)) {
     const lastLetter = lastChar.toLowerCase();
     // 영어 모음(a, e, i, o, u, y) → 받침 없음 → '를'
     return !/[aeiouy]$/.test(lastLetter);
@@ -18,15 +21,18 @@ function hasFinalConsonant(kor) {
   return false;
 }
 
-function attachJosa(name, pattern) {
-  const final = hasFinalConsonant(name);
+export function attachJosa(name, pattern) {
+  const trimmed = String(name ?? '').trim();
+  if (!trimmed) return '';
+
+  const final = hasFinalConsonant(trimmed);
 
   switch (pattern) {
-    case '은/는': return name + (final ? '은' : '는');
-    case '이/가': return name + (final ? '이' : '가');
-    case '을/를': return name + (final ? '을' : '를');
-    case '과/와': return name + (final ? '과' : '와');
-    default: return name;
+    case '은/는': return trimmed + (final ? '은' : '는');
+    case '이/가': return trimmed + (final ? '이' : '가');
+    case '을/를': return trimmed + (final ? '을' : '를');
+    case '과/와': return trimmed + (final ? '과' : '와');
+    default: return trimmed;
   }
 }
 

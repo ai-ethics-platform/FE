@@ -101,7 +101,7 @@ export default function CD3() {
 
   let descImg = player3DescImg_title1;
   let mainText =
-    '당신은 자녀 J씨입니다.\n 함께 사는 노쇠하신 어머니가 걱정되지만, 바쁜 직장생활로 어머니를 돌보아드릴 \n여유가 거의 없습니다. ';
+    '당신은 자녀 J씨입니다.\n 함께 사는 노쇠하신 어머니가 걱정되지만, 바쁜 직장생활로 어머니를 돌보아드릴 여유가 거의 없습니다. ';
 
   if (!isAWS) {
     if (subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {
@@ -126,7 +126,7 @@ export default function CD3() {
         descImg = AWS_2;
         mainText =
           `당신은 자율 무기 시스템 ${mateName} 도입 이후 작전 효율성과 병사들의 변화 양상을 모두 지켜보고 있는 군 지휘관입니다. ` +
-          '당신은 두 병사의 입장을 듣고, 군 전체가 나아갈 \n 방향을 모색하려 합니다.';
+          '당신은 두 병사의 입장을 듣고, 군 전체가 나아갈 방향을 모색하려 합니다.';
         break;
       case subtopic === '사람이 죽지 않는 전쟁':
         descImg = AWS_3;
@@ -173,9 +173,8 @@ export default function CD3() {
     // 이미지: role_image_3 (문자열 경로)
     const rawRoleImg = localStorage.getItem('role_image_3') || '';
     const customImg = resolveImageUrl(rawRoleImg);
-    if (customImg) {
-      descImg = customImg||defaultimg;
-    }
+    // ✅ 커스텀 모드에서는 role_image가 없으면 기본 이미지(Frame235)로 표시
+    descImg = customImg ?? defaultimg;
     // subtopic은 위에서 creatorTitle로 이미 치환됨
   }
 

@@ -196,7 +196,7 @@ export default function Game08() {
     const and = results['안드로이드의 감정 표현'];
     let p1;
     if (completed.includes('AI의 개인 정보 수집') && completed.includes('안드로이드의 감정 표현')) {
-      p1 = `여러분의 결정으로 가정용 로봇은 보다 ${ai==='agree'?'정확한':'안전한'} 서비스를 제공하였고, 여러분의 ${and==='agree'?'친구처럼':'보조 도구로서'} 제 역할을 다하고 있습니다.`;
+      p1 = `여러분의 결정으로 가정용 로봇은 보다 ${ai==='agree'?'정확한':'안전한'} 서비스를 제공하였고,\n 여러분의 ${and==='agree'?'친구처럼':'보조 도구로서'} 제 역할을 다하고 있습니다.`;
     } else if (completed.includes('AI의 개인 정보 수집')) {
       p1 = `여러분의 결정으로 가정용 로봇은 보다 ${ai==='agree'?'정확한':'안전한'} 서비스를 제공하게 되었습니다.`;
     } else {

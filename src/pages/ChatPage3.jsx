@@ -32,7 +32,6 @@ const cardDisabledStyle = {
     textAlign: 'center',
     padding: '12px',
     opacity:0.5,
-    cursor: 'pointer',
     userSelect: 'none',
     cursor: 'not-allowed',
     pointerEvents: 'none',

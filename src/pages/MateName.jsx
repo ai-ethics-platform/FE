@@ -21,6 +21,7 @@ import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMes
 import { clearAllLocalStorageKeys } from '../utils/storage';
 
 import hostInfoSvg from '../assets/host_info.svg';
+import HostInfoBadge from '../components/HostInfoBadge';
 
 export default function MateName() {
   const navigate = useNavigate();
@@ -39,8 +40,8 @@ export default function MateName() {
 
     const uiText = isAWS
     ? {
-        placeholder: '여러분이 사용자라면 자율무기시스템을 어떻게 부를까요? (방장만 입력 가능)',
-        main: '여러분이 생각하는 자율무기시스템은 어떤 형태인가요?',
+        placeholder: '여러분이 사용자라면 자율 무기 시스템을 어떻게 부를까요? (방장만 입력 가능)',
+        main: '여러분이 생각하는 자율 무기 시스템은 어떤 형태인가요?',
       }
     : {
         placeholder: '여러분의 HomeMate 이름을 지어주세요.(방장만 입력 가능)',
@@ -199,6 +200,16 @@ useEffect(() => {
       const ok = sendNextPage();
       if (!ok) navigate('/gamemap');
     } catch (err) {
+      // 서버에 이미 저장된 상태(중복 저장)로 400이 오는 경우: 로컬만 저장하고 그대로 진행
+      const status = err?.response?.status;
+      if (status === 400) {
+        console.warn('[MateName] AI 이름: 이미 저장된 것으로 판단(400) → 로컬 저장 후 진행', err?.response?.data);
+        localStorage.setItem('mateName', trimmed);
+        const ok = sendNextPage();
+        if (!ok) navigate('/gamemap');
+        return;
+      }
+
       console.error('[MateName] AI 이름 저장 실패:', err);
       alert(err?.response?.data?.detail ?? '이름 저장 중 오류가 발생했습니다.');
     }
@@ -215,13 +226,12 @@ useEffect(() => {
                 zIndex: 10, 
               }}
             >
-              <img 
-                src={hostInfoSvg} 
+              <HostInfoBadge
+                src={hostInfoSvg}
                 alt="Host Info"
-                style={{
-                  width: '300px', 
-                  height: '300px', 
-                }}
+                preset="hostInfo"
+                width={300}
+                height={300}
               />
             </div>
           )}

@@ -142,7 +142,7 @@ function hasFinalConsonant(kor) {
   // 기본 이미지 & 텍스트
   let descImg = player2DescImg_title1;
   let mainText =
-    `당신은 자녀 J씨의 노모입니다.\n 가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 \n있습니다.`;
+    `당신은 자녀 J씨의 노모입니다.\n 가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다.`;
 
   if (!isAWS) {
     if (subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {
@@ -222,9 +222,8 @@ function hasFinalConsonant(kor) {
     // 이미지: role_image_2 (문자열 경로)
     const rawRoleImg = localStorage.getItem('role_image_2') || '';
     const customImg = resolveImageUrl(rawRoleImg);
-    if (customImg) {
-      descImg = customImg||defaultimg;
-    }
+    // ✅ 커스텀 모드에서는 role_image가 없으면 기본 이미지(Frame235)로 표시
+    descImg = customImg ?? defaultimg;
     // subtopic은 위에서 creatorTitle로 이미 치환됨
   }
 

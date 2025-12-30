@@ -31,10 +31,6 @@ export default function ContentTextBox2({
     () => setTypingDone(true)
   );
   const typedSub = typingDone ? currentParagraph.sub : '';
-  const fullMain = isTextReady ? currentParagraph.main : '';
-  const typedLen = Math.min((typedMain || '').length, fullMain.length);
-  const visibleMain = fullMain.slice(0, typedLen);
-  const hiddenMain = fullMain.slice(typedLen);
 
   const handlePrev = () => {
     if (!typingDone) return;
@@ -90,28 +86,19 @@ const handleContinueClick = () => {
           justifyContent: 'space-between',
           minHeight: 150,
           zIndex: 1,
-          // ✅ 단어(공백) 기준으로 줄바꿈: 글자 중간에서 어색하게 끊기는 현상 방지
-          // - keep-all: CJK(한글 포함)에서 가능하면 공백에서만 줄바꿈
-          // - break-word: 너무 긴 영문/특수문자 토큰만 예외적으로 줄바꿈 허용(오버플로 방지)
-          wordBreak: 'keep-all',
-          overflowWrap: 'break-word',
+          wordBreak: 'normal',
+          overflowWrap: 'anywhere',
           whiteSpace: 'normal',
         }}
       >
         <div>
-          <div
-            style={{
-              ...FontStyles.headlineSmall,
-              marginBottom: 3,
-              // ✅ 완성 문장 기준으로 줄바꿈을 고정하고(리플로우 방지),
-              //    타이핑은 보이는 글자만 늘리되 나머지는 공간만 차지하게 처리
-              whiteSpace: 'pre-line',
-            }}
-          >
-            <span>{visibleMain}</span>
-            <span aria-hidden="true" style={{ visibility: 'hidden' }}>
-              {hiddenMain}
-            </span>
+          <div style={{ ...FontStyles.headlineSmall, marginBottom: 3 }}>
+            {typedMain.split('\n').map((line, idx) => (
+              <React.Fragment key={idx}>
+                {line}
+                <br />
+              </React.Fragment>
+            ))}
           </div>
           <div style={{ ...FontStyles.headlineSmall, color: Colors.grey04 }}>
             {typedSub}

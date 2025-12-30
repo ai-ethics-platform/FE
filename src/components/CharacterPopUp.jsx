@@ -7,6 +7,7 @@ import char3 from '../assets/CharacterPopUp3.svg';
 import closeIcon from "../assets/close.svg";
 
 import { Colors, FontStyles } from './styleConstants';
+import { attachJosa } from '../utils/resolveParagraphs';
 
 export default function CharacterPopup({ subtopic, roleId, mateName, onClose }) {
   // 1) SVG 선택
@@ -55,8 +56,8 @@ export default function CharacterPopup({ subtopic, roleId, mateName, onClose }) 
     if (subtopic === 'AI의 개인 정보 수집' || subtopic === '안드로이드의 감정 표현') {
       if (roleId === 1) {
         mainText = `어머니를 10년 이상 돌본 요양보호사 K입니다.\n` +
-          `최근 ${mateName}를 도입한 후 전일제에서 하루 2시간 근무로 전환되었습니다.\n` +
-          `로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}와 협업해야 하는 상황이 많습니다.`;
+          `최근 ${attachJosa(mateName, '을/를')} 도입한 후 전일제에서 하루 2시간 근무로 전환되었습니다.\n` +
+          `로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${attachJosa(mateName, '과/와')} 협업해야 하는 상황이 많습니다.`;
       } else if (roleId === 2) {
         mainText = `자녀 J씨의 노모입니다.\n` +
           `가사도우미의 도움을 받다가 최근 ${mateName}의 도움을 받고  있습니다.`;
@@ -95,9 +96,9 @@ export default function CharacterPopup({ subtopic, roleId, mateName, onClose }) 
                 : roleId === 2 ? '베테랑 병사 A'
                 : '군 지휘관';
       if (roleId === 1) {
-        mainText = `최근 훈련을 마치고 자율 무기 시스템 ${mateName}와 함께 실전에 투입된 신입 병사 B입니다. ${mateName}는 정확하고 빠르게 움직이며, 실전에서 생존률을 높여준다고 느낍니다. ${mateName}와 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고 생각합니다.`;
+        mainText = `최근 훈련을 마치고 자율 무기 시스템 ${attachJosa(mateName, '과/와')} 함께 실전에 투입된 신입 병사 B입니다. ${attachJosa(mateName, '은/는')} 정확하고 빠르게 움직이며, 실전에서 생존률을 높여준다고 느낍니다. ${attachJosa(mateName, '과/와')} 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고 생각합니다.`;
       } else if (roleId === 2) {
-        mainText = `수년간 작전을 수행해 온 베테랑 병사 A입니다. 자율 무기 시스템 ${mateName}는 전장에서 병사보다 빠르고 정확하지만, 그로 인해 병사들이 판단하지 않는 습관에 빠지고 있다고 느낍니다.`;
+        mainText = `수년간 작전을 수행해 온 베테랑 병사 A입니다. 자율 무기 시스템 ${attachJosa(mateName, '은/는')} 전장에서 병사보다 빠르고 정확하지만, 그로 인해 병사들이 판단하지 않는 습관에 빠지고 있다고 느낍니다.`;
       } else if (roleId === 3) {
         mainText = `자율 무기 시스템 ${mateName} 도입 이후 작전 효율성과 병사들의 변화 양상을 모두 지켜보고 있는 군 지휘관입니다. 두 병사의 입장을 듣고, 군 전체가 나아갈 방향을 모색하려 합니다.`;
       }

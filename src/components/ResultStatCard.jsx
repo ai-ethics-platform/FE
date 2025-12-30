@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import frameSrc from "../assets/staticsframe.svg";
 import nextIcon from "../assets/staticsnext.svg";
 import { Colors, FontStyles } from "../components/styleConstants";
-import defaultLeftImageSrc from "../assets/images/Android_dilemma_1_1.jpg";
+import defaultAndroidLeftImageSrc from "../assets/images/Android_dilemma_1_1.jpg";
+import defaultAwsLeftImageSrc from "../assets/images/Killer_Character3.jpg";
 import lockIcon from "../assets/lock.svg";
 
 // 안드로이드 카테고리 질문
@@ -61,11 +62,16 @@ export default function ResultStatCard({
   agreePct = 30,                    // ← 전달된 퍼센트 그대로 사용
   disagreePct = 70,                 // ← 전달된 퍼센트 그대로 사용
   frame = frameSrc,
-  leftImageSrc = defaultLeftImageSrc,
+  leftImageSrc,
   isSelected, // 부모에서 전달된 선택
 }) {
   const navigate = useNavigate();
   const category = localStorage.getItem('category'); // '안드로이드' 또는 '자율 무기 시스템'
+  const resolvedLeftImageSrc =
+    leftImageSrc ??
+    (category === "자율 무기 시스템"
+      ? defaultAwsLeftImageSrc
+      : defaultAndroidLeftImageSrc);
 
   const subtopic = subtopicProp;
 
@@ -291,7 +297,7 @@ export default function ResultStatCard({
             }}
           >
             <img
-              src={leftImageSrc}
+              src={resolvedLeftImageSrc}
               alt=""
               style={{
                 width: "100%",

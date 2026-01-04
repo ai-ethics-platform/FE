@@ -34,7 +34,11 @@
 ### 대상 파일
 
 #### 페이지
-
+-`src/pages/Login.jsx`
+-`src/pages/Waitingroom.jsx`
+-`src/pages/Signup01.jsx`
+-`src/pages/Signup02.jsx`
+-`src/pages/Selectroom.jsx`
 - `src/pages/GameIntro.jsx`
 - `src/pages/SelectHomeMate.jsx`
 - `src/pages/MateName.jsx`

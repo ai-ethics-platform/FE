@@ -40,8 +40,8 @@ export default function MateName() {
 
     const uiText = isAWS
     ? {
-        placeholder: '여러분이 사용자라면 자율 무기 시스템을 어떻게 부를까요? (방장만 입력 가능)',
-        main: '여러분이 생각하는 자율 무기 시스템은 어떤 형태인가요?',
+        placeholder: '이 자율 무기 시스템의 이름을 정해 주세요. (방장만 입력 가능)',
+        main: '여러분이 사용자라면 자율 무기 시스템을 어떻게 부를까요?',
       }
     : {
         placeholder: '여러분의 HomeMate 이름을 지어주세요.(방장만 입력 가능)',

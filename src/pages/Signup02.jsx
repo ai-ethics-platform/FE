@@ -29,6 +29,7 @@ export default function Signup02() {
   const [education, setEducation] = useState('');
   // const [grade, setGrade] = useState('');
   const [major, setMajor] = useState('');
+  const [openDropdown, setOpenDropdown] = useState(null); // 'education' | 'major' | null
   const [passwordError, setPasswordError] = useState('');
   const [email, setEmail] = useState('');
   const [birthError, setBirthError] = useState('');
@@ -70,7 +71,7 @@ useEffect(() => {
     setBirthError(isValid ? '' : '올바른 형식은 2001-01 입니다.');
   };
   // 계열 옵션 
-  const majorOptions = ['예술계열', '공학계열', '인문계열', '사회계열', '교육계열', '자연계열'];
+  const majorOptions = ['예술계열', '공학계열', '인문계열', '사회계열', '교육계열', '자연계열', '기타'];
   // // 학년 옵션
   // const getGradeOptions = () => {
   //   if (education === '중학생' || education === '고등학생') {
@@ -497,9 +498,15 @@ useEffect(() => {
               <SelectDrop
                 options={['중학생', '고등학생', '대학생','대학원생','교사','기타']}
                 value={education}
+                open={openDropdown === 'education'}
+                onOpenChange={(next) => {
+                  if (next) setOpenDropdown('education');
+                  else if (openDropdown === 'education') setOpenDropdown(null);
+                }}
                 onSelect={(option) => {
                   setEducation(option);
                   setMajor('');
+                  setOpenDropdown(null);
                 }}
                 style={{
                   width: '100%',
@@ -515,7 +522,15 @@ useEffect(() => {
                 <SelectDrop
                   options={majorOptions}
                   value={major}
-                  onSelect={(option) => setMajor(option)}
+                  open={openDropdown === 'major'}
+                  onOpenChange={(next) => {
+                    if (next) setOpenDropdown('major');
+                    else if (openDropdown === 'major') setOpenDropdown(null);
+                  }}
+                  onSelect={(option) => {
+                    setMajor(option);
+                    setOpenDropdown(null);
+                  }}
                   style={{
                     width: '100%',
                     height: '8vh',

@@ -235,30 +235,22 @@ const handleExit = async () => {
     console.log('=== 종료 전 미디어 상태 확인 ===');
     await debugMediaState('종료 전');
     
-    //  STEP 2: 즉시 브라우저 레벨 강제 정리 (더미 스트림 없이!)
-    console.log('🚨 브라우저 레벨 즉시 강제 정리 시작...');
-    await forceBrowserCleanupWithoutDummy();
-    
-    //  STEP 3: 강제 정리 후 상태 확인
-    console.log('=== 강제 정리 후 상태 ===');
-    await debugMediaState('강제 정리 후');
-    
-    // STEP 4: 기존 VoiceManager 종료 로직
+    // 🚨 중요: 업로드(녹음 종료)는 강제 정리보다 먼저 실행해야 함
     console.log('🛑 VoiceManager 종료 중...');
     const result = await voiceManager.terminateVoiceSession();
     console.log(result ? '✅ 음성 세션 종료 성공' : '❌ 음성 세션 종료 실패');
     
-    // STEP 5: VoiceManager 종료 후 상태 확인
+    // STEP 2: VoiceManager 종료 후 상태 확인
     console.log('=== VoiceManager 종료 후 상태 ===');
     await debugMediaState('VoiceManager 종료 후');
     
-    // STEP 6: 추가 WebRTC 정리
+    // STEP 3: 추가 WebRTC 정리
     if (window.stopAllOutgoingAudioGlobal) {
       console.log('🛑 WebRTC 전역 오디오 정지 함수 호출');
       window.stopAllOutgoingAudioGlobal();
     }
     
-    // STEP 7: 다시 한번 강제 정리 (더미 스트림 없이!)
+    // STEP 4: 강제 정리 (더미 스트림 없이!)
     console.log('🚨 최종 강제 정리...');
     await forceBrowserCleanupWithoutDummy();
 

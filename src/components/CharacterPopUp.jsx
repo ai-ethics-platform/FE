@@ -96,7 +96,7 @@ export default function CharacterPopup({ subtopic, roleId, mateName, onClose }) 
                 : roleId === 2 ? '베테랑 병사 A'
                 : '군 지휘관';
       if (roleId === 1) {
-        mainText = `최근 훈련을 마치고 자율 무기 시스템 ${attachJosa(mateName, '과/와')} 함께 실전에 투입된 신입 병사 B입니다. ${attachJosa(mateName, '은/는')} 정확하고 빠르게 움직이며, 실전에서 생존률을 높여준다고 느낍니다. ${attachJosa(mateName, '과/와')} 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고 생각합니다.`;
+        mainText = `최근 훈련을 마치고 자율 무기 시스템 ${attachJosa(mateName, '과/와')} 함께 실전에 투입된 신입 병사 입니다. ${attachJosa(mateName, '은/는')} 정확하고 빠르게 움직이며, 실전에서 생존률을 높여준다고 느낍니다. ${attachJosa(mateName, '과/와')} 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고 생각합니다.`;
       } else if (roleId === 2) {
         mainText = `수년간 작전을 수행해 온 베테랑 병사 A입니다. 자율 무기 시스템 ${attachJosa(mateName, '은/는')} 전장에서 병사보다 빠르고 정확하지만, 그로 인해 병사들이 판단하지 않는 습관에 빠지고 있다고 느낍니다.`;
       } else if (roleId === 3) {

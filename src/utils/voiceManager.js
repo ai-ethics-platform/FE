@@ -22,11 +22,161 @@ class VoiceManager {
     this.isRecording = false;
     this.recordedChunks = [];
     this.recordingStartTime = null;
+    this.recordingMimeType = null;
+    this.isTerminating = false;
     this.sessionInitialized = false;
     this.micNode = null;
     
     // 🚨 WebRTC 스트림 사용 여부 플래그
     this.usingWebRTCStream = false;
+
+    // WAV 변환이 정말 필요할 때(서버가 WAV만 받는 경우)를 대비한 타겟
+    // ※ 장시간(30~90분) 녹음은 WAV가 매우 커질 수 있으니, 기본 업로드는 webm/opus(압축) 권장
+    this.TARGET_WAV_SAMPLE_RATE = 16000;
+
+    // 장시간 녹음 안정성: 1초 단위 청크(Blob)가 수천 개 쌓이면 객체 오버헤드가 커질 수 있어
+    // timeslice를 늘려(예: 10초) 청크 개수를 줄입니다.
+    this.RECORDING_TIMESLICE_MS = 10000;
+    // Opus 비트레이트(브라우저가 무시할 수 있음). 너무 높이면 업로드가 커짐.
+    this.AUDIO_BITS_PER_SECOND = 24000;
+  }
+
+  // ----------------------------
+  // helpers: mime / wav encode
+  // ----------------------------
+  _pickSupportedMimeType(candidates) {
+    try {
+      if (typeof MediaRecorder === 'undefined') return null;
+      if (typeof MediaRecorder.isTypeSupported !== 'function') return null;
+      for (const t of candidates) {
+        if (t && MediaRecorder.isTypeSupported(t)) return t;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  async _readFirstAscii(blob, n = 4) {
+    try {
+      const ab = await blob.slice(0, n).arrayBuffer();
+      const bytes = new Uint8Array(ab);
+      let s = '';
+      for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+      return s;
+    } catch {
+      return '';
+    }
+  }
+
+  async _ensureWavBlob(inputBlob) {
+    // 이미 WAV처럼 보이면 그대로 사용
+    const head4 = await this._readFirstAscii(inputBlob, 4);
+    if ((inputBlob.type || '').includes('wav') && head4 === 'RIFF') {
+      return inputBlob;
+    }
+
+    // webm/ogg 등 → decode → (downsample/mono) → PCM → WAV 인코딩
+    const arrayBuffer = await inputBlob.arrayBuffer();
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) throw new Error('AudioContext 미지원 환경');
+
+    const ctx = new AudioCtx();
+    try {
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+      const optimized = await this._downsampleToMono(audioBuffer, this.TARGET_WAV_SAMPLE_RATE);
+      const wavAb = this._encodeWavFromAudioBuffer(optimized);
+      const wavBlob = new Blob([wavAb], { type: 'audio/wav' });
+
+      const wavHead = await this._readFirstAscii(wavBlob, 4);
+      if (wavHead !== 'RIFF') {
+        throw new Error(`WAV 변환 실패(헤더 불일치): head=${JSON.stringify(wavHead)}`);
+      }
+
+      return wavBlob;
+    } finally {
+      try { await ctx.close(); } catch {}
+    }
+  }
+
+  async _downsampleToMono(audioBuffer, targetSampleRate = 16000) {
+    try {
+      if (!audioBuffer) return audioBuffer;
+      const srcRate = audioBuffer.sampleRate || targetSampleRate;
+      const duration = audioBuffer.duration || (audioBuffer.length / (srcRate || 1));
+
+      // 이미 target rate + mono면 그대로
+      if ((audioBuffer.numberOfChannels || 1) === 1 && srcRate === targetSampleRate) {
+        return audioBuffer;
+      }
+
+      const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!OfflineCtx) return audioBuffer;
+
+      const length = Math.max(1, Math.ceil(duration * targetSampleRate));
+      const offline = new OfflineCtx(1, length, targetSampleRate);
+
+      const source = offline.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(offline.destination); // mono destination으로 자동 downmix
+      source.start(0);
+
+      const rendered = await offline.startRendering();
+      return rendered || audioBuffer;
+    } catch (e) {
+      console.warn('⚠️ downsample/mono 최적화 실패 → 원본 샘플레이트로 진행합니다.', e);
+      return audioBuffer;
+    }
+  }
+
+  _encodeWavFromAudioBuffer(audioBuffer) {
+    const numChannels = audioBuffer.numberOfChannels || 1;
+    const sampleRate = audioBuffer.sampleRate || 44100;
+    const format = 1; // PCM
+    const bitsPerSample = 16;
+
+    const samples = audioBuffer.length;
+    const blockAlign = numChannels * (bitsPerSample / 8);
+    const byteRate = sampleRate * blockAlign;
+    const dataSize = samples * blockAlign;
+
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+
+    const writeString = (offset, str) => {
+      for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    };
+
+    let offset = 0;
+    writeString(offset, 'RIFF'); offset += 4;
+    view.setUint32(offset, 36 + dataSize, true); offset += 4;
+    writeString(offset, 'WAVE'); offset += 4;
+    writeString(offset, 'fmt '); offset += 4;
+    view.setUint32(offset, 16, true); offset += 4;              // Subchunk1Size
+    view.setUint16(offset, format, true); offset += 2;           // AudioFormat
+    view.setUint16(offset, numChannels, true); offset += 2;      // NumChannels
+    view.setUint32(offset, sampleRate, true); offset += 4;       // SampleRate
+    view.setUint32(offset, byteRate, true); offset += 4;         // ByteRate
+    view.setUint16(offset, blockAlign, true); offset += 2;       // BlockAlign
+    view.setUint16(offset, bitsPerSample, true); offset += 2;    // BitsPerSample
+    writeString(offset, 'data'); offset += 4;
+    view.setUint32(offset, dataSize, true); offset += 4;
+
+    // interleave + float(-1..1) → int16
+    const channels = [];
+    for (let ch = 0; ch < numChannels; ch++) channels.push(audioBuffer.getChannelData(ch));
+
+    let dataOffset = 44;
+    for (let i = 0; i < samples; i++) {
+      for (let ch = 0; ch < numChannels; ch++) {
+        let s = channels[ch][i];
+        s = Math.max(-1, Math.min(1, s));
+        view.setInt16(dataOffset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+        dataOffset += 2;
+      }
+    }
+
+    return buffer;
   }
 
   // async uploadRecordingToServer(recordingData) {
@@ -78,30 +228,40 @@ class VoiceManager {
         return null;
       }
   
-      // 실제 blob 타입/확장자에 맞추기 (webm/ogg인 경우 그대로)
-      const blob = recordingData.blob;
-      const mime = blob.type || 'audio/webm';
-      const ext  = mime.includes('wav') ? 'wav'
-                 : mime.includes('webm') ? 'webm'
-                 : mime.includes('ogg') ? 'ogg'
-                 : 'bin';
-  
+      // ✅ 장시간(30~90분) 녹음은 WAV 변환 시 용량이 폭증(413 위험)하므로,
+      // 기본은 MediaRecorder 원본(webm/ogg + opus)을 그대로 업로드합니다.
+      // (서버가 WAV만 받는다면: 서버에서 변환하거나, 정말 필요할 때만 _ensureWavBlob를 사용)
+      const sourceBlob = recordingData.blob;
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
-      const file = new File([blob], `recording_${sessId}_${ts}.${ext}`, { type: mime });
+      const uid = this.participantId || localStorage.getItem('user_id') || 'unknown';
+
+      const mime = sourceBlob.type || 'audio/webm';
+      const ext =
+        mime.includes('ogg') ? 'ogg' :
+        mime.includes('webm') ? 'webm' :
+        mime.includes('wav') ? 'wav' :
+        'webm';
+
+      const file = new File([sourceBlob], `recording_${uid}_${ts}.${ext}`, { type: mime });
   
       const form = new FormData();
       form.append('session_id', sessId); 
       form.append('file', file);         
   
-      // const { data } = await axiosInstance.post('/upload_audio', form, {
-      //   headers: { 'Content-Type': undefined },
-      //   maxBodyLength: Infinity,
-      // });
-      
-      const {data} = await axiosInstance.postForm('/upload_audio', form); // Content-Type 자동
+      // Content-Type 자동 (multipart/form-data; boundary=...)
+      const { data } = await axiosInstance.postForm('/upload_audio', form);
 
   
-      console.log(' 업로드 성공:', data);
+      console.log('✅ 업로드 성공:', {
+        session_id: sessId,
+        user_id: uid,
+        fileSize: file.size,
+        durationMs: recordingData?.duration,
+        chunks: recordingData?.chunks,
+        sourceType: sourceBlob.type,
+        uploadType: file.type,
+        server: data
+      });
       return data;
     } catch (error) {
       console.error('❌ 업로드 실패:', {
@@ -172,9 +332,25 @@ class VoiceManager {
       }
       
       // 3. 사용자 정보 설정
-      const { data: userInfo } = await axiosInstance.get('/users/me');
-      this.participantId = userInfo.id;
-      this.nickname = localStorage.getItem('nickname') || userInfo.username || `Player_${userInfo.id}`;
+      // ✅ 게스트의 /users/me가 500일 수 있으므로 localStorage 우선 사용
+      const storedUserId = localStorage.getItem('user_id');
+      const storedNickname = localStorage.getItem('nickname');
+      if (storedUserId) this.participantId = String(storedUserId);
+      if (storedNickname) this.nickname = String(storedNickname);
+
+      // fallback: 로컬에 없을 때만 /users/me 시도 (회원/레거시 대응)
+      if (!this.participantId || !this.nickname) {
+        try {
+          const { data: userInfo } = await axiosInstance.get('/users/me');
+          if (!this.participantId && userInfo?.id != null) this.participantId = String(userInfo.id);
+          if (!this.nickname) this.nickname = userInfo?.username || (this.participantId ? `Player_${this.participantId}` : null);
+        } catch (e) {
+          // 게스트 케이스에서 흔히 발생: 최소값으로 진행
+          if (!this.participantId) this.participantId = storedUserId ? String(storedUserId) : 'unknown';
+          if (!this.nickname) this.nickname = storedNickname ? String(storedNickname) : (this.participantId ? `Player_${this.participantId}` : 'Player');
+          console.warn('⚠️ VoiceManager: /users/me 조회 실패. localStorage 기반으로 진행합니다.', e?.response?.data || e?.message);
+        }
+      }
       
       console.log('📋 VoiceManager 세션 정보:', {
         sessionId: this.sessionId,
@@ -249,9 +425,25 @@ class VoiceManager {
     if (!this.mediaStream || this.isRecording) return;
 
     try {
-      this.mediaRecorder = new MediaRecorder(this.mediaStream, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
+      // 가능한 경우 WAV로 직접 녹음(브라우저 지원 시), 아니면 webm/ogg로 녹음 후 업로드 때 WAV로 변환
+      const preferred = this._pickSupportedMimeType([
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+        'audio/ogg',
+        // WAV 직접 녹음은 파일이 커지기 쉬워 마지막 fallback으로 둠
+        'audio/wav',
+        'audio/wav;codecs=1',
+      ]);
+
+      this.recordingMimeType = preferred || null;
+
+      const mrOptions = {};
+      if (preferred) mrOptions.mimeType = preferred;
+      // 브라우저 지원 시에만 적용됨(무시될 수 있음)
+      mrOptions.audioBitsPerSecond = this.AUDIO_BITS_PER_SECOND;
+
+      this.mediaRecorder = new MediaRecorder(this.mediaStream, mrOptions);
 
       this.recordedChunks = [];
       this.recordingStartTime = Date.now();
@@ -266,10 +458,15 @@ class VoiceManager {
         console.log('🎵 녹음 종료, 총 청크:', this.recordedChunks.length);
       };
 
-      this.mediaRecorder.start(1000);
+      this.mediaRecorder.start(this.RECORDING_TIMESLICE_MS);
       this.isRecording = true;
       
-      console.log('🔴 연속 녹음 시작 (WebRTC 스트림 사용)');
+      console.log('🔴 연속 녹음 시작 (WebRTC 스트림 사용)', {
+        mimeType: this.recordingMimeType || this.mediaRecorder?.mimeType || 'unknown',
+        startTime: new Date(this.recordingStartTime).toISOString(),
+        timesliceMs: this.RECORDING_TIMESLICE_MS,
+        audioBitsPerSecond: this.AUDIO_BITS_PER_SECOND
+      });
     } catch (error) {
       console.error('❌ 녹음 시작 실패:', error);
     }
@@ -278,6 +475,10 @@ class VoiceManager {
   // 서버에 음성 상태 전송
   async sendVoiceStatusToServer(isSpeaking) {
     try {
+      if (!this.participantId || this.participantId === 'unknown' || Number.isNaN(parseInt(this.participantId))) {
+        console.warn('⚠️ sendVoiceStatusToServer: participantId가 유효하지 않아 전송을 건너뜁니다.', this.participantId);
+        return;
+      }
       if (this.lastSpeakingState === isSpeaking) return;
       this.lastSpeakingState = isSpeaking;
 
@@ -373,21 +574,26 @@ class VoiceManager {
       
       if (this.recordedChunks?.length > 0) {
         console.log('📦 기존 청크로 Blob 생성:', this.recordedChunks.length);
-        const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+        const type = this.recordingMimeType || this.recordedChunks?.[0]?.type || 'audio/webm';
+        const blob = new Blob(this.recordedChunks, { type });
         const duration = this.recordingStartTime ? (Date.now() - this.recordingStartTime) : 0;
+        const chunks = this.recordedChunks?.length || 0;
         
         this.isRecording = false;
         this.recordedChunks = [];
+        this.recordingMimeType = null;
         
         return {
           blob,
           duration,
+          chunks,
           startTime: this.recordingStartTime,
           endTime: Date.now()
         };
       }
       
       this.isRecording = false;
+      this.recordingMimeType = null;
       return null;
     }
 
@@ -395,27 +601,32 @@ class VoiceManager {
       console.log('📝 MediaRecorder가 이미 inactive 상태');
       
       if (this.recordedChunks?.length > 0) {
-        const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+        const type = this.recordingMimeType || this.recordedChunks?.[0]?.type || 'audio/webm';
+        const blob = new Blob(this.recordedChunks, { type });
         const duration = this.recordingStartTime ? (Date.now() - this.recordingStartTime) : 0;
+        const chunks = this.recordedChunks?.length || 0;
         
         console.log('📦 inactive 상태에서 Blob 생성:', {
           size: blob.size,
           duration,
-          chunks: this.recordedChunks.length
+          chunks
         });
         
         this.isRecording = false;
         this.recordedChunks = [];
+        this.recordingMimeType = null;
         
         return {
           blob,
           duration,
+          chunks,
           startTime: this.recordingStartTime,
           endTime: Date.now()
         };
       }
       
       this.isRecording = false;
+      this.recordingMimeType = null;
       return null;
     }
 
@@ -427,22 +638,26 @@ class VoiceManager {
         resolved = true;
         
         try {
-          const blob = new Blob(this.recordedChunks || [], { type: 'audio/webm' });
+          const type = this.recordingMimeType || this.recordedChunks?.[0]?.type || 'audio/webm';
+          const blob = new Blob(this.recordedChunks || [], { type });
           const duration = this.recordingStartTime ? (Date.now() - this.recordingStartTime) : 0;
+          const chunks = this.recordedChunks?.length || 0;
           
           console.log('⏹️ 녹음 완료:', {
             size: blob.size,
             duration,
-            chunks: this.recordedChunks?.length || 0
+            chunks
           });
           
           this.isRecording = false;
           this.recordedChunks = [];
           this.mediaRecorder = null;
+          this.recordingMimeType = null;
           
           resolve({
             blob,
             duration,
+            chunks,
             startTime: this.recordingStartTime,
             endTime: Date.now()
           });
@@ -451,6 +666,7 @@ class VoiceManager {
           this.isRecording = false;
           this.recordedChunks = [];
           this.mediaRecorder = null;
+          this.recordingMimeType = null;
           resolve(null);
         }
       };
@@ -473,6 +689,7 @@ class VoiceManager {
           this.isRecording = false;
           this.recordedChunks = [];
           this.mediaRecorder = null;
+          this.recordingMimeType = null;
           resolve(null);
         }
       };
@@ -596,8 +813,14 @@ disconnectMicrophone() {
 // VoiceManager.js - terminateVoiceSession 올바른 순서로 수정
 
 async terminateVoiceSession() {
+  if (this.isTerminating) {
+    console.warn('⚠️ terminateVoiceSession: 이미 종료 처리 중 (중복 호출 방지)');
+    return null;
+  }
+
+  this.isTerminating = true;
   console.log('🛑 음성 세션 완전 종료 시작');
-  
+
   try {
     // 🚨 WebRTC 전역 함수 호출 (한 줄로 끝!)
     if (window.terminateWebRTCSession) {
@@ -605,23 +828,24 @@ async terminateVoiceSession() {
       const result = await window.terminateWebRTCSession();
       console.log('✅ WebRTC 완전 정리 완료');
       return result;
-    } else {
-      console.error('❌ window.terminateWebRTCSession 함수가 없음');
-      
-      // 🚨 백업: 기존 방식으로 개별 처리
-      const recordingData = await this.stopRecording();
-      this.disconnectMicrophone();
-      
-      if (window.stopAllOutgoingAudioGlobal) {
-        window.stopAllOutgoingAudioGlobal();
-      }
-      
-      return { recordingData, uploadResult: null };
     }
-    
+
+    console.error('❌ window.terminateWebRTCSession 함수가 없음');
+
+    // 🚨 백업: 기존 방식으로 개별 처리 (※ 업로드는 Provider 쪽에서 하는 구조라 여기선 stop+정리만)
+    const recordingData = await this.stopRecording();
+    this.disconnectMicrophone();
+
+    if (window.stopAllOutgoingAudioGlobal) {
+      window.stopAllOutgoingAudioGlobal();
+    }
+
+    return { recordingData, uploadResult: null };
   } catch (error) {
     console.error('❌ 음성 세션 종료 중 오류:', error);
     return null;
+  } finally {
+    this.isTerminating = false;
   }
 }
 

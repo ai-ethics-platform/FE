@@ -203,7 +203,7 @@ export default function Login() {
               marginTop: '2vh',
             }}
             onClick={() => setShowGuestLogin(true)}
-            disabled={true}
+            disabled={false}
           >
             Guest로 로그인
           </SecondaryButton>

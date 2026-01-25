@@ -998,6 +998,104 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import voiceManager from './utils/voiceManager';
 import axiosInstance from './api/axiosInstance';
 
+// ----------------------------
+// ICE(STUN/TURN) 설정
+// - 기본: STUN만으로도 되는 환경이 많지만, 일부 NAT/회사망에서는 P2P가 실패함
+// - 권장: 백엔드에서 `/webrtc/ice-config`로 ICE 설정을 받아오면(Twilio TURN 포함) 특수 환경에서도 연결 성공률이 올라감
+// - fallback: 백엔드 호출이 실패하면 Vite env 또는 기본 STUN으로 내려감
+//
+// Vite env 예시:
+//   VITE_STUN_URLS=stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302
+//   VITE_TURN_URLS=turn:turn.example.com:3478?transport=udp,turn:turn.example.com:3478?transport=tcp,turns:turn.example.com:5349
+//   VITE_TURN_USERNAME=...
+//   VITE_TURN_CREDENTIAL=...
+// ----------------------------
+const DEFAULT_STUN_URLS = ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'];
+
+function getIceServersFromEnv() {
+  const env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+  const rawStunUrls = env.VITE_STUN_URLS;
+  const rawTurnUrls = env.VITE_TURN_URLS;
+  const turnUsername = env.VITE_TURN_USERNAME;
+  const turnCredential = env.VITE_TURN_CREDENTIAL;
+
+  const stunUrls = rawStunUrls
+    ? String(rawStunUrls).split(',').map((s) => s.trim()).filter(Boolean)
+    : DEFAULT_STUN_URLS;
+
+  const iceServers = [{ urls: (stunUrls.length > 0 ? stunUrls : DEFAULT_STUN_URLS) }];
+
+  // TURN이 설정된 경우에만 추가
+  if (rawTurnUrls && turnUsername && turnCredential) {
+    const urls = String(rawTurnUrls)
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    if (urls.length > 0) {
+      iceServers.push({
+        urls,
+        username: String(turnUsername),
+        credential: String(turnCredential),
+      });
+    }
+  }
+
+  return iceServers;
+}
+
+function parseCandidateType(candidate) {
+  try {
+    if (!candidate) return null;
+    // Chrome 등 일부 환경은 candidate.type을 제공하지만, 표준적으로는 candidate.candidate 문자열에 typ 정보가 있음
+    if (candidate.type) return String(candidate.type);
+    const candStr = String(candidate.candidate || '');
+    const m = candStr.match(/\btyp\s+(\w+)\b/i);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeIceServers(iceServers) {
+  if (!Array.isArray(iceServers)) return null;
+  const normalized = [];
+  for (const s of iceServers) {
+    if (!s) continue;
+    const urls = s.urls;
+    if (!urls) continue;
+    const entry = { urls };
+    if (s.username) entry.username = s.username;
+    if (s.credential) entry.credential = s.credential;
+    normalized.push(entry);
+  }
+  return normalized.length > 0 ? normalized : null;
+}
+
+function maskCredential(cred) {
+  try {
+    if (cred == null) return cred;
+    const s = String(cred);
+    if (s.length <= 6) return '******';
+    return `${s.slice(0, 3)}***${s.slice(-2)}`;
+  } catch {
+    return '***';
+  }
+}
+
+function maskIceServersForLog(iceServers) {
+  try {
+    if (!Array.isArray(iceServers)) return iceServers;
+    return iceServers.map((s) => ({
+      urls: s?.urls,
+      username: s?.username,
+      credential: s?.credential ? maskCredential(s.credential) : undefined,
+    }));
+  } catch {
+    return iceServers;
+  }
+}
+
 // WebRTC Context 생성
 const WebRTCContext = createContext();
 
@@ -1045,6 +1143,92 @@ const WebRTCProvider = ({ children }) => {
   const signalingWsRef = useRef(null);
   const connectionAttemptedRef = useRef(false);
   const initializationPromiseRef = useRef(null);
+
+  // ----------------------------
+  // ICE config (server → env → default STUN)
+  // - Twilio TURN은 credential이 TTL을 가지므로, TTL 기준으로 갱신
+  // ----------------------------
+  const iceServersRef = useRef(getIceServersFromEnv());
+  const iceConfigCacheRef = useRef({
+    expireAt: 0,
+    source: 'env',
+    turnEnabled: false,
+    lastError: null,
+  });
+  const [iceConfigStatus, setIceConfigStatus] = useState(() => ({
+    source: 'env',
+    turnEnabled: false,
+    ttl: null,
+    lastFetchedAt: null,
+    lastError: null,
+  }));
+
+  const fetchIceConfigFromServer = useCallback(async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) throw new Error('access_token이 없습니다');
+
+    // 백엔드 명세: GET /webrtc/ice-config?token={JWT}
+    const res = await axiosInstance.get('/webrtc/ice-config', {
+      params: { token },
+      timeout: 6000,
+    });
+
+    const data = res?.data || {};
+    const normalized = normalizeIceServers(data.iceServers);
+    if (!normalized) {
+      throw new Error('iceServers 형식이 올바르지 않습니다');
+    }
+
+    const ttlSeconds = Number.isFinite(Number(data.ttl)) ? Number(data.ttl) : 3600;
+    const turnEnabled = !!data.turnEnabled;
+
+    return { iceServers: normalized, ttlSeconds, turnEnabled };
+  }, []);
+
+  const ensureIceServersReady = useCallback(async () => {
+    const now = Date.now();
+    // 만료 60초 전부터는 새로 갱신
+    const shouldRefresh = !(iceConfigCacheRef.current.expireAt && now < (iceConfigCacheRef.current.expireAt - 60_000));
+    if (!shouldRefresh) return iceServersRef.current;
+
+    try {
+      const { iceServers, ttlSeconds, turnEnabled } = await fetchIceConfigFromServer();
+      iceServersRef.current = iceServers;
+      iceConfigCacheRef.current = {
+        expireAt: now + Math.max(60, ttlSeconds) * 1000,
+        source: 'server',
+        turnEnabled,
+        lastError: null,
+      };
+      setIceConfigStatus({
+        source: 'server',
+        turnEnabled,
+        ttl: ttlSeconds,
+        lastFetchedAt: now,
+        lastError: null,
+      });
+      console.log('🧊 ICE config loaded from server:', { turnEnabled, ttlSeconds, iceServers });
+      return iceServersRef.current;
+    } catch (e) {
+      const fallback = getIceServersFromEnv();
+      iceServersRef.current = fallback;
+      iceConfigCacheRef.current = {
+        expireAt: now + 5 * 60 * 1000, // 실패 시 5분 후 재시도
+        source: 'env',
+        turnEnabled: false,
+        lastError: e?.message || String(e),
+      };
+      setIceConfigStatus({
+        source: 'env',
+        turnEnabled: false,
+        ttl: null,
+        lastFetchedAt: now,
+        lastError: e?.message || String(e),
+      });
+      console.warn('⚠️ ICE config fetch failed → fallback to env/default STUN:', e?.message || e);
+      return iceServersRef.current;
+    }
+  }, [fetchIceConfigFromServer]);
 
   // 🔧 연결 추적 (Role 기반으로 추적, User ID로 실제 연결)
   const offerSentToRoles = useRef(new Set()); // 내가 Offer를 보낸 역할들
@@ -1156,9 +1340,9 @@ const WebRTCProvider = ({ children }) => {
     if (pcsRef.current.has(key)) return pcsRef.current.get(key);
 
     const config = {
-      iceServers: [
-        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
-      ],
+      iceServers: iceServersRef.current || getIceServersFromEnv(),
+      // 필요 시 TURN only로 강제하고 싶다면(디버깅용):
+      // iceTransportPolicy: 'relay',
     };
     
     const pc = new RTCPeerConnection(config);
@@ -1199,7 +1383,8 @@ const WebRTCProvider = ({ children }) => {
       if (!e.candidate) return;
       const ws = signalingWsRef.current;
       if (ws && ws.readyState === WebSocket.OPEN) {
-        console.log('📤 [signaling] send candidate →', key, e.candidate);
+        const candType = parseCandidateType(e.candidate);
+        console.log('📤 [signaling] send candidate →', key, { type: candType, candidate: e.candidate });
         ws.send(JSON.stringify({
           type: 'candidate',
           from: SELF(),
@@ -1586,6 +1771,13 @@ const WebRTCProvider = ({ children }) => {
 
   // 🚨 WebRTC 스트림 완전 정리 함수 (terminateWebRTCSession)
   const terminateWebRTCSession = useCallback(async () => {
+    // 중복 종료 방지 (특히 페이지 이동/중복 클릭)
+    if (window.__terminateWebRTCSessionInProgress) {
+      console.warn('⚠️ terminateWebRTCSession: 이미 종료 처리 중 (중복 호출 방지)');
+      return false;
+    }
+    window.__terminateWebRTCSessionInProgress = true;
+
     console.log('🛑 WebRTC 세션 완전 종료 시작');
     
     try {
@@ -1649,6 +1841,17 @@ const WebRTCProvider = ({ children }) => {
           console.error('❌ 업로드 중 예외:', e);
         }
       }
+
+      // (가능하면) 세션 조회로 현재 상태를 로그 (백엔드 응답에 참가자/녹음 경로가 들어있다면 여기서 3명 업로드 여부 확인 가능)
+      try {
+        const sid = voiceManager.sessionId || localStorage.getItem('session_id');
+        if (sid) {
+          const verify = await axiosInstance.get(`/voice/sessions/${sid}`);
+          console.log('📋 음성 세션 조회(업로드 직후):', verify.data);
+        }
+      } catch (e) {
+        console.warn('⚠️ 음성 세션 조회 실패(무시):', e?.response?.status, e?.response?.data || e?.message);
+      }
       
       try {
         await voiceManager.leaveSession();
@@ -1687,6 +1890,8 @@ const WebRTCProvider = ({ children }) => {
     } catch (error) {
       console.error('❌ WebRTC 세션 종료 중 오류:', error);
       return false;
+    } finally {
+      window.__terminateWebRTCSessionInProgress = false;
     }
   }, [peerConnections]);
 
@@ -1744,16 +1949,32 @@ const WebRTCProvider = ({ children }) => {
       }
       
       // 음성 세션 생성/조회
-      try {
+      // - session_id가 없으면 VoiceManager(녹음) 초기화가 불가능하므로, 실패 시 재시도 후 실패로 처리
+      {
         const nickname = localStorage.getItem('nickname') || "사용자";
-        const { data: voiceSession } = await axiosInstance.post('/voice/sessions', {
-          room_code: roomCode,
-          nickname: nickname
-        });
-        console.log(`🎤 [${providerId}] 음성 세션 생성/조회 성공:`, voiceSession.session_id);
-        localStorage.setItem('session_id', voiceSession.session_id);
-      } catch (sessionError) {
-        console.error(`❌ [${providerId}] 음성 세션 생성 실패:`, sessionError);
+        let lastErr = null;
+        const maxAttempts = 5;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            const { data: voiceSession } = await axiosInstance.post('/voice/sessions', {
+              room_code: roomCode,
+              nickname: nickname
+            });
+            if (!voiceSession?.session_id) throw new Error('voiceSession.session_id가 없습니다.');
+            console.log(`🎤 [${providerId}] 음성 세션 생성/조회 성공:`, voiceSession.session_id);
+            localStorage.setItem('session_id', voiceSession.session_id);
+            lastErr = null;
+            break;
+          } catch (e) {
+            lastErr = e;
+            const delay = Math.min(1000 * attempt, 4000);
+            console.error(`❌ [${providerId}] 음성 세션 생성 실패 (시도 ${attempt}/${maxAttempts})`, e?.response?.data || e?.message || e);
+            await new Promise(r => setTimeout(r, delay));
+          }
+        }
+        if (lastErr) {
+          throw lastErr;
+        }
       }
       
       return mapping;
@@ -1775,12 +1996,17 @@ const WebRTCProvider = ({ children }) => {
         
         // 1. 사용자 ID 확인/설정
         let userId = localStorage.getItem('user_id');
-        if (!userId) {
+        const userIdLooksValid = !!(userId && /^\d+$/.test(String(userId)));
+        // 게스트/레거시 데이터 대비: user_id가 숫자 형식이 아니면 서버에서 다시 조회해 교정
+        if (!userId || !userIdLooksValid) {
           const response = await axiosInstance.get('/users/me');
           userId = String(response.data.id);
           localStorage.setItem('user_id', userId);
         }
         setMyUserId(userId);
+
+        // 1.5 ICE 서버 설정 선로딩 (TURN 포함 가능) - WS 연결/Offer 생성 전에 준비
+        await ensureIceServersReady();
         
         // 2. 역할별 사용자 매핑 저장
         const mapping = await saveRoleUserMapping();
@@ -1806,7 +2032,7 @@ const WebRTCProvider = ({ children }) => {
         const voiceSuccess = await voiceManager.initializeVoiceSession(masterStream);
         if (!voiceSuccess) {
           console.error(`❌ [${providerId}] 음성 세션 초기화 실패`);
-          return false;
+          throw new Error('VoiceManager.initializeVoiceSession 실패');
         }
         
         // 5. WebSocket 연결 (signaling)
@@ -1833,7 +2059,49 @@ const WebRTCProvider = ({ children }) => {
     })();
 
     return initializationPromiseRef.current;
-  }, [saveRoleUserMapping, connectSignalingWebSocket, providerId]);
+  }, [saveRoleUserMapping, connectSignalingWebSocket, providerId, ensureIceServersReady]);
+
+  // 게임 라우트에 들어오면 자동으로 WebRTC 초기화(=녹음 시작)되도록 함
+  // - 특정 페이지에서만 initializeWebRTC()가 호출되면 유저 동선에 따라 "끝부분만 녹음"될 수 있음
+  useEffect(() => {
+    let cancelled = false;
+
+    const shouldAutoInit = () => {
+      try {
+        const path = window.location?.pathname || '';
+        return (
+          path.startsWith('/game') ||
+          path.startsWith('/character_') ||
+          path === '/gamemap' ||
+          path === '/selecthomemate' ||
+          path === '/matename' ||
+          path === '/mictest'
+        );
+      } catch {
+        return false;
+      }
+    };
+
+    const run = async () => {
+      if (cancelled) return;
+      if (isInitialized) return;
+      if (!shouldAutoInit()) return;
+
+      for (let attempt = 1; attempt <= 5 && !cancelled; attempt++) {
+        try {
+          const ok = await initializeWebRTC();
+          if (ok) return;
+        } catch (e) {
+          console.warn(`⚠️ [${providerId}] auto initializeWebRTC 예외 (시도 ${attempt}/5):`, e?.message || e);
+        }
+        const delay = Math.min(1000 * attempt, 4000);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    };
+
+    run();
+    return () => { cancelled = true; };
+  }, [isInitialized, initializeWebRTC, providerId]);
 
   // ----------------------------
   // 새로고침(리로딩) 감지 + 자동 재연결(그레이스)
@@ -2030,8 +2298,79 @@ const WebRTCProvider = ({ children }) => {
         myUserId,
         myRoleId,
         roleUserMapping,
-        pendingCandidates: pendingCandidates.current.size
+        pendingCandidates: pendingCandidates.current.size,
+        iceConfigStatus,
       }),
+      // 현재 적용 중인 iceServers를 확인 (credential은 마스킹)
+      getIceConfig: () => ({
+        ...iceConfigStatus,
+        iceServers: maskIceServersForLog(iceServersRef.current),
+      }),
+      // TURN이 실제로 relay 후보를 뱉는지 “강제” 확인 (iceTransportPolicy: 'relay')
+      // - relay candidate가 1개라도 나오면 TURN 경유 가능 상태
+      testTurnRelay: async (timeoutMs = 8000) => {
+        const iceServers = iceServersRef.current || getIceServersFromEnv();
+        const results = { relay: 0, srflx: 0, host: 0, other: 0, candidates: [], errors: [] };
+
+        const pc = new RTCPeerConnection({
+          iceServers,
+          iceTransportPolicy: 'relay',
+        });
+
+        try {
+          pc.createDataChannel('turn-test');
+          pc.onicecandidateerror = (e) => {
+            // 일부 브라우저는 상세가 비어있을 수 있음
+            results.errors.push({
+              errorCode: e?.errorCode,
+              errorText: e?.errorText,
+              url: e?.url,
+              address: e?.address,
+              port: e?.port,
+              hostCandidate: e?.hostCandidate,
+            });
+          };
+          pc.onicecandidate = (e) => {
+            const c = e.candidate;
+            if (!c) return;
+            const t = parseCandidateType(c) || 'other';
+            if (t === 'relay') results.relay += 1;
+            else if (t === 'srflx') results.srflx += 1;
+            else if (t === 'host') results.host += 1;
+            else results.other += 1;
+            results.candidates.push({
+              type: t,
+              protocol: c.protocol,
+              address: c.address,
+              port: c.port,
+            });
+          };
+
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+
+          await new Promise((resolve) => {
+            let done = false;
+            const finish = () => {
+              if (done) return;
+              done = true;
+              resolve();
+            };
+            const timer = setTimeout(finish, timeoutMs);
+            pc.onicegatheringstatechange = () => {
+              if (pc.iceGatheringState === 'complete') {
+                clearTimeout(timer);
+                finish();
+              }
+            };
+          });
+        } finally {
+          try { pc.close(); } catch {}
+        }
+
+        console.log('🧪 TURN relay test result:', results);
+        return results;
+      },
       debugConnections: debugPeerConnections,
       testConnection: (targetUserId) => {
         const pc = peerConnections.get(targetUserId);
@@ -2063,7 +2402,7 @@ const WebRTCProvider = ({ children }) => {
       }
     };
     return () => { delete window.debugWebRTC; };
-  }, [signalingConnected, myUserId, myRoleId]);
+  }, [signalingConnected, myUserId, myRoleId, iceConfigStatus]);
 
   // 정리 useEffect (언마운트)
   useEffect(() => {
@@ -2143,11 +2482,13 @@ useEffect(() => {
     roleUserMapping,
     myUserId,
     myRoleId,
+    iceConfigStatus,
     voiceSessionStatus,
     terminateWebRTCSession,
     initializeWebRTC,
     startPeerConnections,
     debugPeerConnections,
+    refreshIceConfig: ensureIceServersReady,
     adjustThreshold: (delta) => {
       const newThreshold = Math.max(10, Math.min(100, voiceSessionStatus.speakingThreshold + delta));
       voiceManager.setSpeakingThreshold(newThreshold);
@@ -2167,17 +2508,3 @@ useEffect(() => {
 };
 
 export default WebRTCProvider;
-
-// 유틸함수
-export function disconnectWebRTCVoice(peerConnectionsMap) {
-  if (!peerConnectionsMap) return;
-  const iterable = peerConnectionsMap instanceof Map 
-    ? peerConnectionsMap.values() 
-    : Object.values(peerConnectionsMap);
-  for (const pc of iterable) {
-    try {
-      pc.getSenders().forEach(s => { if (s.track?.kind === 'audio') s.track.stop(); });
-      pc.close();
-    } catch (e) { console.error(e); }
-  }
-}

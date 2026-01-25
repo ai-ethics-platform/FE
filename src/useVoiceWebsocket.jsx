@@ -6,13 +6,23 @@ export default function useVoiceWebSocket(room_code, onParticipantsUpdate) {
 
   const connectWebSocket = async () => {
     try {
-      
-      const meRes = await axiosInstance.get('/users/me');
-      const nickname = meRes.data.username;
+      // ✅ 게스트의 /users/me가 500일 수 있으므로 localStorage 우선 사용
+      const nickname =
+        localStorage.getItem('nickname') ||
+        (() => {
+          const uid = localStorage.getItem('user_id');
+          return uid ? `Player_${uid}` : null;
+        })();
+
+      let resolvedNickname = nickname;
+      if (!resolvedNickname) {
+        const meRes = await axiosInstance.get('/users/me');
+        resolvedNickname = meRes.data.username;
+      }
 
       const { data } = await axiosInstance.post('/voice/sessions', {
         room_code,
-        nickname,
+        nickname: resolvedNickname,
       });
 
       const session_id = data.session_id;

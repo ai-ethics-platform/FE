@@ -8,7 +8,6 @@ import ContentBox4 from '../components/ContentBox4';
 import Continue from '../components/Continue';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
-import voiceManager from '../utils/voiceManager';
 import { Colors,FontStyles } from '../components/styleConstants';
 import { 
   useWebSocketMessage, 
@@ -28,6 +27,7 @@ export default function GameIntro() {
     signalingConnected, 
     peerConnections,
     initializeWebRTC,
+    voiceSessionStatus,
   } = useWebRTC();
 
   // 내 음성 세션 상태 (실시간 로컬 상태)
@@ -41,9 +41,6 @@ export default function GameIntro() {
     speakingThreshold: 30
   });
 
-  // 상태 관리
-  const [voiceInitialized, setVoiceInitialized] = useState(false);
-  const [micPermissionGranted, setMicPermissionGranted] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState({
     websocket: false,
     webrtc: false,
@@ -247,63 +244,15 @@ const isCustomMode = !!localStorage.getItem('code');
     }
   }, [webrtcInitialized, isConnected, connectionEstablishedRef.current, initializeWebRTC, clientId]);
 
-  //  3) 음성 세션 초기화 
-  const initializeVoice = useCallback(async () => {
-    if (voiceInitialized) {
-      console.log(`음성이 이미 초기화됨`);
-      return;
-    }
-
-    const sessionId = localStorage.getItem('session_id');
-    if (!connectionEstablishedRef.current || !sessionId || !webrtcInitialized) {
-      console.log(`연결 확립, 세션, WebRTC 대기 중 `);
-      return;
-    }
-
-    try {
-      console.log(`음성 세션 초기화 시작`);
-         const success = await voiceManager.initializeVoiceSession();
-      
-      if (success) {
-        setVoiceInitialized(true);
-        setMicPermissionGranted(true);
-        setConnectionStatus(prev => ({ ...prev, voice: true }));
-        console.log(`음성 세션 초기화 완료`);
-        
-        setTimeout(() => {
-          voiceManager.startSpeechDetection();
-          console.log(`음성 감지 시작 `);
-        }, 1000);
-        
-      } else {
-        console.error(`음성 세션 초기화 실패`);
-        setMicPermissionGranted(false);
-      }
-    } catch (err) {
-      console.error(`음성 초기화 에러:`, err);
-      setMicPermissionGranted(false);
-    }
-  }, [voiceInitialized, webrtcInitialized, clientId]);
-
-  useEffect(() => {
-    if (connectionEstablishedRef.current && webrtcInitialized && !voiceInitialized) {
-      console.log(`음성 초기화 조건 충족`);
-      const timer = setTimeout(() => {
-        initializeVoice();
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [connectionEstablishedRef.current, webrtcInitialized, voiceInitialized, initializeVoice, clientId]);
-
   // 연결 상태 모니터링
   useEffect(() => {
     setConnectionStatus({
       websocket: isConnected,
       webrtc: webrtcInitialized && signalingConnected,
-      voice: voiceInitialized && micPermissionGranted
+      // VoiceManager 초기화(=녹음 시작)는 WebRTCProvider에서 수행되므로, Provider 상태를 기준으로 표시
+      voice: !!voiceSessionStatus?.isConnected
     });
-  }, [isConnected, webrtcInitialized, signalingConnected, voiceInitialized, micPermissionGranted]);
+  }, [isConnected, webrtcInitialized, signalingConnected, voiceSessionStatus?.isConnected]);
 
   // const handleContinue = useCallback(() => {
   //   console.log(" handleContinue 실행됨");

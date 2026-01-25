@@ -100,11 +100,11 @@ export default function UserProfile({
 
       // 자율 무기 시스템 관련 서브토픽
       case 'AI 알고리즘 공개': {
-        mappedDesc = roleNum === 1 ? '지역 주민' : roleNum === 2 ? '병사 J' : '군사 AI 윤리 전문가';
+        mappedDesc = roleNum === 1 ? '지역 주민' : roleNum === 2 ? '병사 ' : '군사 AI 윤리 전문가';
         break;
       }
       case 'AWS의 권한': {
-        mappedDesc = roleNum === 1 ? '신입 병사' : roleNum === 2 ? '베테랑 병사 A' : '군 지휘관';
+        mappedDesc = roleNum === 1 ? '신입 병사' : roleNum === 2 ? '베테랑 병사 ' : '군 지휘관';
         break;
       }
       case '사람이 죽지 않는 전쟁': {

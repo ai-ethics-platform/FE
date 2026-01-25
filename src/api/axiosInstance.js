@@ -1,6 +1,10 @@
 // api/axiosInstance.js
 import axios from 'axios';
-const API_BASE = 'https://dilemmai-idl.com';
+// Vite 환경변수로 API baseURL을 바꿀 수 있게 함 (로컬/스테이징/프로덕션 공용)
+// 예) VITE_API_BASE_URL=http://localhost:8000
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+  ? String(import.meta.env.VITE_API_BASE_URL).replace(/\/+$/, '')
+  : 'https://dilemmai-idl.com';
 
 // 메인 axios 인스턴스 생성
 const instance = axios.create({

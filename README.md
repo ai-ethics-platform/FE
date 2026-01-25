@@ -5,6 +5,7 @@
 ## 문서
 
 - **영어 버전 i18n 개발 인수인계**: `docs/english-version-handover.md`
+- **TURN 설정(WebRTC 안정화)**: `docs/turn-setup.md`
 
 ## 핵심 기술
 
@@ -57,6 +58,13 @@ npm run lint
   - `src/WebRTCProvider.jsx`
 
 로컬/스테이징 백엔드를 붙이려면 위 파일들의 도메인을 프로젝트 환경에 맞게 변경해야 합니다.
+
+## TURN 서버(권장)
+
+STUN만으로는 일부 사용자 네트워크(회사망/특정 공유기/NAT)에서 WebRTC P2P 연결이 실패할 수 있습니다.  
+TURN 서버를 준비해두면 실패 케이스를 크게 줄일 수 있습니다.
+
+- 설정 방법: `docs/turn-setup.md`
 
 ## 주요 사용자 흐름
 

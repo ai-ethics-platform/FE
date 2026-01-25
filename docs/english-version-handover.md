@@ -13,6 +13,11 @@
   - `GameIntro`
   - `SelectHomeMate`
   - `MateName`
+  -`src/pages/Login.jsx`
+-`src/pages/Waitingroom.jsx`
+-`src/pages/Signup01.jsx`
+-`src/pages/Signup02.jsx`
+-`src/pages/Selectroom.jsx`
   - `Game01 ~ Game09` (각 페이지 내 텍스트/버튼/설명/레이블 포함)
 - **`alert` 문구 영문화**
 - **영어 적용으로 인해 달라지는 UI 크기 대응**

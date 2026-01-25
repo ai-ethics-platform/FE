@@ -890,10 +890,14 @@ export default function ChatPage2() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [nextReady, setNextReady] = useState(false); // 🔥 추가: 누락된 상태
+  const [inputNotice, setInputNotice] = useState("");
 
   const bottomRef = useRef(null);
   const messagesRef = useRef(messages);
   const stepBoundariesRef = useRef({}); // step 진입 시점의 messages 길이(=해당 step 시작 경계)
+  const lastUserTextRef = useRef("");
+  const pendingNextStepRef = useRef(null); // { fromStep, toStep, retryText }
+  const inputNoticeTimerRef = useRef(null);
   const [showTemplateButton, setShowTemplateButton] = useState(false);
   const [showOutPopup, setShowOutPopup] = useState(false);
 
@@ -950,6 +954,26 @@ export default function ChatPage2() {
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      if (inputNoticeTimerRef.current) clearTimeout(inputNoticeTimerRef.current);
+    };
+  }, []);
+
+  const showInputNotice = (message, durationMs = 2500) => {
+    setInputNotice(message);
+    if (inputNoticeTimerRef.current) clearTimeout(inputNoticeTimerRef.current);
+    // durationMs가 0/음수/없음이면 "유저가 다시 입력/전송할 때까지" 유지
+    if (!durationMs || durationMs <= 0) {
+      inputNoticeTimerRef.current = null;
+      return;
+    }
+    inputNoticeTimerRef.current = setTimeout(() => {
+      setInputNotice("");
+      inputNoticeTimerRef.current = null;
+    }, durationMs);
+  };
 
   // ✅ 채팅 페이지에서는 바깥(body) 스크롤을 막고, 채팅 영역만 스크롤되도록 고정
   useEffect(() => {
@@ -1075,6 +1099,23 @@ export default function ChatPage2() {
     } catch (e) {
       console.error("❌ INIT 실패:", e);
       const errorMsg = e?.response?.data?.detail || e?.message || "INIT 요청 실패";
+      const status = e?.response?.status;
+
+      // "다음 단계" 시도 직후 INIT에서 400이 터지면, 직전 유저 입력을 다시 보내도록 유도
+      if (
+        status === 400 &&
+        pendingNextStepRef.current?.toStep === targetStep
+      ) {
+        const retryText = pendingNextStepRef.current?.retryText || "";
+        // 안내문은 사라지지 않게(유저가 다시 전송할 때까지)
+        showInputNotice("오류가 발생했습니다. 다시 입력해주세요", 0);
+        if (retryText) setInput(retryText);
+        setStep(pendingNextStepRef.current.fromStep);
+        pendingNextStepRef.current = null;
+        setError("");
+        return;
+      }
+
       setError(errorMsg);
       setMessages(prev => [
         ...prev,
@@ -1135,6 +1176,7 @@ export default function ChatPage2() {
   const handleSend = async (userText) => {
     if (loading) return;
     setError("");
+    setInputNotice("");
 
     const raw = (userText ?? input).trim();
     if (!raw) return;
@@ -1151,7 +1193,7 @@ export default function ChatPage2() {
 
       // 다음 step INIT이 추가될 "경계"는 (현재 messages + user 메시지 1개) 시점
       const boundaryForNextStep = messagesRef.current.length + 1;
-      setMessages(prev => [...prev, { role: "user", content: raw }]);
+      setMessages(prev => [...prev, { role: "user", content: raw, skipHistory: true }]);
 
       // step advance
       const idx = STEP_ORDER.indexOf(step);
@@ -1176,7 +1218,12 @@ export default function ChatPage2() {
         return;
       }
 
-      setStep(next);
+      // 다음 단계 INIT이 실패(400)하면 "직전 유저 입력"을 다시 보내야 하므로 미리 저장
+      pendingNextStepRef.current = {
+        fromStep: step,
+        toStep: next,
+        retryText: lastUserTextRef.current,
+      };
 
       // INIT 호출
       setTimeout(() => {
@@ -1189,8 +1236,10 @@ export default function ChatPage2() {
 
     // 일반 메시지 처리
     const userMsg = raw;
+    lastUserTextRef.current = userMsg;
     setMessages(prev => [...prev, { role: "user", content: userMsg }]);
     setLoading(true);
+    let preserveInput = false;
 
     try {
       const inputWithHistory = buildInputWithHistory(
@@ -1297,6 +1346,7 @@ keys.forEach((k) => {
       
 
     } catch (err) {
+      const status = err?.response?.status;
       const msg =
         err?.response?.data?.detail ||
         err?.message ||
@@ -1304,12 +1354,19 @@ keys.forEach((k) => {
 
       console.error("❌ 요청 실패:", err);
 
+      // 400이면 "방금 입력한 메시지"를 인풋에 다시 채워서 재전송 UX 제공
+      if (status === 400) {
+        showInputNotice("오류가 발생했습니다. 다시 입력해주세요.", 2500);
+        setInput(userMsg);
+        preserveInput = true;
+      }
       setError(msg);
       setMessages(prev => [...prev, { role: "assistant", content: `에러: ${msg}` }]);
 
     } finally {
       setLoading(false);
-      setInput("");
+      // 400일 때는 재전송을 위해 input을 유지
+      if (!preserveInput) setInput("");
     }
   };
 
@@ -1593,6 +1650,21 @@ keys.forEach((k) => {
             alignItems: "stretch",
           }}
         >
+          {inputNotice && (
+            <div
+              style={{
+                position: "absolute",
+                left: 16,
+                right: 16,
+                top: -28,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#b91c1c",
+              }}
+            >
+              {inputNotice}
+            </div>
+          )}
           <textarea
             placeholder={placeholder}
             value={input}
@@ -1609,7 +1681,10 @@ keys.forEach((k) => {
               maxHeight: "44px",
               overflowY: "hidden",
             }}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              if (inputNotice) setInputNotice("");
+              setInput(e.target.value);
+            }}
             onKeyDown={(e) => {
               if (e.isComposing || e.nativeEvent.isComposing) return;
               if (e.key === "Enter" && !e.shiftKey) {

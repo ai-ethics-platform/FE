@@ -14,7 +14,7 @@ import { useWebRTC } from '../WebRTCProvider';
 import { useHostActions, useWebSocketMessage } from '../hooks/useWebSocketMessage';
 import { FontStyles, Colors } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
-import hostInfoSvg from '../assets/host_info2.svg';
+import hostInfoSvg from '../assets/host_info3.svg';
 import defaultImg from '../assets/images/default.png';
 import HostInfoBadge from '../components/HostInfoBadge';
 

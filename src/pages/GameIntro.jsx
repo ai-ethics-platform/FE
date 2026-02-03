@@ -320,8 +320,7 @@ const isCustomMode = !!localStorage.getItem('code');
     if (isCustomMode) {
       navigate('/game01');
     } else {
-      navigate('/game08');
-      //navigate('/selecthomemate');
+      navigate('/selecthomemate');
     }
   };
 

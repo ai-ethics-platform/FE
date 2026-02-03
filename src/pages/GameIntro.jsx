@@ -295,11 +295,33 @@ const isCustomMode = !!localStorage.getItem('code');
   //   }
   // }, [clientId, voiceInitialized, isHost, sendNextPage]);
 
+  // ----------------------------
+  // "다음" 활성 조건 (요구사항 반영):
+  // 기존 조건(WS 연결 확립 + WebRTC 초기화)에
+  // "3명 음성 연결" = 내 WebRTC 피어 2개 모두 connected 조건만 추가
+  // ----------------------------
+  const connectedPeerCount = (() => {
+    try {
+      if (!peerConnections) return 0;
+      const pcs = peerConnections instanceof Map ? Array.from(peerConnections.values()) : Object.values(peerConnections);
+      return pcs.filter((pc) => pc && (pc.connectionState === 'connected' || pc.iceConnectionState === 'connected')).length;
+    } catch {
+      return 0;
+    }
+  })();
+
+  const allVoicesConnected = connectedPeerCount >= 2; // 3인 기준: 나 외 2명과 연결
+
+  const canProceed = isCustomMode
+    ? true
+    : (connectionEstablishedRef.current && webrtcInitialized && allVoicesConnected);
+
   const handleContinue = () => {
     if (isCustomMode) {
       navigate('/game01');
     } else {
-      navigate('/selecthomemate');
+      navigate('/game08');
+      //navigate('/selecthomemate');
     }
   };
 
@@ -370,7 +392,7 @@ const isCustomMode = !!localStorage.getItem('code');
               height={72}
               step={1}
               onClick={handleContinue}
-              disabled={!connectionEstablishedRef.current || !webrtcInitialized}
+              disabled={!canProceed}
 
             />
           </div>

@@ -870,6 +870,164 @@ function forceString(v) {
   if (v === undefined || v === null) return "";
   return v;
 }
+
+// ---------------------------
+// 서버 context 키 정규화 + ending fallback
+// ---------------------------
+const coalesce = (...vals) => {
+  for (const v of vals) {
+    if (v === undefined || v === null) continue;
+    const s = typeof v === "string" ? v.trim() : v;
+    if (typeof s === "string") {
+      if (s.length) return s;
+      continue;
+    }
+    // 배열/객체도 "값이 있다"로 취급
+    return v;
+  }
+  return "";
+};
+
+const ensureArray = (v) => {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.filter(Boolean);
+  if (typeof v === "string") {
+    // 문장/줄바꿈 기반으로 대충 split (서버가 string으로 주는 케이스 방어)
+    const parts = v
+      .replace(/\r/g, "")
+      .split(/\n+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return parts.length ? parts : [v];
+  }
+  return [String(v)];
+};
+
+function normalizeContext(ctx) {
+  const next = { ...(ctx || {}) };
+
+  // topic
+  next.topic = coalesce(next.topic, next.dilemma_topic, next.opening_topic);
+
+  // 딜레마 핵심(상황/질문/선택지/플립)
+  next.dilemma_situation = coalesce(
+    next.dilemma_situation,
+    next.flip_dilemma_situation,
+    next.flip_result // flip_result가 통문장으로 오기도 함
+  );
+  next.question = coalesce(
+    next.question,
+    next.flip_question,
+    next.question_question
+  );
+  next.choice1 = coalesce(
+    next.choice1,
+    next.flip_choice1,
+    next.question_choice1
+  );
+  next.choice2 = coalesce(
+    next.choice2,
+    next.flip_choice2,
+    next.question_choice2
+  );
+  next.flips_agree_texts = coalesce(
+    next.flips_agree_texts,
+    next.flip_flips_agree_texts
+  );
+  next.flips_disagree_texts = coalesce(
+    next.flips_disagree_texts,
+    next.flip_flips_disagree_texts
+  );
+
+  // 역할(이름/설명)
+  next.char1 = coalesce(next.char1, next.roles_char1, next.ending_char1);
+  next.char2 = coalesce(next.char2, next.roles_char2, next.ending_char2);
+  next.char3 = coalesce(next.char3, next.roles_char3, next.ending_char3);
+
+  // 백엔드/프론트 키 혼재 방어: chardes* / charDes* 둘 다 채움
+  next.chardes1 = coalesce(next.chardes1, next.roles_chardes1, next.charDes1);
+  next.chardes2 = coalesce(next.chardes2, next.roles_chardes2, next.charDes2);
+  next.chardes3 = coalesce(next.chardes3, next.roles_chardes3, next.charDes3);
+  next.charDes1 = next.chardes1;
+  next.charDes2 = next.chardes2;
+  next.charDes3 = next.chardes3;
+
+  // opening: 서버가 다양한 형태로 줄 수 있어 우선순위로 흡수
+  // - opening은 "문장 배열"을 기대하지만, 여기서는 문자열/배열 모두 허용
+  next.opening = coalesce(next.opening, next.opening_texts, next.opening_result);
+
+  return next;
+}
+
+function looksLikeSkeletonEndingText(text) {
+  if (typeof text !== "string") return false;
+  // 현재 문제 케이스의 전형적인 placeholder/가이드 문구들
+  return (
+    text.includes("[여기서") ||
+    text.includes("원초적인 구조") ||
+    text.includes("이 초안으로 확정지을까요?")
+  );
+}
+
+function buildEndingScriptFromContext(ctx) {
+  const openingTopic = coalesce(ctx.topic, ctx.opening_topic, "AI");
+
+  const opening = ensureArray(ctx.opening);
+  const openingLines = opening.length
+    ? opening
+    : [
+        `최근 ${openingTopic} 관련 기술이 빠르게 도입되면서, 효율성과 공정성 사이의 갈등이 현실 문제로 떠올랐습니다.`,
+        `오늘은 한 사건을 두고 서로 다른 이해관계자들이 한자리에 모여 판단 기준을 토론하게 됩니다.`,
+      ];
+
+  const dilemmaSituation = ensureArray(ctx.dilemma_situation);
+  const flipsAgree = ensureArray(ctx.flips_agree_texts);
+  const flipsDisagree = ensureArray(ctx.flips_disagree_texts);
+
+  const question = coalesce(ctx.question, "어떤 선택이 더 윤리적일까요?");
+  const choice1 = coalesce(ctx.choice1, "예");
+  const choice2 = coalesce(ctx.choice2, "아니오");
+
+  const char1 = coalesce(ctx.char1, "역할 1");
+  const char2 = coalesce(ctx.char2, "역할 2");
+  const char3 = coalesce(ctx.char3, "역할 3");
+  const charDes1 = coalesce(ctx.chardes1, ctx.charDes1, "");
+  const charDes2 = coalesce(ctx.chardes2, ctx.charDes2, "");
+  const charDes3 = coalesce(ctx.chardes3, ctx.charDes3, "");
+
+  // 최종 멘트가 없을 때는 토론 확장용 질문으로 안전하게 생성
+  const agreeEnding =
+    coalesce(ctx.agreeEnding, "") ||
+    `정확성을 우선한 결정이 반복될 때, 소수자 집단이 겪는 불이익을 누가/어떻게 보정해야 할까요?`;
+  const disagreeEnding =
+    coalesce(ctx.disagreeEnding, "") ||
+    `공정성을 우선해 정확도가 떨어질 때, 잘못된 판결의 책임은 누구에게 있고 어떤 안전장치를 둬야 할까요?`;
+
+  return [
+    "🎬 오프닝 멘트",
+    ...openingLines.map((s) => `- ${s}`),
+    "",
+    "🎭 역할",
+    `- [${char1}] : ${charDes1}`.trim(),
+    `- [${char2}] : ${charDes2}`.trim(),
+    `- [${char3}] : ${charDes3}`.trim(),
+    "",
+    "🎯 상황 및 딜레마 질문",
+    ...(dilemmaSituation.length ? dilemmaSituation.map((s) => `- ${s}`) : []),
+    `질문: ${question}`,
+    "",
+    `✅ 선택지 1: ${choice1}`,
+    `📎 플립 자료: ${flipsAgree.join(" ")}`.trim(),
+    "",
+    `✅ 선택지 2: ${choice2}`,
+    `📎 플립 자료: ${flipsDisagree.join(" ")}`.trim(),
+    "",
+    "🌀 최종 멘트",
+    `-- 선택지 1 최종 선택: ${agreeEnding}`,
+    `-- 선택지 2 최종 선택: ${disagreeEnding}`,
+  ].join("\n");
+}
+
 export default function ChatPage2() {
   const navigate = useNavigate();
 
@@ -1072,25 +1230,40 @@ export default function ChatPage2() {
       const { text, newContext, parsedVars } = normalize(res);
 
       // 기존 메시지 유지 + assistant 추가
+      const mergedForDisplay = normalizeContext({
+        ...(ctxToUse || {}),
+        ...(newContext || {}),
+        ...(parsedVars || {}),
+      });
+
+      const displayText =
+        targetStep === "ending" && looksLikeSkeletonEndingText(text)
+          ? buildEndingScriptFromContext(mergedForDisplay)
+          : cleanMarkdown(text);
+
       setMessages(prev => [
         ...prev,
-        { role: "assistant", content: cleanMarkdown(text) }
+        { role: "assistant", content: displayText }
       ]);
 
       // context 업데이트 (한 번에 처리)
       if (options.contextOverride) {
         // backStep 등에서 "정리된 context"를 기준으로 업데이트해야 할 때
-        setContext({
-          ...options.contextOverride,
-          ...(newContext || {}),
-          ...(parsedVars || {}),
-        });
+        setContext(
+          normalizeContext({
+            ...options.contextOverride,
+            ...(newContext || {}),
+            ...(parsedVars || {}),
+          })
+        );
       } else {
-        setContext(prev => ({
-          ...prev,
-          ...(newContext || {}),
-          ...(parsedVars || {})
-        }));
+        setContext((prev) =>
+          normalizeContext({
+            ...prev,
+            ...(newContext || {}),
+            ...(parsedVars || {}),
+          })
+        );
       }
 
       // step 실제로 변경
@@ -1261,23 +1434,36 @@ export default function ChatPage2() {
       const res = await callChatbot(payload);
       const { text, newContext, parsedVars } = normalize(res);
 
+      const mergedForDisplay = normalizeContext({
+        ...context,
+        ...(newContext || {}),
+        ...(parsedVars || {}),
+      });
 
       // 서버 응답 출력
       setMessages(prev => [
         ...prev,
-        { role: "assistant", content: cleanMarkdown(text) }
+        {
+          role: "assistant",
+          content:
+            step === "ending" && looksLikeSkeletonEndingText(text)
+              ? buildEndingScriptFromContext(mergedForDisplay)
+              : cleanMarkdown(text),
+        }
       ]);
 
       // 🔥 수정: context 업데이트를 한 번에 처리
       if (parsedVars || newContext) {
-        setContext(prev => ({
-          ...prev,
-          ...(newContext || {}),
-          ...(parsedVars || {})
-        }));
+        setContext((prev) =>
+          normalizeContext({
+            ...prev,
+            ...(newContext || {}),
+            ...(parsedVars || {}),
+          })
+        );
       }
 if (step === "ending") {
-  const finalPayload = parsedVars || newContext;
+  const finalPayload = mergedForDisplay;
 
   if (finalPayload) {
     localStorage.setItem("final_dilemma_payload", JSON.stringify(finalPayload));

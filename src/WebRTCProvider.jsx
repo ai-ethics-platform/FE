@@ -995,6 +995,7 @@
 // }
 // WebRTCProvider.jsx
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import voiceManager from './utils/voiceManager';
 import axiosInstance from './api/axiosInstance';
 
@@ -1139,10 +1140,13 @@ const WebRTCProvider = ({ children }) => {
     speakingThreshold: 30
   });
 
+  const location = useLocation();
+
   // WebSocket 참조
   const signalingWsRef = useRef(null);
   const connectionAttemptedRef = useRef(false);
   const initializationPromiseRef = useRef(null);
+  const masterStreamRef = useRef(null); // ✅ 마이크 스트림 1회 생성 후 재사용(재시도 시 중복 생성 방지)
 
   // ----------------------------
   // ICE config (server → env → default STUN)
@@ -1258,6 +1262,16 @@ const WebRTCProvider = ({ children }) => {
     audioUnlockListenerAddedRef.current = true;
 
     const tryPlayAll = () => {
+      // ✅ 원칙 (4): AudioContext unlock (모바일 사파리 대응)
+      try {
+        if (voiceManager?.audioContext?.state === 'suspended') {
+          voiceManager.audioContext.resume();
+          console.log('🔊 AudioContext resumed (사용자 제스처)');
+        }
+      } catch (e) {
+        console.warn('⚠️ AudioContext resume 실패:', e?.message);
+      }
+      
       const audios = document.querySelectorAll('audio[data-user-id]');
       audios.forEach((a) => {
         try {
@@ -1408,22 +1422,38 @@ const WebRTCProvider = ({ children }) => {
   }
   const createPeerConnection = (...args) => getOrCreatePC(...args);
 
+  // ✅ 원칙 (3): 글레어(양쪽 동시 offer) 방지 - offer initiator 규칙
+  // - 양쪽이 동시에 offer를 보내면 충돌이 잦고 연결이 불안정해짐
+  // - userId 비교로 "큰 쪽만 offer 시작" 규칙을 적용해서 글레어 빈도를 확 낮춤
+  function shouldInitiate(remotePeerId) {
+    const myId = SELF();
+    const remoteId = String(remotePeerId);
+    // 숫자 비교: 같은 경우는 없어야 하지만 혹시 모르니 false 반환
+    if (myId === remoteId) return false;
+    // 숫자 형식이면 숫자 비교, 아니면 문자열 비교
+    const myNum = parseInt(myId, 10);
+    const remoteNum = parseInt(remoteId, 10);
+    if (!isNaN(myNum) && !isNaN(remoteNum)) {
+      return myNum > remoteNum;
+    }
+    return myId > remoteId;
+  }
+
   async function createOfferTo(remotePeerId) {
     const pc = getOrCreatePC(remotePeerId);
     if (!pc) return;
 
-    // 로컬 오디오 트랙 추가
-    let stream = voiceManager.mediaStream;
+    // ✅ 원칙 (4): masterStream이 없으면 offer 생성 스킵 (인자 없는 initializeVoiceSession 호출 제거)
+    let stream = masterStreamRef.current || voiceManager.mediaStream;
     if (!stream) {
-      await voiceManager.initializeVoiceSession(); // 내부에서 session_id 체크 및 초기화 시도
-      stream = voiceManager.mediaStream;
+      console.warn('⚠️ createOfferTo: 로컬 스트림이 없어 offer 생성 스킵. initializeWebRTC를 먼저 호출하세요.');
+      return;
     }
-    if (stream) {
-      // 같은 트랙 중복 추가 방지
-      const hasAudio = pc.getSenders().some(s => s.track && s.track.kind === 'audio');
-      if (!hasAudio) {
-        stream.getTracks().forEach(t => pc.addTrack(t, stream));
-      }
+    
+    // 같은 트랙 중복 추가 방지
+    const hasAudio = pc.getSenders().some(s => s.track && s.track.kind === 'audio');
+    if (!hasAudio) {
+      stream.getTracks().forEach(t => pc.addTrack(t, stream));
     }
 
     const peerKey = String(remotePeerId);
@@ -1595,6 +1625,13 @@ const WebRTCProvider = ({ children }) => {
                 if (!otherId) continue;
                 // 레이스로 myPeerIdRef.current가 아직 null일 수 있으니 SELF() 기준으로 자기 자신 제외
                 if (String(otherId) === SELF()) continue;
+                // ✅ 원칙 (3): 글레어 방지 - userId 비교로 offer initiator 제한
+                // 🚨 임시 비활성화: 연결 테스트를 위해 글레어 방지를 우선 꺼둠
+                // if (!shouldInitiate(String(otherId))) {
+                //   console.log(`⏭️ [signaling] 글레어 방지: ${SELF()} < ${otherId}, offer 스킵`);
+                //   continue;
+                // }
+                console.log(`📤 [signaling] peers → offer 생성 시작: ${SELF()} → ${otherId}`);
                 await createOfferTo(String(otherId));
               }
               return;
@@ -1604,7 +1641,13 @@ const WebRTCProvider = ({ children }) => {
               const otherId = String(msg.peer_id);
               // 레이스로 myPeerIdRef.current가 아직 null일 수 있으니 SELF() 기준으로 자기 자신 제외
               if (otherId === SELF()) return;
-              // join/joined에서도 initiator 규칙으로만 offer 생성 (양쪽 동시 offer 방지)
+              // ✅ 원칙 (3): 글레어 방지 - userId 비교로 offer initiator 제한
+              // 🚨 임시 비활성화: 연결 테스트를 위해 글레어 방지를 우선 꺼둠
+              // if (!shouldInitiate(otherId)) {
+              //   console.log(`⏭️ [signaling] 글레어 방지: ${SELF()} < ${otherId}, offer 스킵 (join/joined)`);
+              //   return;
+              // }
+              console.log(`📤 [signaling] join/joined → offer 생성 시작: ${SELF()} → ${otherId}`);
               await createOfferTo(otherId);
               return;
             }
@@ -1661,17 +1704,16 @@ const WebRTCProvider = ({ children }) => {
               // Safari 등에서 candidate가 먼저 오면 큐에 쌓였다가 여기서 처리해야 함
               await flushPendingIceCandidates(fromId);
 
-              // 로컬 트랙이 없다면 추가
-              let stream = voiceManager.mediaStream;
+              // ✅ 원칙 (4): masterStream이 없으면 answer 생성 스킵 (인자 없는 initializeVoiceSession 호출 제거)
+              let stream = masterStreamRef.current || voiceManager.mediaStream;
               if (!stream) {
-                await voiceManager.initializeVoiceSession();
-                stream = voiceManager.mediaStream;
+                console.warn('⚠️ offer 수신: 로컬 스트림이 없어 answer 생성 스킵. initializeWebRTC를 먼저 호출하세요.');
+                return;
               }
-              if (stream) {
-                const hasAudio = pc.getSenders().some(s => s.track && s.track.kind === 'audio');
-                if (!hasAudio) {
-                  stream.getTracks().forEach(t => pc.addTrack(t, stream));
-                }
+              
+              const hasAudio = pc.getSenders().some(s => s.track && s.track.kind === 'audio');
+              if (!hasAudio) {
+                stream.getTracks().forEach(t => pc.addTrack(t, stream));
               }
 
               const answer = await pc.createAnswer();
@@ -1771,6 +1813,9 @@ const WebRTCProvider = ({ children }) => {
 
   // 🚨 WebRTC 스트림 완전 정리 함수 (terminateWebRTCSession)
   const terminateWebRTCSession = useCallback(async () => {
+    // ✅ 원칙 (3): 종료 플래그를 제일 먼저 세팅해서 auto-init/워치독 레이스 방지
+    voiceManager.exitInProgress = true;
+    
     // 중복 종료 방지 (특히 페이지 이동/중복 클릭)
     if (window.__terminateWebRTCSessionInProgress) {
       console.warn('⚠️ terminateWebRTCSession: 이미 종료 처리 중 (중복 호출 방지)');
@@ -1784,18 +1829,31 @@ const WebRTCProvider = ({ children }) => {
       console.log('🎵 VoiceManager 녹음 직접 종료...');
       const recordingData = await voiceManager.stopRecording();
       console.log('✅ 녹음 데이터 확보:', recordingData);
+      // 디버그용: 콘솔에서 재다운로드 시도할 수 있게 마지막 녹음 데이터를 보관
+      // (다운로드 팝업이 브라우저 정책으로 막혔을 때 대비)
+      try { window.__lastRecordingData = recordingData; } catch {}
+
+      // ✅ 게임 종료 시: webm 원본을 로컬 파일로 저장(다운로드) — 기본 동작
+      // - "녹음이 처음부터 끝까지 되었는지"를 확인하는 1순위 방법
+      // - 브라우저 정책으로 자동 다운로드가 막히면 window.__lastRecordingData로 수동 저장 가능
+      try {
+        const disabled = localStorage.getItem('download_recording_on_end') === 'false';
+        if (!disabled && recordingData?.blob?.size > 0) {
+          voiceManager.saveRecordingToLocal(recordingData, { reason: 'terminate_webrtc' });
+        } else {
+          console.log('ℹ️ 로컬 저장 스킵:', {
+            disabled,
+            hasBlob: !!recordingData?.blob,
+            size: recordingData?.blob?.size || 0,
+          });
+        }
+      } catch (e) {
+        console.warn('⚠️ 로컬 저장 처리 중 오류(무시):', e?.message || e);
+      }
       
       const mediaStream = voiceManager.mediaStream;
       if (mediaStream) {
-        console.log('🎤 WebRTC 마스터 스트림 정지 중...');
-        mediaStream.getTracks().forEach(track => {
-          console.log(`🔇 트랙 정지: ${track.kind}, readyState: ${track.readyState}`);
-          if (track.readyState !== 'ended') {
-            track.stop();
-            console.log(`✅ 트랙 정지 완료: ${track.kind}`);
-          }
-        });
-        console.log('✅ 모든 스트림 트랙 정지 완료');
+        console.log('🎤 WebRTC 마스터 스트림: track.stop()은 하지 않음 (releaseMic에서만)');
       }
       
       voiceManager.disconnectMicrophone();
@@ -1805,8 +1863,8 @@ const WebRTCProvider = ({ children }) => {
         try {
           pc.getSenders().forEach(sender => {
             if (sender.track) {
-              console.log(`🔇 PeerConnection 송신 트랙 정지: User ${userId}`);
-              sender.track.stop();
+              console.log(`🔌 PeerConnection 송신 트랙 분리: User ${userId}`);
+              try { sender.replaceTrack(null); } catch {}
             }
           });
           pc.close();
@@ -1837,6 +1895,22 @@ const WebRTCProvider = ({ children }) => {
         try {
           uploadResult = await voiceManager.uploadRecordingToServer(recordingData);
           console.log('✅ 업로드 완료');
+
+          // (선택) 서버가 변환해서 만든 wav도 로컬에 저장
+          // - 기본은 OFF (원본 webm 확인이 목적)
+          // - 필요 시 localStorage.setItem('download_server_wav_on_end','true') 로 켜기
+          try {
+            const shouldSaveServerWav =
+              (localStorage.getItem('download_server_wav_on_end') === 'true');
+            const fp = uploadResult?.file_path;
+            if (shouldSaveServerWav && fp) {
+              await voiceManager.downloadServerRecordingFile(fp, { reason: 'upload_wav' });
+            } else {
+              console.log('ℹ️ 서버 wav 로컬 저장 스킵:', { shouldSaveServerWav, filePath: fp });
+            }
+          } catch (e) {
+            console.warn('⚠️ 서버 wav 로컬 저장 중 오류(무시):', e?.message || e);
+          }
         } catch (e) {
           console.error('❌ 업로드 중 예외:', e);
         }
@@ -1859,6 +1933,35 @@ const WebRTCProvider = ({ children }) => {
       } catch (sessionError) {
         console.error('❌ 세션 나가기 실패:', sessionError);
       }
+
+      // ✅ 마지막: 마이크 완전 해제 (track.stop은 여기서만)
+      console.log('🧯 마이크 완전 해제 시작...');
+      try {
+        if (typeof voiceManager.releaseMic === 'function') {
+          voiceManager.releaseMic();
+          console.log('✅ releaseMic() 호출 완료');
+        } else {
+          console.warn('⚠️ releaseMic 함수가 없음');
+        }
+      } catch (e) {
+        console.error('❌ releaseMic 호출 실패:', e);
+      }
+      
+      // ✅ masterStreamRef도 명시적으로 정리
+      if (masterStreamRef.current) {
+        console.log('🔇 masterStreamRef 정리 중...');
+        try {
+          masterStreamRef.current.getTracks?.().forEach((t) => {
+            console.log(`  - masterStream track ${t.kind}: ${t.readyState} → stop`);
+            try { t.stop(); } catch (e) { console.warn('track.stop 실패:', e); }
+          });
+        } catch (e) {
+          console.warn('⚠️ masterStreamRef 정리 실패:', e);
+        }
+        masterStreamRef.current = null;
+        console.log('✅ masterStreamRef 정리 완료');
+      }
+
       pcsRef.current.forEach(pc => { try{ pc.close(); }catch{} });
       pcsRef.current.clear();
       setPeerConnections(new Map());
@@ -2016,16 +2119,48 @@ const WebRTCProvider = ({ children }) => {
         }
         
         // 3. WebRTC에서 마스터 스트림 생성 (getUserMedia)
-        console.log('🎤 WebRTC에서 마스터 스트림 생성...');
-        const masterStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-            sampleRate: 44100
+        let masterStream = masterStreamRef.current;
+        const reuseOk = !!(masterStream && masterStream.getAudioTracks?.().some((t) => t.readyState === 'live'));
+        if (!reuseOk) {
+          // ✅ 가능하면 VoiceManager가 이미 확보해둔 baseMicStream(로컬녹음용 gUM)을 재사용
+          if (voiceManager?.hasLiveAudioTrack?.(voiceManager?.baseMicStream)) {
+            masterStream = voiceManager.baseMicStream;
+            masterStreamRef.current = masterStream;
+            console.log('♻️ VoiceManager baseMicStream을 WebRTC masterStream으로 재사용:', masterStream.id);
+          } else if (typeof voiceManager?.ensureBaseMicStream === 'function') {
+            masterStream = await voiceManager.ensureBaseMicStream();
+            masterStreamRef.current = masterStream;
+            console.log('♻️ VoiceManager.ensureBaseMicStream으로 masterStream 확보:', masterStream.id);
+          } else {
+            console.log('🎤 WebRTC에서 마스터 스트림 생성...');
+            masterStream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: 44100
+              }
+            });
+            masterStreamRef.current = masterStream;
+            console.log('✅ WebRTC 마스터 스트림 생성 완료:', masterStream.id);
           }
-        });
-        console.log('✅ WebRTC 마스터 스트림 생성 완료:', masterStream.id);
+        } else {
+          console.log('♻️ 기존 마스터 스트림 재사용:', masterStream.id);
+        }
+
+        // ✅ 원칙 (1): baseMicStream 세팅 (녹음 스트림 생성 실패 시 보험)
+        // masterStream을 확보한 직후 voiceManager.baseMicStream에도 세팅
+        if (!voiceManager.baseMicStream || !voiceManager.hasLiveAudioTrack?.(voiceManager.baseMicStream)) {
+          voiceManager.baseMicStream = masterStream;
+          console.log('🔗 voiceManager.baseMicStream ← masterStream 세팅 완료');
+        }
+
+        // ✅ 녹음 전용 스트림: base(masterStream)에서 clone을 1회 생성(중간 교체 금지)
+        try {
+          voiceManager.ensureRecordingStreamFromBase?.(masterStream);
+        } catch (e) {
+          console.warn('⚠️ ensureRecordingStreamFromBase 실패(무시):', e?.message || e);
+        }
         
         // 4. VoiceManager에 스트림 전달하여 초기화
         console.log('🔗 VoiceManager에 스트림 전달...');
@@ -2034,6 +2169,8 @@ const WebRTCProvider = ({ children }) => {
           console.error(`❌ [${providerId}] 음성 세션 초기화 실패`);
           throw new Error('VoiceManager.initializeVoiceSession 실패');
         }
+        // ✅ 안정성: 초기화 직후 녹음 시작을 한 번 더 보장(멱등)
+        try { voiceManager.startRecording?.(); } catch {}
         
         // 5. WebSocket 연결 (signaling)
         connectSignalingWebSocket();
@@ -2066,42 +2203,77 @@ const WebRTCProvider = ({ children }) => {
   useEffect(() => {
     let cancelled = false;
 
-    const shouldAutoInit = () => {
-      try {
-        const path = window.location?.pathname || '';
-        return (
-          path.startsWith('/game') ||
-          path.startsWith('/character_') ||
-          path === '/gamemap' ||
-          path === '/selecthomemate' ||
-          path === '/matename' ||
-          path === '/mictest'
-        );
-      } catch {
-        return false;
-      }
-    };
+    const path = location?.pathname || '';
+    const shouldAutoInit =
+      path.startsWith('/game') ||
+      path.startsWith('/character_') ||
+      path === '/gamemap' ||
+      path === '/selecthomemate' ||
+      path === '/matename' ||
+      path === '/mictest';
 
-    const run = async () => {
+    if (!shouldAutoInit) return () => { cancelled = true; };
+
+    // ✅ 핵심: 라우트 전환/로컬스토리지 준비 타이밍 이슈 대응
+    // - 기존 로직은 초반에 조건이 안 맞으면 5번만 시도하고 "영원히" 포기해서
+    //   녹음이 끝부분(나가기 직전)만 되는 현상이 생길 수 있음
+    // - 그래서 게임 관련 라우트에 있는 동안, 필요한 값이 준비될 때까지 주기적으로 재시도
+    const intervalMs = 1500;
+    const maxWaitMs = 60_000; // 60초 동안만 자동 재시도 (무한 루프 방지)
+    const startedAt = Date.now();
+
+    const tick = async () => {
       if (cancelled) return;
-      if (isInitialized) return;
-      if (!shouldAutoInit()) return;
+      // 퇴장/종료 진행 중이면 절대 자동으로 녹음/초기화 재시작하지 않음 (레이스 방지)
+      if (voiceManager?.exitInProgress) return;
 
-      for (let attempt = 1; attempt <= 5 && !cancelled; attempt++) {
-        try {
-          const ok = await initializeWebRTC();
-          if (ok) return;
-        } catch (e) {
-          console.warn(`⚠️ [${providerId}] auto initializeWebRTC 예외 (시도 ${attempt}/5):`, e?.message || e);
+      // ✅ 0) WebRTC/세션 준비 전이라도 "로컬 녹음"은 먼저 켜서 시작점을 앞으로 당김
+      // - user가 말한 증상(마지막 1~2초만 녹음)은 보통 초반 init 실패로 발생
+      try {
+        await voiceManager.startLocalMicRecordingIfNeeded?.();
+        await voiceManager.ensureRecordingActive?.();
+      } catch {}
+
+      // 이미 WebRTC가 초기화되어 있으면(=송수신 세팅 완료) 여기서 더 init 시도는 불필요
+      if (isInitialized) return;
+
+      // 최소 선행 조건: access_token, room_code
+      const token = localStorage.getItem('access_token');
+      const roomCode = localStorage.getItem('room_code');
+      if (!(token && roomCode)) {
+        if (voiceManager?.isDebugMode) {
+          console.log(`⏳ [${providerId}] auto init 대기(선행 조건 부족)`, {
+            path,
+            hasToken: !!token,
+            hasRoomCode: !!roomCode,
+          });
         }
-        const delay = Math.min(1000 * attempt, 4000);
-        await new Promise(r => setTimeout(r, delay));
+        return;
+      }
+
+      try {
+        const ok = await initializeWebRTC();
+        if (ok) return;
+      } catch (e) {
+        console.warn(`⚠️ [${providerId}] auto initializeWebRTC 예외:`, e?.message || e);
       }
     };
 
-    run();
-    return () => { cancelled = true; };
-  }, [isInitialized, initializeWebRTC, providerId]);
+    // 즉시 1회 시도 + 주기적 재시도
+    tick();
+    const timer = setInterval(() => {
+      if (Date.now() - startedAt > maxWaitMs) {
+        clearInterval(timer);
+        return;
+      }
+      tick();
+    }, intervalMs);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [isInitialized, initializeWebRTC, providerId, location?.pathname]);
 
   // ----------------------------
   // 새로고침(리로딩) 감지 + 자동 재연결(그레이스)
@@ -2228,7 +2400,6 @@ const WebRTCProvider = ({ children }) => {
         pc.getSenders().forEach(s => {
           if (s.track && s.track.kind === 'audio' && s.track.readyState !== 'ended') {
             try { s.replaceTrack(null); } catch {}
-            try { s.track.stop(); } catch {}
           }
         });
         try { pc.close(); } catch {}

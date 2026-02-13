@@ -13,9 +13,11 @@ export default function useVoiceWebSocket(room_code, onParticipantsUpdate) {
           const uid = localStorage.getItem('user_id');
           return uid ? `Player_${uid}` : null;
         })();
+      const isGuestMode = localStorage.getItem('guest_mode') === 'true';
 
       let resolvedNickname = nickname;
-      if (!resolvedNickname) {
+      if (!resolvedNickname && !isGuestMode) {
+        // 게스트가 아닐 때만 /users/me 호출
         const meRes = await axiosInstance.get('/users/me');
         resolvedNickname = meRes.data.username;
       }

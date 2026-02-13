@@ -997,7 +997,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import voiceManager from './utils/voiceManager';
-import axiosInstance from './api/axiosInstance';
+import axiosInstance, { ensureFreshAccessToken } from './api/axiosInstance';
 
 // ----------------------------
 // ICE(STUN/TURN) 설정
@@ -1544,7 +1544,7 @@ const WebRTCProvider = ({ children }) => {
   // ----------------------------
   // 시그널링 WebSocket 연결
   // ----------------------------
-  const connectSignalingWebSocket = useCallback(() => {
+  const connectSignalingWebSocket = useCallback(async () => {
     if (connectionAttemptedRef.current) {
       console.log(`⚠️ [${providerId}] WebSocket 연결이 이미 시도됨, 중복 방지`);
       return;
@@ -1552,7 +1552,20 @@ const WebRTCProvider = ({ children }) => {
 
     try {
       const roomCode = localStorage.getItem('room_code');
-      const token = localStorage.getItem('access_token');
+      
+      // ✅ WebSocket 연결 전에 토큰 만료 체크 → 필요하면 refresh
+      let token = localStorage.getItem('access_token');
+      try {
+        token = await ensureFreshAccessToken({ skewSeconds: 60 });
+        if (!token) {
+          console.error(`❌ [${providerId}] 토큰 갱신 실패 또는 토큰 없음`);
+          return;
+        }
+      } catch (e) {
+        console.error(`❌ [${providerId}] 토큰 갱신 중 오류:`, e?.message || e);
+        // 갱신 실패해도 기존 토큰으로 시도
+        token = localStorage.getItem('access_token');
+      }
       
       if (!roomCode || !token) {
         console.error(`❌ [${providerId}] room_code 또는 token이 없습니다`, { roomCode, token: !!token });
@@ -2100,11 +2113,17 @@ const WebRTCProvider = ({ children }) => {
         // 1. 사용자 ID 확인/설정
         let userId = localStorage.getItem('user_id');
         const userIdLooksValid = !!(userId && /^\d+$/.test(String(userId)));
+        const isGuestMode = localStorage.getItem('guest_mode') === 'true';
         // 게스트/레거시 데이터 대비: user_id가 숫자 형식이 아니면 서버에서 다시 조회해 교정
+        // 단, 게스트 모드일 때는 /users/me 호출하지 않음 (500 에러 방지)
         if (!userId || !userIdLooksValid) {
-          const response = await axiosInstance.get('/users/me');
-          userId = String(response.data.id);
-          localStorage.setItem('user_id', userId);
+          if (!isGuestMode) {
+            const response = await axiosInstance.get('/users/me');
+            userId = String(response.data.id);
+            localStorage.setItem('user_id', userId);
+          } else {
+            console.warn('⚠️ 게스트 모드인데 user_id가 없습니다. 정상적인 게스트 로그인 플로우를 확인하세요.');
+          }
         }
         setMyUserId(userId);
 
@@ -2172,8 +2191,8 @@ const WebRTCProvider = ({ children }) => {
         // ✅ 안정성: 초기화 직후 녹음 시작을 한 번 더 보장(멱등)
         try { voiceManager.startRecording?.(); } catch {}
         
-        // 5. WebSocket 연결 (signaling)
-        connectSignalingWebSocket();
+        // 5. WebSocket 연결 (signaling) - async 함수이므로 await
+        await connectSignalingWebSocket();
         
         // 6. 상태 업데이트 주기적 확인
         const statusInterval = setInterval(() => {

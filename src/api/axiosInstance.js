@@ -26,6 +26,23 @@ const isAuthRefreshRequest = (config) => {
   }
 };
 
+function parseJwtExpSec(token) {
+  try {
+    const parts = String(token || '').split('.');
+    if (parts.length < 2) return null;
+    const b64url = parts[1];
+    const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+    const json = atob(padded);
+    const payload = JSON.parse(json);
+    const exp = payload?.exp;
+    const n = typeof exp === 'number' ? exp : Number(exp);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
 
 // 리프레쉬 토큰으로 새로운 액세스 토큰 요청
 const refreshAccessToken = async () => {
@@ -57,7 +74,14 @@ const refreshAccessToken = async () => {
     if (data.token_type)    localStorage.setItem('token_type', data.token_type);
 
     // 2) axios 인스턴스 기본 헤더도 업데이트 
-    instance.defaults.headers.Authorization = `${data.token_type || 'Bearer'} ${data.access_token}`;
+    const authValue = `${data.token_type || 'Bearer'} ${data.access_token}`;
+    try {
+      // axios v1: defaults.headers.common.Authorization 권장
+      instance.defaults.headers.common = instance.defaults.headers.common || {};
+      instance.defaults.headers.common.Authorization = authValue;
+      // 레거시 호환
+      instance.defaults.headers.Authorization = authValue;
+    } catch {}
 
     // 3) 새 access_token 문자열만 반환
     return data.access_token;
@@ -68,13 +92,36 @@ const refreshAccessToken = async () => {
   }
 };
 
+// ✅ WebSocket(WebRTC signaling/voice ws)에서도 쓰기 위해 "만료 임박이면 refresh" 유틸을 export
+// - axios 인터셉터는 WebSocket 연결에는 적용되지 않음
+export async function ensureFreshAccessToken({ skewSeconds = 30 } = {}) {
+  const token = localStorage.getItem('access_token');
+  if (!token) return null;
+
+  const expSec = parseJwtExpSec(token);
+  if (!expSec) return token; // exp 파싱 불가 → 일단 그대로 사용
+
+  const nowSec = Math.floor(Date.now() / 1000);
+  // exp - now 가 충분히 남아있으면 그대로 사용
+  if ((expSec - nowSec) > skewSeconds) return token;
+
+  try {
+    const newToken = await refreshAccessToken();
+    return newToken || localStorage.getItem('access_token');
+  } catch (e) {
+    return null;
+  }
+}
+
 
 // 요청 인터셉터: 액세스 토큰 자동 추가
 instance.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem('access_token');
     if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+      const tokenType = localStorage.getItem('token_type') || 'Bearer';
+      config.headers = config.headers || {};
+      config.headers.Authorization = `${tokenType} ${accessToken}`;
     }
     return config;
   },

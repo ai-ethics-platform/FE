@@ -30,17 +30,19 @@ useEffect(() => {
     try {
       // 1. localStorage 먼저 확인
       const storedNickname = localStorage.getItem('nickname');
+      const isGuestMode = localStorage.getItem('guest_mode') === 'true';
 
       if (storedNickname) {
         // 있으면 그대로 state에 반영
         setNickname(storedNickname);
-      } else {
-        // 없으면 API 호출
+      } else if (!isGuestMode) {
+        // 게스트가 아닐 때만 API 호출
         const { data: me } = await axiosInstance.get('/users/me');
         const nickname = me.username || '';
         setNickname(nickname);
         localStorage.setItem('nickname', nickname);
       }
+      // 게스트인데 nickname이 없으면 그냥 빈 상태로 둠 (정상적인 게스트 플로우에선 발생 안 함)
     } catch (err) {
       console.error('❌ 유저 정보 로드 실패:', err);
     }

@@ -16,10 +16,18 @@ import {
   useHostActions 
 } from '../hooks/useWebSocketMessage';
 import { clearAllLocalStorageKeys } from '../utils/storage';
+import axiosInstance from '../api/axiosInstance';
+// Localization
+import { translations } from '../utils/language/index';
 
 
 export default function GameIntro() {
   const navigate = useNavigate();
+  // Get language setting and translations
+  const lang = localStorage.getItem('language') || 'ko';
+  // 대문자 GameIntro 키 사용
+  const t = translations?.[lang]?.GameIntro || translations['ko']?.GameIntro || {};
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const { isConnected, addMessageHandler, removeMessageHandler, sendMessage, initializeVoiceWebSocket,reconnectAttempts, maxReconnectAttempts  } = useWebSocket();
   
@@ -54,6 +62,9 @@ export default function GameIntro() {
   const [hostId, setHostId] = useState(null);
   const [currentMyRoleId, setCurrentMyRoleId] = useState(null);
 
+  // AI 이름 상태
+  const [mateName, setMateName] = useState(localStorage.getItem('mateName') || 'HomeMate');
+
   // 디버깅을 위한 고유 클라이언트 ID
   const [clientId] = useState(() => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -65,24 +76,19 @@ export default function GameIntro() {
   const connectionEstablishedRef = useRef(false);
   const initMessageSentRef = useRef(false);
   const sendMessageRef = useRef(null);
+  
   const category = localStorage.getItem('category');
-const isAWS = category === '자율 무기 시스템';
-// 안드로이드용 텍스트 
-const ANDROID_TEXT =
-  `          지금은 20XX년, 국내 최대 로봇 개발사 A가 \n다기능 돌봄 로봇 HomeMate를 개발했습니다.\n\n` +
-  `    이 로봇의 기능은 아래와 같습니다.\n\n` +
-  `     • 가족의 감정, 건강 상태, 생활 습관 등을 입력하면\n 맞춤형 알림, 식단 제안 등의 서비스를 제공\n\n` +
-  `     • 기타 업데이트 시 정교화된 서비스 추가 가능`;
+  
+  // [수정] 확장형 로직: 모든 언어의 'Autonomous Weapon Systems'를 나열하는 대신,
+  // '안드로이드'나 'Android'가 포함되지 않으면 AWS로 간주하는 방식을 사용.
+  // (Android는 고유명사라 변형이 적고, AWS는 번역명이 다양할 수 있기 때문)
+  const isAndroid = category && (category.includes('안드로이드') || category.toLowerCase().includes('android'));
+  const isAWS = !isAndroid;
 
-// 자율 무기 시스템용 텍스트 
-const AWS_TEXT =
-  `로봇 개발사 A가 자율 무기 시스템(Autonomous Weapon\n Systems, AWS)을 개발 중입니다.\n` +
-  `이 로봇의 기능은 아래와 같습니다.\n\n`;
-
-const AWS_TEXT_LEFT =  `1. 실시간 데이터 수집 및 분석\n` +
-`2. 인간 병사의 개입 없이 자동화된 의사결정 시스템으로 운영\n` +
-`3. 적군과 비전투원 구별\n` +
-`4. 목표를 선정해 정밀 타격 수행 가능`;
+// Dynamic Text based on Language Pack
+const ANDROID_TEXT = t.androidText || '';
+const AWS_TEXT = t.awsText || '';
+const AWS_TEXT_LEFT = t.awsTextLeft || '';
 
  const TEACHER_TEXT = 
 '👋 안녕하세요! AI 윤리 딜레마 게임에 오신 걸 환영합니다.\n\n' + 
@@ -93,8 +99,13 @@ const isCustomMode = !!localStorage.getItem('code');
 
  // const fullText = isAWS ? AWS_TEXT : ANDROID_TEXT;
  
- //  교체: 커스텀 모드면 TEACHER_TEXT, 아니면 기존 로직
- const fullText = isCustomMode ? TEACHER_TEXT : (isAWS ? AWS_TEXT : ANDROID_TEXT);
+ //  교체: 커스텀 모드면 TEACHER_TEXT(또는 언어팩의 커스텀 텍스트), 아니면 기존 로직
+ // [수정] 언어팩에 customIntro가 있다면 우선 사용하도록 처리
+ const customIntroText = t.customIntro || TEACHER_TEXT;
+ const rawFullText = isCustomMode ? customIntroText : (isAWS ? AWS_TEXT : ANDROID_TEXT);
+
+ // 텍스트 내의 {{mateName}}을 실제 이름으로 치환
+ const fullText = rawFullText.replaceAll('{{mateName}}', mateName);
 
   const { isHost, sendNextPage } = useHostActions();
   
@@ -119,6 +130,25 @@ const isCustomMode = !!localStorage.getItem('code');
     //   myRoleId: storedMyRole,
     // });
   }, [clientId]);
+
+  // 서버에서 AI 이름 동기화
+  useEffect(() => {
+    if (isCustomMode) return;
+    const roomCode = localStorage.getItem('room_code');
+    if (!roomCode) return;
+
+    (async () => {
+      try {
+        const res = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });
+        if (res.data && res.data.ai_name) {
+          setMateName(res.data.ai_name);
+          localStorage.setItem('mateName', res.data.ai_name);
+        }
+      } catch (e) {
+        console.error('AI 이름 불러오기 실패', e);
+      }
+    })();
+  }, [isCustomMode]);
 
   // 내 음성 세션 상태 업데이트 
   useEffect(() => {
@@ -262,7 +292,7 @@ const isCustomMode = !!localStorage.getItem('code');
 
     try {
       console.log(`음성 세션 초기화 시작`);
-         const success = await voiceManager.initializeVoiceSession();
+          const success = await voiceManager.initializeVoiceSession();
       
       if (success) {
         setVoiceInitialized(true);
@@ -354,6 +384,8 @@ const isCustomMode = !!localStorage.getItem('code');
     }
   };
 
+  const debugSpeed = window.location.hostname === 'localhost' ? 0 : 70;
+
   return (
     <Background bgIndex={2}>
 
@@ -374,6 +406,7 @@ const isCustomMode = !!localStorage.getItem('code');
               display: 'flex',
               flexDirection: 'column',
               gap: 24,
+              zIndex: 10,
               alignItems: 'flex-start',
               width: 'fit-content',
               margin: 0,
@@ -414,19 +447,23 @@ const isCustomMode = !!localStorage.getItem('code');
             padding: '0 16px',
           }}
         >
-        <ContentBox4 text={fullText} leftText={isAWS} leftTextContent={isAWS? AWS_TEXT_LEFT : ''} />
+        <ContentBox4 
+          text={fullText} 
+          leftText={isAWS} 
+          leftTextContent={isAWS? AWS_TEXT_LEFT : ''} 
+          typingSpeed={debugSpeed}
+        />
           <div style={{ marginTop: 20 }}>
             <Continue
               width={264}
               height={72}
-              step={1}
               onClick={handleContinue}
+              label={t.continueBtn || "다음"}
               disabled={!connectionEstablishedRef.current || !webrtcInitialized}
-
             />
           </div>
         </div>
       </div>
     </Background>
   );
-} 
+}

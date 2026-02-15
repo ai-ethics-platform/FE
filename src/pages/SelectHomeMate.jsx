@@ -1,75 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Background from '../components/Background';
-import UserProfile from '../components/Userprofile';
-import ContentTextBox from '../components/ContentTextBox';
-// 안드로이드 캐릭터 이미지
-import character1 from '../assets/images/character1.png';
-import character2 from '../assets/images/character2.png';
-import character3 from '../assets/images/character3.png';
-// 자율 무기 시스템 캐릭터 이미지
-import killerCharacter1 from '../assets/images/Killer_Character1.jpg';
-import killerCharacter2 from '../assets/images/Killer_Character2.jpg';
-import killerCharacter3 from '../assets/images/Killer_Character3.jpg';
-
-import { clearAllLocalStorageKeys } from '../utils/storage';
-import axiosInstance from '../api/axiosInstance';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import { useWebRTC } from '../WebRTCProvider';
-import { useWebSocket } from '../WebSocketProvider';
-import { 
-  useWebSocketNavigation, 
-  useHostActions 
-} from '../hooks/useWebSocketMessage';
-import { FontStyles,Colors } from '../components/styleConstants';
-import HostCheck1 from '../components/HostCheck1';
-
-import hostInfoSvg from '../assets/host_info.svg';
-import HostInfoBadge from '../components/HostInfoBadge';
-
-export default function SelectHomeMate() {
-  const navigate = useNavigate();
-  const [activeIndex, setActiveIndex] = useState(null);
-  const [hostId, setHostId] = useState(null);
-  const [myRoleId, setMyRoleId] = useState(null);
-  const [category, setCategory] = useState(null);
-
-  // round 계산 (기본값 그대로)
-  const [round, setRound] = useState(() => {
-    const c = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-    return c.length + 1;
-  });
-
-  // WebSocket과 WebRTC 상태 가져오기
-  const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
-  const { 
-    isConnected: websocketConnected,
-    isPageReloading,
-    finalizeDisconnection
-  } = useWebSocket();
-  //  커스텀 훅들 사용 
-  const { isHost, sendNextPage } = useHostActions();
-  
-  //  페이지 이동 메시지 핸들러 
-  useWebSocketNavigation(navigate, {
-    nextPagePath: '/matename' 
-  });
-
-  // 연결 상태 모니터링
-  const [connectionStatus, setConnectionStatus] = useState({
-    websocket: false,
-    webrtc: false,
-    ready: false
-  });
-
-  // 유저 도착 상태 추가
-  const [arrivalStatus, setArrivalStatus] = useState({
-    arrived_users: 0,
-    total_required: 3,
-    all_arrived: false,
-  });
-
-  // useEffect(() => {
+ // useEffect(() => {
   //   if (!websocketConnected) {
   //     console.warn('🔌 [SelectHomeMate] WebSocket 연결 끊김 → 초기화 후 메인으로 이동');
   //     clearAllLocalStorageKeys();
@@ -124,9 +53,90 @@ export default function SelectHomeMate() {
   //     };
   //   }
   // }, [websocketConnected, finalizeDisconnection]);
-  
-  
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Background from '../components/Background';
+import UserProfile from '../components/Userprofile';
+import ContentTextBox from '../components/ContentTextBox';
+// 안드로이드 캐릭터 이미지
+import character1 from '../assets/images/character1.png';
+import character2 from '../assets/images/character2.png';
+import character3 from '../assets/images/character3.png';
+// 자율 무기 시스템 캐릭터 이미지
+import killerCharacter1 from '../assets/images/Killer_Character1.jpg';
+import killerCharacter2 from '../assets/images/Killer_Character2.jpg';
+import killerCharacter3 from '../assets/images/Killer_Character3.jpg';
 
+import { clearAllLocalStorageKeys } from '../utils/storage';
+import axiosInstance from '../api/axiosInstance';
+import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
+import { useWebRTC } from '../WebRTCProvider';
+import { useWebSocket } from '../WebSocketProvider';
+import { 
+  useWebSocketNavigation, 
+  useHostActions 
+} from '../hooks/useWebSocketMessage';
+import { FontStyles,Colors } from '../components/styleConstants';
+import HostCheck1 from '../components/HostCheck1';
+
+// 이미지 에셋 - 언어별 대응
+import hostInfoSvg from '../assets/host_info.svg';
+import hostInfoSvg_en from '../assets/en/host_info_en.svg'; // 사용자 규칙: _en 접미사
+
+import HostInfoBadge from '../components/HostInfoBadge';
+// Localization
+import { translations } from '../utils/language/index';
+
+export default function SelectHomeMate() {
+  const navigate = useNavigate();
+  
+  // Get language setting and translations
+  const lang = localStorage.getItem('language') || 'ko';
+  const t = translations?.[lang]?.SelectHomeMate || {};
+
+  // 언어 설정에 따른 이미지 선택
+  const currentHostInfoSvg = lang === 'en' ? hostInfoSvg_en : hostInfoSvg;
+
+  const [activeIndex, setActiveIndex] = useState(null);
+  const [hostId, setHostId] = useState(null);
+  const [myRoleId, setMyRoleId] = useState(null);
+  const [category, setCategory] = useState(null);
+
+  // round 계산 (기본값 그대로)
+  const [round, setRound] = useState(() => {
+    const c = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+    return c.length + 1;
+  });
+
+  // WebSocket과 WebRTC 상태 가져오기
+  const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
+  const { 
+    isConnected: websocketConnected,
+    isPageReloading,
+    finalizeDisconnection
+  } = useWebSocket();
+  //  커스텀 훅들 사용 
+  const { isHost, sendNextPage } = useHostActions();
+  
+  //  페이지 이동 메시지 핸들러 
+  useWebSocketNavigation(navigate, {
+    nextPagePath: '/matename' 
+  });
+
+  // 연결 상태 모니터링
+  const [connectionStatus, setConnectionStatus] = useState({
+    websocket: false,
+    webrtc: false,
+    ready: false
+  });
+
+  // 유저 도착 상태 추가
+  const [arrivalStatus, setArrivalStatus] = useState({
+    arrived_users: 0,
+    total_required: 3,
+    all_arrived: false,
+  });
+  
   // 역할별 사용자 ID 매핑
   const [roleUserMapping, setRoleUserMapping] = useState({
     role1_user_id: null,
@@ -215,10 +225,18 @@ export default function SelectHomeMate() {
     return () => clearTimeout(timer);
   }, [round]);
 
+  // ▼▼▼ [핵심 수정] 카테고리 인식 로직 강화 (GameIntro와 동일한 로직 적용) ▼▼▼
+  // localStorage에서 가져올 때 렌더링 시점에 바로 반영되도록 변수 선언
+  const currentCategory = localStorage.getItem('category');
+  
+  const isAndroid = currentCategory && (currentCategory.includes('안드로이드') || currentCategory.toLowerCase().includes('android'));
+  // 안드로이드가 아니면 AWS로 간주 (영어/한국어 모두 대응 가능)
+  const isAWS = !isAndroid;
+
   // category에 따른 이미지 선택
   const getImages = () => {
-    const category = localStorage.getItem('category');
-    if (category === '자율 무기 시스템') {
+    // 위에서 계산한 isAWS 플래그 사용
+    if (isAWS) {
       return [killerCharacter1, killerCharacter2, killerCharacter3];
     } else {
       // category === '안드로이드' 또는 기본값
@@ -228,70 +246,56 @@ export default function SelectHomeMate() {
 
   const images = getImages();
 
-  // const paragraphs = [
-  //   {
-  //     main: '  여러분이 생각하는 HomeMate는 어떤 형태인가요?',
-  //     sub: isHost 
-  //       ? arrivalStatus.all_arrived 
-  //         ? '(함께 토론한 후 방장이 선택하고, "다음" 버튼을 클릭해주세요)' 
-  //         : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`
-  //       : arrivalStatus.all_arrived
-  //         ? '(방장이 캐릭터를 선택할 때까지 기다려주세요)'
-  //         : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`,
-  //   },
-  // ];
-const isAWS = category === '자율 무기 시스템';
-
-const paragraphs = [
-  {
-    main: isAWS
-      ? '  여러분이 생각하는 자율 무기 시스템은 어떤 형태인가요?'
-      : '  여러분이 생각하는 HomeMate는 어떤 형태인가요?',
-    sub: isHost
-      ? arrivalStatus.all_arrived
-        ? `(함께 토론한 후 방장이 선택하고, '다음' 버튼을 클릭해주세요)`
-        : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`
-      : arrivalStatus.all_arrived
-        ? '(방장이 캐릭터를 선택할 때까지 기다려주세요)'
-        : `(유저 입장 대기 중... ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`,
-  },
-];
-
+  // 텍스트 선택 로직 (isAWS 사용)
+  const paragraphs = [
+    {
+      main: isAWS
+        ? (t.mainAws || ' 여러분이 생각하는 자율 무기 시스템은 어떤 형태인가요?')
+        : (t.mainAndroid || ' 여러분이 생각하는 HomeMate는 어떤 형태인가요?'),
+      sub: isHost
+        ? arrivalStatus.all_arrived
+          ? (t.subHostAllArrived || `(함께 토론한 후 방장이 선택하고, '다음' 버튼을 클릭해주세요)`)
+          : `${t.subWaiting || '(유저 입장 대기 중...'} ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`
+        : arrivalStatus.all_arrived
+          ? (t.subGuestAllArrived || '(방장이 캐릭터를 선택할 때까지 기다려주세요)')
+          : `${t.subWaiting || '(유저 입장 대기 중...'} ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`,
+    },
+  ];
 
   // 방장 전용 캐릭터 선택 핸들러 (모든 유저 도착 후에만 활성화)
   const handleCharacterSelect = (idx) => {
     if (!isHost) {
       console.log('[SelectHomeMate] 방장이 아니므로 캐릭터 선택 불가');
-      alert('방장만 캐릭터를 선택할 수 있습니다.');
+      alert(t.alertNotHost || '방장만 캐릭터를 선택할 수 있습니다.');
       return;
     }
     
     if (!arrivalStatus.all_arrived) {
       console.log('[SelectHomeMate] 아직 모든 유저가 도착하지 않음');
-      alert('모든 유저가 입장할 때까지 기다려주세요.');
+      alert(t.alertWaitingAll || '모든 유저가 입장할 때까지 기다려주세요.');
       return;
     }
     
     setActiveIndex(idx);
-    console.log(`[SelectHomeMate] 방장이 캐릭터 ${idx + 1} 선택 (카테고리: ${category})`);
+    console.log(`[SelectHomeMate] 방장이 캐릭터 ${idx + 1} 선택 (카테고리: ${currentCategory})`);
   };
 
   const handleContinue = async () => {
     if (!isHost) {
-      alert('방장만 게임을 진행할 수 있습니다.');
+      alert(t.alertNotHost || '방장만 게임을 진행할 수 있습니다.');
       return;
     }
     if (!arrivalStatus.all_arrived) {
-      alert('모든 유저가 입장할 때까지 기다려주세요.');
+      alert(t.alertWaitingAll || '모든 유저가 입장할 때까지 기다려주세요.');
       return;
     }
     if (activeIndex === null) {
-      alert('캐릭터를 먼저 선택해주세요!');
+      alert(t.alertSelectCharacter || '캐릭터를 먼저 선택해주세요!');
       return;
     }
     const roomCode = localStorage.getItem('room_code');
     if (!roomCode) {
-      alert('room_code가 없습니다. 방에 먼저 입장하세요.');
+      alert(t.alertNoRoomCode || 'room_code가 없습니다. 방에 먼저 입장하세요.');
       return;
     }
 
@@ -318,7 +322,7 @@ const paragraphs = [
       }
 
       console.error('[SelectHomeMate] AI 선택 실패:', err);
-      alert('메이트 선택 실패');
+      alert(t.alertSelectFail || '메이트 선택 실패');
     }
   };
 
@@ -332,16 +336,16 @@ const paragraphs = [
       <div 
         style={{
           position: 'absolute',
-          top:'-105px',
+          top: '-120px',
           right: '0px', 
           zIndex: 10, 
         }}
       >
         <HostInfoBadge
-          src={hostInfoSvg}
+          src={currentHostInfoSvg} // ✅ 언어에 따른 이미지 적용
           alt="Host Info"
           preset="hostInfo"
-          width={300}
+          width={320}
           height={300}
         />
       </div>
@@ -392,7 +396,7 @@ const paragraphs = [
               <img
                 key={idx}
                 src={src}
-                alt={`Character ${idx + 1} (${category})`}
+                alt={`Character ${idx + 1} (${currentCategory})`}
                 onClick={() => handleCharacterSelect(idx)} 
                 style={{
                   width: 264,

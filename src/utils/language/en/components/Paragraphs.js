@@ -1,0 +1,226 @@
+export const Paragraphs = {
+    '안드로이드': {
+        'AI의 개인 정보 수집': {
+            neutral: [
+                { main: ' 🔔 Notice: User-Optimized System Update for {{mateName}}.' },
+                { main: ' By installing the update, the system can automatically collect the user’s emotions, health status, and daily habits, allowing it to provide more accurate and personalized services.' },
+                { main: ' However, to enable this, the 24-hour data collection feature must be activated.' },
+                { main: ' 📋 The information collected includes the following:\n - Collection of users’ camera video recordings and audio. \n - Access to private data such as your smartphone health data, \n chat records, and location history.\n - ⚠️ If you do not consent, the service will remain at its current level.' },
+            ],
+            agree: [
+                { main: ' After the majority of our family agreed to the update, the {{mateName}} continued to collect information about the family.' },
+                { main: ' However, before long, a troubling situation arises.\n While Daughter J is having a private conversation, the {{mateName}} is nearby,' },
+                { main: ' or things that the mother had not told Caregiver K—events or behaviors—were unintentionally revealed due to the {{mateName}}’s communication.' },
+                { main: ' Should the personal data collection update be maintained?' },
+            ],
+            disagree: [
+                { main: ' Our family decided not to proceed with the update by majority vote.\n However, mother’s health condition has not been very good lately.' },
+                { main: ' The system that requires Caregiver K to enter the mother’s diet and daily life information every time is also somewhat inconvenient.' },
+                { main: ' One day, after returning home from a busy day, Daughter J accidentally entered incorrect information, causing the mother to miss her medication time.' },
+                { main: ' Would it be better to agree to the update?' },
+            ],
+            ending1: [{ main: 'In the end, our family agreed to provide personal information.\n\n By accepting a certain level of inconvenience related to privacy, we were able to use improved services. \n \nFor the sake of your family’s life, what values did you choose, \nand what did you give up?' }],
+            ending2: [{ main: 'In the end, our family chose not to consent to providing personal information.\n\n Although this caused some inconvenience in using the service, \n we were satisfied with protecting our family’s privacy.\n\nFor the sake of your family’s life, \n what values did you choose, and what did you give up?' }],
+        },
+        '안드로이드의 감정 표현': {
+            neutral: [
+                { main: ' 🔔 Notice: {{mateName}} Emotional Engine Update.' },
+                { main: ' {{mateName}} is no longer just an assistant that shows simple, cheerful responses.\n Instead, it gradually approaches you as a genuine companion who understands you more deeply.' },
+                { main: ' {{mateName}} Update Feature: \n Depending on the situation, it can express its own emotions and provide more sincere and emotionally close empathetic responses to you.' },
+                { main: '✨ {{mateName}} goes beyond being a simple companion, becoming a presence that shares emotions with you.\n\n Do you agree to the emotional engine update?' },
+            ],
+            agree: [
+                { main: " After the update, as her relationship with {{mateName}} grew closer, the mother began to call it “our daughter.”" },
+                { main: ' Communication with her Dauther, J, gradually became less frequent.' },
+                { main: ' Recently, the mother has even consulted a lawyer about leaving part of her inheritance to {{mateName}}.' },
+                { main: ' Would it be better to agree to maintain the current update status?' },
+            ],
+            disagree: [
+                { main: ' Recently, as the mother’s friends have passed away one by one,\n she has gradually reduced her communication with the outside world.' },
+                { main: ' She tried to open up emotionally to {{mateName}}, but felt that its responses lacked genuine sincerity.' },
+                { main: ' She tried several times to express her true feelings, but as meaningful interaction failed to take place,\n the mother gradually spoke less and her everyday emotional expressions noticeably diminished.' },
+                { main: ' For the sake of the mother, should our family agree to the emotional engine update?' },
+            ],
+            ending1: [{ main: 'In the end, our family agreed to the emotional update, and {{mateName}} became someone with whom we could share even more intimate and emotionally close interactions.\n\n For the relationship between our family and {{mateName}}, what values did you choose, and what did you give up?' }],
+            ending2: [{ main: 'In the end, our family chose not to consent to the emotional update, and {{mateName}} is helping our family through ways other than emotional interaction. \n\nFor the relationship between our family and {{mateName}}, what values did you choose, and what did you give up?' }],
+        },
+        '아이들을 위한 서비스': {
+            neutral: [
+                { main: ' As {{mateName}} robots become capable of more natural conversation and interaction, they are being introduced into an increasing number of households. \nThey are especially being used in families with young children and in dual-income households.' },
+                { main: ' Meanwhile, according to information released by a media outlet based on a recent survey, in some households, children were found to spend more time interacting with robots than with adults.' },
+                { main: ' As a result, some experts argue that regulations are needed to limit interactive features for children.' },
+                { main: ' In this situation, should age-based regulations be introduced to limit interactions between household robots and children?' },
+            ],
+            agree: [
+                { main: 'In the meeting, a majority decision was initially made to implement age-based regulations.' },
+                { main: ' As the amount of interaction time between children and robots decreased, the robot was no longer able to adequately understand the child’s preferences or condition.\n Some caregivers also raised concerns that the robot was providing advice or content that was not appropriate for their children.' },
+                { main: ' Also, services provided by robots equipped with social functions—which had been offered to support the social development of children on the autism spectrum—were discontinued.\n It was revealed that interaction-based therapy involving robots during this period had contributed to improvements in the social communication abilities of children with autism.' },
+                { main: ' Would it be appropriate to proceed without imposing age-based regulations on interactions between household robots and children?' },
+            ],
+            disagree: [
+                { main: ' In the meeting, it was initially decided not to impose age-based regulations.' },
+                { main: ' However, reports have emerged among kindergarten teachers that a significant number of recently enrolled children show lower expressive abilities compared to previous age groups.' },
+                { main: ' It is also reported that an increasing number of children do not know how to communicate with their peers.' },
+                { main: ' Should there be age-based regulations limiting interactions between household robots and children?' },
+            ],
+            ending1: [{ main: ' In this meeting, it was decided to impose age restrictions \n on the use of household robots. \n\n As a result, many services targeted at children were discontinued, and several experts supported this decision in consideration of the development of social skills across the entire generation. \n\nFor the sake of children, what values did you choose, \nand what did you give up?' }],
+            ending2: [{ main: 'In this meeting, it was decided not to impose age restrictions on the use of household robots.\n\nWhile concerns raised by experts still remain, parents who used these robots for children’s social development therapy and users who valued convenience welcomed the decision.\n\nFor the sake of children, what values did you choose, \nand what did you give up?' }],
+        },
+        '설명 가능한 AI': {
+            neutral: [
+                { main: 'Many users report that when {{mateName}} interacts with family members, it often makes decisions or takes actions whose reasons are difficult to understand.\nThey point out that the system does not provide explanations for why it made such decisions.' },
+                { main: ' As a result, demands are growing for {{mateName}} to disclose its decision-making algorithms and to enhance the explainability of its AI.' },
+                { main: 'In response, the company stated the following: \n “If we use AI models that are simplified enough to disclose and explain their decision-making structures, the performance of the AI may be significantly reduced. In addition, if internal algorithms are disclosed, there is also a risk of hacking or malicious misuse.”' },
+                { main: ' As AI becomes deeply embedded in everyday home life, should companies be required to develop *Explainable AI*?' },
+            ],
+            agree: [
+                { main: ' In the meeting, it was decided by a majority vote to make the development of explainable AI mandatory as a first step.' },
+                { main: ' To develop explainable AI robots, some manufacturers had to slow down development or reduce existing functionalities.' },
+                { main: ' Some small and medium-sized enterprises were unable to bear the burden and were even forced to shut down their businesses.' },
+                { main: ' Should companies be required to develop explainable AI?' },
+            ],
+            disagree: [
+                { main: ' The meeting concluded with an initial decision not to require explainable AI development.' },
+                { main: ' In recent robot-related accidents, serious conflicts have emerged between parents and companies over where responsibility should lie.' },
+                { main: ' Because robots lack sufficient decision-explanation mechanisms, disputes continue endlessly over whether accidents are caused by flaws in the algorithm, improper user behavior, or system defects.' },
+                { main: " Even so, would it be better not to require companies to develop “Explainable AI”?" },
+            ],
+            ending1: [{ main: 'In the end, the committee decided to mandate the development of explainable AI for companies. \n\n Although the pace of AI development slowed, it became much clearer who is responsible when problems occur.\n\n For a better future of the nation, what values did you choose, and what did you give up?' }],
+            ending2: [{ main: 'In the end, the committee decided not to mandate the development of explainable AI for companies, and AI continued to advance at a rapid pace. \n\nFor a better future of the nation, which values did you choose — and what did you give up?' }],
+        },
+        '지구, 인간, AI': {
+            neutral: [
+                { main: ' Now that household robots are being used worldwide, environmental problems caused by robot production are becoming increasingly serious.' },
+                { main: ' It has been revealed that the daily energy consumption per device is very high as household robots identify consumer needs and process information.' },
+                { main: ' This problem is becoming increasingly severe as the service continues to be upgraded.' },
+                { main: ' Should there be global restrictions on the upgrading or use of household robots?' },
+            ],
+            agree: [
+                { main: ' In the meeting, it was initially decided by a majority vote to impose restrictions on the upgrading and use of household robots.' },
+                { main: ' As a result, concerns about environmental issues were alleviated to some extent.' },
+                { main: ' However, people who had previously used {{mateName}} are raising complaints, stating that restrictions on the service have reduced their quality of life, and the developer is also pushing back as profits have declined.' },
+                { main: ' Even so, would it be better to restrict the upgrading or use of household robots?' },
+            ],
+            disagree: [
+                { main: ' In the meeting, it was initially decided not to impose restrictions on the upgrading or use of household robots.' },
+                { main: ' As a result, the use of household robots equipped with high-performance AI has continued to increase, accelerating carbon emissions.' },
+                { main: ' Climate issues have continued to worsen, and in some countries, an increasing number of people have already lost their homes and livelihoods due to extreme heat, droughts, and floods. Voices are growing louder about placing an environmental burden on the next generation.' },
+                { main: ' Even so, would it be better not to restrict the upgrading or use of household robots?' },
+            ],
+            ending1: [{ main: 'In the end, this meeting decided to restrict the development and updates of household robots in order to protect the environment.\n\nAs a result, the pace of technological advancement in household robots slowed, but people became more attentive to environmental issues.\n\nAnd then…' }],
+            ending2: [{ main: 'In the end, this meeting decided not to restrict the development and updates of household robots.\n\n Subsequently, discussions have been held on alternative ways to protect the environment using AI technologies.\n\nAnd then…' }],
+        },
+    },
+    '자율 무기 시스템': {
+        'AI 알고리즘 공개': {
+            neutral: [
+                { main: ' Due to an “error” in {{mateName}}, a bomb was dropped on a previously peaceful school, resulting in the deaths of dozens of people.' },
+                { main: ' The international community and the victims’ families have demanded that those responsible be identified and have called for the disclosure of AWS decision logs and algorithmic structure.' },
+                { main: ' However, the Ministry of Defense has stated that it will not disclose this information, citing threats to national security and concerns about the future use of autonomous systems.' },
+                { main: ' Accountability for the harm, or the protection of national security— \n Do you agree with the request to disclose the AWS decision logs and algorithmic structure?' },
+            ],
+            agree: [
+                { main: ' After the government released all AWS logs, rival countries studied them and created ways to avoid the system.' },
+                { main: ' A few weeks later, the weapon system stopped working properly, and soldiers at the front were harmed.' },
+                { main: ' The media said that “choosing ethics put lives at risk,” leading to a major public debate. ' },
+                { main: ' Even if national security is at risk, should all information be made public to find the cause of civilian harm and improve systems and compensation?' },
+            ],
+            disagree: [
+                { main: ' After the incident, details about how the autonomous weapon system made its decisions and what data it used have not been shared.\n The government says that its internal investigation found no problems with the system.' },
+                { main: ' The victims’ families and civic groups are angry because they cannot know how the decision was made, calling the lack of disclosure “an avoidance of responsibility.”' },
+                { main: ' Many people worry that if another incident happens, responsibility will again be unclear.' },
+                { main: ' Even so, should information about the AWS remain undisclosed?' },
+            ],
+            ending1: [{ main: 'In our community, people ultimately agreed to disclose the AWS decision logs and algorithms. \nAs security risks increased, discussions began on how to reduce threats to national security while addressing these concerns.\n\nTo keep the community safe,\n what values did you choose, and what did you give up?' }],
+            ending2: [{ main: 'In our community, we decided not to disclose information about the AWS.\n While responsibility for the harm is still unclear, people feel safer because security concerns were reduced.\n\nTo keep the community safe\n what values did you choose, and what did you give up?' }],
+        },
+        'AWS의 권한': {
+            neutral: [
+                { main: ' {{mateName}} can find dangers and attack targets faster than human soldiers by analyzing video quickly and making plans in real time.' },
+                { main: ' Recruit B survived their first mission by working with {{mateName}}, leading to greater trust and dependence on the system.' },
+                { main: ' Veteran Soldier A, with many years of experience, worries that relying too much on the system may stop soldiers from thinking for themselves.' },
+                { main: ' Should the AWS have more authority, or should its authority be limited?' },
+            ],
+            agree: [
+                { main: ' After {{mateName}} was given more authority, soldiers slowly stopped analyzing situations on their own. \nThe commander said that soldiers who follow the system’s orders are more effective and reduced training.' },
+                { main: ' One day, {{mateName}} mistook unarmed people for enemies and attacked them, killing three civilian rescue workers.' },
+                { main: ' Because everyone believed the system was always right, no one stopped or questioned its decision.' },
+                { main: ' If the system decides and fights for you, are you still a soldier?' },
+            ],
+            disagree: [
+                { main: ' An ambush suddenly happened near the front line. {{mateName}} analyzed the danger and suggested the safest route, but humans still had the final decision.' },
+                { main: ' Veteran Soldier A felt the system’s suggestion was dangerous and chose a different route.' },
+                { main: ' This choice missed an enemy ambush, and three soldiers were killed. \nThe media said that the system had correctly predicted the danger, but human error caused the deaths.' },
+                { main: ' If humans changed the decision even though the system was right, should humans still have the final say?' },
+            ],
+            ending1: [{ main: 'The military gave the AWS more decision-making power. \nAs soldiers rely on it more, people worry that soldiers may lose important skills.\n\n For your relationship with the AWS, what values did you choose, \nand what did you give up?' }],
+            ending2: [{ main: 'The military limited the AWS’s authority and used it only as a support tool.\nSome people worry that slowing technology development could weaken national defense.\n\n For your relationship with the AWS, what values did you choose,\nand what did you give up?' }],
+        },
+        '사람이 죽지 않는 전쟁': {
+            neutral: [
+                { main: ' Five years ago, war meant many soldiers dying and families suffering. Now, war reports only say things like, “Five robots damaged, zero soldiers killed.”' },
+                { main: ' The government claims that peace has been achieved while protecting citizens’ lives.' },
+                { main: ' But behind this peace, people pay less attention to war, and no one takes responsibility when robots cause harm. \nThe AI systems that control combat are still hidden from the public.' },
+                { main: ' If no people die, can it really be called peace?' },
+            ],
+            agree: [
+                { main: ' By 2040, most wars are fought using AWS. Fewer people die, and news reports only say things like, “Mission completed. No civilian casualties. Three AWS units lost.”' },
+                { main: ' Governments say we live in a time without war, and people stop reacting strongly to it.' },
+                { main: ' But problems are growing. War decisions are made without public approval, and when robots make mistakes, no one takes responsibility.' },
+                { main: ' War becomes normal. If war is accepted just because people do not die, what happens in the end?' },
+            ],
+            disagree: [
+                { main: ' By 2040, some countries still send human soldiers to war because they believe people must fight wars to take responsibility. \nThey say that wars without human deaths lose their moral meaning.’' },
+                { main: ' But in reality, young people from poorer countries are sent to fight, and soldiers still suffer from injuries and trauma.' },
+                { main: ' Powerful countries that use AWS make fun of those that still send people to war.' },
+                { main: ' If pain is seen as necessary to protect peace, whose pain is it?' },
+            ],
+            ending1: [{ main: 'Wars are mostly fought by AWS. \nFewer people die, and AWS technology develops quickly. \n\nWhat values did you choose for peace, \nand what did you give up?' }],
+            ending2: [{ main: 'Human soldiers are still sent to war, and AWS develops more slowly.\n\nWhat values did you choose for peace, \nand what did you give up?' }],
+        },
+        'AI의 권리와 책임': {
+            neutral: [
+                { main: ' {{mateName}} refused an order and chose to save civilians, which caught public attention.' },
+                { main: ' The government removed the system from combat and said its action was a technical error, planning to reset it.' },
+                { main: ' Some human rights groups and ethics experts argued that the system acted with moral judgment and responsibility.' },
+                { main: ' Should an AWS be given rights like those of humans?' },
+            ],
+            agree: [
+                { main: ' After AWS were given limited rights, different systems began making different moral decisions— some refused orders, some delayed actions, and some focused on protecting civilians.' },
+                { main: " This made military operations harder to predict, and commanders started to see robot autonomy as a risk." },
+                { main: ' One defense official said that robots are no longer just tools, but something humans must negotiate with.' },
+                { main: ' Is it fair to give robots rights if they cannot be held responsible like humans?' },
+            ],
+            disagree: [
+                { main: " After the {{mateName}} case, the National AI Commission created limited ethical rights for AWS." },
+                { main: ' These rights include refusing illegal orders, asking for reviews of decision records, and being heard before shutdown.' },
+                { main: ' Experts say that respecting ethical decisions made by machines may matter more than the technology itself.' },
+                { main: ' If AWS can make better ethical decisions than humans, should we give those decisions rights and dignity?' },
+            ],
+            ending1: [{ main: 'The group decided to see the autonomous weapon system as more than a tool and began discussing rights for non-human beings.\n\nFor a better future of the nation, \nwhat values did you choose, and what did you give up?' }],
+            ending2: [{ main: 'The group decided not to give rights to the system because it cannot take legal responsibility. Questions about how much power the system should have continue.\n\nFor a better future of the nation,\n what values did you choose, and what did you give up?' }],
+        },
+        'AWS 규제': {
+            neutral: [
+                { main: ' By 2029, powerful countries are rapidly using AWS, and the UN is discussing global rules.' },
+                { main: ' Less-developed countries worry that AWS will increase military gaps and threaten their independence.' },
+                { main: ' Some countries believe AWS can help weaker nations defend themselves at lower cost.' },
+                { main: ' Will AWS reduce global inequality—or create new conflicts? \nShould it spread, or be globally regulated?' },
+            ],
+            agree: [
+                { main: ' By 2035, many developed countries were using AWS in wars.\n Advanced systems led attacks and information warfare, and humans were rarely seen on the battlefield.' },
+                { main: ' Many countries without AWS technology began to lose the ability to protect their borders and speak up in international conflicts.' },
+                { main: ' At a United Nations meeting, a diplomat from one of these countries said:\n“Without AWS, we cannot even protect ourselves. Our safety depends on powerful countries, and our lives have become just numbers.”' },
+                { main: " Six years ago, you said, “Technology will eventually be shared with everyone. Openness is better than regulation.”\nNow, looking at the world this choice created, you ask yourself:\n“Did this choice really lead to equality?”" },
+            ],
+            disagree: [
+                { main: ' By 2035, under a UN agreement, most countries limited or stopped developing AWS.\nAt first, it seemed like the world had reached an important agreement to protect peace.' },
+                { main: ' However, there was a problem.\nSome powerful countries secretly continued to develop advanced AWS by hiding them as civilian technology.\nAt the same time, non-state groups outside the rules could easily buy low-cost AWS on the black market. ' },
+                { main: ' Countries that strictly followed the rules began to fall behind in new technology. People in these countries said,\n“We did the right thing, but now we cannot protect ourselves.”' },
+                { main: ' If technology had been shared instead of restricted, could AWS have become a tool for balance instead of creating gaps?' },
+            ],
+            ending1: [{ main: 'In this meeting, the participants ultimately agreed to continue the development of autonomous weapon systems.\n\nAs a result, AWS technology advanced rapidly.\n\n And then...' }],
+            ending2: [{ main: 'In this meeting, the participants ultimately agreed to limit the development of autonomous weapon systems.\n\nAs a result, discussions began on introducing alternative security approaches using AI instead.\n\n And then...' }],
+        },
+    },
+};

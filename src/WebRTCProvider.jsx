@@ -1001,6 +1001,11 @@ import axiosInstance from './api/axiosInstance';
 // WebRTC Context 생성
 const WebRTCContext = createContext();
 
+/**
+ *  시그널링용 웹소켓 베이스 주소를 환경변수에서 가져옵니다.
+ */
+const WS_BASE = import.meta.env.VITE_WS_BASE_URL || 'wss://dilemmai-idl.com';
+
 // 재연결 그레이스 상수 (ms)
 const RECONNECT_GRACE_MS = 20000; // 20초
 
@@ -1094,7 +1099,7 @@ const WebRTCProvider = ({ children }) => {
 
   // ----------------------------
   // Offer 충돌(글레어) 처리용 유틸 (Perfect Negotiation - 간소화)
-  // - 서버가 peers/join을 누구에게 어떻게 브로드캐스트하든, 양쪽이 offer를 만들어도 안전하게 수렴하게 함
+  // - 서버가 peers/join을 누구에게 어떻게 브로드캐스트하든, 양쪽이 offer를 만들어도 안전하게 수락하게 함
   // - user_id가 숫자일 가능성이 높으니 숫자 비교 우선, 아니면 문자열 비교
   // ----------------------------
   function comparePeerIds(a, b) {
@@ -1346,8 +1351,11 @@ const WebRTCProvider = ({ children }) => {
 
       connectionAttemptedRef.current = true;
 
+      /**
+       *  하드코딩된 주소를 환경변수(VITE_WS_BASE_URL) 기반으로 변경
+       */
       const urlsToTry = [
-        `wss://dilemmai-idl.com/ws/signaling?room_code=${roomCode}&token=${token}`,
+        `${WS_BASE}/ws/signaling?room_code=${roomCode}&token=${token}`,
       ];
       
       console.log(`🔌 [${providerId}] 시그널링 WebSocket 연결 시작 (User 토큰 기반)`);
@@ -2181,3 +2189,8 @@ export function disconnectWebRTCVoice(peerConnectionsMap) {
     } catch (e) { console.error(e); }
   }
 }
+
+/**
+ * 1. 상단에 WS_BASE 상수를 선언하고 VITE_WS_BASE_URL 환경변수를 적용함.
+ * 2. connectSignalingWebSocket 함수 내 하드코딩된 'wss://dilemmai-idl.com' 주소를 WS_BASE 변수로 대체함.
+ */

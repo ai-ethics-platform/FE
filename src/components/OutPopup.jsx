@@ -5,8 +5,21 @@ import { useNavigate } from 'react-router-dom';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance'; // ✅ 추가
 import { clearAllLocalStorageKeys } from '../utils/storage';
+// 다국어 관리를 위한 언어팩 임포트
+import { translations } from '../utils/language/index';
+
 export default function OutPopup({ onClose }) {
   const navigate = useNavigate();
+
+  // --- 시스템 설정된 언어(app_lang)를 로드하는 로직 ---
+  // 이후 개발 담당자가 이해하기 쉽게 app_lang 기반 동적 로드를 주석으로 명시합니다.
+  const savedLang = localStorage.getItem('app_lang');
+  const currentLang = (savedLang === 'en') ? 'en' : 'ko';
+  
+  // index.js의 translations 객체 구조에 맞춰 직접 참조합니다.
+  const t = translations[currentLang].OutPopup;
+  // ----------------------------------------------
+
   const handleLeaveRoom = async () => {
     const room_code = String(localStorage.getItem("room_code"));
     console.log("room_code:", room_code);
@@ -58,7 +71,8 @@ export default function OutPopup({ onClose }) {
      }
     } catch (err) {
       console.error("❌ 방 나가기 실패:", err);
-      alert("방 나가기 실패: " +  err.response.data);
+      // 에러 메시지 다국어 처리 적용
+      alert(t.leaveFail + err.response.data);
     }
   };
   
@@ -81,7 +95,7 @@ export default function OutPopup({ onClose }) {
     >
       <img
         src={closeIcon}
-        alt="닫기"
+        alt={t.closeAlt}
         onClick={onClose}
         style={{
           position: 'absolute',
@@ -94,14 +108,14 @@ export default function OutPopup({ onClose }) {
       />
 
       <p style={{ ...FontStyles.headlineSmall, marginBottom: 40 }}>
-        이 방을 나갈까요?
+        {t.title}
       </p>
 
       <SecondaryButton 
         style={{ width: 168, height: 72}}
         onClick={handleLeaveRoom}
       > 
-        방나가기
+        {t.leaveBtn}
       </SecondaryButton> 
     </div>
   );

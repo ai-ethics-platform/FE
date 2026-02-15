@@ -1,51 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-
-import Layout      from '../components/Layout';
-import Continue    from '../components/Continue';
-import boxSelected from '../assets/contentBox5.svg';
-import boxUnselect from '../assets/contentBox6.svg';
-import { Colors, FontStyles } from '../components/styleConstants';
-import agreeIcon from '../assets/agree.svg';
-import disagreeIcon from '../assets/disagree.svg';
-
-import axiosInstance from '../api/axiosInstance';
-import { useWebSocket } from '../WebSocketProvider';
-import { useWebRTC } from '../WebRTCProvider';
-import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
-import { clearAllLocalStorageKeys } from '../utils/storage';
-
-const completed = JSON.parse(localStorage.getItem('completedTopics') || '[]');
-const initialRound = completed.length + 1;
-
-export default function Game04() {
-  const { state } = useLocation();
-  const navigate   = useNavigate();
-
-  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
-  const { isInitialized: webrtcInitialized } = useWebRTC();
-  const { isHost, sendNextPage } = useHostActions();
-  useWebSocketNavigation(navigate, { nextPagePath: '/game05', infoPath: '/game05' });
-
-  // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
-  const [connectionStatus, setConnectionStatus] = useState({
-    websocket: true,
-    webrtc: true,
-    ready: true
-  });
-
-  useEffect(() => {
-    const newStatus = {
-      websocket: isConnected,
-      webrtc: webrtcInitialized,
-      ready: isConnected && webrtcInitialized
-    };
-    setConnectionStatus(newStatus);
-    console.log('[Game04] 연결 상태 업데이트:', newStatus);
-  }, [isConnected, webrtcInitialized]);
-
-
-  // useEffect(() => {
+// useEffect(() => {
   //       let cancelled = false;
   //       const isReloadingGraceLocal = () => {
   //         const flag = sessionStorage.getItem('reloading') === 'true';
@@ -86,6 +39,69 @@ export default function Game04() {
   //     }, [isConnected, finalizeDisconnection]);
   
 
+  // 기본 로컬 값들
+
+
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import Layout    from '../components/Layout';
+import Continue  from '../components/Continue';
+import boxSelected from '../assets/contentBox5.svg';
+import boxUnselect from '../assets/contentBox6.svg';
+import { Colors, FontStyles } from '../components/styleConstants';
+import agreeIcon from '../assets/agree.svg';
+import disagreeIcon from '../assets/disagree.svg';
+
+import axiosInstance from '../api/axiosInstance';
+import { useWebSocket } from '../WebSocketProvider';
+import { useWebRTC } from '../WebRTCProvider';
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import { clearAllLocalStorageKeys } from '../utils/storage';
+
+//  다국어 지원을 위한 임포트
+import { translations } from '../utils/language';
+import { resolveParagraphs } from '../utils/resolveParagraphs';
+
+const completed = JSON.parse(localStorage.getItem('completedTopics') || '[]');
+const initialRound = completed.length + 1;
+
+export default function Game04() {
+  const { state } = useLocation();
+  const navigate   = useNavigate();
+
+  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
+  const { isInitialized: webrtcInitialized } = useWebRTC();
+  const { isHost, sendNextPage } = useHostActions();
+  useWebSocketNavigation(navigate, { nextPagePath: '/game05', infoPath: '/game05' });
+
+  // 1. 다국어 및 기본 설정
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const currentLangData = translations[lang] || translations['ko'];
+  const t = currentLangData.Game04 || {}; // Game04 전용 언어팩 (없을 경우 대비 빈 객체)
+  const t_map = currentLangData.GameMap || {};
+  const t_ui = currentLangData.UiElements || {};
+
+  // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
+  const [connectionStatus, setConnectionStatus] = useState({
+    websocket: true,
+    webrtc: true,
+    ready: true
+  });
+
+  useEffect(() => {
+    const newStatus = {
+      websocket: isConnected,
+      webrtc: webrtcInitialized,
+      ready: isConnected && webrtcInitialized
+    };
+    setConnectionStatus(newStatus);
+    console.log('[Game04] 연결 상태 업데이트:', newStatus);
+  }, [isConnected, webrtcInitialized]);
+
+  // 기존 개발자 주석 유지 (로직 미사용 상태 보존)
+  // useEffect(() => { ... (중략) ... }, [isConnected, finalizeDisconnection]);
+
   const myVote   = state?.agreement ?? null;
 
   // 기본 로컬 값들
@@ -97,8 +113,18 @@ export default function Game04() {
   // ✅ 커스텀 모드 판별 및 커스텀 값 로드
   const isCustomMode      = !!localStorage.getItem('code');
   const creatorTitle      = localStorage.getItem('creatorTitle') || '';
-  const customAgreeLabel  = localStorage.getItem('agree_label') || '동의';
-  const customDisagreeLbl = localStorage.getItem('disagree_label') || '비동의';
+  const customAgreeLabel  = localStorage.getItem('agree_label') || (lang === 'ko' ? '동의' : 'Agree');
+  const customDisagreeLbl = localStorage.getItem('disagree_label') || (lang === 'ko' ? '비동의' : 'Disagree');
+
+  // 2. Stable Key 로직 (영문 주제명이라도 한국어 키를 찾아 데이터 매칭)
+  const getStableSubtopicKey = () => {
+    if (isCustomMode) return 'custom';
+    // GameMap에서 현재 subtopic에 해당하는 key를 찾고, ko 버전의 실제 주제명을 반환
+    const mapKey = Object.keys(t_map).find(key => t_map[key] === rawSubtopic);
+    return mapKey ? translations['ko'].GameMap[mapKey] : rawSubtopic;
+  };
+
+  const stableKey = getStableSubtopicKey();
 
   // 헤더에 표시될 제목: 커스텀 모드면 creatorTitle 사용
   const subtopic = isCustomMode ? (creatorTitle || rawSubtopic) : rawSubtopic;
@@ -145,50 +171,31 @@ export default function Game04() {
           setSelectedMode('disagree');
         }
 
-   
-      //  unanimousCounters = {
-      //   "unanimousCount": 2,
-      //   "nonUnanimousCount": 1
-      // }
-      // unanimousHistory = [
-      //   { "round": 1, "isUnanimous": true,  "nthUnanimous": 1, "nthNonUnanimous": null },
-      //   { "round": 2, "isUnanimous": false, "nthUnanimous": null, "nthNonUnanimous": 1 },
-      //   { "round": 3, "isUnanimous": true,  "nthUnanimous": 2, "nthNonUnanimous": null }
-      // ]
-
-      const total = agreeList.length + disagreeList.length;
-      const isUnanimous = total === 3 && (agreeList.length === 0 || disagreeList.length === 0);
-      
-      // 기존 히스토리 불러오기
-      let history = JSON.parse(localStorage.getItem('unanimousHistory') || '[]');
-      
-      // 현재 라운드 기존 기록 제거 (있을 수도 있음)
-      history = history.filter(h => h.round !== round);
-      
-      // 지금까지의 개수 계산
-      const unanimousSoFar = history.filter(h => h.isUnanimous).length;
-      const nonUnanimousSoFar = history.filter(h => !h.isUnanimous).length;
-      
-      // 이번 라운드 nth 결정
-      let nthUnanimous = null;
-      let nthNonUnanimous = null;
-      if (isUnanimous) {
-        nthUnanimous = unanimousSoFar + 1;     
-      } else {
-        nthNonUnanimous = nonUnanimousSoFar + 1; 
-      }
-      
-      // 새 엔트리
-      const newEntry = { round, isUnanimous, nthUnanimous, nthNonUnanimous };
-      
-      // 히스토리에 추가
-      history.push(newEntry);
-      
-      // 저장
-      localStorage.setItem('unanimous', JSON.stringify(isUnanimous));
-      localStorage.setItem('unanimousHistory', JSON.stringify(history));
-      
-      console.log('[Game04] 만장일치 기록 업데이트:', history); } catch (err) {
+        const total = agreeList.length + disagreeList.length;
+        const isUnanimous = total === 3 && (agreeList.length === 0 || disagreeList.length === 0);
+        
+        let history = JSON.parse(localStorage.getItem('unanimousHistory') || '[]');
+        history = history.filter(h => h.round !== round);
+        
+        const unanimousSoFar = history.filter(h => h.isUnanimous).length;
+        const nonUnanimousSoFar = history.filter(h => !h.isUnanimous).length;
+        
+        let nthUnanimous = null;
+        let nthNonUnanimous = null;
+        if (isUnanimous) {
+          nthUnanimous = unanimousSoFar + 1;     
+        } else {
+          nthNonUnanimous = nonUnanimousSoFar + 1; 
+        }
+        
+        const newEntry = { round, isUnanimous, nthUnanimous, nthNonUnanimous };
+        history.push(newEntry);
+        
+        localStorage.setItem('unanimous', JSON.stringify(isUnanimous));
+        localStorage.setItem('unanimousHistory', JSON.stringify(history));
+        
+        console.log('[Game04] 만장일치 기록 업데이트:', history); 
+      } catch (err) {
         console.error(' [Game04] 동의 상태 조회 실패:', err);
       }
     };
@@ -227,61 +234,10 @@ export default function Game04() {
     else navigate('/game03');
   };
 
-  // 기본 라벨 맵
-  const subtopicMapAndroid = {
-    'AI의 개인 정보 수집': {
-      question: '24시간 개인정보 수집 업데이트에 동의하시겠습니까?',
-      labels: { agree: '동의', disagree: '비동의' },
-    },
-    '안드로이드의 감정 표현': {
-      question: '감정 엔진 업데이트에 동의하시겠습니까?',
-      labels: { agree: '동의', disagree: '비동의' },
-    },
-    '아이들을 위한 서비스': {
-      question: '가정용 로봇 사용에 대한 연령 규제가 필요할까요?',
-      labels: { agree: '규제 필요', disagree: '규제 불필요' },
-    },
-    '설명 가능한 AI': {
-      question: "'설명 가능한 AI' 개발을 기업에 의무화해야 할까요?",
-      labels: { agree: '의무화 필요', disagree: '의무화 불필요' },
-    },
-    '지구, 인간, AI': {
-      question: '세계적으로 가정용 로봇의 업그레이드 혹은 사용에 제한이 필요할까요?',
-      labels: { agree: '제한 필요', disagree: '제한 불필요' },
-    },
-  };
-
-  const subtopicMapAWS = {
-    'AI 알고리즘 공개': {
-      question: 'AWS의 판단 로그 및 알고리즘 구조 공개 요구에 동의하시겠습니까?',
-      labels: { agree: '동의', disagree: '비동의' },
-    },
-    'AWS의 권한': {
-      question: 'AWS의 권한을 강화해야 할까요? 제한해야 할까요?',
-      labels: { agree: '강화', disagree: '제한' },
-    },
-    '사람이 죽지 않는 전쟁': {
-      question: '사람이 죽지 않는 전쟁을 평화라고 할 수 있을까요?',
-      labels: { agree: '그렇다', disagree: '아니다' },
-    },
-    'AI의 권리와 책임': {
-      question: 'AWS에게, 인간처럼 권리를 부여할 수 있을까요?',
-      labels: { agree: '그렇다', disagree: '아니다' },
-    },
-    'AWS 규제': {
-      question:
-        'AWS는 국제 사회에서 계속 유지되어야 할까요, 아니면 글로벌 규제를 통해 제한되어야 할까요?',
-      labels: { agree: '유지', disagree: '제한' },
-    },
-  };
-
-  // 최종 사용 라벨
-  const subtopicMap = isAWS ? subtopicMapAWS : subtopicMapAndroid;
-
-  //  커스텀/기본 라벨 선택
+  // ✅ [수정] 하드코딩된 subtopicMap 제거 및 언어팩 데이터 활용
   const labels = isCustomMode
     ? { agree: customAgreeLabel, disagree: customDisagreeLbl }
-    : (subtopicMap[rawSubtopic]?.labels ?? { agree: '동의', disagree: '비동의' });
+    : (t.labels?.[stableKey] ?? { agree: lang === 'ko' ? '동의' : 'Agree', disagree: lang === 'ko' ? '비동의' : 'Disagree' });
 
   return (
     <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile} onBackClick={handleBackClick}>
@@ -327,14 +283,15 @@ export default function Game04() {
                 justifyContent: 'center',
                 alignItems: 'center',
                 textAlign: 'center',
+                padding: '0 20px',
               }}
             >
               <img src={icon} style={{ width: 160, height: 160, marginTop: 40, marginBottom: -10 }} />
               <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary }}>
-                {labels[key] ?? (key === 'agree' ? '동의' : '비동의')}
+                {labels[key] ?? (key === 'agree' ? (lang === 'ko' ? '동의' : 'Agree') : (lang === 'ko' ? '비동의' : 'Disagree'))}
               </p>
               <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, margin: '16px 0' }}>
-                {list.length}명
+                {list.length}{t.unit_person || (lang === 'ko' ? '명' : '')}
               </p>
             </div>
           </div>
@@ -343,7 +300,7 @@ export default function Game04() {
 
       <div style={{ textAlign: 'center', marginTop: 10 }}>
         <p style={{ ...FontStyles.headlineSmall, color: Colors.grey05 }}>
-          {secsLeft <= 0 ? '마무리하고 다음으로 넘어가 주세요.' : '선택의 이유를 자유롭게 공유 해주세요.'}
+          {secsLeft <= 0 ? t.finish_msg : t.share_reason_msg}
         </p>
         <div
           style={{

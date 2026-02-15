@@ -127,7 +127,7 @@ export default function GameMapFrame({
             marginBottom: 15,
           }}
         />
-        <div style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary, marginBottom: 15 }}>
+        <div style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary, marginBottom: 15,whiteSpace: 'pre-wrap', textAlign: 'center' }}>
           {title}
         </div>
         <div
@@ -153,8 +153,9 @@ export default function GameMapFrame({
         <div
           style={{
             position: 'absolute',
-            top: '90%',
-            left: '45%',
+            top: '97.5%',
+            left: '47%',
+            transform: 'none',
             zIndex: 5,
           }}
         >

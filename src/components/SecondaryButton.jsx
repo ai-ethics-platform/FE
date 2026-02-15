@@ -17,6 +17,10 @@ export default function SecondaryButton({ onClick, disabled = false, children, s
     backgroundColor: Colors.componentBackground, 
     color: Colors.grey06,
     border: `1px solid ${Colors.brandPrimary}`,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    whiteSpace: 'pre-wrap',
   };
    //  클릭 시 disabled일 경우 무시
    const handleClick = (e) => {

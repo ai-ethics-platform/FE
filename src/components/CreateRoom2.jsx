@@ -9,10 +9,14 @@ import mainTopicDefault from '../assets/maintopicframedefault.svg';
 import mainTopicHover from '../assets/maintopicframehover.svg';
 import mainTopicActive from '../assets/maintopicframe.svg';
 import axiosInstance from '../api/axiosInstance';
+import { translations } from '../utils/language/index'; // 추가
 
-const topics = ['안드로이드','자율 무기 시스템'];
+// const topics = ['안드로이드','자율 무기 시스템']; // 언어 파일로 이동됨
 
 export default function CreateRoom2({ onClose }) {
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t = translations?.[lang]?.CreateRoom || {};
+
   const [isPublic, setIsPublic] = useState(false); // 기본은 비공개
 
   const [selectedTopic, setSelectedTopic] = useState(null);
@@ -24,7 +28,8 @@ export default function CreateRoom2({ onClose }) {
     if (!selectedTopic) return;
   
     const title = `${selectedTopic}`;
-    const description = `AI 윤리 주제 중 '${selectedTopic}'에 대한 토론`;
+    // 번역 파일의 apiDesc 함수 사용
+    const description = t.apiDesc ? t.apiDesc(selectedTopic) : `AI 윤리 주제 중 '${selectedTopic}'에 대한 토론`;
     const topic = selectedTopic;
   
     try {
@@ -58,7 +63,7 @@ export default function CreateRoom2({ onClose }) {
       console.error(' 방 생성 또는 입장 실패:', err);
       console.error('응답 메시지:', err.response?.data);  // <-- 여기에 오류 메시지 나옴
 
-      alert('방 생성 또는 입장 중 오류가 발생했습니다.');
+      alert(t.errorAlert || '방 생성 또는 입장 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -69,6 +74,9 @@ export default function CreateRoom2({ onClose }) {
     if (hoveredTopic === topic) return mainTopicHover;
     return mainTopicDefault;
   };
+
+  // 방어 코드
+  if (!t.title) return null;
 
   return (
     <div
@@ -102,15 +110,16 @@ export default function CreateRoom2({ onClose }) {
       />
 
       <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 8 }}>
-        방 만들기
+        {t.title}
       </div>
       <div style={{ color: Colors.grey05, marginBottom: 32 }}>
-        이번 게임에서 플레이할 주제를 선택해 주세요.
+        {t.subtitle}
       </div>
      {/* <RoomTypeToggle isPublic={isPublic} setIsPublic={setIsPublic} /> */}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
-        {topics.map((topic) => (
+        {/* t.topics 배열을 사용하여 렌더링 */}
+        {(t.topics || []).map((topic) => (
           <div
             key={topic}
             onClick={() => setSelectedTopic(topic)}
@@ -147,7 +156,7 @@ export default function CreateRoom2({ onClose }) {
           opacity: selectedTopic ? 1 : 0.4,
         }}
       >
-        {loading ? '로딩 중...' : '입장하기'}
+        {loading ? t.loading : t.entering}
       </PrimaryButton>
     </div>
   );

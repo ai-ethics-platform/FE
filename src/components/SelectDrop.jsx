@@ -1,8 +1,8 @@
-import React, { useState, useEffect,useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import arrowUp from '../assets/arrowUp.svg';
 import arrowDown from '../assets/arrowDown.svg';
 import { Colors, FontStyles } from './styleConstants';
-
+import { translations } from '../utils/language/index';
 
 export default function SelectDrop({
   options = [],
@@ -14,6 +14,11 @@ export default function SelectDrop({
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [selected, setSelected] = useState(value);
+
+  // --- 시스템 설정된 언어(app_lang)를 로드하는 로직 ---
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t = translations?.[lang]?.SelectDrop || {};
+  // ----------------------------------------------
 
   useEffect(() => {
     setSelected(value);
@@ -101,11 +106,12 @@ export default function SelectDrop({
         onMouseLeave={() => setIsHovered(false)}
       >
         <span style={{ color: selected ? Colors.grey07 : Colors.grey05 }}>
-          {selected || '선택...'}
+          {/* 하드코딩된 '선택...' 대신 언어팩 변수 t.defaultPlaceholder 사용 */}
+          {selected || t.defaultPlaceholder}
         </span>
         <img
           src={isOpen ? arrowUp : arrowDown}
-          alt="arrow"
+          alt={t.arrowAlt || "arrow"}
           style={{
             width: style.iconSize ?? 20,
             height: style.iconSize ?? 20,

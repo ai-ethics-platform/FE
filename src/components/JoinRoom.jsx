@@ -4,8 +4,13 @@ import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance';
+import { translations } from '../utils/language/index'; // 언어 파일 임포트
 
 export default function JoinRoom({ onClose }) {
+  // --- 시스템 설정된 언어(app_lang)를 로드하는 로직 ---
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t = translations?.[lang]?.JoinRoom || {};
+
   const [roomCode, setRoomCode] = useState('');
   const [nickname, setNickname] = useState('');
   const navigate = useNavigate();
@@ -42,10 +47,11 @@ useEffect(() => {
         localStorage.setItem('nickname', nickname);
       }
     } catch (err) {
-      console.error('❌ 유저 정보 로드 실패:', err);
+      // 번역된 loadFail 메시지 사용
+      console.error(t.loadFail || '❌ 유저 정보 로드 실패:', err);
     }
   })();
-}, []);
+}, [t.loadFail]);
 
   const isValidCode = roomCode.length === 6;
 
@@ -69,10 +75,16 @@ useEffect(() => {
       localStorage.setItem('room_code', roomCode);
       navigate('/waitingroom');
     } catch (error) {
-      console.error('방 입장 실패:', error.response?.data || error.message);
-      alert(`방 입장 오류: ${JSON.stringify(error.response?.data?.detail || '')}`);
+      // [수정] 언어 설정에 따른 콘솔 로그 구분 - 언어팩 변수(t.consoleFail) 활용
+      console.error(t.consoleFail || '방 입장 실패:', error.response?.data || error.message);
+      
+      // [수정] 언어 설정에 따른 alert 문구 보정 (t.errorPrefix 활용)
+      alert(`${t.errorPrefix || '방 입장 오류: '}${JSON.stringify(error.response?.data?.detail || '')}`);
     }
   };
+
+  // 데이터 로드 확인용 방어 코드
+  if (!t.title) return null;
 
   return (
     <div
@@ -105,11 +117,11 @@ useEffect(() => {
         }}
       />
       <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 32 }}>
-        방 참여하기
+        {t.title}
       </div>
       <input
         type="text"
-        placeholder="방 코드 6자리를 입력해 주세요."
+        placeholder={t.placeholder}
         value={roomCode}
         onChange={handleChange}
         style={{
@@ -134,7 +146,7 @@ useEffect(() => {
           opacity: isValidCode ? 1 : 0.4,
         }}
       >
-        입장하기
+        {t.enter}
       </PrimaryButton>
     </div>
   );

@@ -1,0 +1,20 @@
+export const GameMap = {
+  subtopic: "Round Selection",
+  guideText: "After reaching an agreement, \nplease select the same round.",
+  awsSection1Title: "Residential and Military Areas",
+  awsOption1_1: "AI Algorithm Disclosure",
+  awsOption1_2: "Authority of AWS",
+  awsSection2Title: "National Artificial Intelligence Committee",
+  awsOption2_1: "A War Without Loss of Human Life",
+  awsOption2_2: "AI Rights and Responsibilities",
+  awsSection3Title: "International Committee \n for Human Development",
+  awsOption3_1: "AWS Regulation",
+  andSection1Title: "Home",
+  andOption1_1: "AI’s Collection of Personal Information",
+  andOption1_2: "Android’s Expression of Emotions",
+  andSection2Title: "National Artificial Intelligence Committee",
+  andOption2_1: "Services for Children",
+  andOption2_2: "Explainable AI",
+  andSection3Title: "International Committee \n for Human Development",
+  andOption3_1: "Earth, Humanity, and AI"
+};

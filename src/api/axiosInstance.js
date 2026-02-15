@@ -1,6 +1,12 @@
 // api/axiosInstance.js
 import axios from 'axios';
-const API_BASE = 'https://dilemmai-idl.com';
+
+/**
+ * 하드코딩된 주소를 환경변수로 분리
+ * Vite 환경이므로 import.meta.env를 사용
+ * .env 파일에 VITE_API_BASE_URL 설정이 없으면 기존 주소를 기본값으로 사용
+ */
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://dilemmai-idl.com';
 
 // 메인 axios 인스턴스 생성
 const instance = axios.create({
@@ -9,6 +15,7 @@ const instance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
 // 상단 어딘가 공통 상수로 추가
 const MAX_500_REFRESH_RETRY = 1; // 500에서 refresh 시도 최대 횟수 (원하면 2로 올려도 됨)
 
@@ -29,9 +36,7 @@ const refreshAccessToken = async () => {
   if (!refreshToken) throw new Error('No refresh token available');
 
   try {
-    // const { data } = await axios.post(`${API_BASE}/auth/refresh`, {
-    //   refresh_token: refreshToken,
-    // });
+    //  하드코딩된 문자열 대신 변수화된 API_BASE 사용
     const { data } = await axios.post(
       `${API_BASE}/auth/refresh`,  // 1. URL
       {                            // 2. body (data)
@@ -50,7 +55,7 @@ const refreshAccessToken = async () => {
     // 1) 응답에서 받은 토큰들을 즉시 저장
     if (data.access_token) localStorage.setItem('access_token', data.access_token);
     if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token); 
-    if (data.token_type)    localStorage.setItem('token_type', data.token_type);
+    if (data.token_type)     localStorage.setItem('token_type', data.token_type);
 
     // 2) axios 인스턴스 기본 헤더도 업데이트 
     instance.defaults.headers.Authorization = `${data.token_type || 'Bearer'} ${data.access_token}`;
@@ -140,21 +145,8 @@ instance.interceptors.response.use(
   }
 );
 
-// export async function callChatbot({ step, input, context, prompt }) {
-//   const payload = { step, input, context, prompt }; 
-//   const { data } = await instance.post(
-//     "/chat/with-prompt",
-//     payload,
-//     {
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//     }
-//   );
-//   // 서버 응답 예:
-//   // { "step": "question", "text": "...", "raw": {...} }
-//   return data;
-// }
+// export async function callChatbot({ step, input, context, prompt }) { ... }
+
 export async function callChatbot({ session_id, user_input, step, variable, context }) {
   const payload = {
     session_id,
@@ -174,8 +166,5 @@ export async function callChatbot({ session_id, user_input, step, variable, cont
 
   return data;
 }
-
-
-
 
 export default instance;

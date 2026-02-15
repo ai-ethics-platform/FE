@@ -1,10 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from "../api/axiosInstance";
+import { translations } from '../utils/language/index';
+
 export default function GuestLogin({ onClose }) {
+  // 언어 설정 상태 관리 (로그인 화면과 동일하게 로컬스토리지 참조)
+  const [lang] = useState(localStorage.getItem('app_lang') || 'ko');
+  const t = translations[lang].GuestLogin;
+
   const [guestId, setGuestId] = useState('');
   const navigate = useNavigate();
   const isValid = guestId.trim().length > 0; 
@@ -12,7 +18,6 @@ export default function GuestLogin({ onClose }) {
   const handleJoin = async () => {
     if (!isValid) return;
     try {
-      // axiosInstance 기준 (baseURL이 dilemmai-idl.com로 설정되어 있다고 가정)
       const { data } = await axiosInstance.post('/auth/guest', {
         guest_id: guestId.trim(),
       });
@@ -24,11 +29,13 @@ export default function GuestLogin({ onClose }) {
       localStorage.setItem('user_id', guestId.trim());
       localStorage.setItem('guest_id', guestId.trim());
       localStorage.setItem('guest_mode',"true");
+      
       console.log('로그인 성공:', data);
       navigate('/selectroom');
     } catch (err) {
       console.error('게스트 로그인 실패:', err?.response?.data || err);
-      alert('게스트 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      // 언어팩의 실패 메시지 적용
+      alert(t.loginFail);
     }
   };
 
@@ -67,11 +74,11 @@ export default function GuestLogin({ onClose }) {
         }}
       />
       <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 32 }}>
-        게스트 로그인
+        {t.title}
       </div>
       <input
         type="text"
-        placeholder="사용할 아이디를 입력하세요."
+        placeholder={t.placeholder}
         value={guestId}
         onChange={(e) => setGuestId(e.target.value)}
         onKeyDown={onKeyDown}
@@ -97,7 +104,7 @@ export default function GuestLogin({ onClose }) {
           opacity: isValid ? 1 : 0.4,
         }}
       >
-        시작하기
+        {t.startBtn}
       </PrimaryButton>
     </div>
   );

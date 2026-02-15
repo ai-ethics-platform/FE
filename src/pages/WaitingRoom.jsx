@@ -13,10 +13,19 @@ import axiosInstance from '../api/axiosInstance';
 import { FontStyles, Colors } from '../components/styleConstants';
 import codeBg from '../assets/roomcodebackground.svg';
 import CancelReadyPopup from '../components/CancelReadyPopup';
+// 언어팩 임포트
+import { translations } from '../utils/language/index';
 
 export default function WaitingRoom() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // --- 언어 설정 로직 (기존 app_lang 방식 유지) ---
+  const savedLang = localStorage.getItem('app_lang');
+  const currentLang = (savedLang === 'en') ? 'en' : 'ko';
+  const t = translations[currentLang];
+  // --------------------------------------------
+
   // zoom 수정
   // const allTopics = ['안드로이드', '자율 무기 시스템'];
 
@@ -24,45 +33,44 @@ export default function WaitingRoom() {
   // const initialIndex = allTopics.indexOf(initialTopic);
 
   // zoom 수정
-// 기본 토픽 목록
-const defaultTopics = ['안드로이드', '자율 무기 시스템'];
-const [category,setCategory] = useState();
-// custom 모드 여부 확인
-const isCustomMode = Boolean(localStorage.getItem('code'));
-const creatorTitle = localStorage.getItem('creatorTitle') || '커스텀 주제';
+  // 기본 토픽 목록 (언어팩 적용)
+  const defaultTopics = [t.WaitingRoom.topics.android, t.WaitingRoom.topics.aws];
+  const [category,setCategory] = useState();
+  // custom 모드 여부 확인
+  const isCustomMode = Boolean(localStorage.getItem('code'));
+  const creatorTitle = localStorage.getItem('creatorTitle') || t.WaitingRoom.topics.custom;
 
+  // allTopics는 기존 그대로
+  const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
 
-// allTopics는 기존 그대로
-const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
+  //  최초 렌더에서 localStorage.category를 우선 반영
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const stored = localStorage.getItem('category');
+    const i = stored ? allTopics.indexOf(stored) : -1;
+    if (i >= 0) return i;
 
-//  최초 렌더에서 localStorage.category를 우선 반영
-const [currentIndex, setCurrentIndex] = useState(() => {
-  const stored = localStorage.getItem('category');
-  const i = stored ? allTopics.indexOf(stored) : -1;
-  if (i >= 0) return i;
+    const fallback = isCustomMode
+      ? creatorTitle
+      : (location.state?.topic || allTopics[0]);
 
-  const fallback = isCustomMode
-    ? creatorTitle
-    : (location.state?.topic || allTopics[0]);
+    const fi = allTopics.indexOf(fallback);
+    return fi >= 0 ? fi : 0;
+  });
 
-  const fi = allTopics.indexOf(fallback);
-  return fi >= 0 ? fi : 0;
-});
+  //  로컬(category) → UI 인덱스 동기화
+  const syncTopicFromLocal = (value) => {
+    const cat = (value != null ? value : localStorage.getItem('category')) || '';
+    const idx = allTopics.indexOf(cat);
+    if (idx >= 0 && idx !== currentIndex) {
+      setCurrentIndex(idx);
+    }
+  };
 
-//  로컬(category) → UI 인덱스 동기화
-const syncTopicFromLocal = (value) => {
-  const cat = (value != null ? value : localStorage.getItem('category')) || '';
-  const idx = allTopics.indexOf(cat);
-  if (idx >= 0 && idx !== currentIndex) {
-    setCurrentIndex(idx);
-  }
-};
-
-// 마운트 직후 한 번 더 동기화 
-useEffect(() => {
-  syncTopicFromLocal();
-}, []);
- 
+  // 마운트 직후 한 번 더 동기화 
+  useEffect(() => {
+    syncTopicFromLocal();
+  }, []);
+  
   //룸코드 복사 
   const [copied, setCopied] = useState(false);
 
@@ -102,43 +110,43 @@ useEffect(() => {
 
   // 업데이트 중복 방지 플래그
   const [isUpdating, setIsUpdating] = useState(false);
- 
+  
   const room_code = localStorage.getItem('room_code');
 
   // A) 초기 데이터 로드 - 내 정보 조회
-const loadMyInfo = async () => {
-  try {
-    // 1. 로컬 스토리지에서 닉네임 먼저 확인
-    let nickname = localStorage.getItem('nickname');
-    let myUserId = localStorage.getItem('user_id');
+  const loadMyInfo = async () => {
+    try {
+      // 1. 로컬 스토리지에서 닉네임 먼저 확인
+      let nickname = localStorage.getItem('nickname');
+      let myUserId = localStorage.getItem('user_id');
 
-    if (!nickname || !myUserId) {
-      // 2. 없으면 API 호출
-      const { data: userInfo } = await axiosInstance.get('/users/me');
-      myUserId = userInfo.id;
-      nickname = userInfo.username || `Player_${myUserId}`;
+      if (!nickname || !myUserId) {
+        // 2. 없으면 API 호출
+        const { data: userInfo } = await axiosInstance.get('/users/me');
+        myUserId = userInfo.id;
+        nickname = userInfo.username || `Player_${myUserId}`;
 
-      // 3. 로컬 스토리지에 저장
-      localStorage.setItem('nickname', nickname);
-      localStorage.setItem('user_id', myUserId);
+        // 3. 로컬 스토리지에 저장
+        localStorage.setItem('nickname', nickname);
+        localStorage.setItem('user_id', myUserId);
+      }
+
+      // 4. state 업데이트
+      setMyPlayerId(String(myUserId));
+
+      return myUserId;
+    } catch (err) {
+      console.error(`내 정보 로드 실패:`, err);
+      return null;
     }
-
-    // 4. state 업데이트
-    setMyPlayerId(String(myUserId));
-
-    return myUserId;
-  } catch (err) {
-    console.error(`내 정보 로드 실패:`, err);
-    return null;
-  }
-};
+  };
 
 
   // B) participants 로드 및 역할 배정 확인
   const loadParticipants = async () => {
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
-     // console.log(`API 응답:`, room);
+      // console.log(`API 응답:`, room);
       if (room?.title) {
           localStorage.setItem('category', room.title);
           if(isCustomMode){
@@ -312,9 +320,11 @@ const loadMyInfo = async () => {
       setHasAssignedRoles(false);
     }
   };
+
   useEffect(() => {
     console.log('✅ myStatusIndex 변경됨:', myStatusIndex);
   }, [myStatusIndex]);
+
   useEffect(() => {
     if (participants.length === 3 && myPlayerId === hostUserId) {
       const hasApiRoles = participants.every(p => p.role_id != null);
@@ -350,7 +360,7 @@ const loadMyInfo = async () => {
           }
         }
       }
-       // 🆕 추가: 참가자 수 줄어들면 역할 초기화
+        // 🆕 추가: 참가자 수 줄어들면 역할 초기화
     if (room.participants.length < 3) {
       console.log('참가자가 나갔습니다. 역할 초기화');
       localStorage.removeItem('role1_user_id');
@@ -615,6 +625,7 @@ const loadMyInfo = async () => {
       delete window.debugWaitingRoom;
     };
   }, [isPolling, myPlayerId, hostUserId, participants, hasAssignedRoles, statusIndexMap, assignments]);
+  
   const handleCancelConfirm = () => {
     // 1) 로컬 인덱스 리셋
     setMyStatusIndex(0);
@@ -683,30 +694,30 @@ const loadMyInfo = async () => {
               userSelect: 'none',
             }}
           >
-            CODE: {room_code}
+            {t.WaitingRoom.code}: {room_code}
           </span>
-                {/* 툴팁 */}
-            {copied && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '58px',
-                  left: '75%',
-                  transform: 'translateX(-50%)',
-                  background: 'rgba(0,0,0,0.75)',
-                  color: 'white',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  whiteSpace: 'nowrap',
-                  pointerEvents: 'none',
-                  zIndex: 10,
-                  
-                }}
-              >
-                Copied!
-              </div>
-            )}
+              {/* 툴팁 */}
+          {copied && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '58px',
+                left: '75%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.75)',
+                color: 'white',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                whiteSpace: 'nowrap',
+                pointerEvents: 'none',
+                zIndex: 10,
+                
+              }}
+            >
+              {t.WaitingRoom.copied}
+            </div>
+          )}
         </div>
       </div>
 
@@ -764,7 +775,7 @@ const loadMyInfo = async () => {
           return (
             <div key={id} style={{ transform: `scale(${idx === 1 ? 1 : 0.9})` }}>
               <StatusCard
-                player={`${id}P`}
+                player={`${id}${t.WaitingRoom.player}`}
                 isOwner={isOwner}
                 isMe={isMe}
                 roleId={assign?.role_id}

@@ -20,32 +20,50 @@ import { Colors, FontStyles } from "../components/styleConstants";
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { clearAllLocalStorageKeys } from '../utils/storage';
 
+// 이미지 에셋 - 언어별 대응
 import hostInfoSvg from '../assets/host_info.svg';
+import hostInfoSvg_en from '../assets/en/host_info_en.svg';
+
 import HostInfoBadge from '../components/HostInfoBadge';
+// Localization
+import { translations } from '../utils/language/index';
 
 export default function MateName() {
   const navigate = useNavigate();
+  
+  // Get language setting and translations
+  const lang = localStorage.getItem('language') || 'ko';
+  const t = translations?.[lang]?.MateName || {};
+  
+  // 언어 설정에 따른 이미지 선택
+  const currentHostInfoSvg = lang === 'en' ? hostInfoSvg_en : hostInfoSvg;
+
   const [name, setName] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(null);
   const roomCode = localStorage.getItem('room_code');
   const [hostId, setHostId] = useState(null);
   const [myRoleId, setMyRoleId] = useState(null);
+  
+  // [수정] 카테고리 인식 로직 강화 (한글/영어 모두 대응)
   const category = localStorage.getItem('category') || '안드로이드';
+  const isAndroid = category && (category.includes('안드로이드') || category.toLowerCase().includes('android'));
+  // 안드로이드가 아니면 AWS로 간주
+  const isAWS = !isAndroid;
 
 // 카테고리별 이미지 세트
-  const isAWS = category === '자율 무기 시스템';
   const images = isAWS
     ? [killerCharacter1, killerCharacter2, killerCharacter3]
     : [character1, character2, character3];
 
+    // Localization applied to UI Text
     const uiText = isAWS
     ? {
-        placeholder: '이 자율 무기 시스템의 이름을 정해 주세요. (방장만 입력 가능)',
-        main: '여러분이 사용자라면 자율 무기 시스템을 어떻게 부를까요?',
+        placeholder: t.placeholderAws || '이 자율 무기 시스템의 이름을 정해 주세요. (방장만 입력 가능)',
+        main: t.mainAws || '여러분이 사용자라면 자율 무기 시스템을 어떻게 부를까요?',
       }
     : {
-        placeholder: '여러분의 HomeMate 이름을 지어주세요.(방장만 입력 가능)',
-        main: '     여러분이 사용자라면 HomeMate를 어떻게 부를까요?',
+        placeholder: t.placeholderAndroid || '여러분의 HomeMate 이름을 지어주세요.(방장만 입력 가능)',
+        main: t.mainAndroid || '     여러분이 사용자라면 HomeMate를 어떻게 부를까요?',
       };
 
   const { voiceSessionStatus, isInitialized: webrtcInitialized } = useWebRTC();
@@ -81,7 +99,7 @@ export default function MateName() {
     };
     setConnectionStatus(newStatus);
   }, [websocketConnected, webrtcInitialized]);
-//  useEffect(() => {
+//   useEffect(() => {
 //     if (!websocketConnected) {
 //       console.warn('❌ WebSocket 연결 끊김 감지됨');
 //       alert('⚠️ 연결이 끊겨 게임이 초기화됩니다.');
@@ -168,12 +186,12 @@ useEffect(() => {
   }, [selectedIndex]);
 
   const paragraphs = [
-    { main: uiText.main, sub: '합의 후에 방장이 이름을 작성해주세요.' },
+    { main: uiText.main, sub: t.subText || '합의 후에 방장이 이름을 작성해주세요.' },
   ];
 
   const handleNameChange = (e) => {
     if (!isHost) {
-      alert('방장이 아니므로 이름 입력이 불가능합니다.');
+      alert(t.alertNotHostInput || '방장이 아니므로 이름 입력이 불가능합니다.');
       return;
     }
     setName(e.target.value);
@@ -181,16 +199,16 @@ useEffect(() => {
 
   const handleContinue = async () => {
     if (!isHost) {
-      alert('방장만 게임을 진행할 수 있습니다.');
+      alert(t.alertNotHostProgress || '방장만 게임을 진행할 수 있습니다.');
       return;
     }
     if (!name.trim()) {
-      alert('이름을 입력해주세요!');
+      alert(t.alertNoName || '이름을 입력해주세요!');
       return;
     }
     const rc = localStorage.getItem('room_code');
     if (!rc) {
-      alert('room_code가 없습니다. 방에 먼저 입장하세요.');
+      alert(t.alertNoRoomCode || 'room_code가 없습니다. 방에 먼저 입장하세요.');
       return;
     }
     const trimmed = name.trim();
@@ -211,7 +229,7 @@ useEffect(() => {
       }
 
       console.error('[MateName] AI 이름 저장 실패:', err);
-      alert(err?.response?.data?.detail ?? '이름 저장 중 오류가 발생했습니다.');
+      alert(err?.response?.data?.detail ?? (t.alertSaveError || '이름 저장 중 오류가 발생했습니다.'));
     }
   };
 
@@ -221,16 +239,16 @@ useEffect(() => {
             <div 
               style={{
                 position: 'absolute',
-                top:'-105px',
+                top:'-115px',
                 right: '0px', 
                 zIndex: 10, 
               }}
             >
               <HostInfoBadge
-                src={hostInfoSvg}
+                src={currentHostInfoSvg} // ✅ 언어별 이미지 대응
                 alt="Host Info"
                 preset="hostInfo"
-                width={300}
+                width={350}
                 height={300}
               />
             </div>
@@ -264,7 +282,12 @@ useEffect(() => {
             height={64}
             value={name}
             onChange={handleNameChange}
-            style={{ margin: '0 auto', cursor: isHost ? 'text' : 'not-allowed', backgroundColor: isHost ? undefined : '#f5f5f5' }}
+            style={{ 
+              margin: '0 auto', 
+              cursor: isHost ? 'text' : 'not-allowed', 
+              backgroundColor: isHost ? undefined : '#f5f5f5', 
+              fontSize: t.placeholderSize || 'inherit'
+            }}
           />
 
           <div style={{ width: '100%', marginTop: 10, maxWidth: 936 }}>

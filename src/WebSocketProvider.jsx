@@ -5,6 +5,11 @@ import { useNavigate } from 'react-router-dom';
 
 const WebSocketContext = createContext();
 
+/**
+ * 웹소켓 베이스 주소를 환경변수에서 가져옴.
+ */
+const WS_BASE = import.meta.env.VITE_WS_BASE_URL || 'wss://dilemmai-idl.com';
+
 export const useWebSocket = () => {
   const context = useContext(WebSocketContext);
   if (!context) {
@@ -438,7 +443,10 @@ export const WebSocketProvider = ({ children }) => {
 
     try {
       console.log(`🔌 [${providerId}] WebSocket 연결 시도:`, currentSessionId);
-      const wsUrl = `wss://dilemmai-idl.com/ws/voice/${currentSessionId}?token=${accessToken}`;
+      /**
+       *하드코딩된 주소를 환경변수(VITE_WS_BASE_URL) 기반으로 변경
+       */
+      const wsUrl = `${WS_BASE}/ws/voice/${currentSessionId}?token=${accessToken}`;
       console.log(`🔗 [${providerId}] WebSocket URL:`, wsUrl.replace(accessToken, 'TOKEN_HIDDEN'));
       
       const socket = new WebSocket(wsUrl);
@@ -470,7 +478,7 @@ export const WebSocketProvider = ({ children }) => {
         reconnectAttemptsRef.current = 0;
         setReconnectAttempts(0);                
         reconnectDelay.current = 1000;
-         finalizedRef.current = false;    
+           finalizedRef.current = false;    
         if (reconnectTimer.current) {
           clearTimeout(reconnectTimer.current);
           reconnectTimer.current = null;
@@ -485,12 +493,6 @@ export const WebSocketProvider = ({ children }) => {
           }
         };
         sendMessage(initPayload);
-        // pingIntervalRef.current = setInterval(() => {
-        //   if (ws.current?.readyState === WebSocket.OPEN) {
-        //     ws.current.send(JSON.stringify({ type: 'ping' }));
-        //     console.log(`🏓 ping 전송`);
-        //   }
-        // }, 30000);
       };
 
       socket.onmessage = (event) => {
@@ -570,7 +572,7 @@ export const WebSocketProvider = ({ children }) => {
           finalizeDisconnection('네트워크 불안정으로 연결을 복구하지 못했습니다. 메인으로 돌아갑니다.');
         }
       };
-    } catch (error) { // ✅ connect() 내부 try-catch의 catch 추가
+    } catch (error) { 
       isConnecting.current = false;
       if (!isReconnect) {
         connectionAttempted.current = false;
@@ -578,9 +580,9 @@ export const WebSocketProvider = ({ children }) => {
       console.error(`❌ [${providerId}] WebSocket 연결 실패:`, error);
       setIsConnected(false);
     }
-  }; // ✅ 여기서 connect 함수 끝
+  };
 
-  const disconnect = () => { // ✅ 이제 connect 밖의 동일 스코프
+  const disconnect = () => { 
     isManuallyDisconnected.current = true;
     hasJoinedSession.current = false;
     
@@ -602,7 +604,7 @@ export const WebSocketProvider = ({ children }) => {
     }
   };
 
-   
+    
   // 🔧 음성 세션 초기화 함수 중복 방지 강화
   const initializeVoiceWebSocket = async (isHost = false) => {
     // 🔧 가드 1: 이미 초기화 중
@@ -898,3 +900,6 @@ export const WebSocketProvider = ({ children }) => {
 };
 
 export default WebSocketProvider;
+
+
+//하드코딩된 'wss://dilemmai-idl.com' 주소를 VITE_WS_BASE_URL 환경변수로 대체

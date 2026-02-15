@@ -733,7 +733,29 @@ export default function Game03() {
         <>
           <div style={{ marginTop: 60, display: 'flex', justifyContent: 'center', gap: 10 }}>
             {displayImages.map((img, idx) => (
-              <img key={idx} src={img} alt={`설명 이미지 ${idx + 1}`} style={{ width: 250, height: 139 }}     onError={(e) => { e.currentTarget.src = defaultImg; }} />
+              <img 
+                key={idx} 
+                src={img} 
+                alt={`설명 이미지 ${idx + 1}`} 
+                style={{ width: 250, height: 139 }}
+                onError={(e) => { 
+                  const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+                  if (retryCount < 3) {
+                    e.currentTarget.dataset.retryCount = String(retryCount + 1);
+                    const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+                    const newSrc = img.includes('?') ? `${img.split('?')[0]}${cacheBuster}` : `${img}${cacheBuster}`;
+                    setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
+                    return;
+                  }
+                  if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+                    e.currentTarget.dataset.fallbackAttempted = 'true';
+                    e.currentTarget.dataset.retryCount = '0';
+                    e.currentTarget.src = defaultImg;
+                    return;
+                  }
+                  e.currentTarget.style.display = 'none';
+                }} 
+              />
             ))}
           </div>
 

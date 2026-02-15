@@ -502,9 +502,34 @@ class VoiceManager {
       }
       
       // 3. 사용자 정보 설정
-      const { data: userInfo } = await axiosInstance.get('/users/me');
-      this.participantId = userInfo.id;
-      this.nickname = localStorage.getItem('nickname') || userInfo.username || `Player_${userInfo.id}`;
+      let userInfo = null;
+      try {
+        console.log('🔍 VoiceManager: /users/me 호출 시도...');
+        const response = await axiosInstance.get('/users/me', { timeout: 5000 });
+        userInfo = response.data;
+        this.participantId = userInfo.id;
+        this.nickname = localStorage.getItem('nickname') || userInfo.username || `Player_${userInfo.id}`;
+        console.log('✅ VoiceManager: /users/me 성공:', userInfo.id);
+      } catch (userErr) {
+        const isCorsError = !userErr.response && (userErr.message?.includes('Network Error') || userErr.code === 'ERR_NETWORK');
+        if (isCorsError) {
+          console.error('❌ VoiceManager CORS 에러: /users/me', {
+            message: userErr.message,
+            code: userErr.code,
+          });
+          console.warn('💡 백엔드 CORS 설정을 확인하세요. localStorage 값을 사용합니다.');
+        } else {
+          console.error('❌ VoiceManager: /users/me 호출 실패:', userErr.response?.status, userErr.response?.data || userErr.message);
+        }
+        
+        // localStorage에서 fallback
+        this.participantId = localStorage.getItem('user_id');
+        this.nickname = localStorage.getItem('nickname') || `Player_${this.participantId}`;
+        
+        if (!this.participantId) {
+          throw new Error('user_id를 확인할 수 없습니다.');
+        }
+      }
       
       console.log('📋 VoiceManager 세션 정보:', {
         sessionId: this.sessionId,

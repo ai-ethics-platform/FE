@@ -35,12 +35,23 @@ export default function GuestLogin({ onClose }) {
       } else {
         // fallback: legacy 백엔드 대응 (가능하면 백엔드에서 user_id 응답 제공이 정석)
         try {
-          const { data: me } = await axiosInstance.get('/users/me');
+          console.log('🔍 GuestLogin: /users/me 호출 시도...');
+          const { data: me } = await axiosInstance.get('/users/me', { timeout: 5000 });
           if (me?.id != null) {
             localStorage.setItem('user_id', String(me.id));
+            console.log('✅ GuestLogin: /users/me 성공:', me.id);
           }
         } catch (e) {
-          console.warn('⚠️ 게스트 로그인: user_id가 없고 /users/me도 실패했습니다. WaitingRoom/WS/WebRTC가 동작하지 않을 수 있습니다.', e?.response?.data || e?.message);
+          const isCorsError = !e.response && (e.message?.includes('Network Error') || e.code === 'ERR_NETWORK');
+          if (isCorsError) {
+            console.error('❌ GuestLogin CORS 에러: /users/me', {
+              message: e.message,
+              code: e.code,
+            });
+            console.warn('💡 백엔드 CORS 설정을 확인하세요.');
+          } else {
+            console.warn('⚠️ 게스트 로그인: user_id가 없고 /users/me도 실패했습니다. WaitingRoom/WS/WebRTC가 동작하지 않을 수 있습니다.', e?.response?.data || e?.message);
+          }
         }
       }
 

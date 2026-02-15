@@ -566,6 +566,12 @@ export default function Game01() {
 
    const rawCustomImg1 = localStorage.getItem('dilemma_image_1') || '';
    const customImg1 = resolveImageUrl(rawCustomImg1)|| defaultImg;
+   
+   // ✅ 커스텀 이미지가 서버 URL인지 확인 (CORS 필요 여부)
+   const isCustomImageFromServer = customImg1 && (
+     customImg1.startsWith('http://') || 
+     customImg1.startsWith('https://')
+   );
 
   const defaultMain = getDefaultMain();
   const rolesBackground = (localStorage.getItem('rolesBackground') || '').trim();
@@ -597,21 +603,98 @@ export default function Game01() {
             <img
               src={customImg1}
               alt=""
+              {...(isCustomImageFromServer && { crossOrigin: "anonymous" })}
               style={{ width:744, height: 360, objectFit: 'cover', borderRadius: 4 }}
+              loading="eager"
+              decoding="async"
               onError={(e) => {
-                e.currentTarget.src = defaultImg;   // ✅ fallback 이미지로 교체
-              }} // 선택: 실패 시 감추기
+                const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+                
+                if (retryCount < 3) {
+                  e.currentTarget.dataset.retryCount = String(retryCount + 1);
+                  console.log(`🔄 커스텀 이미지 재시도 ${retryCount + 1}/3:`, customImg1);
+                  
+                  const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+                  const newSrc = customImg1.includes('?') 
+                    ? `${customImg1.split('?')[0]}${cacheBuster}`
+                    : `${customImg1}${cacheBuster}`;
+                  
+                  setTimeout(() => {
+                    if (e.currentTarget) e.currentTarget.src = newSrc;
+                  }, 300 * retryCount);
+                  return;
+                }
+                
+                if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+                  console.warn('⚠️ 커스텀 이미지 3번 재시도 실패, fallback으로 전환');
+                  e.currentTarget.dataset.fallbackAttempted = 'true';
+                  e.currentTarget.dataset.retryCount = '0';
+                  e.currentTarget.src = defaultImg;
+                  return;
+                }
+                
+                console.error('❌ fallback 이미지도 로드 실패');
+                e.currentTarget.style.display = 'none';
+              }}
+              onLoad={() => {
+                console.log('✅ Game01 커스텀 이미지 로드 성공:', customImg1);
+              }}
             />
           ) : null
         ) : (
-          [character1, character2, character3].map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt=""
-              style={{ width: 264, height: 360, objectFit: 'cover', borderRadius: 4 }}
-            />
-          ))
+          [character1, character2, character3].map((src, i) => {
+            // ✅ 각 캐릭터 이미지가 서버 URL인지 확인
+            const isServerImage = src && (src.startsWith('http://') || src.startsWith('https://'));
+            
+            return (
+              <img
+                key={i}
+                src={src}
+                alt=""
+                {...(isServerImage && { crossOrigin: "anonymous" })}
+                style={{ width: 264, height: 360, objectFit: 'cover', borderRadius: 4 }}
+                loading="eager"
+                decoding="async"
+                onError={(e) => {
+                  const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+                  
+                  if (retryCount < 3) {
+                    e.currentTarget.dataset.retryCount = String(retryCount + 1);
+                    console.log(`🔄 캐릭터 이미지 ${i+1} 재시도 ${retryCount + 1}/3:`, src);
+                    
+                    const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+                    const newSrc = src.includes('?') 
+                      ? `${src.split('?')[0]}${cacheBuster}`
+                      : `${src}${cacheBuster}`;
+                    
+                    setTimeout(() => {
+                      if (e.currentTarget) e.currentTarget.src = newSrc;
+                    }, 300 * retryCount);
+                    return;
+                  }
+                  
+                  if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+                    console.warn(`⚠️ 캐릭터 이미지 ${i+1} 3번 재시도 실패, fallback으로 전환`);
+                    e.currentTarget.dataset.fallbackAttempted = 'true';
+                    e.currentTarget.dataset.retryCount = '0';
+                    e.currentTarget.src = defaultImg;
+                    return;
+                  }
+                  
+                  console.error(`❌ fallback 이미지도 로드 실패 (이미지 ${i+1})`);
+                  e.currentTarget.style.display = 'none';
+                }}
+                onLoad={(e) => {
+                  console.log(`✅ Game01 캐릭터 이미지 ${i+1} 로드 성공:`, {
+                    src,
+                    isServerImage,
+                    naturalWidth: e.currentTarget.naturalWidth,
+                    naturalHeight: e.currentTarget.naturalHeight,
+                  });
+                }}
+              />
+            );
+          })
         )}
       </div>
 

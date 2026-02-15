@@ -114,13 +114,38 @@ const loadMyInfo = async () => {
 
     if (!nickname || !myUserId) {
       // 2. 없으면 API 호출
-      const { data: userInfo } = await axiosInstance.get('/users/me');
-      myUserId = userInfo.id;
-      nickname = userInfo.username || `Player_${myUserId}`;
+      try {
+        console.log('🔍 WaitingRoom: /users/me 호출 시도...');
+        const { data: userInfo } = await axiosInstance.get('/users/me', {
+          timeout: 5000,
+        });
+        myUserId = userInfo.id;
+        nickname = userInfo.username || `Player_${myUserId}`;
 
-      // 3. 로컬 스토리지에 저장
-      localStorage.setItem('nickname', nickname);
-      localStorage.setItem('user_id', myUserId);
+        // 3. 로컬 스토리지에 저장
+        localStorage.setItem('nickname', nickname);
+        localStorage.setItem('user_id', myUserId);
+        console.log('✅ WaitingRoom: /users/me 성공:', { myUserId, nickname });
+      } catch (apiErr) {
+        const isCorsError = !apiErr.response && (apiErr.message?.includes('Network Error') || apiErr.code === 'ERR_NETWORK');
+        if (isCorsError) {
+          console.error('❌ WaitingRoom CORS 에러: /users/me', {
+            message: apiErr.message,
+            code: apiErr.code,
+          });
+          console.warn('💡 백엔드 CORS 설정을 확인하세요. localStorage 값을 사용합니다.');
+        } else {
+          console.error('❌ WaitingRoom: /users/me 호출 실패:', apiErr.response?.status, apiErr.response?.data || apiErr.message);
+        }
+        
+        // 실패해도 localStorage에서 재시도
+        nickname = localStorage.getItem('nickname');
+        myUserId = localStorage.getItem('user_id');
+        
+        if (!myUserId) {
+          throw new Error('user_id를 확인할 수 없습니다.');
+        }
+      }
     }
 
     // 4. state 업데이트

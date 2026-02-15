@@ -339,10 +339,21 @@ export default function Game02() {
   const resolveImageUrl = (raw) => {
     if (!raw || raw === '-' || String(raw).trim() === '') return null;
     const u = String(raw).trim();
+    
+    // 이미 절대 URL이면 그대로 반환
     if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
+    
+    // baseURL 가져오기
     const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
-    if (!base) return u;
-    return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
+    if (!base) {
+      console.warn('⚠️ baseURL이 설정되지 않음. 상대경로 그대로 사용:', u);
+      return u;
+    }
+    
+    // 절대경로 생성
+    const resolved = `${base}${u.startsWith('/') ? '' : '/'}${u}`;
+    console.log('🔗 이미지 URL 변환:', { raw, resolved });
+    return resolved;
   };
 
 //  커스텀 모드 전용: 텍스트 & 이미지 세팅
@@ -412,6 +423,25 @@ useEffect(() => {
 
   //  렌더 이미지 결정 (커스텀: 한 장 고정 / 기본: 페이지별)
   const imageSrc = isCustomMode ? customImage : comicImages[currentIndex];
+  
+  // ✅ 이미지 타입 판별: 서버 URL만 CORS 필요
+  const isServerImage = imageSrc && (
+    imageSrc.startsWith('http://') || 
+    imageSrc.startsWith('https://')
+  );
+  
+  // 디버깅: 이미지 타입 확인
+  useEffect(() => {
+    if (imageSrc) {
+      console.log('🖼️ Game02 이미지 정보:', {
+        isCustomMode,
+        currentIndex,
+        imageSrc: imageSrc.substring(0, 100) + '...',
+        isServerImage,
+        needsCORS: isServerImage,
+      });
+    }
+  }, [imageSrc, isCustomMode, currentIndex, isServerImage]);
 
   return (
     <Layout subtopic={subtopic} round={round} onProfileClick={setOpenProfile} onBackClick={handleBackClick}>
@@ -421,16 +451,65 @@ useEffect(() => {
          <img
          src={imageSrc}
          alt={`comic ${currentIndex + 1}`}
+         {...(isServerImage && { crossOrigin: "anonymous" })}
          style={{ width: 744, height: 360, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+         loading="eager"
+         decoding="async"
          onError={(e) => {
-           e.currentTarget.src = defaultImg; // ✅ 404 에러 시 fallback
+           const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+           
+           // ✅ 최대 3번 재시도
+           if (retryCount < 3) {
+             e.currentTarget.dataset.retryCount = String(retryCount + 1);
+             console.log(`🔄 이미지 재시도 ${retryCount + 1}/3:`, imageSrc);
+             
+             // 캐시 우회 + 재시도
+             const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+             const newSrc = imageSrc.includes('?') 
+               ? `${imageSrc.split('?')[0]}${cacheBuster}`
+               : `${imageSrc}${cacheBuster}`;
+             
+             // 약간의 지연 후 재시도 (네트워크 회복 대기)
+             setTimeout(() => {
+               if (e.currentTarget) {
+                 e.currentTarget.src = newSrc;
+               }
+             }, 300 * retryCount); // 300ms, 600ms, 900ms
+             return;
+           }
+           
+           // ✅ 3번 실패 후 fallback 시도
+           if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+             console.warn('⚠️ 3번 재시도 실패, fallback 이미지로 전환:', imageSrc);
+             e.currentTarget.dataset.fallbackAttempted = 'true';
+             e.currentTarget.dataset.retryCount = '0'; // 카운트 초기화
+             e.currentTarget.src = defaultImg;
+             return;
+           }
+           
+           // ✅ fallback도 실패 시 숨김
+           console.error('❌ fallback 이미지도 로드 실패');
+           e.currentTarget.style.display = 'none';
+         }}
+         onLoad={(e) => {
+           console.log('✅ 이미지 로드 성공:', {
+             src: imageSrc,
+             isServerImage,
+             naturalWidth: e.currentTarget.naturalWidth,
+             naturalHeight: e.currentTarget.naturalHeight,
+           });
          }}
        />
      ) : (
        <img
-         src={defaultImg} // ✅ 완전 null일 경우 fallback
+         src={defaultImg}
          alt="default"
          style={{ width: 744, height: 360, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+         loading="eager"
+         decoding="async"
+         onError={(e) => {
+           console.error('❌ 기본 이미지 로드 실패:', defaultImg, e);
+         }}
        />
      )}
         <div style={{ width: '100%', maxWidth: 900 }}>

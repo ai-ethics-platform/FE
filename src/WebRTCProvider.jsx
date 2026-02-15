@@ -2118,9 +2118,37 @@ const WebRTCProvider = ({ children }) => {
         // 단, 게스트 모드일 때는 /users/me 호출하지 않음 (500 에러 방지)
         if (!userId || !userIdLooksValid) {
           if (!isGuestMode) {
-            const response = await axiosInstance.get('/users/me');
-            userId = String(response.data.id);
-            localStorage.setItem('user_id', userId);
+            try {
+              console.log('🔍 /users/me 호출 시도...');
+              const response = await axiosInstance.get('/users/me', {
+                timeout: 5000, // 5초 타임아웃
+              });
+              userId = String(response.data.id);
+              localStorage.setItem('user_id', userId);
+              console.log('✅ /users/me 성공:', userId);
+            } catch (e) {
+              const isCorsError = !e.response && (e.message?.includes('Network Error') || e.code === 'ERR_NETWORK');
+              if (isCorsError) {
+                console.error('❌ CORS 에러 발생: /users/me', {
+                  message: e.message,
+                  code: e.code,
+                  config: {
+                    url: e.config?.url,
+                    method: e.config?.method,
+                    headers: e.config?.headers,
+                  }
+                });
+                console.warn('💡 백엔드 CORS 설정을 확인하세요. 임시로 localStorage의 user_id를 사용합니다.');
+              } else {
+                console.error('❌ /users/me 호출 실패:', e.response?.status, e.response?.data || e.message);
+              }
+              
+              // CORS 에러여도 localStorage에 user_id가 있으면 사용
+              userId = localStorage.getItem('user_id');
+              if (!userId) {
+                throw new Error('user_id를 확인할 수 없습니다. 로그인을 다시 시도하세요.');
+              }
+            }
           } else {
             console.warn('⚠️ 게스트 모드인데 user_id가 없습니다. 정상적인 게스트 로그인 플로우를 확인하세요.');
           }

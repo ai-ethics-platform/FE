@@ -12,6 +12,8 @@ const instance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // CORS 관련 설정 추가 (이미지 로드 문제 대응)
+  withCredentials: false, // 쿠키를 보내지 않으면 CORS가 더 관대함
 });
 // 상단 어딘가 공통 상수로 추가
 const MAX_500_REFRESH_RETRY = 1; // 500에서 refresh 시도 최대 횟수 (원하면 2로 올려도 됨)

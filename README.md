@@ -1114,11 +1114,11 @@ window.addEventListener('click', tryPlayAll, { once: true });
 
 ### 5. "새로고침 시 게임이 끊기는 문제"
 
-**증상**: 사용자가 F5를 누르면 게임에서 퇴장됨
+**증상**: 사용자가 F5를 누르면 게임에서 퇴장됨 
 
 **원인**:
-- WebSocket/WebRTC가 재연결되지 않음
-- 백엔드가 연결 끊김을 퇴장으로 간주
+- WebSocket/WebRTC가 재연결되지 않음 
+- 백엔드가 연결 끊김을 퇴장으로 간주 
 
 **해결**:
 ```javascript

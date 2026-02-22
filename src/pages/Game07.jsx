@@ -258,8 +258,7 @@ export default function Game07() {
     console.log(`📊 [${step}] 미디어 상태 디버깅:`);
     if (window.voiceManager) {
       const status = window.voiceManager.getStatus?.() ?? {};
-      console.log('  VoiceManager 상태:', status);
-      // ... (상세 로그 유지)
+      console.log('   VoiceManager 상태:', status);
     }
   };
 
@@ -267,7 +266,7 @@ export default function Game07() {
     try {
       await debugMediaState('종료 전');
       
-      // 🚨 중요: 업로드(녹음 종료)는 정리보다 먼저 실행해야 함
+      // 중요: 업로드(녹음 종료)는 정리보다 먼저 실행해야 함
       const result = await voiceManager?.terminateVoiceSession?.();
       console.log(result ? '음성 세션 종료 성공' : '별도 종료 처리 없음');
       

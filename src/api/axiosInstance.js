@@ -1,4 +1,3 @@
-// api/axiosInstance.js
 import axios from 'axios';
 
 /**
@@ -6,9 +5,10 @@ import axios from 'axios';
  * Vite 환경이므로 import.meta.env를 사용
  * .env 파일에 VITE_API_BASE_URL 설정이 없으면 기존 주소를 기본값으로 사용
  */
-const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
-  ? String(import.meta.env.VITE_API_BASE_URL).replace(/\/+$/, '')
-  : 'https://dilemmai-idl.com';
+const API_BASE = (import.meta.env && import.meta.env.VITE_API_BASE_URL
+  ? String(import.meta.env.VITE_API_BASE_URL)
+  : 'https://dilemmai-idl.com'
+).replace(/\/+$/, '');
 
 // 메인 axios 인스턴스 생성
 const instance = axios.create({

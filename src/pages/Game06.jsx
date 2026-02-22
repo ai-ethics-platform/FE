@@ -282,6 +282,7 @@ export default function Game06() {
       await forceBrowserCleanupWithoutDummy();
       await debugMediaState('강제 정리 후');
 
+      await voiceManager?.terminateVoiceSession?.();
       if (disconnect) disconnect();
       setTimeout(() => { 
         ['myrole_id','host_id','user_id','room_code','category','subtopic','mode'].forEach(k => localStorage.removeItem(k));

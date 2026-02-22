@@ -105,6 +105,7 @@ export default function UserProfile({
       default:
         mappedDesc = '';
     }
+    mappedDesc = (localStorage.getItem(customKey) || '').trim();
   }
 
   const isDetailed = !nodescription && mappedDesc !== '';

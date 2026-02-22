@@ -29,6 +29,8 @@ import { Paragraphs as ParagraphsKo } from './ko/components/Paragraphs';
 import { UiElements as UiElementsKo } from './ko/components/UiElements';
 import { ResultPopup as ResultPopupKo } from './ko/components/ResultPopup';
 import { GuestLogin as koGuestLogin } from './ko/components/GuestLogin';
+// IntroductionPopup 데이터 임포트
+import { IntroductionPopup as IntroductionPopupKo } from './ko/components/IntroductionPopup';
 
 // --- 영어(en) 데이터 임포트 ---
 import { Login as LoginEn } from './en/pages/Login';
@@ -61,6 +63,8 @@ import { Paragraphs as ParagraphsEn } from './en/components/Paragraphs';
 import { UiElements as UiElementsEn } from './en/components/UiElements';
 import { ResultPopup as ResultPopupEn } from './en/components/ResultPopup';
 import { GuestLogin as enGuestLogin } from './en/components/GuestLogin';
+// IntroductionPopup 데이터 임포트
+import { IntroductionPopup as IntroductionPopupEn } from './en/components/IntroductionPopup';
 
 
 // --- 다국어 데이터 객체 생성 ---
@@ -74,7 +78,8 @@ export const translations = {
     CharacterDescription: CharacterDescriptionKo, SmallDescription: SmallDescriptionKo,
     Paragraphs: ParagraphsKo, Game03: Game03Ko, UiElements: UiElementsKo, Game04: Game04Ko,
     Game05_1: Game05_1Ko, Game08: Game08Ko, Game09: Game09KoData,
-    ResultPopup: ResultPopupKo, GuestLogin: koGuestLogin, // ko 객체에 추가
+    ResultPopup: ResultPopupKo, GuestLogin: koGuestLogin,
+    IntroductionPopup: IntroductionPopupKo, // ko 객체에 추가
   },
 
   en: {
@@ -86,6 +91,7 @@ export const translations = {
     CharacterDescription: CharacterDescriptionEn, SmallDescription: SmallDescriptionEn,
     Paragraphs: ParagraphsEn, Game03: Game03En, UiElements: UiElementsEn, Game04: Game04En,
     Game05_1: Game05_1En, Game08: Game08En, Game09: Game09EnData,
-    ResultPopup: ResultPopupEn, GuestLogin: enGuestLogin, // en 객체에 추가
+    ResultPopup: ResultPopupEn, GuestLogin: enGuestLogin,
+    IntroductionPopup: IntroductionPopupEn, // en 객체에 추가
   } 
 };

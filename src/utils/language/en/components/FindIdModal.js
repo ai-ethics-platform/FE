@@ -10,7 +10,7 @@ export const FindIdModal = {
   btnSubmit: "Find ID",
   errorEmailInvalid: "Please enter a valid email address",
   errorBirthInvalid: "The valid format is YYYY-MM",
-  errorApiMismatch: "아이디 찾기 API 경로가 달라서 실패했습니다.(미번역)",
+  errorApiMismatch: "The request failed due to a different API endpoint for ID retrieval.",
   errorFail: "Failed to find your ID",
   resultFoundPrefix: "The user’s ID (email) is",
   resultFoundSuffix: "",

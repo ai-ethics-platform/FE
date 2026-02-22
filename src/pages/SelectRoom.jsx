@@ -9,11 +9,15 @@ import CreateRoom from '../components/CreateRoom2';
 import createIcon from '../assets/roomcreate.svg';
 import joinIcon from '../assets/joinviacode.svg';
 import dilemmaIcon from "../assets/dilemmaIcon.svg";
-import { FontStyles,Colors } from '../components/styleConstants';
+import { FontStyles, Colors } from '../components/styleConstants';
 import CreateDilemma from '../components/CreateDilemma';
 import DilemmaOutPopup from '../components/DilemmaOutPopup';
 import HeaderBar from '../components/Expanded/HeaderBar';
 import { translations } from '../utils/language/index'; 
+
+//  신규 팝업 및 아이콘 임포트
+import IntroductionPopup from '../components/IntroductionPopup';
+import questionIcon from '../assets/Questionmark.svg';
 
 export default function SelectRoom() { 
   const navigate = useNavigate();
@@ -25,11 +29,22 @@ export default function SelectRoom() {
   const [isLogoutPopupOpen, setIsLogoutPopupOpen] = useState(false); 
   const [isJoinRoomOpen, setIsJoinRoomOpen] = useState(false);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
-  const [isCreateDilemaOpen,setIsCreateDilemaOpen] = useState(false);
+  const [isCreateDilemaOpen, setIsCreateDilemaOpen] = useState(false);
+  
+  //  게임 소개 팝업 상태 관리
+  const [isIntroPopupOpen, setIsIntroPopupOpen] = useState(false);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
+    //  최초 접속 시 자동 팝업 로직 (세션 스토리지 활용)
+    const hasSeenIntro = sessionStorage.getItem('hasSeenIntro');
+    if (!hasSeenIntro) {
+      setIsIntroPopupOpen(true);
+      sessionStorage.setItem('hasSeenIntro', 'true');
+    }
+
     return () => {
       document.body.style.overflow = originalOverflow;
     };
@@ -40,6 +55,8 @@ export default function SelectRoom() {
   };
 
   const handleLogout = () => {
+    //  로그아웃 시 소개 팝업 기록 초기화
+    sessionStorage.removeItem('hasSeenIntro');
     navigate('/'); 
   };
 
@@ -53,6 +70,24 @@ export default function SelectRoom() {
         <div onClick={handleBackClick}>
           <BackButton />
         </div>
+      </div>
+
+      {/*  우측 상단 게임 소개 버튼 (물음표 아이콘) */}
+      <div 
+        style={{ 
+          position: 'absolute', 
+          top: 5, 
+          right: 5, 
+          cursor: 'pointer',
+          zIndex: 10 
+        }}
+        onClick={() => setIsIntroPopupOpen(true)}
+      >
+        <img 
+          src={questionIcon} 
+          alt="Help" 
+          style={{ width: 38, height: 38 }} 
+        />
       </div>
 
       <div
@@ -108,6 +143,24 @@ export default function SelectRoom() {
       </div>
 
       {/* 팝업 레이어 (모달) */}
+      
+      {/*  게임 소개 팝업 */}
+      {isIntroPopupOpen && (
+        <div
+          style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex',
+            justifyContent: 'center', alignItems: 'center', zIndex: 10001,
+          }}
+          onClick={() => setIsIntroPopupOpen(false)} // 배경 클릭 시 닫기
+        >
+          <IntroductionPopup
+            isOpen={isIntroPopupOpen}
+            onClose={() => setIsIntroPopupOpen(false)}
+          />
+        </div>
+      )}
+
       {isLogoutPopupOpen && (
         <div
           style={{

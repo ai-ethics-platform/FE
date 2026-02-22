@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import Login from '../pages/Login';
 import Componentcheck from "../pages/Componentcheck";
 import Signup01 from '../pages/Signup01';
@@ -54,34 +54,12 @@ import ChatPage from "../pages/ChatPage";
 import ChatPage2 from "../pages/ChatPage2";
 import ChatPage3 from "../pages/ChatPage3";
 
-// WebSocket/WebRTC가 필요한 페이지들을 감싸는 컴포넌트
-function GameRoutes() {
+// WebSocket/WebRTC가 필요한 라우트들을 감싸는 레이아웃(Route Group)
+function GameProvidersLayout() {
   return (
     <WebSocketProvider>
       <WebRTCProvider>
-        <Routes>
-          <Route path="/gameintro" element={<GameIntro />} />
-          <Route path="/gameintro2" element={<GameIntro2 />} />
-          <Route path="/selecthomemate" element={<SelectHomeMate />} />
-          <Route path="/matename" element={<MateName />} />
-          <Route path="/mictest" element={<MicTest />} />
-          <Route path="/game01" element={<Game01 />} />
-          <Route path="/game02" element={<Game02 />} />
-          <Route path="/game03" element={<Game03 />} />
-          <Route path="/game04" element={<Game04 />} />
-          <Route path="/game05" element={<Game05 />} />
-          <Route path="/game05_1" element={<Game05_1 />} />
-          <Route path="/game06" element={<Game06 />} />
-          <Route path="/game07" element={<Game07 />} />
-          <Route path="/game08" element={<Game08 />} />
-          <Route path="/game09" element={<Game09 />} />
-          <Route path="/character_description1" element={<CD1 />} />
-          <Route path="/character_description2" element={<CD2 />} />
-          <Route path="/character_description3" element={<CD3 />} />
-          <Route path="/gamemap" element={<GameMap />} />
-          <Route path="/character_all" element={<CD_all />} />
-
-        </Routes>
+        <Outlet />
       </WebRTCProvider>
     </WebSocketProvider>
   );
@@ -132,7 +110,28 @@ function Router() {
         <Route path="/chatpage3" element={<ChatPage3 />} />
 
         {/* WebSocket/WebRTC가 필요한 모든 게임 관련 페이지들 */}
-        <Route path="/*" element={<GameRoutes />} />
+        <Route element={<GameProvidersLayout />}>
+          <Route path="/gameintro" element={<GameIntro />} />
+          <Route path="/gameintro2" element={<GameIntro2 />} />
+          <Route path="/selecthomemate" element={<SelectHomeMate />} />
+          <Route path="/matename" element={<MateName />} />
+          <Route path="/mictest" element={<MicTest />} />
+          <Route path="/game01" element={<Game01 />} />
+          <Route path="/game02" element={<Game02 />} />
+          <Route path="/game03" element={<Game03 />} />
+          <Route path="/game04" element={<Game04 />} />
+          <Route path="/game05" element={<Game05 />} />
+          <Route path="/game05_1" element={<Game05_1 />} />
+          <Route path="/game06" element={<Game06 />} />
+          <Route path="/game07" element={<Game07 />} />
+          <Route path="/game08" element={<Game08 />} />
+          <Route path="/game09" element={<Game09 />} />
+          <Route path="/character_description1" element={<CD1 />} />
+          <Route path="/character_description2" element={<CD2 />} />
+          <Route path="/character_description3" element={<CD3 />} />
+          <Route path="/gamemap" element={<GameMap />} />
+          <Route path="/character_all" element={<CD_all />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

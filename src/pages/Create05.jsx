@@ -253,7 +253,13 @@ const putTitle = async (title) => {
         headerbar={2}
         headerLeftType="home"
         headerNextDisabled={false}
-        onHeaderNextClick={() => setIsDoneOpen(true)} // 팝업 오픈
+        onHeaderNextClick={() => {
+          if (!title?.trim()) {
+            alert('제목을 입력해주세요.');
+            return;
+          }
+          setIsDoneOpen(true);
+        }} // 팝업 오픈 (제목 유효성 검사)
         frameProps={{
           value: title,
           onChange: (val) => setTitle(val),

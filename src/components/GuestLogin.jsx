@@ -22,14 +22,44 @@ export default function GuestLogin({ onClose }) {
         guest_id: guestId.trim(),
       });
       
-      const { access_token, refresh_token } = data;
+      const { access_token, refresh_token, token_type, user_id, is_guest } = data || {};
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
+      if (token_type) localStorage.setItem('token_type', token_type);
+      if (is_guest != null) localStorage.setItem('is_guest', String(is_guest));
+      // ✅ 게스트 닉네임은 사용자가 입력한 값을 그대로 사용
       localStorage.setItem('nickname', guestId.trim());
-      localStorage.setItem('user_id', guestId.trim());
       localStorage.setItem('guest_id', guestId.trim());
       localStorage.setItem('guest_mode',"true");
-      
+
+      // ✅ 백엔드가 user_id를 내려주면 /users/me 없이도 WaitingRoom/WS/WebRTC가 동작합니다.
+      // (현재 guest의 /users/me가 500일 수 있으므로, user_id가 있으면 굳이 호출하지 않습니다.)
+      const serverUserId = user_id ?? data?.id ?? null;
+      if (serverUserId != null && String(serverUserId).length > 0) {
+        localStorage.setItem('user_id', String(serverUserId));
+      } else {
+        // fallback: legacy 백엔드 대응 (가능하면 백엔드에서 user_id 응답 제공이 정석)
+        try {
+          console.log('🔍 GuestLogin: /users/me 호출 시도...');
+          const { data: me } = await axiosInstance.get('/users/me', { timeout: 5000 });
+          if (me?.id != null) {
+            localStorage.setItem('user_id', String(me.id));
+            console.log('✅ GuestLogin: /users/me 성공:', me.id);
+          }
+        } catch (e) {
+          const isCorsError = !e.response && (e.message?.includes('Network Error') || e.code === 'ERR_NETWORK');
+          if (isCorsError) {
+            console.error('❌ GuestLogin CORS 에러: /users/me', {
+              message: e.message,
+              code: e.code,
+            });
+            console.warn('💡 백엔드 CORS 설정을 확인하세요.');
+          } else {
+            console.warn('⚠️ 게스트 로그인: user_id가 없고 /users/me도 실패했습니다. WaitingRoom/WS/WebRTC가 동작하지 않을 수 있습니다.', e?.response?.data || e?.message);
+          }
+        }
+      }
+
       console.log('로그인 성공:', data);
       navigate('/selectroom');
     } catch (err) {

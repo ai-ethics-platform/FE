@@ -363,7 +363,23 @@ export default function Game05() {
             src={imageSrc}
             alt="comic"
             style={{ width: 744, height: 360, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-            onError={(e) => { e.currentTarget.src = defaultImg; }}
+            onError={(e) => { 
+              const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+              if (retryCount < 3) {
+                e.currentTarget.dataset.retryCount = String(retryCount + 1);
+                const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+                const newSrc = imageSrc.includes('?') ? `${imageSrc.split('?')[0]}${cacheBuster}` : `${imageSrc}${cacheBuster}`;
+                setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
+                return;
+              }
+              if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+                e.currentTarget.dataset.fallbackAttempted = 'true';
+                e.currentTarget.dataset.retryCount = '0';
+                e.currentTarget.src = defaultImg;
+                return;
+              }
+              e.currentTarget.style.display = 'none';
+            }}
             />
         )}
         <div style={{ width: '100%', maxWidth: 900 }}>

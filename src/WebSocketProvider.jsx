@@ -1,6 +1,6 @@
 //웹소켓 새로고침 시 연결 다시 하는 것 성공 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
-import axiosInstance from './api/axiosInstance';
+import axiosInstance, { ensureFreshAccessToken } from './api/axiosInstance';
 import { useNavigate } from 'react-router-dom'; 
 
 const WebSocketContext = createContext();
@@ -429,7 +429,19 @@ export const WebSocketProvider = ({ children }) => {
       return;
     }
 
-    const accessToken = localStorage.getItem('access_token');
+    // ✅ WebSocket 연결 전에 토큰 만료 체크 → 필요하면 refresh
+    let accessToken = localStorage.getItem('access_token');
+    try {
+      accessToken = await ensureFreshAccessToken({ skewSeconds: 60 });
+      if (!accessToken) {
+        console.error(`❌ [${providerId}] 토큰 갱신 실패 또는 토큰 없음`);
+        isConnecting.current = false;
+        if (!isReconnect) connectionAttempted.current = false;
+        return;
+      }
+    } catch (e) {
+      console.error(`❌ [${providerId}] 토큰 갱신 중 오류:`, e?.message || e);
+    }
     
     if (!accessToken || !currentSessionId) {
       console.error(`❌ [${providerId}] 필수 정보 누락:`, { accessToken: !!accessToken, currentSessionId });

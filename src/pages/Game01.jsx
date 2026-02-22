@@ -320,10 +320,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ContentTextBox2 from '../components/ContentTextBox2';
+
 // [수정] Game01은 '실루엣' 이미지인 Char 계열을 사용해야 합니다.
 import charSilhouette1 from '../assets/images/Char1.jpg';
 import charSilhouette2 from '../assets/images/Char2.jpg';
 import charSilhouette3 from '../assets/images/Char3.jpg';
+import defaultImg from "../assets/images/Frame235.png"; // 대비용 기본 이미지
 
 import axiosInstance from '../api/axiosInstance';
 import { useWebRTC } from '../WebRTCProvider';
@@ -332,6 +334,7 @@ import { translations } from '../utils/language';
 
 export default function Game01() {
   const navigate = useNavigate();
+  
   // 언어 설정 가져오기
   const lang = localStorage.getItem('language') || localStorage.getItem('app_lang') || 'ko';
   const currentLangData = translations[lang] || translations['ko'] || {};
@@ -344,12 +347,15 @@ export default function Game01() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { isHost, sendNextPage } = useHostActions();
 
-  useWebSocketNavigation(navigate, { infoPath: `/character_description${myRoleId}`, nextPagePath: `/character_description${myRoleId}` });
+  useWebSocketNavigation(navigate, { 
+    infoPath: `/character_description${myRoleId}`, 
+    nextPagePath: `/character_description${myRoleId}` 
+  });
 
   const title = localStorage.getItem('title') || ''; 
   const category = localStorage.getItem('category') || '안드로이드';
   
-  // 확장성을 고려한 카테고리 판별 (일관성 유지)
+  // 확장성을 고려한 카테고리 판별
   const isAndroid = category && (category.includes('안드로이드') || category.toLowerCase().includes('android'));
   const isAWS = !isAndroid;
 
@@ -359,8 +365,7 @@ export default function Game01() {
   const isCustomMode = !!localStorage.getItem('code');
   const subtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || '') : (localStorage.getItem('subtopic') || '');
 
-  // [수정] Game01은 카테고리와 상관없이 '인물 실루엣'을 보여주는 단계이므로 
-  // 기존 실루엣 이미지(Char1, 2, 3)를 고정으로 사용합니다.
+  // [수정] Game01은 인물 실루엣을 고정으로 사용합니다.
   const silhouetteImages = [charSilhouette1, charSilhouette2, charSilhouette3];
 
   useEffect(() => {
@@ -370,6 +375,7 @@ export default function Game01() {
     localStorage.setItem('currentRound', String(nextRound));
   }, []);
 
+  // 한국어 조사 처리 로직 (ko 제외 시 공백)
   const getEulReul = (word) => {
     if (!word || lang !== 'ko') return ''; 
     const lastChar = word[word.length - 1];
@@ -401,19 +407,98 @@ export default function Game01() {
     }
   };
 
+  // 원본(upstream) 이미지 유틸리티 로직 통합
+  const resolveImageUrl = (raw) => {
+    if (!raw || raw === '-' || String(raw).trim() === '') return null;
+    const u = String(raw).trim();
+    if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
+    const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
+    if (!base) return u;
+    return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
+  };
+
+  const rawCustomImg1 = localStorage.getItem('dilemma_image_1') || '';
+  const customImg1 = resolveImageUrl(rawCustomImg1) || defaultImg;
+  
+  const isCustomImageFromServer = customImg1 && (
+    customImg1.startsWith('http://') || 
+    customImg1.startsWith('https://')
+  );
+
   const defaultMain = getDefaultMain();
   const paragraphs = isCustomMode ? [{ main: localStorage.getItem('rolesBackground') || defaultMain }] : [{ main: defaultMain }];
 
   return (
     <Layout round={round} subtopic={subtopic} nodescription={true} onBackClick={() => navigate('/gamemap')}>
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
-        {/* [수정] 실루엣 이미지 배열 출력 */}
-        {silhouetteImages.map((src, i) => (
-          <img key={i} src={src} alt="" style={{ width: 264, height: 360, objectFit: 'cover', borderRadius: 4 }} />
-        ))}
+        {isCustomMode ? (
+          customImg1 ? (
+            <img
+              src={customImg1}
+              alt=""
+              {...(isCustomImageFromServer && { crossOrigin: "anonymous" })}
+              style={{ width: 744, height: 360, objectFit: 'cover', borderRadius: 4 }}
+              loading="eager"
+              decoding="async"
+              onError={(e) => {
+                const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+                if (retryCount < 3) {
+                  e.currentTarget.dataset.retryCount = String(retryCount + 1);
+                  const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+                  const newSrc = customImg1.includes('?') ? `${customImg1.split('?')[0]}${cacheBuster}` : `${customImg1}${cacheBuster}`;
+                  setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
+                  return;
+                }
+                if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+                  e.currentTarget.dataset.fallbackAttempted = 'true';
+                  e.currentTarget.dataset.retryCount = '0';
+                  e.currentTarget.src = defaultImg;
+                  return;
+                }
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : null
+        ) : (
+          /* [수정] 실루엣 이미지 배열 출력 + 원본의 안전 로직 적용 */
+          silhouetteImages.map((src, i) => {
+            const isServerImage = src && (typeof src === 'string') && (src.startsWith('http://') || src.startsWith('https://'));
+            return (
+              <img
+                key={i}
+                src={src}
+                alt=""
+                {...(isServerImage && { crossOrigin: "anonymous" })}
+                style={{ width: 264, height: 360, objectFit: 'cover', borderRadius: 4 }}
+                onError={(e) => {
+                  const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+                  if (retryCount < 3) {
+                    e.currentTarget.dataset.retryCount = String(retryCount + 1);
+                    const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+                    const newSrc = src.includes('?') ? `${src.split('?')[0]}${cacheBuster}` : `${src}${cacheBuster}`;
+                    setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
+                    return;
+                  }
+                  if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+                    e.currentTarget.dataset.fallbackAttempted = 'true';
+                    e.currentTarget.dataset.retryCount = '0';
+                    e.currentTarget.src = defaultImg;
+                    return;
+                  }
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            );
+          })
+        )}
       </div>
       <div style={{ width: '100%', marginTop: 10, maxWidth: 900 }}>
-        <ContentTextBox2 paragraphs={paragraphs} currentIndex={currentIndex} setCurrentIndex={setCurrentIndex} onContinue={() => navigate(`/character_description${myRoleId}`)} />
+        <ContentTextBox2 
+          paragraphs={paragraphs} 
+          currentIndex={currentIndex} 
+          setCurrentIndex={setCurrentIndex} 
+          onContinue={() => navigate(`/character_description${myRoleId}`)} 
+        />
       </div>
     </Layout>
   );

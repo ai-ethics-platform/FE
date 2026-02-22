@@ -266,15 +266,19 @@ export default function Game07() {
   const handleExit = async () => {
     try {
       await debugMediaState('종료 전');
-      await forceBrowserCleanupWithoutDummy();
       
+      // 🚨 중요: 업로드(녹음 종료)는 정리보다 먼저 실행해야 함
       const result = await voiceManager?.terminateVoiceSession?.();
+      console.log(result ? '음성 세션 종료 성공' : '별도 종료 처리 없음');
       
+      await debugMediaState('VoiceManager 종료 후');
+
       if (window.stopAllOutgoingAudioGlobal) {
         window.stopAllOutgoingAudioGlobal();
       }
 
       await forceBrowserCleanupWithoutDummy();
+      await debugMediaState('강제 정리 후');
 
       if (disconnect) disconnect();
 

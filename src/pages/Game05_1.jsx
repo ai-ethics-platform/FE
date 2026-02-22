@@ -13,6 +13,7 @@ import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useHostActions, useWebSocketMessage } from '../hooks/useWebSocketMessage';
 import { FontStyles, Colors } from '../components/styleConstants';
+import { clearAllLocalStorageKeys } from '../utils/storage';
 import hostInfoSvg from '../assets/host_info3.svg';
 import hostInfoEnSvg from '../assets/en/host_info3_en.svg'; 
 import defaultImg from '../assets/images/default.png';
@@ -78,7 +79,6 @@ export default function Game05_01() {
     ? (localStorage.getItem('question') || '') 
     : (questionData.question || '');
   
-  // 이름 치환 로직 (mateName 반영)
   const questionText = rawQuestion.replace(/{{mateName}}|{mateName}/g, mateName);
 
   const agreeLabel = isCustomMode
@@ -226,19 +226,61 @@ export default function Game05_01() {
       {step === 1 && (
         <>
           {isCustomMode && selectedLocalImg ? (
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <img src={selectedLocalImg} alt="custom" style={{ width: 400, height: 200, objectFit: 'cover', borderRadius: 8 }} onError={(e) => { e.currentTarget.src = defaultImg; }} />
+            <div style={{ marginTop: 0, display: 'flex', justifyContent: 'center' }}>
+              <img
+                src={selectedLocalImg}
+                alt="합의 결과 미리보기"
+                style={{ width: 400, height: 200, objectFit: 'cover', borderRadius: 8 }}
+                onError={(e) => { 
+                  const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+                  if (retryCount < 3) {
+                    e.currentTarget.dataset.retryCount = String(retryCount + 1);
+                    const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+                    const newSrc = selectedLocalImg.includes('?') ? `${selectedLocalImg.split('?')[0]}${cacheBuster}` : `${selectedLocalImg}${cacheBuster}`;
+                    setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
+                    return;
+                  }
+                  if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+                    e.currentTarget.dataset.fallbackAttempted = 'true';
+                    e.currentTarget.dataset.retryCount = '0';
+                    e.currentTarget.src = defaultImg;
+                    return;
+                  }
+                  e.currentTarget.style.display = 'none';
+                }}
+               />
             </div>
           ) : (
             <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
               {[neutralLast, agreeLast].map((img, idx) => (
-                <img key={idx} src={img} alt="preview" style={{ width: 400, height: 200, objectFit: 'fill' }} onError={(e) => { e.currentTarget.src = defaultImg; }} />
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`설명 이미지 ${idx + 1}`}
+                  style={{ width: 400, height: 200, objectFit: 'fill' }}
+                  onError={(e) => { 
+                    const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+                    if (retryCount < 3) {
+                      e.currentTarget.dataset.retryCount = String(retryCount + 1);
+                      const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+                      const newSrc = img.includes('?') ? `${img.split('?')[0]}${cacheBuster}` : `${img}${cacheBuster}`;
+                      setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
+                      return;
+                    }
+                    if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+                      e.currentTarget.dataset.fallbackAttempted = 'true';
+                      e.currentTarget.dataset.retryCount = '0';
+                      e.currentTarget.src = defaultImg;
+                      return;
+                    }
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
               ))}
             </div>
           )}
 
           <Card width={936} height={216} extraTop={30}>
-            {/* 자식 1: 텍스트 뭉치 */}
             <div style={{ textAlign: 'center' }}>
               <p style={title}>
                 {(t?.you_are || tKo?.you_are || "당신은 {{roleName}}입니다.")?.replace('{{roleName}}', roleName)}
@@ -246,7 +288,6 @@ export default function Game05_01() {
                 {questionText} <br/> {t?.consensus_msg || tKo?.consensus_msg || "합의를 통해 최종 결정하세요."}
               </p>
             </div>
-            {/* 자식 2: 버튼 뭉치 (Card 내부에서 하단 고정됨) */}
             <div style={{ display: 'flex', gap: 24 }}>
               <SelectCardToggle 
                 label={agreeLabel} 
@@ -290,7 +331,6 @@ export default function Game05_01() {
                   ))}
                 </div>
               </div>
-              {/* Step 2 대응을 위해 빈 div 하나 추가 (Card 구조 유지용) */}
               <div />
             </Card>
           </div>
@@ -303,21 +343,14 @@ export default function Game05_01() {
   );
 }
 
-/**
- * 수정된 Card 컴포넌트: 버튼은 바닥에 고정, 글자는 위에서 배치
- */
 function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H }) {
-  // children[0]은 텍스트 영역, children[1]은 버튼 영역으로 분리
   const childrenArray = React.Children.toArray(children);
   const textContent = childrenArray[0];
   const buttonContent = childrenArray[1];
 
   return (
     <div style={{ width, height, marginTop: extraTop, position: 'relative' }}>
-      {/* 배경 박스 이미지 */}
       <img src={contentBoxFrame} alt="" style={{ width: '100%', height: '100%', objectFit: 'fill' }} />
-      
-      {/* 1. 텍스트 영역: 위에서 정렬. 글자 위치를 바꾸고 싶다면 paddingTop 수치를 조정하세요. */}
       <div style={{ 
         position: 'absolute', 
         top: 0, left: 0, right: 0,
@@ -329,15 +362,13 @@ function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H }) {
       }}>
         {textContent}
       </div>
-
-      {/* 2. 버튼 영역: 박스 하단에 고정. 버튼 위치를 바꾸고 싶다면 bottom 수치를 조정하세요. */}
       {buttonContent && (
         <div style={{ 
           position: 'absolute', 
           bottom: '25px', 
           left: 0, right: 0,
           display: 'flex', 
-          justifyContent: 'center',
+          justifyContent: 'center', 
           alignItems: 'center',
           zIndex: 2
         }}>
@@ -352,10 +383,10 @@ const title = {
   ...FontStyles.title, 
   color: Colors.grey06, 
   textAlign: 'center',
-  whiteSpace: 'pre-wrap', // \n 적용용
+  whiteSpace: 'pre-wrap', 
   wordBreak: 'keep-all',
   margin: 0,
-  lineHeight: '1.25' // 줄 간격을 약간 줄여 텍스트 덩어리 높이 최적화
+  lineHeight: '1.25' 
 };
 // // // 팝업 보여주는 코드 
 // // // 시간 조정하기 

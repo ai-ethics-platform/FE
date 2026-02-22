@@ -49,9 +49,62 @@ export default function UserProfile({
   
   // 1순위: 프롭으로 전달된 설명, 2순위: 커스텀 모드 이름
   let mappedDesc = (description || '').trim();
+
+  // 필요한 변수 정의 (충돌 해결 과정에서 추가)
+  const roleNum = parseInt(player.replace('P', ''), 10);
+  const hasSubtopic = !!subtopic;
+
   if (mappedDesc === '' && !nodescription && isCustomMode) {
     const customKey = player === '1P' ? 'char1' : player === '2P' ? 'char2' : 'char3';
-    mappedDesc = (localStorage.getItem(customKey) || '').trim();
+    
+    // [두 변경 사항 모두 수락 및 통합]
+    const customDesc = (localStorage.getItem(customKey) || '').trim();
+    if (customDesc) {
+      mappedDesc = customDesc;
+    }
+  }
+  // 3) 기본(비커스텀) 매핑 - 원본(upstream)의 새로운 시나리오 데이터 유지
+  else if (hasSubtopic) {
+    switch (subtopic) {
+      // 안드로이드 관련 서브토픽
+      case 'AI의 개인 정보 수집':
+      case '안드로이드의 감정 표현':
+        mappedDesc = roleNum === 1 ? '요양보호사 K' : roleNum === 2 ? '노모 L' : '자녀 J';
+        break;
+      case '아이들을 위한 서비스':
+      case '설명 가능한 AI':
+        mappedDesc =
+          roleNum === 1 ? '로봇 제조사 연합회 대표' : roleNum === 2 ? '소비자 대표' : '국가 인공지능 위원회 대표';
+        break;
+      case '지구, 인간, AI':
+        mappedDesc =
+          roleNum === 1 ? '기업 연합체 대표' : roleNum === 2 ? '국제 환경단체 대표' : '소비자 대표';
+        break;
+
+      // 자율 무기 시스템 관련 서브토픽
+      case 'AI 알고리즘 공개': {
+        mappedDesc = roleNum === 1 ? '지역 주민' : roleNum === 2 ? '병사 J' : '군사 AI 윤리 전문가';
+        break;
+      }
+      case 'AWS의 권한': {
+        mappedDesc = roleNum === 1 ? '신입 병사' : roleNum === 2 ? '베테랑 병사 A' : '군 지휘관';
+        break;
+      }
+      case '사람이 죽지 않는 전쟁': {
+        mappedDesc = roleNum === 1 ? '개발자' : roleNum === 2 ? '국방부 장관' : '국가 인공지능 위원회 대표';
+        break;
+      }
+      case 'AI의 권리와 책임': {
+        mappedDesc = roleNum === 1 ? '개발자' : roleNum === 2 ? '국방부 장관' : '국가 인공지능 위원회 대표';
+        break;
+      }
+      case 'AWS 규제': {
+        mappedDesc = roleNum === 1 ? '국방 기술 고문' : roleNum === 2 ? '국제기구 외교 대표' : '글로벌 NGO 활동가';
+        break;
+      }
+      default:
+        mappedDesc = '';
+    }
   }
 
   const isDetailed = !nodescription && mappedDesc !== '';

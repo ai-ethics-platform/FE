@@ -86,7 +86,7 @@ export default function SelectRoom() {
         <img 
           src={questionIcon} 
           alt="Help" 
-          style={{ width: 38, height: 38 }} 
+          style={{ width: 38, height: 38}} 
         />
       </div>
 

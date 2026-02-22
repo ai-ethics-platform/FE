@@ -35,20 +35,49 @@ useEffect(() => {
     try {
       // 1. localStorage 먼저 확인
       const storedNickname = localStorage.getItem('nickname');
+      const isGuestMode = localStorage.getItem('guest_mode') === 'true';
 
       if (storedNickname) {
         // 있으면 그대로 state에 반영
         setNickname(storedNickname);
+      } else if (!isGuestMode) {
+        // 게스트가 아닐 때만 API 호출
+        try {
+          console.log('🔍 JoinRoom: /users/me 호출 시도...');
+          const { data: me } = await axiosInstance.get('/users/me', { timeout: 5000 });
+          const nickname = me.username || 'nickname';
+          setNickname(nickname);
+          localStorage.setItem('nickname', nickname);
+          console.log('✅ JoinRoom: /users/me 성공:', nickname);
+        } catch (apiErr) {
+          const isCorsError = !apiErr.response && (apiErr.message?.includes('Network Error') || apiErr.code === 'ERR_NETWORK');
+          if (isCorsError) {
+            console.error('❌ JoinRoom CORS 에러: /users/me', {
+              message: apiErr.message,
+              code: apiErr.code,
+            });
+            console.warn('💡 백엔드 CORS 설정을 확인하세요. 기본값을 사용합니다.');
+          } else {
+            console.error('❌ JoinRoom: /users/me 호출 실패:', apiErr.response?.status, apiErr.response?.data || apiErr.message);
+          }
+          // 실패 시 기본값
+          setNickname('nickname');
+          localStorage.setItem('nickname', 'nickname');
+        }
       } else {
-        // 없으면 API 호출
-        const { data: me } = await axiosInstance.get('/users/me');
-        const nickname = me.username || '';
-        setNickname(nickname);
-        localStorage.setItem('nickname', nickname);
+        // 게스트인데 nickname이 없으면 기본값 사용
+        setNickname('nickname');
+        localStorage.setItem('nickname', 'nickname');
       }
     } catch (err) {
       // 번역된 loadFail 메시지 사용
       console.error(t.loadFail || '❌ 유저 정보 로드 실패:', err);
+      console.error('❌ 유저 정보 로드 실패:', err);
+      // API 호출 실패 시에도 기본값 설정
+      if (!nickname) {
+        setNickname('nickname');
+        localStorage.setItem('nickname', 'nickname');
+      }
     }
   })();
 }, [t.loadFail]);
@@ -66,9 +95,12 @@ useEffect(() => {
     if (!isValidCode) return;
 
     try {
+      // 닉네임이 없으면 기본값 "nickname" 사용
+      const finalNickname = nickname.trim() || "nickname";
+      
       await axiosInstance.post('/rooms/join/code', {
         room_code: roomCode,
-        nickname,
+        nickname: finalNickname,
       });
 
       // 방 코드 저장

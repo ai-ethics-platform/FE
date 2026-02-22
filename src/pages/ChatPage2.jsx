@@ -870,6 +870,164 @@ function forceString(v) {
   if (v === undefined || v === null) return "";
   return v;
 }
+
+// ---------------------------
+// 서버 context 키 정규화 + ending fallback
+// ---------------------------
+const coalesce = (...vals) => {
+  for (const v of vals) {
+    if (v === undefined || v === null) continue;
+    const s = typeof v === "string" ? v.trim() : v;
+    if (typeof s === "string") {
+      if (s.length) return s;
+      continue;
+    }
+    // 배열/객체도 "값이 있다"로 취급
+    return v;
+  }
+  return "";
+};
+
+const ensureArray = (v) => {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.filter(Boolean);
+  if (typeof v === "string") {
+    // 문장/줄바꿈 기반으로 대충 split (서버가 string으로 주는 케이스 방어)
+    const parts = v
+      .replace(/\r/g, "")
+      .split(/\n+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return parts.length ? parts : [v];
+  }
+  return [String(v)];
+};
+
+function normalizeContext(ctx) {
+  const next = { ...(ctx || {}) };
+
+  // topic
+  next.topic = coalesce(next.topic, next.dilemma_topic, next.opening_topic);
+
+  // 딜레마 핵심(상황/질문/선택지/플립)
+  next.dilemma_situation = coalesce(
+    next.dilemma_situation,
+    next.flip_dilemma_situation,
+    next.flip_result // flip_result가 통문장으로 오기도 함
+  );
+  next.question = coalesce(
+    next.question,
+    next.flip_question,
+    next.question_question
+  );
+  next.choice1 = coalesce(
+    next.choice1,
+    next.flip_choice1,
+    next.question_choice1
+  );
+  next.choice2 = coalesce(
+    next.choice2,
+    next.flip_choice2,
+    next.question_choice2
+  );
+  next.flips_agree_texts = coalesce(
+    next.flips_agree_texts,
+    next.flip_flips_agree_texts
+  );
+  next.flips_disagree_texts = coalesce(
+    next.flips_disagree_texts,
+    next.flip_flips_disagree_texts
+  );
+
+  // 역할(이름/설명)
+  next.char1 = coalesce(next.char1, next.roles_char1, next.ending_char1);
+  next.char2 = coalesce(next.char2, next.roles_char2, next.ending_char2);
+  next.char3 = coalesce(next.char3, next.roles_char3, next.ending_char3);
+
+  // 백엔드/프론트 키 혼재 방어: chardes* / charDes* 둘 다 채움
+  next.chardes1 = coalesce(next.chardes1, next.roles_chardes1, next.charDes1);
+  next.chardes2 = coalesce(next.chardes2, next.roles_chardes2, next.charDes2);
+  next.chardes3 = coalesce(next.chardes3, next.roles_chardes3, next.charDes3);
+  next.charDes1 = next.chardes1;
+  next.charDes2 = next.chardes2;
+  next.charDes3 = next.chardes3;
+
+  // opening: 서버가 다양한 형태로 줄 수 있어 우선순위로 흡수
+  // - opening은 "문장 배열"을 기대하지만, 여기서는 문자열/배열 모두 허용
+  next.opening = coalesce(next.opening, next.opening_texts, next.opening_result);
+
+  return next;
+}
+
+function looksLikeSkeletonEndingText(text) {
+  if (typeof text !== "string") return false;
+  // 현재 문제 케이스의 전형적인 placeholder/가이드 문구들
+  return (
+    text.includes("[여기서") ||
+    text.includes("원초적인 구조") ||
+    text.includes("이 초안으로 확정지을까요?")
+  );
+}
+
+function buildEndingScriptFromContext(ctx) {
+  const openingTopic = coalesce(ctx.topic, ctx.opening_topic, "AI");
+
+  const opening = ensureArray(ctx.opening);
+  const openingLines = opening.length
+    ? opening
+    : [
+        `최근 ${openingTopic} 관련 기술이 빠르게 도입되면서, 효율성과 공정성 사이의 갈등이 현실 문제로 떠올랐습니다.`,
+        `오늘은 한 사건을 두고 서로 다른 이해관계자들이 한자리에 모여 판단 기준을 토론하게 됩니다.`,
+      ];
+
+  const dilemmaSituation = ensureArray(ctx.dilemma_situation);
+  const flipsAgree = ensureArray(ctx.flips_agree_texts);
+  const flipsDisagree = ensureArray(ctx.flips_disagree_texts);
+
+  const question = coalesce(ctx.question, "어떤 선택이 더 윤리적일까요?");
+  const choice1 = coalesce(ctx.choice1, "예");
+  const choice2 = coalesce(ctx.choice2, "아니오");
+
+  const char1 = coalesce(ctx.char1, "역할 1");
+  const char2 = coalesce(ctx.char2, "역할 2");
+  const char3 = coalesce(ctx.char3, "역할 3");
+  const charDes1 = coalesce(ctx.chardes1, ctx.charDes1, "");
+  const charDes2 = coalesce(ctx.chardes2, ctx.charDes2, "");
+  const charDes3 = coalesce(ctx.chardes3, ctx.charDes3, "");
+
+  // 최종 멘트가 없을 때는 토론 확장용 질문으로 안전하게 생성
+  const agreeEnding =
+    coalesce(ctx.agreeEnding, "") ||
+    `정확성을 우선한 결정이 반복될 때, 소수자 집단이 겪는 불이익을 누가/어떻게 보정해야 할까요?`;
+  const disagreeEnding =
+    coalesce(ctx.disagreeEnding, "") ||
+    `공정성을 우선해 정확도가 떨어질 때, 잘못된 판결의 책임은 누구에게 있고 어떤 안전장치를 둬야 할까요?`;
+
+  return [
+    "🎬 오프닝 멘트",
+    ...openingLines.map((s) => `- ${s}`),
+    "",
+    "🎭 역할",
+    `- [${char1}] : ${charDes1}`.trim(),
+    `- [${char2}] : ${charDes2}`.trim(),
+    `- [${char3}] : ${charDes3}`.trim(),
+    "",
+    "🎯 상황 및 딜레마 질문",
+    ...(dilemmaSituation.length ? dilemmaSituation.map((s) => `- ${s}`) : []),
+    `질문: ${question}`,
+    "",
+    `✅ 선택지 1: ${choice1}`,
+    `📎 플립 자료: ${flipsAgree.join(" ")}`.trim(),
+    "",
+    `✅ 선택지 2: ${choice2}`,
+    `📎 플립 자료: ${flipsDisagree.join(" ")}`.trim(),
+    "",
+    "🌀 최종 멘트",
+    `-- 선택지 1 최종 선택: ${agreeEnding}`,
+    `-- 선택지 2 최종 선택: ${disagreeEnding}`,
+  ].join("\n");
+}
+
 export default function ChatPage2() {
   const navigate = useNavigate();
 
@@ -890,10 +1048,14 @@ export default function ChatPage2() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [nextReady, setNextReady] = useState(false); // 🔥 추가: 누락된 상태
+  const [inputNotice, setInputNotice] = useState("");
 
   const bottomRef = useRef(null);
   const messagesRef = useRef(messages);
   const stepBoundariesRef = useRef({}); // step 진입 시점의 messages 길이(=해당 step 시작 경계)
+  const lastUserTextRef = useRef("");
+  const pendingNextStepRef = useRef(null); // { fromStep, toStep, retryText }
+  const inputNoticeTimerRef = useRef(null);
   const [showTemplateButton, setShowTemplateButton] = useState(false);
   const [showOutPopup, setShowOutPopup] = useState(false);
 
@@ -950,6 +1112,26 @@ export default function ChatPage2() {
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      if (inputNoticeTimerRef.current) clearTimeout(inputNoticeTimerRef.current);
+    };
+  }, []);
+
+  const showInputNotice = (message, durationMs = 2500) => {
+    setInputNotice(message);
+    if (inputNoticeTimerRef.current) clearTimeout(inputNoticeTimerRef.current);
+    // durationMs가 0/음수/없음이면 "유저가 다시 입력/전송할 때까지" 유지
+    if (!durationMs || durationMs <= 0) {
+      inputNoticeTimerRef.current = null;
+      return;
+    }
+    inputNoticeTimerRef.current = setTimeout(() => {
+      setInputNotice("");
+      inputNoticeTimerRef.current = null;
+    }, durationMs);
+  };
 
   // ✅ 채팅 페이지에서는 바깥(body) 스크롤을 막고, 채팅 영역만 스크롤되도록 고정
   useEffect(() => {
@@ -1048,25 +1230,40 @@ export default function ChatPage2() {
       const { text, newContext, parsedVars } = normalize(res);
 
       // 기존 메시지 유지 + assistant 추가
+      const mergedForDisplay = normalizeContext({
+        ...(ctxToUse || {}),
+        ...(newContext || {}),
+        ...(parsedVars || {}),
+      });
+
+      const displayText =
+        targetStep === "ending" && looksLikeSkeletonEndingText(text)
+          ? buildEndingScriptFromContext(mergedForDisplay)
+          : cleanMarkdown(text);
+
       setMessages(prev => [
         ...prev,
-        { role: "assistant", content: cleanMarkdown(text) }
+        { role: "assistant", content: displayText }
       ]);
 
       // context 업데이트 (한 번에 처리)
       if (options.contextOverride) {
         // backStep 등에서 "정리된 context"를 기준으로 업데이트해야 할 때
-        setContext({
-          ...options.contextOverride,
-          ...(newContext || {}),
-          ...(parsedVars || {}),
-        });
+        setContext(
+          normalizeContext({
+            ...options.contextOverride,
+            ...(newContext || {}),
+            ...(parsedVars || {}),
+          })
+        );
       } else {
-        setContext(prev => ({
-          ...prev,
-          ...(newContext || {}),
-          ...(parsedVars || {})
-        }));
+        setContext((prev) =>
+          normalizeContext({
+            ...prev,
+            ...(newContext || {}),
+            ...(parsedVars || {}),
+          })
+        );
       }
 
       // step 실제로 변경
@@ -1075,6 +1272,23 @@ export default function ChatPage2() {
     } catch (e) {
       console.error("❌ INIT 실패:", e);
       const errorMsg = e?.response?.data?.detail || e?.message || "INIT 요청 실패";
+      const status = e?.response?.status;
+
+      // "다음 단계" 시도 직후 INIT에서 400이 터지면, 직전 유저 입력을 다시 보내도록 유도
+      if (
+        status === 400 &&
+        pendingNextStepRef.current?.toStep === targetStep
+      ) {
+        const retryText = pendingNextStepRef.current?.retryText || "";
+        // 안내문은 사라지지 않게(유저가 다시 전송할 때까지)
+        showInputNotice("오류가 발생했습니다. 다시 입력해주세요", 0);
+        if (retryText) setInput(retryText);
+        setStep(pendingNextStepRef.current.fromStep);
+        pendingNextStepRef.current = null;
+        setError("");
+        return;
+      }
+
       setError(errorMsg);
       setMessages(prev => [
         ...prev,
@@ -1135,6 +1349,7 @@ export default function ChatPage2() {
   const handleSend = async (userText) => {
     if (loading) return;
     setError("");
+    setInputNotice("");
 
     const raw = (userText ?? input).trim();
     if (!raw) return;
@@ -1151,7 +1366,7 @@ export default function ChatPage2() {
 
       // 다음 step INIT이 추가될 "경계"는 (현재 messages + user 메시지 1개) 시점
       const boundaryForNextStep = messagesRef.current.length + 1;
-      setMessages(prev => [...prev, { role: "user", content: raw }]);
+      setMessages(prev => [...prev, { role: "user", content: raw, skipHistory: true }]);
 
       // step advance
       const idx = STEP_ORDER.indexOf(step);
@@ -1176,7 +1391,12 @@ export default function ChatPage2() {
         return;
       }
 
-      setStep(next);
+      // 다음 단계 INIT이 실패(400)하면 "직전 유저 입력"을 다시 보내야 하므로 미리 저장
+      pendingNextStepRef.current = {
+        fromStep: step,
+        toStep: next,
+        retryText: lastUserTextRef.current,
+      };
 
       // INIT 호출
       setTimeout(() => {
@@ -1189,8 +1409,10 @@ export default function ChatPage2() {
 
     // 일반 메시지 처리
     const userMsg = raw;
+    lastUserTextRef.current = userMsg;
     setMessages(prev => [...prev, { role: "user", content: userMsg }]);
     setLoading(true);
+    let preserveInput = false;
 
     try {
       const inputWithHistory = buildInputWithHistory(
@@ -1212,23 +1434,36 @@ export default function ChatPage2() {
       const res = await callChatbot(payload);
       const { text, newContext, parsedVars } = normalize(res);
 
+      const mergedForDisplay = normalizeContext({
+        ...context,
+        ...(newContext || {}),
+        ...(parsedVars || {}),
+      });
 
       // 서버 응답 출력
       setMessages(prev => [
         ...prev,
-        { role: "assistant", content: cleanMarkdown(text) }
+        {
+          role: "assistant",
+          content:
+            step === "ending" && looksLikeSkeletonEndingText(text)
+              ? buildEndingScriptFromContext(mergedForDisplay)
+              : cleanMarkdown(text),
+        }
       ]);
 
       // 🔥 수정: context 업데이트를 한 번에 처리
       if (parsedVars || newContext) {
-        setContext(prev => ({
-          ...prev,
-          ...(newContext || {}),
-          ...(parsedVars || {})
-        }));
+        setContext((prev) =>
+          normalizeContext({
+            ...prev,
+            ...(newContext || {}),
+            ...(parsedVars || {}),
+          })
+        );
       }
 if (step === "ending") {
-  const finalPayload = parsedVars || newContext;
+  const finalPayload = mergedForDisplay;
 
   if (finalPayload) {
     localStorage.setItem("final_dilemma_payload", JSON.stringify(finalPayload));
@@ -1297,6 +1532,7 @@ keys.forEach((k) => {
       
 
     } catch (err) {
+      const status = err?.response?.status;
       const msg =
         err?.response?.data?.detail ||
         err?.message ||
@@ -1304,12 +1540,19 @@ keys.forEach((k) => {
 
       console.error("❌ 요청 실패:", err);
 
+      // 400이면 "방금 입력한 메시지"를 인풋에 다시 채워서 재전송 UX 제공
+      if (status === 400) {
+        showInputNotice("오류가 발생했습니다. 다시 입력해주세요.", 2500);
+        setInput(userMsg);
+        preserveInput = true;
+      }
       setError(msg);
       setMessages(prev => [...prev, { role: "assistant", content: `에러: ${msg}` }]);
 
     } finally {
       setLoading(false);
-      setInput("");
+      // 400일 때는 재전송을 위해 input을 유지
+      if (!preserveInput) setInput("");
     }
   };
 
@@ -1593,6 +1836,21 @@ keys.forEach((k) => {
             alignItems: "stretch",
           }}
         >
+          {inputNotice && (
+            <div
+              style={{
+                position: "absolute",
+                left: 16,
+                right: 16,
+                top: -28,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#b91c1c",
+              }}
+            >
+              {inputNotice}
+            </div>
+          )}
           <textarea
             placeholder={placeholder}
             value={input}
@@ -1609,7 +1867,10 @@ keys.forEach((k) => {
               maxHeight: "44px",
               overflowY: "hidden",
             }}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              if (inputNotice) setInputNotice("");
+              setInput(e.target.value);
+            }}
             onKeyDown={(e) => {
               if (e.isComposing || e.nativeEvent.isComposing) return;
               if (e.key === "Enter" && !e.shiftKey) {

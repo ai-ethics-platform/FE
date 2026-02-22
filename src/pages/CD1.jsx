@@ -249,7 +249,24 @@ function hasFinalConsonant(kor) {
           src={descImg}
           alt="Player 1 설명 이미지"
           style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: -20 }}
-          onError={(e) => { e.currentTarget.src = defaultimg; }}
+          onError={(e) => {
+            const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
+            if (retryCount < 3) {
+              e.currentTarget.dataset.retryCount = String(retryCount + 1);
+              const imgSrc = e.currentTarget.src;
+              const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
+              const newSrc = imgSrc.includes('?') ? `${imgSrc.split('?')[0]}${cacheBuster}` : `${imgSrc}${cacheBuster}`;
+              setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
+              return;
+            }
+            if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
+              e.currentTarget.dataset.fallbackAttempted = 'true';
+              e.currentTarget.dataset.retryCount = '0';
+              e.currentTarget.src = defaultimg;
+              return;
+            }
+            e.currentTarget.style.display = 'none'; 
+          }}
         />
         <div style={{ width: '100%', maxWidth: 900 }}>
           <ContentTextBox paragraphs={paragraphs} onContinue={handleContinue} />

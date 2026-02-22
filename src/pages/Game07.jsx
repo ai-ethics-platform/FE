@@ -275,6 +275,7 @@ export default function Game07() {
       }
 
       await forceBrowserCleanupWithoutDummy();
+      await debugMediaState('강제 정리 후');
 
       if (disconnect) disconnect();
 

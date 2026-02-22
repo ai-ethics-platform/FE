@@ -10,8 +10,10 @@ export default function SelectDrop({
   value = '',
   onSelect = () => {},
   style = {},               
+  open,
+  onOpenChange,
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [selected, setSelected] = useState(value);
 
@@ -36,11 +38,11 @@ export default function SelectDrop({
   
   const dropdownRef = useRef(null); 
 
-  const toggleDropdown = () => setIsOpen((prev) => !prev);
+  const toggleDropdown = () => setOpen(!isOpen);
 
   const handleSelect = (option) => {
     setSelected(option);
-    setIsOpen(false);
+    setOpen(false);
     onSelect(option);
   };
 

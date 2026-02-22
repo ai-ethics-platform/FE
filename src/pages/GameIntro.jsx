@@ -8,7 +8,6 @@ import ContentBox4 from '../components/ContentBox4';
 import Continue from '../components/Continue';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
-import voiceManager from '../utils/voiceManager';
 import { Colors,FontStyles } from '../components/styleConstants';
 import { 
   useWebSocketMessage, 
@@ -36,6 +35,7 @@ export default function GameIntro() {
     signalingConnected, 
     peerConnections,
     initializeWebRTC,
+    voiceSessionStatus,
   } = useWebRTC();
 
   // 내 음성 세션 상태 (실시간 로컬 상태)
@@ -49,9 +49,6 @@ export default function GameIntro() {
     speakingThreshold: 30
   });
 
-  // 상태 관리
-  const [voiceInitialized, setVoiceInitialized] = useState(false);
-  const [micPermissionGranted, setMicPermissionGranted] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState({
     websocket: false,
     webrtc: false,
@@ -331,9 +328,10 @@ const isCustomMode = !!localStorage.getItem('code');
     setConnectionStatus({
       websocket: isConnected,
       webrtc: webrtcInitialized && signalingConnected,
-      voice: voiceInitialized && micPermissionGranted
+      // VoiceManager 초기화(=녹음 시작)는 WebRTCProvider에서 수행되므로, Provider 상태를 기준으로 표시
+      voice: !!voiceSessionStatus?.isConnected
     });
-  }, [isConnected, webrtcInitialized, signalingConnected, voiceInitialized, micPermissionGranted]);
+  }, [isConnected, webrtcInitialized, signalingConnected, voiceSessionStatus?.isConnected]);
 
   // const handleContinue = useCallback(() => {
   //   console.log(" handleContinue 실행됨");
@@ -375,6 +373,27 @@ const isCustomMode = !!localStorage.getItem('code');
   //     alert('서버 연결을 확인해주세요.');
   //   }
   // }, [clientId, voiceInitialized, isHost, sendNextPage]);
+
+  // ----------------------------
+  // "다음" 활성 조건 (요구사항 반영):
+  // 기존 조건(WS 연결 확립 + WebRTC 초기화)에
+  // "3명 음성 연결" = 내 WebRTC 피어 2개 모두 connected 조건만 추가
+  // ----------------------------
+  const connectedPeerCount = (() => {
+    try {
+      if (!peerConnections) return 0;
+      const pcs = peerConnections instanceof Map ? Array.from(peerConnections.values()) : Object.values(peerConnections);
+      return pcs.filter((pc) => pc && (pc.connectionState === 'connected' || pc.iceConnectionState === 'connected')).length;
+    } catch {
+      return 0;
+    }
+  })();
+
+  const allVoicesConnected = connectedPeerCount >= 2; // 3인 기준: 나 외 2명과 연결
+
+  const canProceed = isCustomMode
+    ? true
+    : (connectionEstablishedRef.current && webrtcInitialized && allVoicesConnected);
 
   const handleContinue = () => {
     if (isCustomMode) {

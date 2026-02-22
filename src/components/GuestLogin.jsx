@@ -22,11 +22,13 @@ export default function GuestLogin({ onClose }) {
         guest_id: guestId.trim(),
       });
       
-      const { access_token, refresh_token } = data;
+      const { access_token, refresh_token, token_type, user_id, is_guest } = data || {};
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
+      if (token_type) localStorage.setItem('token_type', token_type);
+      if (is_guest != null) localStorage.setItem('is_guest', String(is_guest));
+      // ✅ 게스트 닉네임은 사용자가 입력한 값을 그대로 사용
       localStorage.setItem('nickname', guestId.trim());
-      localStorage.setItem('user_id', guestId.trim());
       localStorage.setItem('guest_id', guestId.trim());
       localStorage.setItem('guest_mode',"true");
       

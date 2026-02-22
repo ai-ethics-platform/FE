@@ -168,13 +168,13 @@ export default function SelectRoom() {
             <RoomCard
               icon={createIcon}
               title="방 만들기"
-              description={<>새로운 방을 만들고<br />시뮬레이션을 시작하세요.</>}
+              description={<>새로운 방을 만들고<br />게임을 시작하세요.</>}
               onClick={() => setIsCreateRoomOpen(true)}
             />
             <RoomCard
               icon={joinIcon}
               title="방 참여하기"
-              description={<>코드를 통해 비공개 방에<br />참여할 수 있습니다.</>}
+              description={<>코드를 통해 방에<br />참여할 수 있습니다.</>}
               onClick={() => setIsJoinRoomOpen(true)}
             />
           </div>

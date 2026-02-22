@@ -995,8 +995,107 @@
 // }
 // WebRTCProvider.jsx
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import voiceManager from './utils/voiceManager';
 import axiosInstance from './api/axiosInstance';
+
+// ----------------------------
+// ICE(STUN/TURN) 설정
+// - 기본: STUN만으로도 되는 환경이 많지만, 일부 NAT/회사망에서는 P2P가 실패함
+// - 권장: 백엔드에서 `/webrtc/ice-config`로 ICE 설정을 받아오면(Twilio TURN 포함) 특수 환경에서도 연결 성공률이 올라감
+// - fallback: 백엔드 호출이 실패하면 Vite env 또는 기본 STUN으로 내려감
+//
+// Vite env 예시:
+//   VITE_STUN_URLS=stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302
+//   VITE_TURN_URLS=turn:turn.example.com:3478?transport=udp,turn:turn.example.com:3478?transport=tcp,turns:turn.example.com:5349
+//   VITE_TURN_USERNAME=...
+//   VITE_TURN_CREDENTIAL=...
+// ----------------------------
+const DEFAULT_STUN_URLS = ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'];
+
+function getIceServersFromEnv() {
+  const env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+  const rawStunUrls = env.VITE_STUN_URLS;
+  const rawTurnUrls = env.VITE_TURN_URLS;
+  const turnUsername = env.VITE_TURN_USERNAME;
+  const turnCredential = env.VITE_TURN_CREDENTIAL;
+
+  const stunUrls = rawStunUrls
+    ? String(rawStunUrls).split(',').map((s) => s.trim()).filter(Boolean)
+    : DEFAULT_STUN_URLS;
+
+  const iceServers = [{ urls: (stunUrls.length > 0 ? stunUrls : DEFAULT_STUN_URLS) }];
+
+  // TURN이 설정된 경우에만 추가
+  if (rawTurnUrls && turnUsername && turnCredential) {
+    const urls = String(rawTurnUrls)
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    if (urls.length > 0) {
+      iceServers.push({
+        urls,
+        username: String(turnUsername),
+        credential: String(turnCredential),
+      });
+    }
+  }
+
+  return iceServers;
+}
+
+function parseCandidateType(candidate) {
+  try {
+    if (!candidate) return null;
+    // Chrome 등 일부 환경은 candidate.type을 제공하지만, 표준적으로는 candidate.candidate 문자열에 typ 정보가 있음
+    if (candidate.type) return String(candidate.type);
+    const candStr = String(candidate.candidate || '');
+    const m = candStr.match(/\btyp\s+(\w+)\b/i);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeIceServers(iceServers) {
+  if (!Array.isArray(iceServers)) return null;
+  const normalized = [];
+  for (const s of iceServers) {
+    if (!s) continue;
+    const urls = s.urls;
+    if (!urls) continue;
+    const entry = { urls };
+    if (s.username) entry.username = s.username;
+    if (s.credential) entry.credential = s.credential;
+    normalized.push(entry);
+  }
+  return normalized.length > 0 ? normalized : null;
+}
+
+function maskCredential(cred) {
+  try {
+    if (cred == null) return cred;
+    const s = String(cred);
+    if (s.length <= 6) return '******';
+    return `${s.slice(0, 3)}***${s.slice(-2)}`;
+  } catch {
+    return '***';
+  }
+}
+
+function maskIceServersForLog(iceServers) {
+  try {
+    if (!Array.isArray(iceServers)) return iceServers;
+    return iceServers.map((s) => ({
+      urls: s?.urls,
+      username: s?.username,
+      credential: s?.credential ? maskCredential(s.credential) : undefined,
+    }));
+  } catch {
+    return iceServers;
+  }
+}
 
 // WebRTC Context 생성
 const WebRTCContext = createContext();
@@ -1046,10 +1145,99 @@ const WebRTCProvider = ({ children }) => {
     speakingThreshold: 30
   });
 
+  const location = useLocation();
+
   // WebSocket 참조
   const signalingWsRef = useRef(null);
   const connectionAttemptedRef = useRef(false);
   const initializationPromiseRef = useRef(null);
+  const masterStreamRef = useRef(null); // ✅ 마이크 스트림 1회 생성 후 재사용(재시도 시 중복 생성 방지)
+
+  // ----------------------------
+  // ICE config (server → env → default STUN)
+  // - Twilio TURN은 credential이 TTL을 가지므로, TTL 기준으로 갱신
+  // ----------------------------
+  const iceServersRef = useRef(getIceServersFromEnv());
+  const iceConfigCacheRef = useRef({
+    expireAt: 0,
+    source: 'env',
+    turnEnabled: false,
+    lastError: null,
+  });
+  const [iceConfigStatus, setIceConfigStatus] = useState(() => ({
+    source: 'env',
+    turnEnabled: false,
+    ttl: null,
+    lastFetchedAt: null,
+    lastError: null,
+  }));
+
+  const fetchIceConfigFromServer = useCallback(async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) throw new Error('access_token이 없습니다');
+
+    // 백엔드 명세: GET /webrtc/ice-config?token={JWT}
+    const res = await axiosInstance.get('/webrtc/ice-config', {
+      params: { token },
+      timeout: 6000,
+    });
+
+    const data = res?.data || {};
+    const normalized = normalizeIceServers(data.iceServers);
+    if (!normalized) {
+      throw new Error('iceServers 형식이 올바르지 않습니다');
+    }
+
+    const ttlSeconds = Number.isFinite(Number(data.ttl)) ? Number(data.ttl) : 3600;
+    const turnEnabled = !!data.turnEnabled;
+
+    return { iceServers: normalized, ttlSeconds, turnEnabled };
+  }, []);
+
+  const ensureIceServersReady = useCallback(async () => {
+    const now = Date.now();
+    // 만료 60초 전부터는 새로 갱신
+    const shouldRefresh = !(iceConfigCacheRef.current.expireAt && now < (iceConfigCacheRef.current.expireAt - 60_000));
+    if (!shouldRefresh) return iceServersRef.current;
+
+    try {
+      const { iceServers, ttlSeconds, turnEnabled } = await fetchIceConfigFromServer();
+      iceServersRef.current = iceServers;
+      iceConfigCacheRef.current = {
+        expireAt: now + Math.max(60, ttlSeconds) * 1000,
+        source: 'server',
+        turnEnabled,
+        lastError: null,
+      };
+      setIceConfigStatus({
+        source: 'server',
+        turnEnabled,
+        ttl: ttlSeconds,
+        lastFetchedAt: now,
+        lastError: null,
+      });
+      console.log('🧊 ICE config loaded from server:', { turnEnabled, ttlSeconds, iceServers });
+      return iceServersRef.current;
+    } catch (e) {
+      const fallback = getIceServersFromEnv();
+      iceServersRef.current = fallback;
+      iceConfigCacheRef.current = {
+        expireAt: now + 5 * 60 * 1000, // 실패 시 5분 후 재시도
+        source: 'env',
+        turnEnabled: false,
+        lastError: e?.message || String(e),
+      };
+      setIceConfigStatus({
+        source: 'env',
+        turnEnabled: false,
+        ttl: null,
+        lastFetchedAt: now,
+        lastError: e?.message || String(e),
+      });
+      console.warn('⚠️ ICE config fetch failed → fallback to env/default STUN:', e?.message || e);
+      return iceServersRef.current;
+    }
+  }, [fetchIceConfigFromServer]);
 
   // 🔧 연결 추적 (Role 기반으로 추적, User ID로 실제 연결)
   const offerSentToRoles = useRef(new Set()); // 내가 Offer를 보낸 역할들
@@ -1079,6 +1267,16 @@ const WebRTCProvider = ({ children }) => {
     audioUnlockListenerAddedRef.current = true;
 
     const tryPlayAll = () => {
+      // ✅ 원칙 (4): AudioContext unlock (모바일 사파리 대응)
+      try {
+        if (voiceManager?.audioContext?.state === 'suspended') {
+          voiceManager.audioContext.resume();
+          console.log('🔊 AudioContext resumed (사용자 제스처)');
+        }
+      } catch (e) {
+        console.warn('⚠️ AudioContext resume 실패:', e?.message);
+      }
+      
       const audios = document.querySelectorAll('audio[data-user-id]');
       audios.forEach((a) => {
         try {
@@ -1161,9 +1359,9 @@ const WebRTCProvider = ({ children }) => {
     if (pcsRef.current.has(key)) return pcsRef.current.get(key);
 
     const config = {
-      iceServers: [
-        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
-      ],
+      iceServers: iceServersRef.current || getIceServersFromEnv(),
+      // 필요 시 TURN only로 강제하고 싶다면(디버깅용):
+      // iceTransportPolicy: 'relay',
     };
     
     const pc = new RTCPeerConnection(config);
@@ -1204,7 +1402,8 @@ const WebRTCProvider = ({ children }) => {
       if (!e.candidate) return;
       const ws = signalingWsRef.current;
       if (ws && ws.readyState === WebSocket.OPEN) {
-        console.log('📤 [signaling] send candidate →', key, e.candidate);
+        const candType = parseCandidateType(e.candidate);
+        console.log('📤 [signaling] send candidate →', key, { type: candType, candidate: e.candidate });
         ws.send(JSON.stringify({
           type: 'candidate',
           from: SELF(),
@@ -1228,22 +1427,38 @@ const WebRTCProvider = ({ children }) => {
   }
   const createPeerConnection = (...args) => getOrCreatePC(...args);
 
+  // ✅ 원칙 (3): 글레어(양쪽 동시 offer) 방지 - offer initiator 규칙
+  // - 양쪽이 동시에 offer를 보내면 충돌이 잦고 연결이 불안정해짐
+  // - userId 비교로 "큰 쪽만 offer 시작" 규칙을 적용해서 글레어 빈도를 확 낮춤
+  function shouldInitiate(remotePeerId) {
+    const myId = SELF();
+    const remoteId = String(remotePeerId);
+    // 숫자 비교: 같은 경우는 없어야 하지만 혹시 모르니 false 반환
+    if (myId === remoteId) return false;
+    // 숫자 형식이면 숫자 비교, 아니면 문자열 비교
+    const myNum = parseInt(myId, 10);
+    const remoteNum = parseInt(remoteId, 10);
+    if (!isNaN(myNum) && !isNaN(remoteNum)) {
+      return myNum > remoteNum;
+    }
+    return myId > remoteId;
+  }
+
   async function createOfferTo(remotePeerId) {
     const pc = getOrCreatePC(remotePeerId);
     if (!pc) return;
 
-    // 로컬 오디오 트랙 추가
-    let stream = voiceManager.mediaStream;
+    // ✅ 원칙 (4): masterStream이 없으면 offer 생성 스킵 (인자 없는 initializeVoiceSession 호출 제거)
+    let stream = masterStreamRef.current || voiceManager.mediaStream;
     if (!stream) {
-      await voiceManager.initializeVoiceSession(); // 내부에서 session_id 체크 및 초기화 시도
-      stream = voiceManager.mediaStream;
+      console.warn('⚠️ createOfferTo: 로컬 스트림이 없어 offer 생성 스킵. initializeWebRTC를 먼저 호출하세요.');
+      return;
     }
-    if (stream) {
-      // 같은 트랙 중복 추가 방지
-      const hasAudio = pc.getSenders().some(s => s.track && s.track.kind === 'audio');
-      if (!hasAudio) {
-        stream.getTracks().forEach(t => pc.addTrack(t, stream));
-      }
+    
+    // 같은 트랙 중복 추가 방지
+    const hasAudio = pc.getSenders().some(s => s.track && s.track.kind === 'audio');
+    if (!hasAudio) {
+      stream.getTracks().forEach(t => pc.addTrack(t, stream));
     }
 
     const peerKey = String(remotePeerId);
@@ -1418,6 +1633,13 @@ const WebRTCProvider = ({ children }) => {
                 if (!otherId) continue;
                 // 레이스로 myPeerIdRef.current가 아직 null일 수 있으니 SELF() 기준으로 자기 자신 제외
                 if (String(otherId) === SELF()) continue;
+                // ✅ 원칙 (3): 글레어 방지 - userId 비교로 offer initiator 제한
+                // 🚨 임시 비활성화: 연결 테스트를 위해 글레어 방지를 우선 꺼둠
+                // if (!shouldInitiate(String(otherId))) {
+                //   console.log(`⏭️ [signaling] 글레어 방지: ${SELF()} < ${otherId}, offer 스킵`);
+                //   continue;
+                // }
+                console.log(`📤 [signaling] peers → offer 생성 시작: ${SELF()} → ${otherId}`);
                 await createOfferTo(String(otherId));
               }
               return;
@@ -1427,7 +1649,13 @@ const WebRTCProvider = ({ children }) => {
               const otherId = String(msg.peer_id);
               // 레이스로 myPeerIdRef.current가 아직 null일 수 있으니 SELF() 기준으로 자기 자신 제외
               if (otherId === SELF()) return;
-              // join/joined에서도 initiator 규칙으로만 offer 생성 (양쪽 동시 offer 방지)
+              // ✅ 원칙 (3): 글레어 방지 - userId 비교로 offer initiator 제한
+              // 🚨 임시 비활성화: 연결 테스트를 위해 글레어 방지를 우선 꺼둠
+              // if (!shouldInitiate(otherId)) {
+              //   console.log(`⏭️ [signaling] 글레어 방지: ${SELF()} < ${otherId}, offer 스킵 (join/joined)`);
+              //   return;
+              // }
+              console.log(`📤 [signaling] join/joined → offer 생성 시작: ${SELF()} → ${otherId}`);
               await createOfferTo(otherId);
               return;
             }
@@ -1484,17 +1712,16 @@ const WebRTCProvider = ({ children }) => {
               // Safari 등에서 candidate가 먼저 오면 큐에 쌓였다가 여기서 처리해야 함
               await flushPendingIceCandidates(fromId);
 
-              // 로컬 트랙이 없다면 추가
-              let stream = voiceManager.mediaStream;
+              // ✅ 원칙 (4): masterStream이 없으면 answer 생성 스킵 (인자 없는 initializeVoiceSession 호출 제거)
+              let stream = masterStreamRef.current || voiceManager.mediaStream;
               if (!stream) {
-                await voiceManager.initializeVoiceSession();
-                stream = voiceManager.mediaStream;
+                console.warn('⚠️ offer 수신: 로컬 스트림이 없어 answer 생성 스킵. initializeWebRTC를 먼저 호출하세요.');
+                return;
               }
-              if (stream) {
-                const hasAudio = pc.getSenders().some(s => s.track && s.track.kind === 'audio');
-                if (!hasAudio) {
-                  stream.getTracks().forEach(t => pc.addTrack(t, stream));
-                }
+              
+              const hasAudio = pc.getSenders().some(s => s.track && s.track.kind === 'audio');
+              if (!hasAudio) {
+                stream.getTracks().forEach(t => pc.addTrack(t, stream));
               }
 
               const answer = await pc.createAnswer();
@@ -1594,24 +1821,47 @@ const WebRTCProvider = ({ children }) => {
 
   // 🚨 WebRTC 스트림 완전 정리 함수 (terminateWebRTCSession)
   const terminateWebRTCSession = useCallback(async () => {
+    // ✅ 원칙 (3): 종료 플래그를 제일 먼저 세팅해서 auto-init/워치독 레이스 방지
+    voiceManager.exitInProgress = true;
+    
+    // 중복 종료 방지 (특히 페이지 이동/중복 클릭)
+    if (window.__terminateWebRTCSessionInProgress) {
+      console.warn('⚠️ terminateWebRTCSession: 이미 종료 처리 중 (중복 호출 방지)');
+      return false;
+    }
+    window.__terminateWebRTCSessionInProgress = true;
+
     console.log('🛑 WebRTC 세션 완전 종료 시작');
     
     try {
       console.log('🎵 VoiceManager 녹음 직접 종료...');
       const recordingData = await voiceManager.stopRecording();
       console.log('✅ 녹음 데이터 확보:', recordingData);
+      // 디버그용: 콘솔에서 재다운로드 시도할 수 있게 마지막 녹음 데이터를 보관
+      // (다운로드 팝업이 브라우저 정책으로 막혔을 때 대비)
+      try { window.__lastRecordingData = recordingData; } catch {}
+
+      // ✅ 게임 종료 시: webm 원본을 로컬 파일로 저장(다운로드) — 기본 동작
+      // - "녹음이 처음부터 끝까지 되었는지"를 확인하는 1순위 방법
+      // - 브라우저 정책으로 자동 다운로드가 막히면 window.__lastRecordingData로 수동 저장 가능
+      try {
+        const disabled = localStorage.getItem('download_recording_on_end') === 'false';
+        if (!disabled && recordingData?.blob?.size > 0) {
+          voiceManager.saveRecordingToLocal(recordingData, { reason: 'terminate_webrtc' });
+        } else {
+          console.log('ℹ️ 로컬 저장 스킵:', {
+            disabled,
+            hasBlob: !!recordingData?.blob,
+            size: recordingData?.blob?.size || 0,
+          });
+        }
+      } catch (e) {
+        console.warn('⚠️ 로컬 저장 처리 중 오류(무시):', e?.message || e);
+      }
       
       const mediaStream = voiceManager.mediaStream;
       if (mediaStream) {
-        console.log('🎤 WebRTC 마스터 스트림 정지 중...');
-        mediaStream.getTracks().forEach(track => {
-          console.log(`🔇 트랙 정지: ${track.kind}, readyState: ${track.readyState}`);
-          if (track.readyState !== 'ended') {
-            track.stop();
-            console.log(`✅ 트랙 정지 완료: ${track.kind}`);
-          }
-        });
-        console.log('✅ 모든 스트림 트랙 정지 완료');
+        console.log('🎤 WebRTC 마스터 스트림: track.stop()은 하지 않음 (releaseMic에서만)');
       }
       
       voiceManager.disconnectMicrophone();
@@ -1621,8 +1871,8 @@ const WebRTCProvider = ({ children }) => {
         try {
           pc.getSenders().forEach(sender => {
             if (sender.track) {
-              console.log(`🔇 PeerConnection 송신 트랙 정지: User ${userId}`);
-              sender.track.stop();
+              console.log(`🔌 PeerConnection 송신 트랙 분리: User ${userId}`);
+              try { sender.replaceTrack(null); } catch {}
             }
           });
           pc.close();
@@ -1653,9 +1903,36 @@ const WebRTCProvider = ({ children }) => {
         try {
           uploadResult = await voiceManager.uploadRecordingToServer(recordingData);
           console.log('✅ 업로드 완료');
+
+          // (선택) 서버가 변환해서 만든 wav도 로컬에 저장
+          // - 기본은 OFF (원본 webm 확인이 목적)
+          // - 필요 시 localStorage.setItem('download_server_wav_on_end','true') 로 켜기
+          try {
+            const shouldSaveServerWav =
+              (localStorage.getItem('download_server_wav_on_end') === 'true');
+            const fp = uploadResult?.file_path;
+            if (shouldSaveServerWav && fp) {
+              await voiceManager.downloadServerRecordingFile(fp, { reason: 'upload_wav' });
+            } else {
+              console.log('ℹ️ 서버 wav 로컬 저장 스킵:', { shouldSaveServerWav, filePath: fp });
+            }
+          } catch (e) {
+            console.warn('⚠️ 서버 wav 로컬 저장 중 오류(무시):', e?.message || e);
+          }
         } catch (e) {
           console.error('❌ 업로드 중 예외:', e);
         }
+      }
+
+      // (가능하면) 세션 조회로 현재 상태를 로그 (백엔드 응답에 참가자/녹음 경로가 들어있다면 여기서 3명 업로드 여부 확인 가능)
+      try {
+        const sid = voiceManager.sessionId || localStorage.getItem('session_id');
+        if (sid) {
+          const verify = await axiosInstance.get(`/voice/sessions/${sid}`);
+          console.log('📋 음성 세션 조회(업로드 직후):', verify.data);
+        }
+      } catch (e) {
+        console.warn('⚠️ 음성 세션 조회 실패(무시):', e?.response?.status, e?.response?.data || e?.message);
       }
       
       try {
@@ -1664,6 +1941,35 @@ const WebRTCProvider = ({ children }) => {
       } catch (sessionError) {
         console.error('❌ 세션 나가기 실패:', sessionError);
       }
+
+      // ✅ 마지막: 마이크 완전 해제 (track.stop은 여기서만)
+      console.log('🧯 마이크 완전 해제 시작...');
+      try {
+        if (typeof voiceManager.releaseMic === 'function') {
+          voiceManager.releaseMic();
+          console.log('✅ releaseMic() 호출 완료');
+        } else {
+          console.warn('⚠️ releaseMic 함수가 없음');
+        }
+      } catch (e) {
+        console.error('❌ releaseMic 호출 실패:', e);
+      }
+      
+      // ✅ masterStreamRef도 명시적으로 정리
+      if (masterStreamRef.current) {
+        console.log('🔇 masterStreamRef 정리 중...');
+        try {
+          masterStreamRef.current.getTracks?.().forEach((t) => {
+            console.log(`  - masterStream track ${t.kind}: ${t.readyState} → stop`);
+            try { t.stop(); } catch (e) { console.warn('track.stop 실패:', e); }
+          });
+        } catch (e) {
+          console.warn('⚠️ masterStreamRef 정리 실패:', e);
+        }
+        masterStreamRef.current = null;
+        console.log('✅ masterStreamRef 정리 완료');
+      }
+
       pcsRef.current.forEach(pc => { try{ pc.close(); }catch{} });
       pcsRef.current.clear();
       setPeerConnections(new Map());
@@ -1695,6 +2001,8 @@ const WebRTCProvider = ({ children }) => {
     } catch (error) {
       console.error('❌ WebRTC 세션 종료 중 오류:', error);
       return false;
+    } finally {
+      window.__terminateWebRTCSessionInProgress = false;
     }
   }, [peerConnections]);
 
@@ -1752,16 +2060,32 @@ const WebRTCProvider = ({ children }) => {
       }
       
       // 음성 세션 생성/조회
-      try {
+      // - session_id가 없으면 VoiceManager(녹음) 초기화가 불가능하므로, 실패 시 재시도 후 실패로 처리
+      {
         const nickname = localStorage.getItem('nickname') || "사용자";
-        const { data: voiceSession } = await axiosInstance.post('/voice/sessions', {
-          room_code: roomCode,
-          nickname: nickname
-        });
-        console.log(`🎤 [${providerId}] 음성 세션 생성/조회 성공:`, voiceSession.session_id);
-        localStorage.setItem('session_id', voiceSession.session_id);
-      } catch (sessionError) {
-        console.error(`❌ [${providerId}] 음성 세션 생성 실패:`, sessionError);
+        let lastErr = null;
+        const maxAttempts = 5;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            const { data: voiceSession } = await axiosInstance.post('/voice/sessions', {
+              room_code: roomCode,
+              nickname: nickname
+            });
+            if (!voiceSession?.session_id) throw new Error('voiceSession.session_id가 없습니다.');
+            console.log(`🎤 [${providerId}] 음성 세션 생성/조회 성공:`, voiceSession.session_id);
+            localStorage.setItem('session_id', voiceSession.session_id);
+            lastErr = null;
+            break;
+          } catch (e) {
+            lastErr = e;
+            const delay = Math.min(1000 * attempt, 4000);
+            console.error(`❌ [${providerId}] 음성 세션 생성 실패 (시도 ${attempt}/${maxAttempts})`, e?.response?.data || e?.message || e);
+            await new Promise(r => setTimeout(r, delay));
+          }
+        }
+        if (lastErr) {
+          throw lastErr;
+        }
       }
       
       return mapping;
@@ -1783,12 +2107,17 @@ const WebRTCProvider = ({ children }) => {
         
         // 1. 사용자 ID 확인/설정
         let userId = localStorage.getItem('user_id');
-        if (!userId) {
+        const userIdLooksValid = !!(userId && /^\d+$/.test(String(userId)));
+        // 게스트/레거시 데이터 대비: user_id가 숫자 형식이 아니면 서버에서 다시 조회해 교정
+        if (!userId || !userIdLooksValid) {
           const response = await axiosInstance.get('/users/me');
           userId = String(response.data.id);
           localStorage.setItem('user_id', userId);
         }
         setMyUserId(userId);
+
+        // 1.5 ICE 서버 설정 선로딩 (TURN 포함 가능) - WS 연결/Offer 생성 전에 준비
+        await ensureIceServersReady();
         
         // 2. 역할별 사용자 매핑 저장
         const mapping = await saveRoleUserMapping();
@@ -1798,24 +2127,58 @@ const WebRTCProvider = ({ children }) => {
         }
         
         // 3. WebRTC에서 마스터 스트림 생성 (getUserMedia)
-        console.log('🎤 WebRTC에서 마스터 스트림 생성...');
-        const masterStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-            sampleRate: 44100
+        let masterStream = masterStreamRef.current;
+        const reuseOk = !!(masterStream && masterStream.getAudioTracks?.().some((t) => t.readyState === 'live'));
+        if (!reuseOk) {
+          // ✅ 가능하면 VoiceManager가 이미 확보해둔 baseMicStream(로컬녹음용 gUM)을 재사용
+          if (voiceManager?.hasLiveAudioTrack?.(voiceManager?.baseMicStream)) {
+            masterStream = voiceManager.baseMicStream;
+            masterStreamRef.current = masterStream;
+            console.log('♻️ VoiceManager baseMicStream을 WebRTC masterStream으로 재사용:', masterStream.id);
+          } else if (typeof voiceManager?.ensureBaseMicStream === 'function') {
+            masterStream = await voiceManager.ensureBaseMicStream();
+            masterStreamRef.current = masterStream;
+            console.log('♻️ VoiceManager.ensureBaseMicStream으로 masterStream 확보:', masterStream.id);
+          } else {
+            console.log('🎤 WebRTC에서 마스터 스트림 생성...');
+            masterStream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: 44100
+              }
+            });
+            masterStreamRef.current = masterStream;
+            console.log('✅ WebRTC 마스터 스트림 생성 완료:', masterStream.id);
           }
-        });
-        console.log('✅ WebRTC 마스터 스트림 생성 완료:', masterStream.id);
+        } else {
+          console.log('♻️ 기존 마스터 스트림 재사용:', masterStream.id);
+        }
+
+        // ✅ 원칙 (1): baseMicStream 세팅 (녹음 스트림 생성 실패 시 보험)
+        // masterStream을 확보한 직후 voiceManager.baseMicStream에도 세팅
+        if (!voiceManager.baseMicStream || !voiceManager.hasLiveAudioTrack?.(voiceManager.baseMicStream)) {
+          voiceManager.baseMicStream = masterStream;
+          console.log('🔗 voiceManager.baseMicStream ← masterStream 세팅 완료');
+        }
+
+        // ✅ 녹음 전용 스트림: base(masterStream)에서 clone을 1회 생성(중간 교체 금지)
+        try {
+          voiceManager.ensureRecordingStreamFromBase?.(masterStream);
+        } catch (e) {
+          console.warn('⚠️ ensureRecordingStreamFromBase 실패(무시):', e?.message || e);
+        }
         
         // 4. VoiceManager에 스트림 전달하여 초기화
         console.log('🔗 VoiceManager에 스트림 전달...');
         const voiceSuccess = await voiceManager.initializeVoiceSession(masterStream);
         if (!voiceSuccess) {
           console.error(`❌ [${providerId}] 음성 세션 초기화 실패`);
-          return false;
+          throw new Error('VoiceManager.initializeVoiceSession 실패');
         }
+        // ✅ 안정성: 초기화 직후 녹음 시작을 한 번 더 보장(멱등)
+        try { voiceManager.startRecording?.(); } catch {}
         
         // 5. WebSocket 연결 (signaling)
         connectSignalingWebSocket();
@@ -1841,7 +2204,84 @@ const WebRTCProvider = ({ children }) => {
     })();
 
     return initializationPromiseRef.current;
-  }, [saveRoleUserMapping, connectSignalingWebSocket, providerId]);
+  }, [saveRoleUserMapping, connectSignalingWebSocket, providerId, ensureIceServersReady]);
+
+  // 게임 라우트에 들어오면 자동으로 WebRTC 초기화(=녹음 시작)되도록 함
+  // - 특정 페이지에서만 initializeWebRTC()가 호출되면 유저 동선에 따라 "끝부분만 녹음"될 수 있음
+  useEffect(() => {
+    let cancelled = false;
+
+    const path = location?.pathname || '';
+    const shouldAutoInit =
+      path.startsWith('/game') ||
+      path.startsWith('/character_') ||
+      path === '/gamemap' ||
+      path === '/selecthomemate' ||
+      path === '/matename' ||
+      path === '/mictest';
+
+    if (!shouldAutoInit) return () => { cancelled = true; };
+
+    // ✅ 핵심: 라우트 전환/로컬스토리지 준비 타이밍 이슈 대응
+    // - 기존 로직은 초반에 조건이 안 맞으면 5번만 시도하고 "영원히" 포기해서
+    //   녹음이 끝부분(나가기 직전)만 되는 현상이 생길 수 있음
+    // - 그래서 게임 관련 라우트에 있는 동안, 필요한 값이 준비될 때까지 주기적으로 재시도
+    const intervalMs = 1500;
+    const maxWaitMs = 60_000; // 60초 동안만 자동 재시도 (무한 루프 방지)
+    const startedAt = Date.now();
+
+    const tick = async () => {
+      if (cancelled) return;
+      // 퇴장/종료 진행 중이면 절대 자동으로 녹음/초기화 재시작하지 않음 (레이스 방지)
+      if (voiceManager?.exitInProgress) return;
+
+      // ✅ 0) WebRTC/세션 준비 전이라도 "로컬 녹음"은 먼저 켜서 시작점을 앞으로 당김
+      // - user가 말한 증상(마지막 1~2초만 녹음)은 보통 초반 init 실패로 발생
+      try {
+        await voiceManager.startLocalMicRecordingIfNeeded?.();
+        await voiceManager.ensureRecordingActive?.();
+      } catch {}
+
+      // 이미 WebRTC가 초기화되어 있으면(=송수신 세팅 완료) 여기서 더 init 시도는 불필요
+      if (isInitialized) return;
+
+      // 최소 선행 조건: access_token, room_code
+      const token = localStorage.getItem('access_token');
+      const roomCode = localStorage.getItem('room_code');
+      if (!(token && roomCode)) {
+        if (voiceManager?.isDebugMode) {
+          console.log(`⏳ [${providerId}] auto init 대기(선행 조건 부족)`, {
+            path,
+            hasToken: !!token,
+            hasRoomCode: !!roomCode,
+          });
+        }
+        return;
+      }
+
+      try {
+        const ok = await initializeWebRTC();
+        if (ok) return;
+      } catch (e) {
+        console.warn(`⚠️ [${providerId}] auto initializeWebRTC 예외:`, e?.message || e);
+      }
+    };
+
+    // 즉시 1회 시도 + 주기적 재시도
+    tick();
+    const timer = setInterval(() => {
+      if (Date.now() - startedAt > maxWaitMs) {
+        clearInterval(timer);
+        return;
+      }
+      tick();
+    }, intervalMs);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [isInitialized, initializeWebRTC, providerId, location?.pathname]);
 
   // ----------------------------
   // 새로고침(리로딩) 감지 + 자동 재연결(그레이스)
@@ -1968,7 +2408,6 @@ const WebRTCProvider = ({ children }) => {
         pc.getSenders().forEach(s => {
           if (s.track && s.track.kind === 'audio' && s.track.readyState !== 'ended') {
             try { s.replaceTrack(null); } catch {}
-            try { s.track.stop(); } catch {}
           }
         });
         try { pc.close(); } catch {}
@@ -2038,8 +2477,79 @@ const WebRTCProvider = ({ children }) => {
         myUserId,
         myRoleId,
         roleUserMapping,
-        pendingCandidates: pendingCandidates.current.size
+        pendingCandidates: pendingCandidates.current.size,
+        iceConfigStatus,
       }),
+      // 현재 적용 중인 iceServers를 확인 (credential은 마스킹)
+      getIceConfig: () => ({
+        ...iceConfigStatus,
+        iceServers: maskIceServersForLog(iceServersRef.current),
+      }),
+      // TURN이 실제로 relay 후보를 뱉는지 “강제” 확인 (iceTransportPolicy: 'relay')
+      // - relay candidate가 1개라도 나오면 TURN 경유 가능 상태
+      testTurnRelay: async (timeoutMs = 8000) => {
+        const iceServers = iceServersRef.current || getIceServersFromEnv();
+        const results = { relay: 0, srflx: 0, host: 0, other: 0, candidates: [], errors: [] };
+
+        const pc = new RTCPeerConnection({
+          iceServers,
+          iceTransportPolicy: 'relay',
+        });
+
+        try {
+          pc.createDataChannel('turn-test');
+          pc.onicecandidateerror = (e) => {
+            // 일부 브라우저는 상세가 비어있을 수 있음
+            results.errors.push({
+              errorCode: e?.errorCode,
+              errorText: e?.errorText,
+              url: e?.url,
+              address: e?.address,
+              port: e?.port,
+              hostCandidate: e?.hostCandidate,
+            });
+          };
+          pc.onicecandidate = (e) => {
+            const c = e.candidate;
+            if (!c) return;
+            const t = parseCandidateType(c) || 'other';
+            if (t === 'relay') results.relay += 1;
+            else if (t === 'srflx') results.srflx += 1;
+            else if (t === 'host') results.host += 1;
+            else results.other += 1;
+            results.candidates.push({
+              type: t,
+              protocol: c.protocol,
+              address: c.address,
+              port: c.port,
+            });
+          };
+
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+
+          await new Promise((resolve) => {
+            let done = false;
+            const finish = () => {
+              if (done) return;
+              done = true;
+              resolve();
+            };
+            const timer = setTimeout(finish, timeoutMs);
+            pc.onicegatheringstatechange = () => {
+              if (pc.iceGatheringState === 'complete') {
+                clearTimeout(timer);
+                finish();
+              }
+            };
+          });
+        } finally {
+          try { pc.close(); } catch {}
+        }
+
+        console.log('🧪 TURN relay test result:', results);
+        return results;
+      },
       debugConnections: debugPeerConnections,
       testConnection: (targetUserId) => {
         const pc = peerConnections.get(targetUserId);
@@ -2071,7 +2581,7 @@ const WebRTCProvider = ({ children }) => {
       }
     };
     return () => { delete window.debugWebRTC; };
-  }, [signalingConnected, myUserId, myRoleId]);
+  }, [signalingConnected, myUserId, myRoleId, iceConfigStatus]);
 
   // 정리 useEffect (언마운트)
   useEffect(() => {
@@ -2151,11 +2661,13 @@ useEffect(() => {
     roleUserMapping,
     myUserId,
     myRoleId,
+    iceConfigStatus,
     voiceSessionStatus,
     terminateWebRTCSession,
     initializeWebRTC,
     startPeerConnections,
     debugPeerConnections,
+    refreshIceConfig: ensureIceServersReady,
     adjustThreshold: (delta) => {
       const newThreshold = Math.max(10, Math.min(100, voiceSessionStatus.speakingThreshold + delta));
       voiceManager.setSpeakingThreshold(newThreshold);

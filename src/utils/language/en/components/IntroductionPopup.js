@@ -1,9 +1,10 @@
 export const IntroductionPopup = {
-  title: "게임 소개(미번역)",
-  description: "딜레마 상황 속 인물이 되어 최선의 결정을 고민하고 선택하는 게임입니다. \n이 게임은 {{3명의 플레이어}}가 한 팀이 되어 진행합니다.(미번역)",
-  hostTitle: "방장 (1명)(미번역)",
-  hostDesc: "• 새로운 방을 만들고 팀원에게 참여 코드를 공유합니다. \n• 팀원들과 충분히 논의한 뒤, 팀의 의견을 모아 최종 선택을 입력합니다.(미번역)",
-  playerTitle: "참여자 (2명)(미번역)",
-  playerDesc: "• 방장이 공유한 참여 코드를 입력해 방에 참여합니다. \n• 제시된 시나리오 안에서 팀의 최선의 선택을 위해 의견을 나눕니다.(미번역)",
-  footer: "우리 선택들이 모여, 어떤 사회가 만들어질까요?(미번역)"
+  title: "Game Introduction",
+  description: "You become a character in a dilemma scenario, \nthink through the situation, and make the best possible decision. \n This game is played by {{3 players}}.",
+  hostTitle: "Host(1 Person)",
+  hostDesc: "• Creates a new room and shares the participation code with the team. \n• After fully discussing with team members, gather opinions and submit the final \n\u00A0\u00A0decision.",
+  playerTitle: "Participants(2 People)",
+  playerDesc: "• Enter the participation code shared by the host to join the room. \n• Discuss and share opinions to help the team make the best choice within the \n\u00A0\u00A0given scenario.",
+  footer: "When our choices come together, what kind of society will we create?",
+  close: "Close"
 };

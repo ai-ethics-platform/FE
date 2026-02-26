@@ -12,6 +12,8 @@ import player3 from "../assets/3player_withnum.svg";
 import axiosInstance from '../api/axiosInstance';
 import { FontStyles, Colors } from '../components/styleConstants';
 import codeBg from '../assets/roomcodebackground.svg';
+// 상단에서 ESM 방식으로 정상적으로 임포트합니다.
+import infoFrame from '../assets/Frame 345.svg';
 import CancelReadyPopup from '../components/CancelReadyPopup';
 // 언어팩 임포트
 import { translations } from '../utils/language/index';
@@ -43,7 +45,7 @@ export default function WaitingRoom() {
   // allTopics는 기존 그대로
   const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
 
-  //  최초 렌더에서 localStorage.category를 우선 반영
+  //   최초 렌더에서 localStorage.category를 우선 반영
   const [currentIndex, setCurrentIndex] = useState(() => {
     const stored = localStorage.getItem('category');
     const i = stored ? allTopics.indexOf(stored) : -1;
@@ -57,7 +59,7 @@ export default function WaitingRoom() {
     return fi >= 0 ? fi : 0;
   });
 
-  //  로컬(category) → UI 인덱스 동기화
+  //   로컬(category) → UI 인덱스 동기화
   const syncTopicFromLocal = (value) => {
     const cat = (value != null ? value : localStorage.getItem('category')) || '';
     const idx = allTopics.indexOf(cat);
@@ -81,11 +83,11 @@ export default function WaitingRoom() {
     });
   };
   // const setCategoryFromRoom = (room) => {
-  //   if (room && typeof room.title === 'string' && room.title.length > 0) {
-  //     localStorage.setItem('category', room.title);
-  //   }
+  //    if (room && typeof room.title === 'string' && room.title.length > 0) {
+  //      localStorage.setItem('category', room.title);
+  //    }
   // };
-  //  useRef로 폴링 타이머 ID 관리
+  //   useRef로 폴링 타이머 ID 관리
   const pollingIntervalRef = useRef(null);
 
   // 1) UI 상태
@@ -359,7 +361,7 @@ export default function WaitingRoom() {
     }
   }, [participants, myPlayerId, hostUserId]);
   
-  //  폴링 함수 - 방 상태를 주기적으로 확인
+  //   폴링 함수 - 방 상태를 주기적으로 확인
   const pollRoomStatus = async () => {
 
     try {
@@ -660,31 +662,27 @@ export default function WaitingRoom() {
   return (
     <Background bgIndex={2}>
     
-
-      {/* 뒤로 가기 */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -10,
-          left: -10,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          zIndex: 1000,
-          cursor: 'pointer',
-        }}
-        >
-        <div style={{ position: 'relative', zIndex: 2 }}>
-        <BackButton onClick={() => setShowOutPopup(true)} /> 
+      {/* 좌측 상단 UI 영역을 Absolute Positioning 방식으로 변경합니다. 
+          이제 각 요소가 서로 간섭하지 않고 독립적으로 움직입니다. 
+      */}
+      <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 1000 }}>
+        
+        {/* 1. 뒤로 가기 버튼 위치 조정 (사용자 설정값 유지) */}
+        <div style={{ position: 'absolute', zIndex: 2, top: -10, left: -10 }}>
+          <BackButton onClick={() => setShowOutPopup(true)} /> 
         </div>
+
+        {/* 2. 룸코드 박스 위치 조정 (사용자 설정값 유지: left 165) */}
         <div
           style={{
-            position: 'relative',
+            position: 'absolute',
+            top: -10,
+            left: 165, 
             width: 200,
             height: 80,
-            marginLeft: -40,
+            overflow: 'hidden',
+            cursor: 'pointer',
             zIndex: 1,
-            overflow: 'hidden'
           }}
         >
           <img
@@ -712,7 +710,6 @@ export default function WaitingRoom() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: 'pointer',
               ...FontStyles.title,
               color: Colors.brandPrimary,
               userSelect: 'none',
@@ -720,7 +717,6 @@ export default function WaitingRoom() {
           >
             {t.WaitingRoom.code}: {room_code}
           </span>
-              {/* 툴팁 */}
           {copied && (
             <div
               style={{
@@ -736,12 +732,43 @@ export default function WaitingRoom() {
                 whiteSpace: 'nowrap',
                 pointerEvents: 'none',
                 zIndex: 10,
-                
               }}
             >
               {t.WaitingRoom.copied}
             </div>
           )}
+        </div>
+
+        <div 
+          style={{ 
+            position: 'absolute', 
+            top: 65,  
+            left: 150, 
+            width: 210, 
+            height: 60, 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <img 
+            src={infoFrame} 
+            alt="info frame" 
+            style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 1 }} 
+          />
+          <span 
+            style={{ 
+              position: 'relative', 
+              zIndex: 2, 
+              fontSize: '11px', 
+              color: 'white',
+              fontWeight: '500',
+              marginTop: '5px' 
+            }}
+          >
+            {/* 언어 설정에 따라 t.WaitingRoom.infoText를 정상 출력합니다. */}
+            {t.WaitingRoom.infoText}
+          </span>
         </div>
       </div>
 
@@ -762,20 +789,7 @@ export default function WaitingRoom() {
       }}>
         <GameFrame
           topic={allTopics[currentIndex]}
-          // onLeftClick={() => {
-          //   const next = Math.max(currentIndex - 1, 0);
-          //   setCurrentIndex(next);
-          //   localStorage.setItem('category', allTopics[next]);
-          // }}
-          // onRightClick={() => {
-          //   const next = Math.min(currentIndex + 1, allTopics.length - 1);
-          //   setCurrentIndex(next);
-          //   localStorage.setItem('category', allTopics[next]);
-          // }}
-          // disableLeft={currentIndex === 0}
-          // disableRight={currentIndex === allTopics.length - 1}
             hideArrows={true}
-
         />
       </div>
 
@@ -789,13 +803,10 @@ export default function WaitingRoom() {
         boxSizing: 'border-box'
       }}>
         {getOrderedPlayers().map((id, idx) => {
-         
-          
           const assign = assignments.find(a => String(a.player_id) === String(id));
           const isOwner = String(id) === String(hostUserId);
           const isMe = String(id) === String(myPlayerId);
           
-       
           return (
             <div key={id} style={{ transform: `scale(${idx === 1 ? 1 : 0.9})` }}>
               <StatusCard
@@ -803,22 +814,16 @@ export default function WaitingRoom() {
                 isOwner={isOwner}
                 isMe={isMe}
                 roleId={assign?.role_id}
-              
-                statusIndex={
-                  isMe
-                          ? myStatusIndex
-                          : statusIndexMap[String(id)] || 0
-                     }
-                  onContinueClick={() => setShowMicPopup(true)}
-                  onCancelClick={() => setShowCancelPopup(true)}  // 
-                  onStatusChange={isMe ? setMyStatusIndex : undefined}
+                statusIndex={isMe ? myStatusIndex : statusIndexMap[String(id)] || 0}
+                onContinueClick={() => setShowMicPopup(true)}
+                onCancelClick={() => setShowCancelPopup(true)}
+                onStatusChange={isMe ? setMyStatusIndex : undefined}
               />
             </div>
           );
         })}
       </div>
 
-      {/* 준비하기 ▶ 마이크 테스트 팝업 */}
       {showMicPopup && (
         <MicTestPopup
           userImage={getPlayerImage(Number(localStorage.getItem('myrole_id')))}
@@ -832,10 +837,10 @@ export default function WaitingRoom() {
             display: 'flex', justifyContent: 'center', alignItems: 'center',
             zIndex: 1000
           }}>
-              <CancelReadyPopup
-          onClose={() => setShowCancelPopup(false)}
-          onCancelConfirmed={handleCancelConfirm}  // ← 이제 정의된 함수를 넘김
-        />
+            <CancelReadyPopup
+              onClose={() => setShowCancelPopup(false)}
+              onCancelConfirmed={handleCancelConfirm}
+            />
           </div>
     )}
     </Background>

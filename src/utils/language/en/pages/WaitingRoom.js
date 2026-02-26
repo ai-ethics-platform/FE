@@ -6,5 +6,6 @@ export const WaitingRoom = {
   },
   code: "CODE",
   copied: "Copied!",
-  player: "P"
+  player: "P",
+  infoText: "Share the code to invite two team members!"
 };

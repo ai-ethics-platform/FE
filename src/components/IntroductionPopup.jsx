@@ -2,7 +2,8 @@ import React from 'react';
 import logo from '../assets/logo.svg';
 import crownIcon from '../assets/crown.svg';
 import peopleIcon from '../assets/PeopleIcon.svg';
-import cardButtonImg from '../assets/CardButton.svg';
+// [수정] 기존 텍스트 포함 이미지를 프레임 이미지로 교체
+import buttonFrameImg from '../assets/ButtonFrame.svg';
 import { Colors, FontStyles } from './styleConstants';
 import { translations } from '../utils/language/index';
 
@@ -122,19 +123,49 @@ export default function IntroductionPopup({ isOpen, onClose }) {
         {t.footer}
       </p>
 
-      {/* 하단 닫기 버튼: 이미지 자체에 텍스트가 있으므로 추가 텍스트 없이 렌더링 */}
-      <img 
-        src={cardButtonImg} 
-        alt="Close" 
+      {/* 하단 닫기 버튼: 프레임 이미지 위에 언어팩 텍스트 렌더링 */}
+      <div
         onClick={onClose}
         style={{
-          width: '160px', 
+          position: 'relative',
+          width: '160px',
+          height: '45px', // 버튼 프레임 비율에 맞춘 높이
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           cursor: 'pointer',
           transition: 'transform 0.1s ease',
+          userSelect: 'none'
         }}
         onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.96)'}
         onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-      />
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        <img 
+          src={buttonFrameImg} 
+          alt="button frame" 
+          style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: '100%', 
+            height: '100%',
+            zIndex: 1
+          }} 
+        />
+        <span
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            color: '#FFFFFF',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            marginTop: '-2px' // 시각적 중앙 정렬을 위한 미세 조정
+          }}
+        >
+          {t.close || (lang === 'ko' ? '닫기' : 'Close')}
+        </span>
+      </div>
     </div>
   );
 }

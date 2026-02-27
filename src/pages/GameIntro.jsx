@@ -76,7 +76,7 @@ export default function GameIntro() {
   
   const category = localStorage.getItem('category');
   
-  // [수정] 확장형 로직: 모든 언어의 'Autonomous Weapon Systems'를 나열하는 대신,
+  //  확장형 로직: 모든 언어의 'Autonomous Weapon Systems'를 나열하는 대신,
   // '안드로이드'나 'Android'가 포함되지 않으면 AWS로 간주하는 방식을 사용.
   // (Android는 고유명사라 변형이 적고, AWS는 번역명이 다양할 수 있기 때문)
   const isAndroid = category && (category.includes('안드로이드') || category.toLowerCase().includes('android'));
@@ -97,7 +97,7 @@ const isCustomMode = !!localStorage.getItem('code');
  // const fullText = isAWS ? AWS_TEXT : ANDROID_TEXT;
  
  //  교체: 커스텀 모드면 TEACHER_TEXT(또는 언어팩의 커스텀 텍스트), 아니면 기존 로직
- // [수정] 언어팩에 customIntro가 있다면 우선 사용하도록 처리
+ //  언어팩에 customIntro가 있다면 우선 사용하도록 처리
  const customIntroText = t.customIntro || TEACHER_TEXT;
  const rawFullText = isCustomMode ? customIntroText : (isAWS ? AWS_TEXT : ANDROID_TEXT);
 

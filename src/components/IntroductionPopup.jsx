@@ -2,7 +2,7 @@ import React from 'react';
 import logo from '../assets/logo.svg';
 import crownIcon from '../assets/crown.svg';
 import peopleIcon from '../assets/PeopleIcon.svg';
-// [수정] 기존 텍스트 포함 이미지를 프레임 이미지로 교체
+//  기존 텍스트 포함 이미지를 프레임 이미지로 교체
 import buttonFrameImg from '../assets/ButtonFrame.svg';
 import { Colors, FontStyles } from './styleConstants';
 import { translations } from '../utils/language/index';
@@ -25,7 +25,11 @@ export default function IntroductionPopup({ isOpen, onClose }) {
       if (part.startsWith('{{') && part.endsWith('}}')) {
         const contentText = part.slice(2, -2);
         return (
-          <span key={index} style={{ color: Colors.brandPrimary || '#006B75', fontWeight: 'bold' }}>
+          <span key={index} style={{ 
+            color: Colors.brandPrimary || '#006B75', 
+            fontWeight: 'bold',
+            fontFamily: 'Pretendard' // 강조 텍스트에도 글꼴 적용
+          }}>
             {contentText}
           </span>
         );
@@ -62,6 +66,7 @@ export default function IntroductionPopup({ isOpen, onClose }) {
         alignItems: 'center',
         boxShadow: '0 12px 48px rgba(0, 0, 0, 0.2)',
         zIndex: 10002,
+        fontFamily: 'Pretendard', // 최상위 컨테이너에 적용하여 모든 하위 요소 상속 [cite: 2026-02-23]
       }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -80,7 +85,7 @@ export default function IntroductionPopup({ isOpen, onClose }) {
         color: '#000000', 
         lineHeight: '1.6', 
         whiteSpace: 'pre-wrap',
-        marginBottom: '5px'
+        marginBottom: '5px',
       }}>
         {renderStyledText(t.description)}
       </div>
@@ -135,7 +140,7 @@ export default function IntroductionPopup({ isOpen, onClose }) {
           justifyContent: 'center',
           cursor: 'pointer',
           transition: 'transform 0.1s ease',
-          userSelect: 'none'
+          userSelect: 'none',
         }}
         onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.96)'}
         onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -160,7 +165,7 @@ export default function IntroductionPopup({ isOpen, onClose }) {
             color: '#FFFFFF',
             fontSize: '16px',
             fontWeight: 'bold',
-            marginTop: '-2px' // 시각적 중앙 정렬을 위한 미세 조정
+            marginTop: '-2px',
           }}
         >
           {t.close || (lang === 'ko' ? '닫기' : 'Close')}

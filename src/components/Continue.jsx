@@ -18,7 +18,7 @@ export default function Continue({
 
   const lang = localStorage.getItem('app_lang') || 'ko';
   
-  // [수정] 이중 객체 구조(UiElements.UiElements) 안전하게 해제
+  //  이중 객체 구조(UiElements.UiElements) 안전하게 해제
   const rawData = translations[lang]?.UiElements || translations['ko']?.UiElements || {};
   const t = rawData.UiElements || rawData;
 

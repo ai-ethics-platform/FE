@@ -48,7 +48,7 @@ export default function Game08() {
   console.log('🔴 현재 언어:', lang);
   console.log('🔴 전체 번역 객체:', translations);
   console.log('🔴 현재 언어의 데이터:', translations[lang]);
-  // [수정] 대문자 Game08 키로 접근
+  //  대문자 Game08 키로 접근
   const t = translations[lang]?.Game08 || translations['ko'].Game08; 
 
   // 제목도 언어팩에서 가져옴

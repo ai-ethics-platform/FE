@@ -7,7 +7,7 @@ export default function Continue2({
   height = 72,
   onClick,
   disabled = false,
-  label, // [수정] label props 추가
+  label, //  label props 추가
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive,  setIsActive]  = useState(false);
@@ -68,7 +68,7 @@ export default function Continue2({
         }}
       >
         <span style={{ ...FontStyles.headlineSmall, color: textColor }}>
-          {/* [수정] 하드코딩 '다음' 제거하고 label 출력 */}
+          {/*  하드코딩 '다음' 제거하고 label 출력 */}
           {label || "다음"}
         </span>
         

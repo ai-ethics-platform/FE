@@ -107,10 +107,10 @@ useEffect(() => {
       localStorage.setItem('room_code', roomCode);
       navigate('/waitingroom');
     } catch (error) {
-      // [수정] 언어 설정에 따른 콘솔 로그 구분 - 언어팩 변수(t.consoleFail) 활용
+      //  언어 설정에 따른 콘솔 로그 구분 - 언어팩 변수(t.consoleFail) 활용
       console.error(t.consoleFail || '방 입장 실패:', error.response?.data || error.message);
       
-      // [수정] 언어 설정에 따른 alert 문구 보정 (t.errorPrefix 활용)
+      //  언어 설정에 따른 alert 문구 보정 (t.errorPrefix 활용)
       alert(`${t.errorPrefix || '방 입장 오류: '}${JSON.stringify(error.response?.data?.detail || '')}`);
     }
   };

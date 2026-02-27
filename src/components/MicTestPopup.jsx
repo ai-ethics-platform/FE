@@ -207,7 +207,7 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         }} 
       />
 
-      {/* [수정] 제목 영역: whiteSpace 추가 */}
+      {/*  제목 영역: whiteSpace 추가 */}
       <div style={{ 
         marginBottom: 32, 
         ...FontStyles.headlineNormal, 
@@ -293,7 +293,7 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         }} />
       </div>
 
-      {/* [수정] 상태 메시지 영역: whiteSpace 추가 */}
+      {/*  상태 메시지 영역: whiteSpace 추가 */}
       <div style={{ 
         marginBottom: 20, 
         height: 'auto', // 줄바꿈 대응을 위해 height를 유연하게 변경

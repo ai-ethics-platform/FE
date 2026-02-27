@@ -44,7 +44,7 @@ export default function MateName() {
   const [hostId, setHostId] = useState(null);
   const [myRoleId, setMyRoleId] = useState(null);
   
-  // [수정] 카테고리 인식 로직 강화 (한글/영어 모두 대응)
+  //  카테고리 인식 로직 강화 (한글/영어 모두 대응)
   const category = localStorage.getItem('category') || '안드로이드';
   const isAndroid = category && (category.includes('안드로이드') || category.toLowerCase().includes('android'));
   // 안드로이드가 아니면 AWS로 간주

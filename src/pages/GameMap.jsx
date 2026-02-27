@@ -195,7 +195,7 @@ export default function GameMap() {
       
   const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
   
-  // [수정] 완료 여부 체크 시 영문 텍스트를 한국어 원문으로 변환하여 체크
+  //  완료 여부 체크 시 영문 텍스트를 한국어 원문으로 변환하여 체크
   const isCompleted = (displayText) => {
     const stableText = getStableText(displayText);
     return completedTopics.includes(stableText);

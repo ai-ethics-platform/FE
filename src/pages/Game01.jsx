@@ -321,7 +321,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ContentTextBox2 from '../components/ContentTextBox2';
 
-// [수정] Game01은 '실루엣' 이미지인 Char 계열을 사용해야 합니다.
+//  Game01은 '실루엣' 이미지인 Char 계열을 사용해야 합니다.
 import charSilhouette1 from '../assets/images/Char1.jpg';
 import charSilhouette2 from '../assets/images/Char2.jpg';
 import charSilhouette3 from '../assets/images/Char3.jpg';
@@ -365,7 +365,7 @@ export default function Game01() {
   const isCustomMode = !!localStorage.getItem('code');
   const subtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || '') : (localStorage.getItem('subtopic') || '');
 
-  // [수정] Game01은 인물 실루엣을 고정으로 사용합니다.
+  //  Game01은 인물 실루엣을 고정으로 사용합니다.
   const silhouetteImages = [charSilhouette1, charSilhouette2, charSilhouette3];
 
   useEffect(() => {
@@ -460,7 +460,7 @@ export default function Game01() {
             />
           ) : null
         ) : (
-          /* [수정] 실루엣 이미지 배열 출력 + 원본의 안전 로직 적용 */
+          /*  실루엣 이미지 배열 출력 + 원본의 안전 로직 적용 */
           silhouetteImages.map((src, i) => {
             const isServerImage = src && (typeof src === 'string') && (src.startsWith('http://') || src.startsWith('https://'));
             return (

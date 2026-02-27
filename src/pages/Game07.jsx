@@ -8,7 +8,7 @@ import Continue3 from '../components/Continue3';
 import ResultPopup from '../components/Results';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 
-// [수정] 구형 데이터 import 삭제 -> 다국어 패키지 import
+//  구형 데이터 import 삭제 -> 다국어 패키지 import
 // import { paragraphsData } from '../components/paragraphs'; 
 import { translations } from '../utils/language';
 

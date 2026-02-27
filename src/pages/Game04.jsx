@@ -234,7 +234,7 @@ export default function Game04() {
     else navigate('/game03');
   };
 
-  // ✅ [수정] 하드코딩된 subtopicMap 제거 및 언어팩 데이터 활용
+  // ✅  하드코딩된 subtopicMap 제거 및 언어팩 데이터 활용
   const labels = isCustomMode
     ? { agree: customAgreeLabel, disagree: customDisagreeLbl }
     : (t.labels?.[stableKey] ?? { agree: lang === 'ko' ? '동의' : 'Agree', disagree: lang === 'ko' ? '비동의' : 'Disagree' });

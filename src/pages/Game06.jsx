@@ -291,7 +291,7 @@ export default function Game06() {
     } catch (e) { window.location.href = '/'; }
   };
 
-  // 4. [수정] 버튼 라벨 강제 적용
+  // 4.  버튼 라벨 강제 적용
   const uiLabels = {
     exit: ui.exit || (lang === 'ko' ? "나가기" : "Exit"),
     view_result: ui.view_result || (lang === 'ko' ? "결과 보기" : "View Results"),

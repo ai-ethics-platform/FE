@@ -116,7 +116,7 @@ export default function Login() {
       {/* 드롭박스(Select) 형식의 언어 선택기 
           추후 언어가 추가되면 <option> 태그만 추가.
       */}
-      {/* [수정] 상단 중앙 배치를 위해 스타일 변경 */}
+      {/*  상단 중앙 배치를 위해 스타일 변경 */}
       <div style={{ position: 'absolute', top: '20px', left: '93%', transform: 'translateX(-50%)', zIndex: 1000 }}>
         <select
           value={lang}

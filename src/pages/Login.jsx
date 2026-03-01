@@ -19,7 +19,7 @@ import FindPasswordModal from '../components/FindPasswordModal';
 import { translations } from '../utils/language/index';
 
 /**
- *  하드코딩된 주소를 환경변수로 분리
+ * 하드코딩된 주소를 환경변수로 분리
  */
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://dilemmai-idl.com';
 
@@ -27,8 +27,8 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 언어 설정 상태 관리 (초기값은 로컬스토리지 혹은 'ko')
-  const [lang, setLang] = useState(localStorage.getItem('app_lang') || 'ko');
+  // 언어 설정 상태 관리 (호환성을 위해 두 키값 모두 확인)
+  const [lang, setLang] = useState(localStorage.getItem('app_lang') || localStorage.getItem('language') || 'ko');
   const t = translations[lang].Login;
 
   const [pwVisible, setPwVisible] = useState(false);
@@ -41,11 +41,12 @@ export default function Login() {
   // 쿼리에서 code를 상태로 보관(초기값은 로컬스토리지)
   const [inviteCode, setInviteCode] = useState(() => localStorage.getItem('code') || '');
 
-  // 언어 변경 핸들러 (드롭다운 선택 시 호출)
+  // 언어 변경 핸들러 (호환성 확보를 위해 이중 키값 저장)
   const handleLanguageChange = (e) => {
     const selectedLang = e.target.value;
     setLang(selectedLang);
     localStorage.setItem('app_lang', selectedLang);
+    localStorage.setItem('language', selectedLang); 
   };
 
   // 로그인 처음 들어갈 때 로컬값 초기화
@@ -108,7 +109,7 @@ export default function Login() {
       {/* 드롭박스(Select) 형식의 언어 선택기 
           추후 언어가 추가되면 <option> 태그만 추가.
       */}
-      {/*  상단 중앙 배치를 위해 스타일 변경 */}
+      {/* 상단 중앙 배치를 위해 스타일 변경 */}
       <div style={{ position: 'absolute', top: '20px', left: '93%', transform: 'translateX(-50%)', zIndex: 1000 }}>
         <select
           value={lang}

@@ -58,11 +58,11 @@ import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 import UserProfile from '../components/Userprofile';
 import ContentTextBox from '../components/ContentTextBox';
-// 안드로이드 캐릭터 이미지
+
+// 캐릭터 이미지 임포트
 import character1 from '../assets/images/character1.png';
 import character2 from '../assets/images/character2.png';
 import character3 from '../assets/images/character3.png';
-// 자율 무기 시스템 캐릭터 이미지
 import killerCharacter1 from '../assets/images/Killer_Character1.jpg';
 import killerCharacter2 from '../assets/images/Killer_Character2.jpg';
 import killerCharacter3 from '../assets/images/Killer_Character3.jpg';
@@ -79,7 +79,7 @@ import voiceManager from '../utils/voiceManager';
 
 // 이미지 에셋 - 언어별 대응
 import hostInfoSvg from '../assets/host_info.svg';
-import hostInfoSvg_en from '../assets/en/host_info_en.svg'; // _en 접미사 규칙
+import hostInfoSvg_en from '../assets/en/host_info_en.svg';
 
 import HostInfoBadge from '../components/HostInfoBadge';
 // Localization 연동
@@ -89,21 +89,36 @@ export default function SelectHomeMate() {
   const navigate = useNavigate();
   
   // 프로젝트 표준 키값 app_lang 사용 및 언어팩 로드
-  const lang = localStorage.getItem('app_lang') || 'ko';
-  const t = translations?.[lang]?.SelectHomeMate || translations['ko']?.SelectHomeMate || {};
+  const getInitialLang = () => {
+    const savedAppLang = localStorage.getItem('app_lang');
+    const savedLanguage = localStorage.getItem('language');
+    
+    // 1. 저장된 값이 있다면 최우선 적용
+    if (savedAppLang) return savedAppLang;
+    if (savedLanguage) return savedLanguage;
 
-  // 언어 설정에 따른 이미지 선택 (확장형 로직)
+    // 2. 저장된 값이 없다면(새 컴퓨터), 브라우저 설정 언어 감지
+    const browserLang = navigator.language || navigator.userLanguage;
+    if (browserLang.startsWith('en')) return 'en';
+    
+    return 'ko'; // 기본값
+  };
+
+  const lang = getInitialLang();
+  
+  // 언어팩 로드 (폴백 보강)
+  const currentLangData = translations?.[lang] || translations['ko'] || {};
+  const t = currentLangData.SelectHomeMate || {};
+
+  // 언어 설정에 따른 이미지 선택
   const currentHostInfoSvg = (lang !== 'ko') ? hostInfoSvg_en : hostInfoSvg;
 
   const [activeIndex, setActiveIndex] = useState(null);
   const [hostId, setHostId] = useState(null);
   const [myRoleId, setMyRoleId] = useState(null);
   const [category, setCategory] = useState(null);
-
-  // 음성 세션 초기화 상태 (화이트 스크린 방지)
   const [voiceInitialized, setVoiceInitialized] = useState(false);
 
-  // round 계산 로직 유지
   const [round, setRound] = useState(() => {
     try {
       const c = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -116,26 +131,20 @@ export default function SelectHomeMate() {
   const { isConnected: websocketConnected } = useWebSocket();
   const { isHost, sendNextPage } = useHostActions();
   
-  // 페이지 이동 메시지 핸들러
-  useWebSocketNavigation(navigate, {
-    nextPagePath: '/matename' 
-  });
+  useWebSocketNavigation(navigate, { nextPagePath: '/matename' });
 
-  // 유저 도착 상태 관리
   const [arrivalStatus, setArrivalStatus] = useState({
     arrived_users: 0,
     total_required: 3,
     all_arrived: false,
   });
   
-  // 역할별 사용자 ID 매핑
   const [roleUserMapping, setRoleUserMapping] = useState({
     role1_user_id: null,
     role2_user_id: null,
     role3_user_id: null,
   });
 
-  // 컴포넌트 초기화 및 로컬스토리지 데이터 로드
   useEffect(() => {
     const storedHost = localStorage.getItem('host_id');
     const storedMyRole = localStorage.getItem('myrole_id');
@@ -152,15 +161,11 @@ export default function SelectHomeMate() {
       role2_user_id: role2,
       role3_user_id: role3,
     });
-
-    console.log(' [SelectHomeMate] 초기 데이터 로드 완료');
   }, [round]);
 
-  // 페이지 도착 기록 API 호출 (round * 7 유지)
   useEffect(() => {
     const roomCode = localStorage.getItem('room_code');
     const nickname = localStorage.getItem('nickname');
-
     if (roomCode && nickname) {
       axiosInstance.post('/rooms/page-arrival', {
         room_code: roomCode,
@@ -170,11 +175,9 @@ export default function SelectHomeMate() {
     }
   }, [round]);
 
-  // 모든 유저 도착 확인 폴링 로직
   useEffect(() => {
     const roomCode = localStorage.getItem('room_code');
     if (!roomCode) return;
-
     let timer;
     const poll = async () => {
       try {
@@ -191,7 +194,6 @@ export default function SelectHomeMate() {
     return () => clearTimeout(timer);
   }, [round]);
 
-  // 음성 세션 초기화 로직
   const initializeVoice = useCallback(async () => {
     if (voiceInitialized) return;
     const sessionId = localStorage.getItem('session_id');
@@ -210,7 +212,6 @@ export default function SelectHomeMate() {
     return () => clearTimeout(timer);
   }, [initializeVoice]);
 
-  // 카테고리 판별 및 이미지 매핑
   const currentCategory = localStorage.getItem('category') || '';
   const isAndroid = currentCategory.includes('안드로이드') || currentCategory.toLowerCase().includes('android');
   const isAWS = !isAndroid;
@@ -219,30 +220,27 @@ export default function SelectHomeMate() {
     ? [killerCharacter1, killerCharacter2, killerCharacter3] 
     : [character1, character2, character3];
 
-  // 출력 텍스트 구성
+  // 하드코딩된 한글을 제거하고 언어팩 데이터에만 의존
   const paragraphs = [
     {
-      main: isAWS
-        ? (t.mainAws || ' 여러분이 생각하는 자율 무기 시스템은 어떤 형태인가요?')
-        : (t.mainAndroid || ' 여러분이 생각하는 HomeMate는 어떤 형태인가요?'),
+      main: isAWS ? t.mainAws : t.mainAndroid,
       sub: isHost
         ? arrivalStatus.all_arrived
-          ? (t.subHostAllArrived || `(함께 토론한 후 방장이 선택하고, '다음' 버튼을 클릭해주세요)`)
-          : `${t.subWaiting || '(유저 입장 대기 중...'} ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`
+          ? t.subHostAllArrived
+          : `${t.subWaiting} ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`
         : arrivalStatus.all_arrived
-          ? (t.subGuestAllArrived || '(방장이 캐릭터를 선택할 때까지 기다려주세요)')
-          : `${t.subWaiting || '(유저 입장 대기 중...'} ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`,
+          ? t.subGuestAllArrived
+          : `${t.subWaiting} ${arrivalStatus.arrived_users}/${arrivalStatus.total_required})`,
     },
   ];
 
-  // 방장 전용 캐릭터 선택 핸들러
   const handleCharacterSelect = (idx) => {
     if (!isHost) {
-      alert(t.alertNotHost || '방장만 캐릭터를 선택할 수 있습니다.');
+      alert(t.alertNotHost || 'Only the host can select a character.');
       return;
     }
     if (!arrivalStatus.all_arrived) {
-      alert(t.alertWaitingAll || '모든 유저가 입장할 때까지 기다려주세요.');
+      alert(t.alertWaitingAll || 'Please wait until all players have entered.');
       return;
     }
     setActiveIndex(idx);
@@ -251,7 +249,6 @@ export default function SelectHomeMate() {
   const handleContinue = async () => {
     if (!isHost) return;
     if (!arrivalStatus.all_arrived || activeIndex === null) return;
-
     const roomCode = localStorage.getItem('room_code');
     try {
       await axiosInstance.post('/rooms/ai-select', {
@@ -266,11 +263,10 @@ export default function SelectHomeMate() {
         sendNextPage();
         return;
       }
-      alert(t.alertSelectFail || '메이트 선택 실패');
+      alert(t.alertSelectFail || 'Failed to select character.');
     }
   };
 
-  // 버튼 활성화 조건
   const canSelectCharacter = isHost && arrivalStatus.all_arrived;
   const canClickNext = canSelectCharacter && activeIndex !== null;
 
@@ -314,7 +310,6 @@ export default function SelectHomeMate() {
               />
             ))}
           </div>
-
           <div style={{ marginTop: 14, width: '100%' }}>
             <ContentTextBox
               paragraphs={paragraphs}

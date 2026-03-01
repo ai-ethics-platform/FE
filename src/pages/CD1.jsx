@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import ContentBox2 from '../components/ContentBox2';
+import ContentBox2 from '../components/ContentTextBox2';
 import PrimaryButton from '../components/PrimaryButton';
 
 // 이미지 에셋 임포트
@@ -33,6 +33,7 @@ export default function CD1() {
   useWebSocketNavigation(navigate, { infoPath: '/game02', nextPagePath: '/game02' });
   const { isConnected: websocketConnected } = useWebSocket();
 
+  // 언어 설정 (app_lang 및 language 키 호환)
   const lang = localStorage.getItem('app_lang') || localStorage.getItem('language') || 'ko';
   const currentLangData = translations?.[lang] || translations['ko'] || {};
   const t = currentLangData.CharacterDescription || {};
@@ -40,7 +41,7 @@ export default function CD1() {
   const t_ko_map = translations['ko']?.GameMap || {};
 
   const [voiceInitialized, setVoiceInitialized] = useState(false);
-  const [round, setRound] = useState();
+  const [round, setRound] = useState(); // Layout의 조건부 렌더링을 위해 초기값 undefined 유지
 
   const category = localStorage.getItem('category') || '';
   const isAndroid = category.includes('안드로이드') || category.toLowerCase().includes('android');
@@ -72,12 +73,13 @@ export default function CD1() {
     return () => clearTimeout(timer);
   }, [initializeVoice]);
 
+  // 이미지 및 텍스트 결정 로직
   const getImg = (ko, en) => (lang !== 'ko' ? en : ko);
   let descImg = getImg(player1DescImg_title1, player1DescImg_title1_en);
   let mainText = t.cd1_android_home;
 
   if (!isAWS) {
-    if (subtopic === t_map.andOption2_1 || subtopic === t_ko_map.andOption2_1) {
+    if (subtopic === t_map.andOption2_1 || subtopic === t_ko_map.andOption2_1 || subtopic === t_map.andOption2_2 || subtopic === t_ko_map.andOption2_2) {
       descImg = getImg(player1DescImg_title2, player1DescImg_title2_en);
       mainText = t.cd1_android_council;
     } else if (subtopic === t_map.andOption3_1 || subtopic === t_ko_map.andOption3_1) {
@@ -85,11 +87,12 @@ export default function CD1() {
       mainText = t.cd1_android_international;
     }
   } else {
-    if (subtopic === t_map.awsOption1_1 || subtopic === t_ko_map.awsOption1_1) { descImg = getImg(AWS_1, AWS_1_en); mainText = t.cd1_aws_1; }
-    else if (subtopic === t_map.awsOption1_2 || subtopic === t_ko_map.awsOption1_2) { descImg = getImg(AWS_2, AWS_2_en); mainText = t.cd1_aws_2; }
-    else if (subtopic === t_map.awsOption2_1 || subtopic === t_ko_map.awsOption2_1) { descImg = getImg(AWS_3, AWS_3_en); mainText = t.cd1_aws_3; }
-    else if (subtopic === t_map.awsOption2_2 || subtopic === t_ko_map.awsOption2_2) { descImg = getImg(AWS_4, AWS_4_en); mainText = t.cd1_aws_4; }
-    else if (subtopic === t_map.awsOption3_1 || subtopic === t_ko_map.awsOption3_1) { descImg = getImg(AWS_5, AWS_5_en); mainText = t.cd1_aws_5; }
+    // AWS 시나리오별 이미지/텍스트 직접 매핑
+    if (subtopic === t_map.awsOption1_1 || subtopic === t_ko_map.awsOption1_1 || subtopic === 'AI 알고리즘 공개') { descImg = getImg(AWS_1, AWS_1_en); mainText = t.cd1_aws_1; }
+    else if (subtopic === t_map.awsOption1_2 || subtopic === t_ko_map.awsOption1_2 || subtopic === 'AWS의 권한') { descImg = getImg(AWS_2, AWS_2_en); mainText = t.cd1_aws_2; }
+    else if (subtopic === t_map.awsOption2_1 || subtopic === t_ko_map.awsOption2_1 || subtopic === '사람이 죽지 않는 전쟁') { descImg = getImg(AWS_3, AWS_3_en); mainText = t.cd1_aws_3; }
+    else if (subtopic === t_map.awsOption2_2 || subtopic === t_ko_map.awsOption2_2 || subtopic === 'AI의 권리와 책임') { descImg = getImg(AWS_4, AWS_4_en); mainText = t.cd1_aws_4; }
+    else if (subtopic === t_map.awsOption3_1 || subtopic === t_ko_map.awsOption3_1 || subtopic === 'AWS 규제') { descImg = getImg(AWS_5, AWS_5_en); mainText = t.cd1_aws_5; }
     else { mainText = t.aws_default; }
   }
 
@@ -98,6 +101,7 @@ export default function CD1() {
     descImg = localStorage.getItem('role_image_1') || defaultimg;
   }
 
+  // 조사 치환 및 텍스트 구성
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
   const hasBatchim = (word) => {
     if (lang !== 'ko' || !word) return false;
@@ -107,9 +111,9 @@ export default function CD1() {
 
   const finalStr = (mainText || "")
     .replaceAll('{{mateName}}', mateName)
-    .replaceAll('{{eulReul}}', hasBatchim(mateName) ? '을' : '를')
-    .replaceAll('{{gwaWa}}', hasBatchim(mateName) ? '과' : '와')
-    .replaceAll('{{eunNeun}}', hasBatchim(mateName) ? '은' : '는');
+    .replaceAll('{{eulReul}}', lang === 'ko' ? (hasBatchim(mateName) ? '을' : '를') : '')
+    .replaceAll('{{gwaWa}}', lang === 'ko' ? (hasBatchim(mateName) ? '과' : '와') : '')
+    .replaceAll('{{eunNeun}}', lang === 'ko' ? (hasBatchim(mateName) ? '은' : '는') : '');
 
   return (
     <Layout round={round} subtopic={subtopic} me="1P" onBackClick={() => navigate('/game01')}>

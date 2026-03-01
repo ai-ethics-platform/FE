@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import ContentBox2 from '../components/ContentBox2';
+import ContentBox2 from '../components/ContentTextBox2';
 import PrimaryButton from '../components/PrimaryButton';
 
 // 이미지 에셋 임포트
@@ -76,7 +76,7 @@ export default function CD3() {
   let mainText = t.cd3_android_home;
 
   if (!isAWS) {
-    if (subtopic === t_map.andOption2_1 || subtopic === t_ko_map.andOption2_1) {
+    if (subtopic === t_map.andOption2_1 || subtopic === t_ko_map.andOption2_1 || subtopic === t_map.andOption2_2 || subtopic === t_ko_map.andOption2_2) {
       descImg = getImg(player3DescImg_title2, player3DescImg_title2_en);
       mainText = t.cd3_android_council;
     } else if (subtopic === t_map.andOption3_1 || subtopic === t_ko_map.andOption3_1) {
@@ -84,11 +84,11 @@ export default function CD3() {
       mainText = t.cd3_android_international;
     }
   } else {
-    if (subtopic === t_map.awsOption1_1 || subtopic === t_ko_map.awsOption1_1) { descImg = getImg(AWS_1, AWS_1_en); mainText = t.cd3_aws_1; }
-    else if (subtopic === t_map.awsOption1_2 || subtopic === t_ko_map.awsOption1_2) { descImg = getImg(AWS_2, AWS_2_en); mainText = t.cd3_aws_2; }
-    else if (subtopic === t_map.awsOption2_1 || subtopic === t_ko_map.awsOption2_1) { descImg = getImg(AWS_3, AWS_3_en); mainText = t.cd3_aws_3; }
-    else if (subtopic === t_map.awsOption2_2 || subtopic === t_ko_map.awsOption2_2) { descImg = getImg(AWS_4, AWS_4_en); mainText = t.cd3_aws_4; }
-    else if (subtopic === t_map.awsOption3_1 || subtopic === t_ko_map.awsOption3_1) { descImg = getImg(AWS_5, AWS_5_en); mainText = t.cd3_aws_5; }
+    if (subtopic === t_map.awsOption1_1 || subtopic === t_ko_map.awsOption1_1 || subtopic === 'AI 알고리즘 공개') { descImg = getImg(AWS_1, AWS_1_en); mainText = t.cd3_aws_1; }
+    else if (subtopic === t_map.awsOption1_2 || subtopic === t_ko_map.awsOption1_2 || subtopic === 'AWS의 권한') { descImg = getImg(AWS_2, AWS_2_en); mainText = t.cd3_aws_2; }
+    else if (subtopic === t_map.awsOption2_1 || subtopic === t_ko_map.awsOption2_1 || subtopic === '사람이 죽지 않는 전쟁') { descImg = getImg(AWS_3, AWS_3_en); mainText = t.cd3_aws_3; }
+    else if (subtopic === t_map.awsOption2_2 || subtopic === t_ko_map.awsOption2_2 || subtopic === 'AI의 권리와 책임') { descImg = getImg(AWS_4, AWS_4_en); mainText = t.cd3_aws_4; }
+    else if (subtopic === t_map.awsOption3_1 || subtopic === t_ko_map.awsOption3_1 || subtopic === 'AWS 규제') { descImg = getImg(AWS_5, AWS_5_en); mainText = t.cd3_aws_5; }
     else { mainText = t.aws_default; }
   }
 
@@ -98,17 +98,7 @@ export default function CD3() {
   }
 
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
-  const hasBatchim = (word) => {
-    if (lang !== 'ko' || !word) return false;
-    const code = word.charCodeAt(word.length - 1);
-    return (code >= 0xac00 && code <= 0xd7a3) && (code - 0xac00) % 28 !== 0;
-  };
-
-  const finalStr = (mainText || "")
-    .replaceAll('{{mateName}}', mateName)
-    .replaceAll('{{eulReul}}', hasBatchim(mateName) ? '을' : '를')
-    .replaceAll('{{gwaWa}}', hasBatchim(mateName) ? '과' : '와')
-    .replaceAll('{{eunNeun}}', hasBatchim(mateName) ? '은' : '는');
+  const finalStr = (mainText || "").replaceAll('{{mateName}}', mateName);
 
   return (
     <Layout round={round} subtopic={subtopic} me="3P" onBackClick={() => navigate('/game01')}>

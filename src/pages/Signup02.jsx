@@ -16,7 +16,7 @@ import axios from 'axios';
 import { translations } from '../utils/language/index';
 
 /**
- * [AI 수정] 하드코딩된 주소를 환경변수로 분리
+ *  하드코딩된 주소를 환경변수로 분리
  */
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://dilemmai-idl.com';
 
@@ -160,7 +160,7 @@ export default function Signup02() {
     }
   
     try {
-      // [AI 수정] 하드코딩된 주소를 API_BASE 변수로 교체
+      //  하드코딩된 주소를 API_BASE 변수로 교체
       const res = await axios.post(
         `${API_BASE}/auth/check-username`,
         { username: trimmedUsername },
@@ -197,7 +197,7 @@ export default function Signup02() {
       "voice_consent": true
     };
     try {
-      // [AI 수정] 하드코딩된 주소를 API_BASE 변수로 교체
+      //  하드코딩된 주소를 API_BASE 변수로 교체
       await axios.post(`${API_BASE}/auth/signup`, requestBody, {
         headers: { 'Content-Type': 'application/json' },
       });

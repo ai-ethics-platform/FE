@@ -48,14 +48,6 @@ export default function Login() {
     localStorage.setItem('app_lang', selectedLang);
   };
 
-  useEffect(() => {
-    const original = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = original;
-    };
-  }, []);
-
   // 로그인 처음 들어갈 때 로컬값 초기화
   useEffect(() => {
     clearAllLocalStorageKeys();

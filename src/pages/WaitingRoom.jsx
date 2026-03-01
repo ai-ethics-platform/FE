@@ -12,7 +12,7 @@ import player3 from "../assets/3player_withnum.svg";
 import axiosInstance from '../api/axiosInstance';
 import { FontStyles, Colors } from '../components/styleConstants';
 import codeBg from '../assets/roomcodebackground.svg';
-// 상단에서 ESM 방식으로 정상적으로 임포트합니다.
+// 상단 ESM 방식 임포트
 import infoFrame from '../assets/Frame 345.svg';
 import CancelReadyPopup from '../components/CancelReadyPopup';
 // 언어팩 임포트
@@ -22,11 +22,10 @@ export default function WaitingRoom() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- 언어 설정 로직 (기존 app_lang 방식 유지) ---
-  const savedLang = localStorage.getItem('app_lang');
-  const currentLang = (savedLang === 'en') ? 'en' : 'ko';
-  const t = translations[currentLang];
-  // --------------------------------------------
+  // 프로젝트 표준 다국어 로드 로직
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t = (lang !== 'ko') ? (translations[lang] || translations['en']) : translations['ko'];
+  const tw = t.WaitingRoom || {}; // WaitingRoom 섹션 별도 참조
 
   // zoom 수정
   // const allTopics = ['안드로이드', '자율 무기 시스템'];
@@ -36,16 +35,16 @@ export default function WaitingRoom() {
 
   // zoom 수정
   // 기본 토픽 목록 (언어팩 적용)
-  const defaultTopics = [t.WaitingRoom.topics.android, t.WaitingRoom.topics.aws];
-  const [category,setCategory] = useState();
+  const defaultTopics = [tw.topics?.android, tw.topics?.aws];
+  const [category, setCategory] = useState();
   // custom 모드 여부 확인
   const isCustomMode = Boolean(localStorage.getItem('code'));
-  const creatorTitle = localStorage.getItem('creatorTitle') || t.WaitingRoom.topics.custom;
+  const creatorTitle = localStorage.getItem('creatorTitle') || tw.topics?.custom;
 
-  // allTopics는 기존 그대로
+  // allTopics 구성
   const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
 
-  //   최초 렌더에서 localStorage.category를 우선 반영
+  // 최초 렌더링 시 localStorage 반영
   const [currentIndex, setCurrentIndex] = useState(() => {
     const stored = localStorage.getItem('category');
     const i = stored ? allTopics.indexOf(stored) : -1;
@@ -59,7 +58,7 @@ export default function WaitingRoom() {
     return fi >= 0 ? fi : 0;
   });
 
-  //   로컬(category) → UI 인덱스 동기화
+  // 로컬 카테고리값과 UI 인덱스 동기화
   const syncTopicFromLocal = (value) => {
     const cat = (value != null ? value : localStorage.getItem('category')) || '';
     const idx = allTopics.indexOf(cat);
@@ -68,62 +67,59 @@ export default function WaitingRoom() {
     }
   };
 
-  // 마운트 직후 한 번 더 동기화 
+  // 마운트 직후 동기화 실행
   useEffect(() => {
     syncTopicFromLocal();
   }, []);
   
-  //룸코드 복사 
+  // 룸코드 복사 상태
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(room_code).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 1000); // 1초 후 사라짐
+      setTimeout(() => setCopied(false), 1000); // 1초 후 제거
     });
   };
+
   // const setCategoryFromRoom = (room) => {
   //    if (room && typeof room.title === 'string' && room.title.length > 0) {
-  //      localStorage.setItem('category', room.title);
+  //       localStorage.setItem('category', room.title);
   //    }
   // };
-  //   useRef로 폴링 타이머 ID 관리
+
+  // 폴링 타이머 ID 관리
   const pollingIntervalRef = useRef(null);
 
-  // 1) UI 상태
-  //const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 ? initialIndex : 0);
+  // UI 및 팝업 상태
   const [showMicPopup, setShowMicPopup] = useState(false);
   const [showOutPopup, setShowOutPopup] = useState(false);
   const [myStatusIndex, setMyStatusIndex] = useState(0);
   const [showCancelPopup, setShowCancelPopup] = useState(false);
 
-  // 2) 유저 & 방 정보
+  // 유저 및 방 정보 상태
   const [myPlayerId, setMyPlayerId] = useState(null);
   const [hostUserId, setHostUserId] = useState(null);
 
-  // 3) 참가자 & 역할 상태
+  // 참가자 및 역할 배정 상태
   const [participants, setParticipants] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [statusIndexMap, setStatusIndexMap] = useState({});
   const [hasAssignedRoles, setHasAssignedRoles] = useState(false);
 
-  // 4) 폴링 관련 상태
+  // 폴링 및 업데이트 상태
   const [isPolling, setIsPolling] = useState(false);
-
-  // 업데이트 중복 방지 플래그
   const [isUpdating, setIsUpdating] = useState(false);
   
   const room_code = localStorage.getItem('room_code');
 
-  // A) 초기 데이터 로드 - 내 정보 조회
+  // 내 정보 조회 로직
   const loadMyInfo = async () => {
     try {
-      // 1. 로컬 스토리지에서 닉네임 먼저 확인
       let nickname = localStorage.getItem('nickname');
       let myUserId = localStorage.getItem('user_id');
 
       if (!nickname || !myUserId) {
-        // 2. 없으면 API 호출
         try {
           console.log('🔍 WaitingRoom: /users/me 호출 시도...');
           const { data: userInfo } = await axiosInstance.get('/users/me', {
@@ -132,33 +128,27 @@ export default function WaitingRoom() {
           myUserId = userInfo.id;
           nickname = userInfo.username || `Player_${myUserId}`;
 
-          // 3. 로컬 스토리지에 저장
           localStorage.setItem('nickname', nickname);
           localStorage.setItem('user_id', myUserId);
           console.log('✅ WaitingRoom: /users/me 성공:', { myUserId, nickname });
         } catch (apiErr) {
           const isCorsError = !apiErr.response && (apiErr.message?.includes('Network Error') || apiErr.code === 'ERR_NETWORK');
           if (isCorsError) {
-            console.error('❌ WaitingRoom CORS 에러: /users/me', {
-              message: apiErr.message,
-              code: apiErr.code,
-            });
-            console.warn('💡 백엔드 CORS 설정을 확인하세요. localStorage 값을 사용합니다.');
+            console.error('❌ WaitingRoom CORS 에러');
+            console.warn('💡 백엔드 CORS 설정 확인 필요. localStorage 값 사용.');
           } else {
-            console.error('❌ WaitingRoom: /users/me 호출 실패:', apiErr.response?.status, apiErr.response?.data || apiErr.message);
+            console.error('❌ WaitingRoom: /users/me 호출 실패');
           }
           
-          // 실패해도 localStorage에서 재시도
           nickname = localStorage.getItem('nickname');
           myUserId = localStorage.getItem('user_id');
           
           if (!myUserId) {
-            throw new Error('user_id를 확인할 수 없습니다.');
+            throw new Error('user_id 확인 불가');
           }
         }
       }
 
-      // 4. state 업데이트
       setMyPlayerId(String(myUserId));
       return myUserId;
     } catch (err) {
@@ -167,23 +157,21 @@ export default function WaitingRoom() {
     }
   };
 
-
-  // B) participants 로드 및 역할 배정 확인
+  // 참가자 데이터 및 역할 배정 확인 로직
   const loadParticipants = async () => {
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
-      // console.log(`API 응답:`, room);
       if (room?.title) {
-          localStorage.setItem('category', room.title);
-          if(isCustomMode){
+        localStorage.setItem('category', room.title);
+        if(isCustomMode){
           localStorage.setItem('creatorTitle', room.title);
         }
       }
       setParticipants(room.participants);
-       if (room && typeof room.title === 'string' && room.title.length > 0) {
-           localStorage.setItem('category', room.title);
-           syncTopicFromLocal(room.title);   // ← 저장 직후 UI 인덱스 동기화
-        }
+      if (room && typeof room.title === 'string' && room.title.length > 0) {
+        localStorage.setItem('category', room.title);
+        syncTopicFromLocal(room.title);   // 저장 직후 인덱스 동기화
+      }
       const hostUserId = room.created_by;
       setHostUserId(String(hostUserId));
 
@@ -231,6 +219,7 @@ export default function WaitingRoom() {
     }
   };
 
+  // 배정된 역할 데이터와 상태 동기화
   const updateAssignmentsWithRoles = async () => {
     if (participants.length === 0 || isUpdating) return;
     
@@ -280,6 +269,7 @@ export default function WaitingRoom() {
     }
   };
 
+  // 역할 배정 여부 체크
   const checkIfRolesAlreadyAssigned = () => {
     const role1 = localStorage.getItem('role1_user_id');
     const role2 = localStorage.getItem('role2_user_id');
@@ -288,19 +278,17 @@ export default function WaitingRoom() {
     return role1 && role2 && role3;
   };
 
+  // API 데이터 기준 역할 배정 여부 확인
   const checkRolesFromAPI = (participants) => {
     if (participants.length !== 3) return false;
     return participants.every(p => p.role_id != null);
   };
 
+  // 방장 전용 역할 배정 API 호출
   const assignRoles = async () => {
-    if (myPlayerId !== hostUserId) {
-     // console.log(`방장이 아니므로 역할 배정 스킵`);
-      return;
-    }
+    if (myPlayerId !== hostUserId) return;
 
     if (hasAssignedRoles || checkIfRolesAlreadyAssigned()) {
-      //console.log(`역할이 이미 배정되어 있음`);
       setHasAssignedRoles(true);
       return;
     }
@@ -333,8 +321,6 @@ export default function WaitingRoom() {
         if (hostAssignment) {
           localStorage.setItem('host_id', String(hostAssignment.role_id));
         }
-        
-       // console.log(` 방장: 로컬스토리지 저장 완료`);
       }
       
       setTimeout(() => {
@@ -348,35 +334,26 @@ export default function WaitingRoom() {
   };
 
   useEffect(() => {
-    console.log('✅ myStatusIndex 변경됨:', myStatusIndex);
-  }, [myStatusIndex]);
-
-  useEffect(() => {
     if (participants.length === 3 && myPlayerId === hostUserId) {
       const hasApiRoles = participants.every(p => p.role_id != null);
       if (!hasApiRoles) {
-        //console.log('useEffect 트리거: 역할 없음 → assignRoles 실행');
         assignRoles();
       }
     }
   }, [participants, myPlayerId, hostUserId]);
   
-  //   폴링 함수 - 방 상태를 주기적으로 확인
+  // 방 상태 주기적 확인 (폴링)
   const pollRoomStatus = async () => {
-
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
-      // 1. 참가자 업데이트
       setParticipants(room.participants);
       
-      // 2. 준비 상태 맵 업데이트
       const readyMap = {};
       room.participants.forEach(p => {
         readyMap[String(p.user_id)] = p.is_ready ? 1 : 0;
       });
       setStatusIndexMap(readyMap);
       
-      // 3. 내 준비 상태 업데이트
       if (myPlayerId) {
         const myParticipant = room.participants.find(p => String(p.user_id) === myPlayerId);
         if (myParticipant) {
@@ -386,86 +363,54 @@ export default function WaitingRoom() {
           }
         }
       }
-        // 🆕 추가: 참가자 수 줄어들면 역할 초기화
-    if (room.participants.length < 3) {
-      console.log('참가자가 나갔습니다. 역할 초기화');
-      localStorage.removeItem('role1_user_id');
-      localStorage.removeItem('role2_user_id');
-      localStorage.removeItem('role3_user_id');
-      localStorage.removeItem('myrole_id');
-      localStorage.removeItem('host_id');
 
-      setAssignments([]);
-      setHasAssignedRoles(false);
-    }
-
-    // 🆕 추가: 다시 3명 복귀 + 역할 없음 → 방장이 재배정
-    if (
-      room.participants.length === 3 &&
-      !room.participants.every(p => p.role_id != null)
-    ) {
-      if (String(myPlayerId) === String(room.created_by)) {
-        console.log('3명 다시 모임 → 역할 재배정 시작');
-        assignRoles();
+      // 인원 부족 시 역할 데이터 초기화
+      if (room.participants.length < 3) {
+        localStorage.removeItem('role1_user_id');
+        localStorage.removeItem('role2_user_id');
+        localStorage.removeItem('role3_user_id');
+        localStorage.removeItem('myrole_id');
+        localStorage.removeItem('host_id');
+        setAssignments([]);
+        setHasAssignedRoles(false);
       }
-    }
-      // 4. 역할 배정 확인 및 적용
-      const hasApiRoles = room.participants.length === 3 && 
-      room.participants.every(p => p.role_id != null);
+
+      // 3명 복귀 시 역할 재배정
+      if (room.participants.length === 3 && !room.participants.every(p => p.role_id != null)) {
+        if (String(myPlayerId) === String(room.created_by)) {
+          assignRoles();
+        }
+      }
       
+      const hasApiRoles = room.participants.length === 3 && room.participants.every(p => p.role_id != null);
       if (hasApiRoles) {
         const roleUserMap = {};
         room.participants.forEach(p => {
-          if (p.role_id) {
-            roleUserMap[p.role_id] = String(p.user_id);
-          }
+          if (p.role_id) roleUserMap[p.role_id] = String(p.user_id);
         });
         
-        // localStorage 업데이트 여부 확인
         const currentRole1 = localStorage.getItem('role1_user_id');
-        const currentRole2 = localStorage.getItem('role2_user_id');
-        const currentRole3 = localStorage.getItem('role3_user_id');
-        
-        if (currentRole1 !== (roleUserMap[1] || '') ||
-            currentRole2 !== (roleUserMap[2] || '') ||
-            currentRole3 !== (roleUserMap[3] || '')) {
-          
+        if (currentRole1 !== (roleUserMap[1] || '')) {
           localStorage.setItem('role1_user_id', roleUserMap[1] || '');
           localStorage.setItem('role2_user_id', roleUserMap[2] || '');
           localStorage.setItem('role3_user_id', roleUserMap[3] || '');
           
-          // 내 역할 업데이트
           const myUserId = localStorage.getItem('user_id');
           const myParticipant = room.participants.find(p => String(p.user_id) === String(myUserId));
-          if (myParticipant && myParticipant.role_id) {
-            localStorage.setItem('myrole_id', String(myParticipant.role_id));
-          }
+          if (myParticipant?.role_id) localStorage.setItem('myrole_id', String(myParticipant.role_id));
           
-          // 호스트 역할 업데이트
           const hostUserId = String(room.created_by);
           const hostParticipant = room.participants.find(p => String(p.user_id) === hostUserId);
-          if (hostParticipant && hostParticipant.role_id) {
-            localStorage.setItem('host_id', String(hostParticipant.role_id));
-          }
+          if (hostParticipant?.role_id) localStorage.setItem('host_id', String(hostParticipant.role_id));
           
           setHasAssignedRoles(true);
-          
-          // assignments 즉시 업데이트
-          setTimeout(() => {
-            updateAssignmentsWithRoles();
-          }, 5000);
+          setTimeout(() => updateAssignmentsWithRoles(), 5000);
         }
       }
       
-      // 5. 모든 유저가 준비 완료되었는지 확인 - 최우선 체크
       const readyCount = room.participants.filter(p => p.is_ready).length;
-    //  console.log(`준비 완료 현황: ${readyCount}/${room.participants.length}`);
-      
       if (readyCount === room.participants.length && room.participants.length === 3) {
-       // console.log(`모두 준비 완료`);
         stopPolling();
-        
-        // 게임 화면으로 이동
         navigate('/gameintro');
         return; 
       }
@@ -475,204 +420,108 @@ export default function WaitingRoom() {
     }
   };
 
-  // 폴링 시작 함수
+  // 폴링 시작 및 중지 로직
   const startPolling = () => {
-    // 이미 폴링 중이면 중복 시작 방지
-    if (pollingIntervalRef.current) {
-      return;
-    }
+    if (pollingIntervalRef.current) return;
     setIsPolling(true);
-    
-    // 즉시 한 번 실행
     pollRoomStatus();
-    
-    // 5초마다 폴링
-    pollingIntervalRef.current = setInterval(() => {
-      pollRoomStatus();
-    }, 5000);
+    pollingIntervalRef.current = setInterval(pollRoomStatus, 5000);
   };
 
-  // 폴링 중지 함수
   const stopPolling = () => {
-    
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
-    
     setIsPolling(false);
   };
 
-  // 초기화 useEffect
+  // 초기화 및 언마운트 처리
   useEffect(() => {
     const initializeRoom = async () => {      
       const myUserId = await loadMyInfo();
-      if (!myUserId) {
-        console.error(`사용자 정보 로드 실패`);
-        return;
-      }
+      if (!myUserId) return;
       
       const { hostUserId: loadedHostUserId } = await loadParticipants();
-      if (!loadedHostUserId) {
-        console.error(`호스트 정보 로드 실패`);
-        return;
-      }
+      if (!loadedHostUserId) return;
       
-      const isHost = String(myUserId) === String(loadedHostUserId);
-     
+      if (checkIfRolesAlreadyAssigned()) setHasAssignedRoles(true);
       
-      if (checkIfRolesAlreadyAssigned()) {
-        setHasAssignedRoles(true);
-      }
-      
-      setTimeout(() => {
-        updateAssignmentsWithRoles();
-      }, 200);
-      
-      // 폴링 시작
-      setTimeout(() => {
-        startPolling();
-      }, 5000);
+      setTimeout(() => updateAssignmentsWithRoles(), 200);
+      setTimeout(() => startPolling(), 5000);
     };
     
     initializeRoom();
-    
-    // 컴포넌트 언마운트 시 또는 room_code 변경 시 폴링 중지
-    return () => {
-      stopPolling();
-    };
+    return () => stopPolling();
   }, [room_code]);
 
-  // 방장이고 참가자가 3명일 때 역할 배정
-  useEffect(() => {
-    if (
-      participants.length === 3 &&
-      myPlayerId === hostUserId &&
-      !hasAssignedRoles
-    ) {
-      assignRoles();
-    }
-  }, [participants, myPlayerId, hostUserId, hasAssignedRoles]);
-
-  // 참가자 변경 시 assignments 업데이트
+  // 참가자 변동 시 배정 정보 업데이트
   useEffect(() => {
     if (participants.length > 0) {
-      const timeoutId = setTimeout(() => {
-        updateAssignmentsWithRoles();
-      }, 100);
-      
+      const timeoutId = setTimeout(() => updateAssignmentsWithRoles(), 100);
       return () => clearTimeout(timeoutId);
     }
   }, [participants]);
 
+  // 마이크 테스트 확인 후 준비 완료 API 호출
   const handleMicConfirm = async () => {
     try {
-      console.log(`준비하기 API 호출`);
-      const { data } = await axiosInstance.post('/rooms/ready', { room_code });
-     // console.log('✅ 준비 눌림 → 상태 1로 설정 시도');
-
+      await axiosInstance.post('/rooms/ready', { room_code });
       setMyStatusIndex(1);
       setShowMicPopup(false);
-      
-      // 준비 완료 후 즉시 폴링으로 상태 확인 
-      setTimeout(() => {
-        pollRoomStatus();
-      }, 500);
-      
+      setTimeout(() => pollRoomStatus(), 500);
     } catch (err) {
       console.error(`ready 실패:`, err);
     }
   };
 
   const getPlayerImage = (roleId) => {
-    const playerImages = {
-      1: player1,
-      2: player2,
-      3: player3
-    };
+    const playerImages = { 1: player1, 2: player2, 3: player3 };
     return playerImages[roleId] || player1;
   };
 
+  // 나를 가운데로 정렬한 플레이어 순서 반환
   const getOrderedPlayers = () => {
-  
-    // participants가 있으면 항상 3명을 표시 (assignments가 없어도)
     if (!myPlayerId || participants.length !== 3) {
-      const playerIds = participants.map(p => p.user_id);
-      //console.log(`조건 미충족, 기본 순서 반환:`, playerIds);
-      return playerIds;
+      return participants.map(p => p.user_id);
     }
-
-    // 나를 가운데 놓고 나머지를 양옆에 배치
     const allPlayerIds = participants.map(p => p.user_id);
     const otherPlayerIds = allPlayerIds.filter(id => String(id) !== String(myPlayerId));
-    
-    const orderedPlayers = [
-      otherPlayerIds[0], // 왼쪽
-      myPlayerId,        // 가운데 (나)
-      otherPlayerIds[1]  // 오른쪽
-    ].filter(Boolean);
-    
-
-    return orderedPlayers;
+    return [otherPlayerIds[0], myPlayerId, otherPlayerIds[1]].filter(Boolean);
   };
-  const isReady = Boolean(statusIndexMap[myPlayerId] === 1);
 
-  // 디버깅용 전역 함수
+  // 디버깅용 전역 객체 등록
   useEffect(() => {
     window.debugWaitingRoom = {
       getStatus: () => ({
         isPolling,
-        pollingIntervalRef: pollingIntervalRef.current,
         myPlayerId,
         hostUserId,
         participants: participants.length,
         hasAssignedRoles,
         statusIndexMap,
-        assignments: assignments.length,
       }),
-      
-      forcePoll: () => {
-        //console.log('폴링 실행');
-        pollRoomStatus();
-      },
-      
-      startPolling: () => {
-       // console.log(' 폴링 시작');
-        startPolling();
-      },
-      
-      stopPolling: () => {
-       // console.log(' 폴링 중지');
-        stopPolling();
-      }
+      forcePoll: pollRoomStatus,
+      startPolling,
+      stopPolling
     };
-
-    return () => {
-      delete window.debugWaitingRoom;
-    };
-  }, [isPolling, myPlayerId, hostUserId, participants, hasAssignedRoles, statusIndexMap, assignments]);
+    return () => { delete window.debugWaitingRoom; };
+  }, [isPolling, myPlayerId, hostUserId, participants, hasAssignedRoles, statusIndexMap]);
   
   const handleCancelConfirm = () => {
-    // 1) 로컬 인덱스 리셋
     setMyStatusIndex(0);
-    // 2) 팝업 닫기
     setShowCancelPopup(false);
   };
 
   return (
     <Background bgIndex={2}>
-    
-      {/* 좌측 상단 UI 영역을 Absolute Positioning 방식으로 변경합니다. 
-          이제 각 요소가 서로 간섭하지 않고 독립적으로 움직입니다. 
-      */}
       <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 1000 }}>
-        
-        {/* 1. 뒤로 가기 버튼 위치 조정 (사용자 설정값 유지) */}
+        {/* 뒤로 가기 버튼 (사용자 설정값 유지) */}
         <div style={{ position: 'absolute', zIndex: 2, top: -10, left: -10 }}>
           <BackButton onClick={() => setShowOutPopup(true)} /> 
         </div>
 
-        {/* 2. 룸코드 박스 위치 조정 (사용자 설정값 유지: left 165) */}
+        {/* 룸코드 박스 (사용자 설정값 유지) */}
         <div
           style={{
             position: 'absolute',
@@ -715,7 +564,7 @@ export default function WaitingRoom() {
               userSelect: 'none',
             }}
           >
-            {t.WaitingRoom.code}: {room_code}
+            {tw.code}: {room_code}
           </span>
           {copied && (
             <div
@@ -734,11 +583,12 @@ export default function WaitingRoom() {
                 zIndex: 10,
               }}
             >
-              {t.WaitingRoom.copied}
+              {tw.copied}
             </div>
           )}
         </div>
 
+        {/* 정보 안내 프레임 */}
         <div 
           style={{ 
             position: 'absolute', 
@@ -766,8 +616,7 @@ export default function WaitingRoom() {
               marginTop: '5px' 
             }}
           >
-            {/* 언어 설정에 따라 t.WaitingRoom.infoText를 정상 출력합니다. */}
-            {t.WaitingRoom.infoText}
+            {tw.infoText}
           </span>
         </div>
       </div>
@@ -783,16 +632,15 @@ export default function WaitingRoom() {
         </div>
       )}
 
-      <div style={{
-        position: 'absolute', top: '6%', left: '50%',
-        transform: 'translateX(-50%)'
-      }}>
+      {/* 상단 게임 주제 프레임 */}
+      <div style={{ position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)' }}>
         <GameFrame
           topic={allTopics[currentIndex]}
-            hideArrows={true}
+          hideArrows={true}
         />
       </div>
 
+      {/* 플레이어 카드 영역 */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
@@ -810,7 +658,7 @@ export default function WaitingRoom() {
           return (
             <div key={id} style={{ transform: `scale(${idx === 1 ? 1 : 0.9})` }}>
               <StatusCard
-                player={`${id}${t.WaitingRoom.player}`}
+                player={`${id}${tw.player}`}
                 isOwner={isOwner}
                 isMe={isMe}
                 roleId={assign?.role_id}
@@ -830,19 +678,20 @@ export default function WaitingRoom() {
           onConfirm={handleMicConfirm}
         />
       )}
+
       {showCancelPopup && (
-          <div style={{
-            position: 'fixed', inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 1000
-          }}>
-            <CancelReadyPopup
-              onClose={() => setShowCancelPopup(false)}
-              onCancelConfirmed={handleCancelConfirm}
-            />
-          </div>
-    )}
+        <div style={{
+          position: 'fixed', inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <CancelReadyPopup
+            onClose={() => setShowCancelPopup(false)}
+            onCancelConfirmed={handleCancelConfirm}
+          />
+        </div>
+      )}
     </Background>
   );
 }

@@ -20,9 +20,12 @@ function onlyDigits(s) {
   return String(s ?? '').replace(/\D/g, '');
 }
 
-function isEmailComFormat(email) {
+/**
+ *  .com 외의 다양한 도메인을 허용하도록 일반적인 이메일 정규식으로 수정
+ */
+function isEmailFormat(email) {
   const v = String(email ?? '').trim();
-  return /^[^\s@]+@[^\s@]+\.com$/i.test(v);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
 function inRangeInt(value, min, max) {
@@ -38,11 +41,13 @@ function preventNonDigitKeyDown(e) {
   if (!/^\d$/.test(e.key)) e.preventDefault();
 }
 
+/**
+ *  불필요한 width 프롭 제거 및 flex 기반 레이아웃 최적화
+ */
 function BirthField({
   value,
   onChange,
   placeholder,
-  width = 104,
   maxLength = 4,
   onKeyDown,
   onPaste,
@@ -59,7 +64,7 @@ function BirthField({
       onKeyDown={onKeyDown}
       onPaste={onPaste}
       style={{
-        ...(width ? { width } : {}),
+        flex: 1,
         height: 56,
         background: Colors.grey01,
         border: 'none',
@@ -84,15 +89,15 @@ export default function FindIdModal({ onClose }) {
   const [email, setEmail] = useState('');
   const [birthY, setBirthY] = useState('');
   const [birthM, setBirthM] = useState('');
-  const [gender, setGender] = useState(''); // '남' | '여'
+  const [gender, setGender] = useState(''); // 'male' | 'female' (언어 독립적 키값 사용)
   const [loading, setLoading] = useState(false);
   const [resultText, setResultText] = useState('');
   const [errorText, setErrorText] = useState('');
 
   const birthdate = useMemo(() => buildBirthdate(birthY, birthM), [birthY, birthM]);
-  const emailOk = useMemo(() => isEmailComFormat(email), [email]);
+  const emailOk = useMemo(() => isEmailFormat(email), [email]);
   const birthOk = useMemo(() => {
-    const yOk = /^\d{4}$/.test(birthY) && inRangeInt(birthY, 1900, 2025);
+    const yOk = /^\d{4}$/.test(birthY) && inRangeInt(birthY, 1900, 2030); // 2025 -> 2030 확장
     const mOk = /^\d{1,2}$/.test(birthM) && inRangeInt(birthM, 1, 12);
     return yOk && mOk;
   }, [birthY, birthM]);
@@ -108,7 +113,7 @@ export default function FindIdModal({ onClose }) {
   }, [birthY, birthM, birthOk, t]);
 
   const canSubmit = useMemo(() => {
-    return emailOk && birthOk && birthdate && (gender === '남' || gender === '여') && !loading;
+    return emailOk && birthOk && birthdate && (gender === 'male' || gender === 'female') && !loading;
   }, [emailOk, birthOk, birthdate, gender, loading]);
 
   const submit = async () => {
@@ -117,14 +122,19 @@ export default function FindIdModal({ onClose }) {
     setErrorText('');
     setResultText('');
     try {
-      const body = { email: email.trim(), birthdate, gender };
+      // API 전송 시에는 서버가 기대하는 값('남'/'여' 혹은 키값)으로 변환하여 전송
+      const genderValue = gender === 'male' ? '남' : '여'; 
+      const body = { email: email.trim(), birthdate, gender: genderValue };
       const { data } = await axiosInstance.post(FIND_ID_ENDPOINT, body);
 
       const msg = data?.message || data?.detail || (typeof data === 'string' ? data : null);
       const found = data?.username || data?.user_id || data?.email || data?.result || null;
 
       if (found) {
-        setResultText(`${t.resultFoundPrefix || '사용자의 아이디(이메일)은'} ${found} ${t.resultFoundSuffix || '입니다.'}`);
+        //  prefix와 suffix 사이에 불필요한 공백 발생 방지
+        const prefix = t.resultFoundPrefix || '사용자의 아이디(이메일)은';
+        const suffix = t.resultFoundSuffix || '입니다.';
+        setResultText(`${prefix} ${found} ${suffix}`);
       } else if (msg) {
         setResultText(String(msg));
       } else {
@@ -143,12 +153,15 @@ export default function FindIdModal({ onClose }) {
     }
   };
 
-  const GenderButton = ({ label }) => {
-    const selected = gender === label;
+  /**
+   *  내부 상태값(type)과 표시용 텍스트(label) 분리
+   */
+  const GenderButton = ({ type, label }) => {
+    const selected = gender === type;
     return (
       <button
         type="button"
-        onClick={() => setGender(label)}
+        onClick={() => setGender(type)}
         style={{
           flex: 1,
           height: 56,
@@ -159,7 +172,7 @@ export default function FindIdModal({ onClose }) {
           ...FontStyles.body,
         }}
       >
-        {label === '남' ? (t.genderMale || '남자') : (t.genderFemale || '여자')}
+        {label}
       </button>
     );
   };
@@ -227,8 +240,6 @@ export default function FindIdModal({ onClose }) {
               setBirthY(onlyDigits(e.clipboardData.getData('text')).slice(0, 4));
             }}
             placeholder={t.placeholderYear || "년도"}
-            width={undefined}
-            maxLength={4}
             style={{ flex: 1.6, minWidth: 140 }}
           />
           <BirthField
@@ -240,7 +251,6 @@ export default function FindIdModal({ onClose }) {
               setBirthM(onlyDigits(e.clipboardData.getData('text')).slice(0, 2));
             }}
             placeholder={t.placeholderMonth || "월"}
-            width={undefined}
             maxLength={2}
             style={{ flex: 1, minWidth: 96 }}
           />
@@ -255,8 +265,8 @@ export default function FindIdModal({ onClose }) {
           {t.labelGender || '성별을 선택해 주세요.'}
         </div>
         <div style={{ display: 'flex', width: '100%', justifyContent: 'center', gap: 18, marginBottom: 28 }}>
-          <GenderButton label="남" />
-          <GenderButton label="여" />
+          <GenderButton type="male" label={t.genderMale || '남자'} />
+          <GenderButton type="female" label={t.genderFemale || '여자'} />
         </div>
       </div>
 

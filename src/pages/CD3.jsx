@@ -4,27 +4,54 @@ import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox2';
 import { useWebRTC } from '../WebRTCProvider';
 import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import { resolveParagraphs } from '../utils/resolveParagraphs';
 
 import player3DescImg_title1 from '../assets/3player_des1.svg';
 import player3DescImg_title2 from '../assets/3player_des2.svg';
 import player3DescImg_title3 from '../assets/3player_des3.svg';
+
+//  영문용 에셋 임포트 (_en)
+import player3DescImg_title1_en from '../assets/en/3player_des1_en.svg';
+import player3DescImg_title2_en from '../assets/en/3player_des2_en.svg';
+import player3DescImg_title3_en from '../assets/en/3player_des3_en.svg';
+
 import AWS_1 from '../assets/3player_AWS_1.svg';
 import AWS_2 from '../assets/3player_AWS_2.svg';
 import AWS_3 from '../assets/3player_AWS_3.svg';
 import AWS_4 from '../assets/3player_AWS_4.svg';
 import AWS_5 from '../assets/3player_AWS_5.svg';
+
+//  영문용 AWS 에셋 임포트 (_en)
+import AWS_1_en from '../assets/en/3player_AWS_1_en.svg';
+import AWS_2_en from '../assets/en/3player_AWS_2_en.svg';
+import AWS_3_en from '../assets/en/3player_AWS_3_en.svg';
+import AWS_4_en from '../assets/en/3player_AWS_4_en.svg';
+import AWS_5_en from '../assets/en/3player_AWS_5_en.svg';
+
 import defaultimg from "../assets/images/Frame235.png";
 
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
+//  다국어 지원 임포트
+import { translations } from '../utils/language';
 
 export default function CD3() {
   const navigate = useNavigate();
-  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts, finalizeDisconnection } = useWebSocket();
+
+  //  다국어 설정
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  
+  // [표시용] 현재 언어 데이터
+  const t = translations[lang].CharacterDescription;
+  const t_map = translations[lang].GameMap;
+
+  // [논리 판단용] 한국어 기준 데이터 (저장된 값이 한국어이므로)
+  const t_ko_map = translations['ko'].GameMap; 
 
   const category = localStorage.getItem('category') || '안드로이드';
-  const isAWS = category === '자율 무기 시스템';
+  
+  // 카테고리 판단도 한국어 키값과 비교하여 안전성 확보
+  const isAWS = category.includes('자율 무기 시스템') || category === 'Autonomous Weapon Systems' || category === t_ko_map.categoryAWS;
 
   //  커스텀 모드 판단: code 존재 여부
   const isCustomMode = !!localStorage.getItem('code');
@@ -34,8 +61,8 @@ export default function CD3() {
   const rawSubtopic = localStorage.getItem('subtopic');
   const subtopic = isCustomMode ? creatorTitle : (rawSubtopic ?? 'AI의 개인 정보 수집');
 
- const [round, setRound] = useState();
- // 1. 라운드 계산
+  const [round, setRound] = useState();
+  // 1. 라운드 계산
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     const nextRound = completed.length + 1;
@@ -58,14 +85,14 @@ export default function CD3() {
   //         }
   //         return true;
   //       };
-      
+        
   //       if (!isConnected) {
   //         // 1) reloading-grace가 켜져 있으면 finalize 억제
   //         if (isReloadingGraceLocal()) {
   //           console.log('♻️ reloading grace active — finalize 억제');
   //           return;
   //         }
-      
+        
   //         // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
   //         const DEBOUNCE_MS = 1200;
   //         const timer = setTimeout(() => {
@@ -77,7 +104,7 @@ export default function CD3() {
   //             console.log('🔁 재연결/리로드 감지 — finalize 스킵');
   //           }
   //         }, DEBOUNCE_MS);
-      
+        
   //         return () => {
   //           cancelled = true;
   //           clearTimeout(timer);
@@ -99,55 +126,46 @@ export default function CD3() {
     return getVoiceStateForRole(roleId);
   };
 
-  let descImg = player3DescImg_title1;
-  let mainText =
-    '당신은 자녀 J씨입니다.\n 함께 사는 노쇠하신 어머니가 걱정되지만, 바쁜 직장생활로 어머니를 돌보아드릴 여유가 거의 없습니다. ';
+  //  이미지 선택 헬퍼
+  const getImg = (koImg, enImg) => (lang === 'en' ? enImg : koImg);
 
+  let descImg = getImg(player3DescImg_title1, player3DescImg_title1_en);
+  let mainText = t.cd3_android_home;
+
+  // [핵심 수정] 주제 판단 시 't_map'(현재언어)이 아닌 't_ko_map'(한국어)과 비교해야 함
   if (!isAWS) {
-    if (subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {
-      descImg = player3DescImg_title2;
-      mainText =
-        '당신은 본 회의를 진행하는 국가 인공지능 위원회의 대표입니다. \n 국가의 발전을 위해 더 나은 결정이 무엇일지 고민이 필요합니다.';
-    } else if (subtopic === '지구, 인간, AI') {
-      descImg = player3DescImg_title3;
-      mainText =
-        '당신은 가정용 로봇을 사용하는 소비자 대표입니다.\n 소비자의 입장에서 어떤 목소리를 내는 것이 좋을지 고민하고 있습니다.';
+    if (subtopic === t_ko_map.andOption2_1 || subtopic === t_ko_map.andOption2_2) {
+      descImg = getImg(player3DescImg_title2, player3DescImg_title2_en);
+      mainText = t.cd3_android_council;
+    } else if (subtopic === t_ko_map.andOption3_1) {
+      descImg = getImg(player3DescImg_title3, player3DescImg_title3_en);
+      mainText = t.cd3_android_international;
     }
   } else {
-    // 자율 무기 시스템 분기
+    // 자율 무기 시스템 분기 (마찬가지로 t_ko_map 사용)
     switch (true) {
-      case subtopic === 'AI 알고리즘 공개':
-        descImg = AWS_1;
-        mainText =
-          '당신은 군사 AI 윤리 전문가입니다. ' +
-          '당신이 살고 있는 지역에 최근 자율 무기 시스템의 학교 폭격 사건이 일어났습니다.';
+      case subtopic === t_ko_map.awsOption1_1:
+        descImg = getImg(AWS_1, AWS_1_en);
+        mainText = t.cd3_aws_1;
         break;
-      case subtopic === 'AWS의 권한':
-        descImg = AWS_2;
-        mainText =
-          `당신은 자율 무기 시스템 ${mateName} 도입 이후 작전 효율성과 병사들의 변화 양상을 모두 지켜보고 있는 군 지휘관입니다. ` +
-          '당신은 두 병사의 입장을 듣고, 군 전체가 나아갈 방향을 모색하려 합니다.';
+      case subtopic === t_ko_map.awsOption1_2:
+        descImg = getImg(AWS_2, AWS_2_en);
+        mainText = t.cd3_aws_2;
         break;
-      case subtopic === '사람이 죽지 않는 전쟁':
-        descImg = AWS_3;
-        mainText =
-          '당신은 본 회의를 진행하는 국가 인공지능 위원회의 대표입니다. ' +
-          '국가의 발전을 위해 더 나은 결정이 무엇일지 고민이 필요합니다.';
+      case subtopic === t_ko_map.awsOption2_1:
+        descImg = getImg(AWS_3, AWS_3_en);
+        mainText = t.cd3_aws_3;
         break;
-      case subtopic === 'AI의 권리와 책임':
-        descImg = AWS_4;
-        mainText =
-          '당신은 본 회의를 진행하는 국가 인공지능 위원회의 대표입니다. ' +
-          '국가의 발전을 위해 더 나은 결정이 무엇일지 고민이 필요합니다.';
+      case subtopic === t_ko_map.awsOption2_2:
+        descImg = getImg(AWS_4, AWS_4_en);
+        mainText = t.cd3_aws_4;
         break;
-      case subtopic === 'AWS 규제':
-        descImg = AWS_5;
-        mainText =
-          '당신은 저개발국 C의 글로벌 NGO 활동가입니다. ' +
-          '국제사회에 현장의 목소리를 내고자 이 자리에 참석했습니다.';
+      case subtopic === t_ko_map.awsOption3_1:
+        descImg = getImg(AWS_5, AWS_5_en);
+        mainText = t.cd3_aws_5;
         break;
       default:
-        mainText = '자율 무기 시스템 시나리오입니다. 먼저, 역할을 확인하세요.';
+        mainText = t.aws_default;
         break;
     }
   }
@@ -178,7 +196,20 @@ export default function CD3() {
     // subtopic은 위에서 creatorTitle로 이미 치환됨
   }
 
-  const paragraphs = [{ main: mainText }];
+  //  조사 처리를 위해 헬퍼 함수 정의 (필요 시)
+  const hasFinalConsonant = (kor) => {
+    if (lang === 'en') return false;
+    const lastChar = kor[kor.length - 1];
+    const code = lastChar.charCodeAt(0);
+    return code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0;
+  };
+  const getEulReul = (word) => lang === 'en' ? '' : (hasFinalConsonant(word) ? '을' : '를');
+
+  const paragraphs = [{ 
+    main: mainText
+      .replaceAll('{{mateName}}', mateName)
+      .replaceAll('{{eulReul}}', getEulReul(mateName))
+  }];
 
   const handleBackClick = () => {
     navigate('/game01');

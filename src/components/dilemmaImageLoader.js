@@ -1,3 +1,4 @@
+import { translations } from '../utils/language/index';
 
 // ✅ Vite 빌드 시 이미지가 제대로 포함되도록 import.meta.glob 사용
 // eager: true로 빌드 타임에 모든 이미지를 번들에 포함
@@ -48,8 +49,30 @@ const modeToOffset = {
 };
 
 export function getDilemmaImages(category, subtopic, mode = 'neutral', selectedCharacterIndex = 0) {
-  const prefix = topicPrefixes[category] || 'Android';
-  const base = subtopicToBaseIndex[subtopic] || 1;
+  // 현재 언어팩 로드
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t_map = translations[lang]?.GameMap || {};
+  const t_ko_map = translations['ko']?.GameMap || {};
+
+  // 1. 카테고리 정규화 (어떤 언어든 한국어 원문으로 변환)
+  let stableCategory = category;
+  if (category === 'Android' || category === t_map.categoryAndroid) {
+    stableCategory = '안드로이드';
+  } else if (category === 'Autonomous Weapon Systems' || category === t_map.categoryAWS) {
+    stableCategory = '자율 무기 시스템';
+  }
+
+  // 2. 주제(subtopic) 정규화
+  let stableSubtopic = subtopic;
+  // 현재 입력된 subtopic이 어떤 '키(Key)'인지 찾아서 한국어 원문으로 치환
+  const subtopicKey = Object.keys(t_map).find(key => t_map[key] === subtopic);
+  if (subtopicKey && t_ko_map[subtopicKey]) {
+    stableSubtopic = t_ko_map[subtopicKey];
+  }
+
+  // 정규화된 stableCategory와 stableSubtopic을 사용하여 데이터 조회
+  const prefix = topicPrefixes[stableCategory] || 'Android';
+  const base = subtopicToBaseIndex[stableSubtopic] || 1;
   const offset = modeToOffset[mode] || 0;
   const index = base + offset;
 

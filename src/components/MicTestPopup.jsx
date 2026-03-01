@@ -2,8 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
+import { translations } from '../utils/language/index';
 
 export default function MicTestPopup({ onConfirm, userImage }) {
+  // --- 언어 설정 로직 ---
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t = translations?.[lang]?.MicTestPopup || {};
+
   const [isConnected, setIsConnected] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [micLevel, setMicLevel] = useState(0);
@@ -72,7 +77,7 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         if (currentlySpeaking !== isSpeaking) {
           setIsSpeaking(currentlySpeaking);
           console.log('🗣️ 음성 상태:', currentlySpeaking ? '말하는 중' : '조용함', 
-                     `(레벨: ${average.toFixed(1)})`);
+                      `(레벨: ${average.toFixed(1)})`);
         }
         
         // 말하기 타이머 관리
@@ -94,11 +99,11 @@ export default function MicTestPopup({ onConfirm, userImage }) {
       console.error('❌ 마이크 접근 실패:', error);
       
       if (error.name === 'NotAllowedError') {
-        setError('마이크 접근이 거부되었습니다. 브라우저 설정을 확인해주세요.');
+        setError(t.errorNotAllowed || '마이크 접근이 거부되었습니다. 브라우저 설정을 확인해주세요.');
       } else if (error.name === 'NotFoundError') {
-        setError('마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.');
+        setError(t.errorNotFound || '마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.');
       } else {
-        setError('마이크 연결에 실패했습니다. 다시 시도해주세요.');
+        setError(t.errorDefault || '마이크 연결에 실패했습니다. 다시 시도해주세요.');
       }
     } finally {
       setIsInitializing(false);
@@ -202,12 +207,15 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         }} 
       />
 
+      {/*  제목 영역: whiteSpace 추가 */}
       <div style={{ 
         marginBottom: 32, 
         ...FontStyles.headlineNormal, 
-        color: Colors.brandPrimary 
+        color: Colors.brandPrimary,
+        textAlign: 'center',
+        whiteSpace: 'pre-line' 
       }}>
-        마이크를 테스트해 주세요
+        {t.title || '마이크를 테스트해 주세요'}
       </div>
 
       {/* 사용자 이미지 */}
@@ -285,15 +293,17 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         }} />
       </div>
 
-      {/* 상태 메시지 */}
+      {/*  상태 메시지 영역: whiteSpace 추가 */}
       <div style={{ 
         marginBottom: 20, 
-        height: 20,
+        height: 'auto', // 줄바꿈 대응을 위해 height를 유연하게 변경
+        minHeight: 20,
         ...FontStyles.body,
         color: Colors.textSecondary,
-        textAlign: 'center'
+        textAlign: 'center',
+        whiteSpace: 'pre-line'
       }}>
-        {isInitializing && '마이크 연결 중'}
+        {isInitializing && (t.initializing || '마이크 연결 중')}
         {error && (
           <span style={{ color: Colors.error }}>
             {error}
@@ -301,7 +311,7 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         )}
         {isConnected && !error && (
           <span style={{ color: isSpeaking ? Colors.brandPrimary : Colors.textSecondary }}>
-            {isSpeaking ? ' 말하는 중 ' : ' 마이크에 대고 말해보세요'}
+            {isSpeaking ? (t.speaking || ' 말하는 중 ') : (t.speakNow || ' 마이크에 대고 말해보세요')}
           </span>
         )}
       </div>
@@ -309,7 +319,7 @@ export default function MicTestPopup({ onConfirm, userImage }) {
       {/* 준비하기 버튼 */}
       <PrimaryButton 
         style={{ 
-          width: 168, 
+          width: lang === 'en' ? 200 : 168, 
           height: 72,
           opacity: isConnected && !error ? 1 : 0.5,
           cursor: isConnected && !error ? 'pointer' : 'not-allowed'
@@ -317,7 +327,7 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         onClick={handleConfirm}
         disabled={!isConnected || error}
       >
-        준비하기
+        {t.confirmBtn || '준비하기'}
       </PrimaryButton>
       
       {/* 재시도 버튼 (에러 발생 시) */}
@@ -335,7 +345,7 @@ export default function MicTestPopup({ onConfirm, userImage }) {
             fontSize: 14
           }}
         >
-          다시 시도
+          {t.retryBtn || '다시 시도'}
         </button>
       )}
 
@@ -349,7 +359,6 @@ export default function MicTestPopup({ onConfirm, userImage }) {
     </div>
   );
 }
-
 // import React from 'react';
 // import closeIcon from '../assets/close.svg';
 // import PrimaryButton from './PrimaryButton';

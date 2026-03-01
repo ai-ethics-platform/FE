@@ -14,9 +14,20 @@ import AWS_3 from '../assets/1player_AWS_3.svg';
 import AWS_4 from '../assets/1player_AWS_4.svg';
 import AWS_5 from '../assets/1player_AWS_5.svg';
 
+//  영문용 에셋 임포트
+import player1DescImg_title1_en from '../assets/en/1player_des1_en.svg';
+import player1DescImg_title2_en from '../assets/en/1player_des2_en.svg'; 
+import player1DescImg_title3_en from '../assets/en/1player_des3_en.svg'; 
+import AWS_1_en from '../assets/en/1player_AWS_1_en.svg';
+import AWS_2_en from '../assets/en/1player_AWS_2_en.svg';
+import AWS_3_en from '../assets/en/1player_AWS_3_en.svg';
+import AWS_4_en from '../assets/en/1player_AWS_4_en.svg';
+import AWS_5_en from '../assets/en/1player_AWS_5_en.svg';
+
 import defaultimg from "../assets/images/Frame235.png";
 
-
+//  다국어 지원 임포트
+import { translations } from '../utils/language';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
 import { useWebRTC } from '../WebRTCProvider';
@@ -24,14 +35,19 @@ import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 
-
 export default function CD1() {
   const navigate = useNavigate();
   useWebSocketNavigation(navigate, { infoPath: '/game02', nextPagePath: '/game02' });
   const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
 
+  //  다국어 설정 및 방어 로직
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const currentLangData = translations[lang] || translations['ko'] || {};
+  const t = currentLangData.CharacterDescription || {};
+  const t_map = currentLangData.GameMap || {};
+
   const category = localStorage.getItem('category') || '안드로이드';
-  const isAWS = category === '자율 무기 시스템';
+  const isAWS = category === '자율 무기 시스템' || category === 'Autonomous Weapon Systems';
 
   //  커스텀 모드 판단: code 존재 여부
   const isCustomMode = !!localStorage.getItem('code');
@@ -40,7 +56,13 @@ export default function CD1() {
   const rawSubtopic = localStorage.getItem('subtopic');
   const creatorTitle = localStorage.getItem('creatorTitle') || '';
   const subtopic = isCustomMode ? creatorTitle : (rawSubtopic || '');
- const [round, setRound] = useState();
+  const [round, setRound] = useState();
+
+  //  무한 로그 방지를 위해 useEffect 내부에서 1회만 출력하도록 변경]
+  useEffect(() => {
+    console.log('[CD1] Current Session Info:', { lang, category, subtopic });
+  }, []);
+
  // 1. 라운드 계산
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -49,7 +71,7 @@ export default function CD1() {
     localStorage.setItem('currentRound', String(nextRound));
   }, []);
 
-  //  //새로고침 시 재연결 로직 
+  //  //새로고침 시 재연결 로직 (기존 개발자 주석 유지)]
   // useEffect(() => {
   //     let cancelled = false;
   //     const isReloadingGraceLocal = () => {
@@ -108,8 +130,9 @@ export default function CD1() {
     return getVoiceStateForRole(role);
   };
 
-// 받침(종성) 유무 판별
+// 받침(종성) 유무 판별 (한국어 전용)
 function hasFinalConsonant(kor) {
+  if (lang === 'en') return false; 
   const lastChar = kor[kor.length - 1];
   const code = lastChar.charCodeAt(0);
   if (code >= 0xac00 && code <= 0xd7a3) {
@@ -121,78 +144,70 @@ function hasFinalConsonant(kor) {
 
 // 을/를
  function getEulReul(word) {
-  if (!word) return '';
+  if (!word || lang === 'en') return '';
   return hasFinalConsonant(word) ? '을' : '를';
 }
 
 // 과/와
  function getGwaWa(word) {
-  if (!word) return '';
+  if (!word || lang === 'en') return '';
   return hasFinalConsonant(word) ? '과' : '와';
 }
 
 // 은/는
  function getEunNeun(word) {
-  if (!word) return '';
+  if (!word || lang === 'en') return '';
   return hasFinalConsonant(word) ? '은' : '는';
 }
-  // ── 기본(비커스텀) 이미지 & 텍스트 ─────────────────────────────
-  let descImg = player1DescImg_title1;
-  let mainText =
-    `당신은 어머니를 10년 이상 돌본 요양보호사 K입니다.\n` +
-    ` 최근 ${mateName}${getEulReul(mateName)} 도입한 후 전일제에서 하루 2시간 근무로 전환되었습니다.\n` +
-    ` 당신은 로봇이 수행할 수 없는 업무를 주로 담당하며, 근무 중 ${mateName}${getGwaWa(mateName)} 협업해야 하는 상황이 많습니다.`;
+  // ── 이미지 및 텍스트 결정 로직 ─────────────────────────────
+  const getImg = (koImg, enImg) => (lang === 'en' ? enImg : koImg);
+
+  let descImg = getImg(player1DescImg_title1, player1DescImg_title1_en);
+  let mainText = t.cd1_android_home || "당신은 요양보호사 K입니다."; // Fallback 텍스트]
 
   if (!isAWS) {
-    if (subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {
-      descImg = player1DescImg_title2;
-      mainText =
-        `당신은 국내 대규모 로봇 제조사 소속이자, 로봇 제조사 연합회의 대표입니다.\n` +
-        ` 당신은 국가적 로봇 산업의 긍정적인 발전과 활용을 위한 목소리를 내기 위하여 참여했습니다.`;
-    } else if (subtopic === '지구, 인간, AI') {
-      descImg = player1DescImg_title3;
-      mainText =
-        `당신은 HomeMate 개발사를 포함하여 다양한 기업이 소속된 연합체의 대표입니다.\n` +
-        ` 인공지능과 세계의 발전을 위해 필요한 목소리를 내고자 참석했습니다.`;
+    if (subtopic === t_map.andOption2_1 || subtopic === t_map.andOption2_2 || subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {
+      descImg = getImg(player1DescImg_title2, player1DescImg_title2_en);
+      mainText = t.cd1_android_council;
+    } else if (subtopic === t_map.andOption3_1 || subtopic === '지구, 인간, AI') {
+      descImg = getImg(player1DescImg_title3, player1DescImg_title3_en);
+      mainText = t.cd1_android_international;
     }
   } else {
+    // 자율 무기 시스템 분기 (모든 옵션 포함)]
     switch (subtopic) {
       case 'AI 알고리즘 공개':
-        descImg = AWS_1;
-        mainText = '당신은 최근 자율 무기 시스템의 학교 폭격 사건이 일어난 지역의 주민입니다.';
+      case t_map.awsOption1_1:
+        descImg = getImg(AWS_1, AWS_1_en);
+        mainText = t.cd1_aws_1;
         break;
       case 'AWS의 권한':
-        descImg = AWS_2;
-        mainText =
-          `당신은 최근 훈련을 마치고 자율 무기 시스템 ${mateName}${getGwaWa(mateName)} 함께 실전에 투입된 신입 병사 B입니다. ` +
-          `${mateName}${getEunNeun(mateName)} 정확하고 빠르게 움직이며, 실전에서 당신의 생존률을 높여준다고 느낍니다. ` +
-          `당신은 ${mateName}${getGwaWa(mateName)} 협업하는 것이 당연하고 자연스러운 시대의 흐름이라고 생각합니다.`;
+      case t_map.awsOption1_2:
+        descImg = getImg(AWS_2, AWS_2_en);
+        mainText = t.cd1_aws_2;
         break;
       case '사람이 죽지 않는 전쟁':
-        descImg = AWS_3;
-        mainText =
-          '당신은 대규모 AWS 제조 업체에서 핵심 알고리즘을 설계하는 개발자 중 한 명입니다.\n ' +
-          'AWS를 직접 만들어 내며 많은 윤리적 고민과 시행착오를 거쳐 왔습니다.';
+      case t_map.awsOption2_1:
+        descImg = getImg(AWS_3, AWS_3_en);
+        mainText = t.cd1_aws_3;
         break;
       case 'AI의 권리와 책임':
-        descImg = AWS_4;
-        mainText =
-          '당신은 대규모 AWS 제조 업체에서 핵심 알고리즘을 설계하는 개발자 중 한 명입니다. ' +
-          'AWS를 직접 만들어 내며 많은 윤리적 고민과 시행착오를 거쳐 왔습니다.';
+      case t_map.awsOption2_2:
+        descImg = getImg(AWS_4, AWS_4_en);
+        mainText = t.cd1_aws_4;
         break;
       case 'AWS 규제':
-        descImg = AWS_5;
-        mainText =
-          '당신은 AWS 기술 보유 중인 중견국 A의 국방 기술 고문입니다. ' +
-          'AWS가 기회가 될지 위험이 될지 판단하고자 국제 인류 발전 위원회에 참석했습니다.';
+      case t_map.awsOption3_1:
+        descImg = getImg(AWS_5, AWS_5_en);
+        mainText = t.cd1_aws_5;
         break;
       default:
-        mainText = '자율 무기 시스템 시나리오입니다. 먼저, 역할을 확인하세요.';
+        mainText = t.aws_default;
         break;
     }
   }
 
-  // ── URL 보정 유틸 (Editor 계열과 동일 전략) ────────────────────
+  // ── URL 보정 유틸 ────────────────────
   const resolveImageUrl = (raw) => {
     if (!raw || raw === '-' || String(raw).trim() === '') return null;
     const u = String(raw).trim();
@@ -202,30 +217,25 @@ function hasFinalConsonant(kor) {
     return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
   };
 
-  // ── 커스텀 모드: 텍스트/이미지/서브토픽 교체 ─────────────────────
+  // ── 커스텀 모드 ─────────────────────
   if (isCustomMode) {
-    // 텍스트: charDes1 (단일 문자열)
     const charDes1 = (localStorage.getItem('charDes1') || '').trim();
-    if (charDes1) {
-      mainText = charDes1;
-    }
-
-    // 이미지: role_image_1 (문자열 경로)
+    if (charDes1) mainText = charDes1;
     const rawRoleImg = localStorage.getItem('role_image_1') || '';
     const customImg = resolveImageUrl(rawRoleImg);
-    // ✅ 커스텀 모드에서는 role_image가 없으면 기본 이미지(Frame235)로 표시
     descImg = customImg ?? defaultimg;
-    // subtopic은 위에서 이미 creatorTitle로 치환됨
   }
 
-  // 문단 구성
-  const paragraphs = [{ main: mainText }];
- // const paragraphs = resolveParagraphs(rawParagraphs, mateName);
+  const paragraphs = [{ 
+    main: (mainText || "")
+      .replaceAll('{{mateName}}', mateName)
+      .replaceAll('{{eulReul}}', getEulReul(mateName))
+      .replaceAll('{{gwaWa}}', getGwaWa(mateName))
+      .replaceAll('{{eunNeun}}', getEunNeun(mateName))
+  }];
 
   const handleContinue = () => {
     navigate('/character_all');
-    // if (isHost) sendNextPage();
-    // else alert('⚠️ 방장만 진행할 수 있습니다.');
   };
 
   const handleBackClick = () => {
@@ -234,15 +244,7 @@ function hasFinalConsonant(kor) {
 
   return (
     <Layout round={round} subtopic={subtopic} me="1P" onBackClick={handleBackClick}>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 32,
-          marginTop: 22,
-        }}
-      >
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32, marginTop: 22 }}>
         <img
           src={descImg}
           alt="Player 1 설명 이미지"

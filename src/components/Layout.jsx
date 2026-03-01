@@ -5,67 +5,132 @@ import GameFrame from '../components/GameFrame';
 import { useVoiceRoleStates } from '../hooks/useVoiceRoleStates';
 import voiceManager from '../utils/voiceManager';
 import BackButton from './BackButton';
-import hostInfoSvg from '../assets/host_info.svg'; // 상단 import 필요
+import hostInfoSvg from '../assets/host_info.svg'; 
 import HostInfoBadge from '../components/HostInfoBadge';
+
+//  서버 데이터 동기화를 위한 axios 인스턴스 임포트
+import axiosInstance from '../api/axiosInstance';
 
 // Character popup components
 import CharacterPopup1 from '../components/CharacterPopUp';
 import CharacterPopup2 from '../components/CharacterPopUp';
 import CharacterPopup3 from '../components/CharacterPopUp';
 import closeIcon from "../assets/close.svg";
-import { FontStyles,Colors } from './styleConstants';
-import ExtraPopup from '../components/ExtraPopup1'; // ✅ 여기 import 필요
+import { FontStyles, Colors } from './styleConstants';
+import ExtraPopup from '../components/ExtraPopup1'; 
+
+// 다국어 지원 임포트
+import { translations } from '../utils/language';
 
 export default function Layout({
-  subtopic ,
-  onProfileClick,
-  children,
-  round,
-  nodescription = false,
-  onBackClick,
-  showBackButton = true,
-  allowScroll = false,
-  hostmessage = false,   
-
-  popupStep = null,   // ✅ 추가
-  sidebarExtra = null,
-
+  subtopic, onProfileClick, children, round, nodescription = false,
+  onBackClick, showBackButton = true, allowScroll = false, hostmessage = false,
+  popupStep = null, sidebarExtra = null,
 }) {
-  // Zoom for responsive scaling
   const [zoom, setZoom] = useState(1);
+  
+  // 실시간 동기화를 위해 현재 언어와 언어팩을 변수화
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t_small = translations[lang]?.SmallDescription || {};
+  const t_map = translations[lang]?.GameMap || {};
+  const t_ko_map = translations['ko']?.GameMap || {}; 
 
-  // Room-specific roles
   const [hostId, setHostId] = useState(null);
   const [myRoleId, setMyRoleId] = useState(null);
-
-  // 역할별 사용자 ID 매핑
   const [roleUserMapping, setRoleUserMapping] = useState({
-    role1_user_id: null,
-    role2_user_id: null,
-    role3_user_id: null,
+    role1_user_id: null, role2_user_id: null, role3_user_id: null,
   });
 
-  // 음성 상태 관리 (다른 사용자들의 상태) - WebSocket으로 받는 데이터
   const { voiceStates, getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-
-  // 내 음성 세션 상태 (실시간 로컬 상태)
   const [myVoiceSessionStatus, setMyVoiceSessionStatus] = useState({
-    isConnected: false,
-    isSpeaking: false,
-    sessionId: null,
-    nickname: null,
-    participantId: null,
-    micLevel: 0,
-    speakingThreshold: 30,
-    
+    isConnected: false, isSpeaking: false, sessionId: null, nickname: null, participantId: null, micLevel: 0, speakingThreshold: 30,
   });
 
-  // 팝업 상태 
   const [openProfile, setOpenProfile] = useState(null);
   const roleIdMap = { '1P': 1, '2P': 2, '3P': 3 };
-  const mateName = localStorage.getItem('mateName') || 'HomeMate'; 
+
+  //  mateName을 상태(State)로 관리하여 서버 응답 시 즉시 UI 반영
+  const [mateName, setMateName] = useState(localStorage.getItem('mateName') || 'HomeMate'); 
+
+  //  서버에서 AI 이름을 불러와 로컬 스토리지 및 상태에 동기화
   useEffect(() => {
-    // 로컬스토리지에서 데이터 불러오기
+    const syncMateName = async () => {
+      const roomCode = localStorage.getItem('room_code');
+      if (!roomCode) return;
+
+      try {
+        const { data } = await axiosInstance.get('/rooms/ai-select', {
+          params: { room_code: roomCode },
+        });
+
+        if (data && data.ai_name) {
+          localStorage.setItem('mateName', data.ai_name);
+          setMateName(data.ai_name); // 상태를 업데이트하여 화면에 즉시 표시
+          console.log('✅ [Layout] AI 이름 서버 동기화 완료:', data.ai_name);
+        }
+      } catch (err) {
+        console.error('❌ [Layout] AI 이름 동기화 실패:', err);
+      }
+    };
+
+    syncMateName();
+  }, []);
+
+  // 역방향 매칭 및 실시간 재번역 헬퍼 함수
+  const getTranslatedValue = (raw) => {
+    if (!raw) return '';
+    let foundKey = null;
+    const allLangs = Object.keys(translations);
+    for (const l of allLangs) {
+      const map = translations[l]?.GameMap || {};
+      const key = Object.keys(map).find(k => map[k] === raw);
+      if (key) { foundKey = key; break; }
+    }
+    let resultText = raw;
+    if (foundKey && t_map[foundKey]) { resultText = t_map[foundKey]; }
+    
+    // [중요] 최신 mateName이 반영되도록 리플레이스 실행
+    return resultText.replaceAll('{{mateName}}', mateName);
+  };
+
+  const getSidebarRoleName = (player) => {
+    const roleId = roleIdMap[player];
+    const category = (localStorage.getItem('category') || '').trim();
+    const title = (localStorage.getItem('title') || '').trim();
+    const currentTitle = getTranslatedValue(title);
+    const currentSubtopic = getTranslatedValue(subtopic);
+    const isAndroid = category === '안드로이드' || category === 'Android' || category === t_map.categoryAndroid;
+    const isAWS = category === '자율 무기 시스템' || category === 'Autonomous Weapon Systems' || category === t_map.categoryAWS;
+
+    if (isAndroid) {
+      if (currentTitle === '가정' || currentTitle === t_ko_map.andSection1Title || currentTitle === t_map.andSection1Title) {
+        return roleId === 1 ? t_small.title_caregiver_k : roleId === 2 ? t_small.title_mother_l : t_small.title_child_j;
+      }
+      if (currentTitle === '국가 인공지능 위원회' || currentTitle === t_ko_map.andSection2Title || currentTitle === t_map.andSection2Title) {
+        return roleId === 1 ? t_small.title_industry_rep : roleId === 2 ? t_small.title_consumer_rep : t_small.title_council_rep;
+      }
+      if (currentTitle === '국제 인류 발전 위원회' || currentTitle === t_ko_map.andSection3Title || currentTitle === t_map.andSection3Title) {
+        return roleId === 1 ? t_small.title_industry_rep : roleId === 2 ? t_small.title_env_rep : t_small.title_consumer_rep;
+      }
+    }
+    if (isAWS) {
+      if (currentSubtopic === 'AI 알고리즘 공개' || currentSubtopic === t_ko_map.awsOption1_1 || currentSubtopic === t_map.awsOption1_1) {
+        return roleId === 1 ? t_small.title_resident : roleId === 2 ? t_small.title_soldier_j : t_small.title_ethics_expert;
+      }
+      if (currentSubtopic === 'AWS의 권한' || currentSubtopic === t_ko_map.awsOption1_2 || currentSubtopic === t_map.awsOption1_2) {
+        return roleId === 1 ? t_small.title_new_soldier : roleId === 2 ? t_small.title_veteran_soldier : t_small.title_commander;
+      }
+      if (currentSubtopic === '사람이 죽지 않는 전쟁' || currentSubtopic === t_ko_map.awsOption2_1 || currentSubtopic === t_map.awsOption2_1 || currentSubtopic === t_ko_map.awsOption2_2 || currentSubtopic === t_map.awsOption2_2) {
+        return roleId === 1 ? t_small.title_developer : roleId === 2 ? t_small.title_minister : t_small.title_council_rep;
+      }
+      if (currentSubtopic === 'AWS 규제' || currentSubtopic === t_ko_map.awsOption3_1 || currentSubtopic === t_map.awsOption3_1) {
+        return roleId === 1 ? t_small.title_advisor : roleId === 2 ? t_small.title_diplomat : t_small.title_ngo_activist;
+      }
+    }
+    return ''; 
+  };
+
+  useEffect(() => {
     const storedHost = localStorage.getItem('host_id');
     const storedMyRole = localStorage.getItem('myrole_id');
     const role1UserId = localStorage.getItem('role1_user_id');
@@ -75,377 +140,104 @@ export default function Layout({
     setHostId(storedHost);
     setMyRoleId(storedMyRole);
     setRoleUserMapping({
-      role1_user_id: role1UserId,
-      role2_user_id: role2UserId,
-      role3_user_id: role3UserId,
+      role1_user_id: role1UserId, role2_user_id: role2UserId, role3_user_id: role3UserId,
     });
 
-    console.log('📋 Layout 초기화:', {
-      hostId: storedHost,
-      myRoleId: storedMyRole,
-      roleMapping: {
-        role1: role1UserId,
-        role2: role2UserId,
-        role3: role3UserId,
-      }
-    });
-
-    // 윈도우 크기에 따라 zoom 계산 (최소 0.6 보장)
     const onResize = () => {
-      const widthRatio = window.innerWidth / 1480;  // 좌측 사이드바 고려 (220 + 1060 + 여백)
-      const heightRatio = window.innerHeight / 800; // 상하 여백 고려
+      const widthRatio = window.innerWidth / 1480;
+      const heightRatio = window.innerHeight / 800;
       const scale = Math.min(widthRatio, heightRatio, 1);
-      setZoom(Math.max(scale, 0.6)); // 최소 60% 크기 보장
+      setZoom(Math.max(scale, 0.6));
     };
     onResize();
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // 내 음성 세션 상태 업데이트 (실시간)
   useEffect(() => {
-    const statusInterval = setInterval(() => {
-      const currentStatus = voiceManager.getStatus();
-      setMyVoiceSessionStatus(currentStatus);
-    }, 100); // 100ms마다 업데이트 (빠른 반응)
-    
+    const statusInterval = setInterval(() => setMyVoiceSessionStatus(voiceManager.getStatus()), 100);
     return () => clearInterval(statusInterval);
   }, []);
 
-  // 특정 역할의 음성 상태 가져오기 (내 것은 실시간, 다른 사람은 WebSocket)
   const getVoiceStateForRoleWithMyStatus = (roleId) => {
     const roleIdStr = String(roleId);
-    
-    // 내 역할이면 실시간 상태 반환
-    if (roleIdStr === myRoleId) {
-      return {
-        is_speaking: myVoiceSessionStatus.isSpeaking,
-        is_mic_on: myVoiceSessionStatus.isConnected,
-        nickname: myVoiceSessionStatus.nickname || ''
-      };
-    }
-    
-    // 다른 사람 역할이면 WebSocket 상태 반환
+    if (roleIdStr === myRoleId) return { is_speaking: myVoiceSessionStatus.isSpeaking, is_mic_on: myVoiceSessionStatus.isConnected, nickname: myVoiceSessionStatus.nickname || '' };
     return getVoiceStateForRole(roleId);
   };
-  // allowScroll 페이지(Game09 등): 화면 상단부터 자연스럽게 스크롤되도록 viewport 정렬만 조정
-  // (position/inset/transform을 덮어써서 레이아웃이 깨지지 않게 최소 override만 적용)
-  const viewportOverride = allowScroll
-    ? {
-        overflowY: "auto",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        paddingTop: 24,
-        paddingBottom: 24,
-      }
-    : {};
 
-  // allowScroll 페이지: width는 반응형(100% + maxWidth)로 두고, transform은 건드리지 않음(zoom scale 유지)
-  const stageOverride = allowScroll
-    ? {
-        width: "100%",
-        maxWidth: "1060px",
-        minHeight: "720px",
-      }
-    : {};
+  const viewportOverride = allowScroll ? { overflowY: "auto", alignItems: "flex-start", justifyContent: "center", paddingTop: 24, paddingBottom: 24 } : {};
+  const stageOverride = allowScroll ? { width: "100%", maxWidth: "1060px", minHeight: "720px" } : {};
+
   return (
     <>
-      {/* Profile Popup as Component */}
       {!nodescription && openProfile && (
-        <div
-          style={{ 
-            position: 'fixed', 
-            inset: 0, 
-            background: 'rgba(0,0,0,0.6)', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            zIndex: 2000 
-          }}
-          onClick={() => setOpenProfile(null)}
-        >
-          <div
-            style={{ 
-              position: 'relative', 
-              background: '#fff', 
-              padding: 32, 
-              borderRadius: 12, 
-              boxShadow: '0 12px 30px rgba(0,0,0,0.25)' 
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {openProfile === '1P' && 
-            <CharacterPopup1
-            subtopic={subtopic}
-            roleId={roleIdMap[openProfile]}
-            mateName={mateName}
-            />}
-            {openProfile === '2P' && 
-            <CharacterPopup2 
-            subtopic={subtopic}
-            roleId={roleIdMap[openProfile]}
-            mateName={mateName}
-            />}
-            {openProfile === '3P' &&
-            <CharacterPopup3 
-            subtopic={subtopic}
-            roleId={roleIdMap[openProfile]}
-            mateName={mateName}/>}
-            <img
-              src={closeIcon}
-              alt="close"
-              style={{ 
-                position: 'absolute', 
-                top: 3, 
-                right: 3, 
-                width: 31, 
-                cursor: 'pointer' 
-              }}
-              onClick={() => setOpenProfile(null)}
-            />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }} onClick={() => setOpenProfile(null)}>
+          <div style={{ position: 'relative', background: '#fff', padding: 32, borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.25)' }} onClick={(e) => e.stopPropagation()}>
+            {openProfile === '1P' && <CharacterPopup1 subtopic={subtopic} roleId={1} mateName={mateName} />}
+            {openProfile === '2P' && <CharacterPopup2 subtopic={subtopic} roleId={2} mateName={mateName} />}
+            {openProfile === '3P' && <CharacterPopup3 subtopic={subtopic} roleId={3} mateName={mateName} />}
+            <img src={closeIcon} alt="close" style={{ position: 'absolute', top: 3, right: 3, width: 31, cursor: 'pointer' }} onClick={() => setOpenProfile(null)} />
           </div>
         </div>
       )}
       <Background bgIndex={2}>
-     
-      {showBackButton && ( 
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: -2,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              zIndex: 1000,
-              cursor: 'pointer',
-            }}
-          >
+        {showBackButton && (
+          <div style={{ position: 'absolute', top: 0, left: -2, display: 'flex', alignItems: 'center', gap: 8, zIndex: 1000, cursor: 'pointer' }}>
             <div style={{ position: 'relative', zIndex: 2 }}>
               <BackButton onClick={onBackClick} />
             </div>
           </div>
         )}
-         {hostmessage && hostId === myRoleId && (
-          <div
-            style={{
-              position: 'fixed',  
-              top: '50%',
-              left: '20px',
-              transform: `translateY(calc(-50% + 200px)) scale(${zoom})`,
-              transformOrigin: 'left top',
-              zIndex: 10,  // 유저 프로필(z-index: 10)보다 높음  
-            }}
-          >
-            <HostInfoBadge
-              src={hostInfoSvg}
-              alt="Host Info"
-              preset="hostInfo"
-              width={300}
-              height={300}
-            />
+        {hostmessage && hostId === myRoleId && (
+          <div style={{ position: 'fixed', top: '50%', left: '20px', transform: `translateY(calc(-50% + 200px)) scale(${zoom})`, transformOrigin: 'left top', zIndex: 10 }}>
+            <HostInfoBadge src={hostInfoSvg} alt="Host Info" preset="hostInfo" width={300} height={300} />
           </div>
         )}
-{/* {popupStep && (
-  <div
-    style={{
-      position: 'fixed',
-      zIndex: 3000,
-      ...(popupStep === 2
-        ? {
-          top: '68%', 
-          right:'13%'     
-          }
-        : {
-            top: '30%',      
-            right: 10,
-          }),
-    }}
-  >
-    <ExtraPopup mode={popupStep}
-    />
-  </div>
-)} */}
         <style>{`
-          html, body, #root {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-          }
-
-          .layout-viewport {
-            position: fixed;
-            inset: 0;
-            overflow: auto; /* 스크롤 허용 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column; /* 모바일/allowScroll에서도 깨지지 않게 기본은 column */
-          }
-
-          .layout-sidebar {
-            position: fixed;
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%) scale(${zoom});
-            transform-origin: left center;
-            width: 220px;
-            padding: 20px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0px;
-            align-items: flex-start;
-            z-index: 10;
-          }
-
-          .layout-sidebar-profiles {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            align-items: flex-start;
-            width: 100%;
-          }
-
-          .layout-sidebar-extra {
-            margin-top: 10px; /* 유저프로필 바로 아래 */
-            margin-left: 14px; /* 살짝 오른쪽 */
-            align-self: flex-start;
-          }
-
-          .layout-stage {
-            width: 1060px;
-            min-height: 720px;
-            height: auto;
-            position: relative;
-            transform: scale(${zoom});
-            transform-origin: center center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 42px 24px 32px;
-            margin: 40px auto;
-          }
-
-          .layout-gameframe {
-            width: 100%;
-            max-width: 500px;
-            margin-bottom: 10px;
-          }
-
-          @media (max-width: 1024px) {
-            .layout-sidebar {
-              position: static;
-              transform: scale(${zoom});
-              transform-origin: top center;
-              width: 100%;
-              left: auto;
-              top: auto;
-              flex-direction: column;
-              justify-content: flex-start;
-              padding: 12px 0;
-              margin-bottom: 20px;
-              align-items: center;
-            }
-
-            .layout-sidebar-profiles {
-              flex-direction: row;
-              justify-content: center;
-              align-items: flex-start;
-              width: 100%;
-            }
-
-            .layout-sidebar-extra {
-              margin-left: 0;
-              align-self: center;
-            }
-
-            .layout-stage {
-              position: static;
-              width: 100%;
-              max-width: 1060px;
-              transform: scale(${zoom});
-              padding: 24px 16px;
-              margin: 20px auto;
-            }
-          }
-          
-          .profile-hint {
-            position: absolute;
-            top: 20px;
-            left: 6%;
-            transform: translateX(-50%);
-            font-size: 14px;
-            color: ${Colors.grey06};
-            text-align: center;
-            opacity: 0.8;
-          }
-            
+          html, body, #root { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+          .layout-viewport { position: fixed; inset: 0; overflow: auto; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+          .layout-sidebar { position: fixed; top: 50%; left: 0; transform: translateY(-50%) scale(${zoom}); transform-origin: left center; width: 220px; padding: 20px 0; display: flex; flex-direction: column; gap: 0px; align-items: flex-start; z-index: 10; }
+          .layout-sidebar-profiles { display: flex; flex-direction: column; gap: 24px; align-items: flex-start; width: 100%; }
+          .layout-sidebar-extra { margin-top: 10px; margin-left: 14px; align-self: flex-start; }
+          .layout-stage { width: 1060px; min-height: 720px; height: auto; position: relative; transform: scale(${zoom}); transform-origin: center center; display: flex; flex-direction: column; align-items: center; padding: 42px 24px 32px; margin: 40px auto; }
+          .layout-gameframe { width: auto; max-width: none; margin-bottom: 10px; display: flex; justify-content: center; }
         `}</style>
         <div className="layout-viewport" style={viewportOverride}>
-        {!nodescription && (
-          <div className="profile-hint">
-          </div>
-        )}
           <aside className="layout-sidebar">
             <div className="layout-sidebar-profiles">
-              <UserProfile
-                player="1P"
-                isLeader={hostId === '1'}
-                isMe={myRoleId === '1'}
-                isSpeaking={getVoiceStateForRoleWithMyStatus(1).is_speaking}
-                isMicOn={getVoiceStateForRoleWithMyStatus(1).is_mic_on}
-                nickname={getVoiceStateForRoleWithMyStatus(1).nickname}
-                nodescription={nodescription}
-                {...(onProfileClick && {
-                  onClick: () => setOpenProfile('1P'),
-                  style: { cursor: 'pointer' },
-                })}
-              />
-              <UserProfile
-                player="2P"
-                isLeader={hostId === '2'}
-                isMe={myRoleId === '2'}
-                isSpeaking={getVoiceStateForRoleWithMyStatus(2).is_speaking}
-                isMicOn={getVoiceStateForRoleWithMyStatus(2).is_mic_on}
-                nickname={getVoiceStateForRoleWithMyStatus(2).nickname}
-                nodescription={nodescription}
-                {...(onProfileClick && {
-                  onClick: () => setOpenProfile('2P'),
-                  style: { cursor: 'pointer' },
-                })}
-              />
-              <UserProfile
-                player="3P"
-                characterDesc="자녀 J"
-                isLeader={hostId === '3'}
-                isMe={myRoleId === '3'}
-                isSpeaking={getVoiceStateForRoleWithMyStatus(3).is_speaking}
-                isMicOn={getVoiceStateForRoleWithMyStatus(3).is_mic_on}
-                nickname={getVoiceStateForRoleWithMyStatus(3).nickname}
-                nodescription={nodescription}
-                {...(onProfileClick && {
-                  onClick: () =>setOpenProfile('3P'),
-                  style: { cursor: 'pointer' },
-                })}
-              />
+              {['1P', '2P', '3P'].map(p => {
+                const mappedUserId = roleUserMapping[`role${roleIdMap[p]}_user_id`];
+                return (
+                  <UserProfile
+                    key={p} player={p}
+                    description={getSidebarRoleName(p)}
+                    isLeader={hostId === roleIdMap[p].toString()}
+                    isMe={myRoleId === roleIdMap[p].toString()}
+                    isSpeaking={getVoiceStateForRoleWithMyStatus(roleIdMap[p]).is_speaking}
+                    isMicOn={getVoiceStateForRoleWithMyStatus(roleIdMap[p]).is_mic_on}
+                    nickname={getVoiceStateForRoleWithMyStatus(roleIdMap[p]).nickname}
+                    nodescription={nodescription}
+                    onClick={() => {
+                      if (mappedUserId) {
+                        setOpenProfile(p);
+                        if (onProfileClick) onProfileClick(p);
+                      }
+                    }}
+                    style={{ cursor: mappedUserId ? 'pointer' : 'default' }}
+                  />
+                );
+              })}
             </div>
-
             {sidebarExtra && (
               <div className="layout-sidebar-extra">
                 {sidebarExtra}
               </div>
             )}
           </aside>
-
-          <section className="layout-stage"style={stageOverride}>
+          <section className="layout-stage" style={stageOverride}>
             <div className="layout-gameframe">
               <GameFrame
-                topic={
-                  round != null
-                    ? `Round ${round.toString().padStart(2, '0')} : ${subtopic}`
-                    : `${subtopic}`
-                }
+                topic={round != null ? `${t_small.round_label || 'Round'} ${round.toString().padStart(2, '0')} : ${getTranslatedValue(subtopic)}` : `${getTranslatedValue(subtopic)}`}
                 hideArrows
               />
             </div>
@@ -456,4 +248,3 @@ export default function Layout({
     </>
   );
 }
-

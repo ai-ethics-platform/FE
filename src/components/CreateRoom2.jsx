@@ -9,10 +9,12 @@ import mainTopicDefault from '../assets/maintopicframedefault.svg';
 import mainTopicHover from '../assets/maintopicframehover.svg';
 import mainTopicActive from '../assets/maintopicframe.svg';
 import axiosInstance from '../api/axiosInstance';
-
-const topics = ['안드로이드','자율 무기 시스템'];
+import { translations } from '../utils/language/index';
 
 export default function CreateRoom2({ onClose }) {
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t = translations?.[lang]?.CreateRoom || {};
+
   const [isPublic, setIsPublic] = useState(false); // 기본은 비공개
 
   const [selectedTopic, setSelectedTopic] = useState(null);
@@ -24,19 +26,11 @@ export default function CreateRoom2({ onClose }) {
     if (!selectedTopic) return;
   
     const title = `${selectedTopic}`;
-    const description = `AI 윤리 주제 중 '${selectedTopic}'에 대한 토론`;
+    const description = t.apiDesc ? t.apiDesc(selectedTopic) : `AI 윤리 주제 중 '${selectedTopic}'에 대한 토론`;
     const topic = selectedTopic;
   
     try {
       setLoading(true);
-  
-      //  1단계: 방 생성
-      // const response = await axiosInstance.post('/rooms/create/private', {
-      //   title,
-      //   description,
-      //   topic,
-      //   allow_random_matching: true
-      // });
       
       const endpoint = isPublic ? '/rooms/create/public' : '/rooms/create/private';
       const response = await axiosInstance.post(endpoint, {
@@ -51,14 +45,13 @@ export default function CreateRoom2({ onClose }) {
       localStorage.setItem('category', topic);
       console.log(" 방 생성 성공 room_code:", roomCode);
       
-      //  3단계: 대기방으로 이동
       navigate('/waitingroom', { state: { topic } });
   
     } catch (err) {
       console.error(' 방 생성 또는 입장 실패:', err);
-      console.error('응답 메시지:', err.response?.data);  // <-- 여기에 오류 메시지 나옴
+      console.error('응답 메시지:', err.response?.data);
 
-      alert('방 생성 또는 입장 중 오류가 발생했습니다.');
+      alert(t.errorAlert || '방 생성 또는 입장 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -69,6 +62,8 @@ export default function CreateRoom2({ onClose }) {
     if (hoveredTopic === topic) return mainTopicHover;
     return mainTopicDefault;
   };
+
+  if (!t.title) return null;
 
   return (
     <div
@@ -102,15 +97,14 @@ export default function CreateRoom2({ onClose }) {
       />
 
       <div style={{ ...FontStyles.headlineNormal, color: Colors.brandPrimary, marginBottom: 8 }}>
-        방 만들기
+        {t.title}
       </div>
       <div style={{ color: Colors.grey05, marginBottom: 32 }}>
-        이번 게임에서 플레이할 주제를 선택해 주세요.
+        {t.subtitle}
       </div>
-     {/* <RoomTypeToggle isPublic={isPublic} setIsPublic={setIsPublic} /> */}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
-        {topics.map((topic) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
+        {(t.topics || []).map((topic) => (
           <div
             key={topic}
             onClick={() => setSelectedTopic(topic)}
@@ -138,6 +132,20 @@ export default function CreateRoom2({ onClose }) {
         ))}
       </div>
 
+      {/* [추가] 시나리오 버튼과 방 만들기 버튼 사이의 안내 문구 */}
+      <div 
+        style={{ 
+          color: Colors.grey05, 
+          fontSize: '14px', 
+          textAlign: 'center', 
+          lineHeight: '1.5',
+          whiteSpace: 'pre-wrap',
+          marginBottom: 32 
+        }}
+      >
+        {t.guidance}
+      </div>
+
       <PrimaryButton
         disabled={!selectedTopic || loading}
         onClick={handleCreateRoom}
@@ -147,7 +155,7 @@ export default function CreateRoom2({ onClose }) {
           opacity: selectedTopic ? 1 : 0.4,
         }}
       >
-        {loading ? '로딩 중...' : '입장하기'}
+        {loading ? t.loading : t.entering}
       </PrimaryButton>
     </div>
   );

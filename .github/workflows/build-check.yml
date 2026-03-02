@@ -1,0 +1,26 @@
+name: Build Check
+
+on:
+  push:
+    branches: [ "main", "feature/*" ] # 푸시할 때마다 실행
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 프로젝트 Node 버전과 맞춤
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run build check
+        run: npm run build # 여기서 에러가 나면 로그가 기록됩니다.

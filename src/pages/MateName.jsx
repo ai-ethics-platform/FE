@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Background from '../Background';
-import UserProfile from '../Userprofile';
-import InputBoxSmall from '../InputBoxSmall';
-import ContentTextBox from '../ContentTextBox';
+import Background from '../components/Background';
+import UserProfile from '../components/Userprofile';
+import InputBoxSmall from '../components/InputBoxSmall';
+import ContentTextBox from '../components/ContentTextBox';
 
 import character1 from '../../assets/images/character1.png';
 import character2 from '../../assets/images/character2.png';
@@ -23,7 +23,7 @@ import voiceManager from '../../utils/voiceManager';
 import hostInfoSvg from '../../assets/host_info.svg';
 import hostInfoSvg_en from '../../assets/en/host_info_en.svg';
 
-import HostInfoBadge from '../HostInfoBadge';
+import HostInfoBadge from '../components/HostInfoBadge';
 // Localization 연동
 import { translations } from '../../utils/language/index';
 

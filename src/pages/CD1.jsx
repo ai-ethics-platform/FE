@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import ContentBox2 from '../components/ContentTextBox2';
+import ContentTextBox2 from '../components/ContentTextBox2';
 import PrimaryButton from '../components/PrimaryButton';
 
 // 이미지 에셋 임포트
@@ -119,7 +119,7 @@ export default function CD1() {
     <Layout round={round} subtopic={subtopic} me="1P" onBackClick={() => navigate('/game01')}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, marginTop: 22 }}>
         <img src={descImg} alt="Character" style={{ width: 264, height: 336, objectFit: 'contain' }} />
-        <ContentBox2 text={finalStr} />
+        <ContentTextBox2 text={finalStr} />
         <PrimaryButton onClick={() => navigate('/character_all')} style={{ width: 400, height: 60, marginTop: 10 }}>
           {currentLangData.UiElements?.next || '다음'}
         </PrimaryButton>

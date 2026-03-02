@@ -1,31 +1,31 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
-import UserProfile from '../components/Userprofile';
+import UserProfile from '../components/Userprofile'; // 트리 구조상 p가 소문자(Userprofile.jsx)임을 확인했습니다.
 import InputBoxSmall from '../components/InputBoxSmall';
 import ContentTextBox from '../components/ContentTextBox';
 
-import character1 from '../../assets/images/character1.png';
-import character2 from '../../assets/images/character2.png';
-import character3 from '../../assets/images/character3.png';
-import killerCharacter1 from '../../assets/images/Killer_Character1.jpg';
-import killerCharacter2 from '../../assets/images/Killer_Character2.jpg';
-import killerCharacter3 from '../../assets/images/Killer_Character3.jpg';
+import character1 from '../assets/images/character1.png';
+import character2 from '../assets/images/character2.png';
+import character3 from '../assets/images/character3.png';
+import killerCharacter1 from '../assets/images/Killer_Character1.jpg';
+import killerCharacter2 from '../assets/images/Killer_Character2.jpg';
+import killerCharacter3 from '../assets/images/Killer_Character3.jpg';
 
-import axiosInstance from '../../api/axiosInstance';
-import { useWebRTC } from '../../WebRTCProvider';
-import { useWebSocket } from '../../WebSocketProvider';
-import { Colors, FontStyles } from "../styleConstants";
-import { useWebSocketNavigation, useHostActions } from '../../hooks/useWebSocketMessage';
-import voiceManager from '../../utils/voiceManager';
+import axiosInstance from '../api/axiosInstance';
+import { useWebRTC } from '../WebRTCProvider';
+import { useWebSocket } from '../WebSocketProvider';
+import { Colors, FontStyles } from "../components/styleConstants"; // styleConstants는 components 폴더 안에 있습니다.
+import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
+import voiceManager from '../utils/voiceManager';
 
 // 이미지 에셋 - 언어별 대응
-import hostInfoSvg from '../../assets/host_info.svg';
-import hostInfoSvg_en from '../../assets/en/host_info_en.svg';
+import hostInfoSvg from '../assets/host_info.svg';
+import hostInfoSvg_en from '../assets/en/host_info_en.svg';
 
 import HostInfoBadge from '../components/HostInfoBadge';
 // Localization 연동
-import { translations } from '../../utils/language/index';
+import { translations } from '../utils/language/index';
 
 export default function MateName() {
   const navigate = useNavigate();
@@ -210,7 +210,7 @@ export default function MateName() {
         {/* 메인 컨텐츠 영역 */}
         <div style={{ position: 'absolute', top: '46%', left: '50%', transform: 'translate(-50%, -50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {selectedIndex !== null && images[selectedIndex] && (
-            <img
+            <img 
               src={images[selectedIndex]}     
               alt="Selected Character"
               style={{ width: 264, height: 350, objectFit: 'cover', borderRadius: 4, marginBottom: -15, opacity: isHost ? 1 : 0.8 }}

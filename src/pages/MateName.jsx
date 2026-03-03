@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
-import UserProfile from '../components/Userprofile'; // 트리 구조상 p가 소문자(Userprofile.jsx)임을 확인했습니다.
+import UserProfile from '../components/Userprofile';
 import InputBoxSmall from '../components/InputBoxSmall';
 import ContentTextBox from '../components/ContentTextBox';
 
@@ -15,7 +15,7 @@ import killerCharacter3 from '../assets/images/Killer_Character3.jpg';
 import axiosInstance from '../api/axiosInstance';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocket } from '../WebSocketProvider';
-import { Colors, FontStyles } from "../components/styleConstants"; // styleConstants는 components 폴더 안에 있습니다.
+import { Colors, FontStyles } from "../components/styleConstants"; 
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import voiceManager from '../utils/voiceManager';
 

@@ -20,7 +20,6 @@ const instance = axios.create({
   withCredentials: false, // 쿠키를 보내지 않으면 CORS가 더 관대함
 });
 
-// 상단 어딘가 공통 상수로 추가
 const MAX_500_REFRESH_RETRY = 1; // 500에서 refresh 시도 최대 횟수 (원하면 2로 올려도 됨)
 
 const isAuthRefreshRequest = (config) => {

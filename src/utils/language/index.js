@@ -29,7 +29,6 @@ import { Paragraphs as ParagraphsKo } from './ko/components/Paragraphs';
 import { UiElements as UiElementsKo } from './ko/components/UiElements';
 import { ResultPopup as ResultPopupKo } from './ko/components/ResultPopup';
 import { GuestLogin as koGuestLogin } from './ko/components/GuestLogin';
-// IntroductionPopup 데이터 임포트
 import { IntroductionPopup as IntroductionPopupKo } from './ko/components/IntroductionPopup';
 
 // --- 영어(en) 데이터 임포트 ---
@@ -63,7 +62,6 @@ import { Paragraphs as ParagraphsEn } from './en/components/Paragraphs';
 import { UiElements as UiElementsEn } from './en/components/UiElements';
 import { ResultPopup as ResultPopupEn } from './en/components/ResultPopup';
 import { GuestLogin as enGuestLogin } from './en/components/GuestLogin';
-// IntroductionPopup 데이터 임포트
 import { IntroductionPopup as IntroductionPopupEn } from './en/components/IntroductionPopup';
 
 

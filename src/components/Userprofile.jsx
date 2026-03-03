@@ -50,13 +50,13 @@ export default function UserProfile({
   // 1순위: 프롭으로 전달된 설명, 2순위: 커스텀 모드 이름
   let mappedDesc = (description || '').trim();
 
-  // 필요한 변수 정의 (충돌 해결 과정에서 추가)
+  // [수정 핵심] customKey를 조건문 밖 상단에서 미리 정의하여 'ReferenceError'를 방지합니다.
+  const customKey = player === '1P' ? 'char1' : player === '2P' ? 'char2' : 'char3';
   const roleNum = parseInt(player.replace('P', ''), 10);
   const hasSubtopic = !!subtopic;
 
+  // 2) 커스텀 모드일 때 로컬 스토리지에서 설명을 가져오는 로직
   if (mappedDesc === '' && !nodescription && isCustomMode) {
-    const customKey = player === '1P' ? 'char1' : player === '2P' ? 'char2' : 'char3';
-    
     // [두 변경 사항 모두 수락 및 통합]
     const customDesc = (localStorage.getItem(customKey) || '').trim();
     if (customDesc) {
@@ -105,7 +105,11 @@ export default function UserProfile({
       default:
         mappedDesc = '';
     }
-    mappedDesc = (localStorage.getItem(customKey) || '').trim();
+    
+    // 만약 switch문에서 매핑된 결과가 없다면 로컬 스토리지에서 한 번 더 확인합니다.
+    if (mappedDesc === '') {
+      mappedDesc = (localStorage.getItem(customKey) || '').trim();
+    }
   }
 
   const isDetailed = !nodescription && mappedDesc !== '';

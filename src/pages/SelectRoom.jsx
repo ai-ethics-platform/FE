@@ -103,8 +103,8 @@ export default function SelectRoom() {
           style={{
             display: 'flex',
             flexDirection: 'row',
-            // 카드 수에 따른 간격 조정 (영문은 2개, 국문은 3개 대응)
-            gap: lang === 'en' ? 40 : 20,
+            // 카드 수에 따른 간격 조정 (영문 언어값은 2개, 한글 언어값은 3개 대응)
+            gap: lang === 'ko' ? 20 : 40,
             flexWrap: 'nowrap',
           }}
         >
@@ -128,8 +128,8 @@ export default function SelectRoom() {
             onClick={() => setIsJoinRoomOpen(true)} 
           />
 
-          {/* [딜레마 만들기] 카드 - 영문 버전이 아닐 때만 출력 */}
-          {lang !== 'en' && (
+          {/* [딜레마 만들기] 카드 - 한글 언어값에서만 출력 */}
+          {lang === 'ko' && (
             <RoomCard
               icon={dilemmaIcon}
               title={t.dilemmaTitle}

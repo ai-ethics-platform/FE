@@ -228,8 +228,10 @@ import Layout from '../components/Layout';
 import ContentTextBox2 from '../components/ContentTextBox2';
 import closeIcon from '../assets/close.svg';
 
+// ✅ 기존 이미지 로더 유지
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
-import { paragraphsData } from '../components/paragraphs';
+// ✅ 기존 paragraphsData 대신 새 언어팩 사용을 위해 translations 임포트
+import { translations } from '../utils/language';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 
 import profile1Img from '../assets/images/CharacterPopUp1.png';
@@ -247,12 +249,12 @@ const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img 
 export default function Game02() {
   const navigate = useNavigate();
 
-  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts, finalizeDisconnection } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
   useWebSocketNavigation(navigate, { nextPagePath: '/game03', infoPath: '/game03' });
 
-  // 연결 상태 관리 (GameIntro에서 이미 초기화된 상태를 유지)
+  // 연결 상태 관리 (기본 로직 유지)
   const [connectionStatus, setConnectionStatus] = useState({
     websocket: true,
     webrtc: true,
@@ -269,64 +271,22 @@ export default function Game02() {
     console.log('[game02] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
 
-  //  // 새로고침 시 재연결 로직 
-  // useEffect(() => {
-  //     let cancelled = false;
-  //     const isReloadingGraceLocal = () => {
-  //       const flag = sessionStorage.getItem('reloading') === 'true';
-  //       const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-  //       if (!flag) return false;
-  //       if (Date.now() > expire) {
-  //         sessionStorage.removeItem('reloading');
-  //         sessionStorage.removeItem('reloading_expire_at');
-  //         return false;
-  //       }
-  //       return true;
-  //     };
-    
-  //     if (!isConnected) {
-  //       // 1) reloading-grace가 켜져 있으면 finalize 억제
-  //       if (isReloadingGraceLocal()) {
-  //         console.log('♻️ reloading grace active — finalize 억제');
-  //         return;
-  //       }
-    
-  //       // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-  //       const DEBOUNCE_MS = 1200;
-  //       const timer = setTimeout(() => {
-  //         if (cancelled) return;
-  //         if (!isConnected && !isReloadingGraceLocal()) {
-  //           console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-  //           finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-  //         } else {
-  //           console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-  //         }
-  //       }, DEBOUNCE_MS);
-    
-  //       return () => {
-  //         cancelled = true;
-  //         clearTimeout(timer);
-  //       };
-  //     }
-  //   }, [isConnected, finalizeDisconnection]);
-    
-
   // 로컬 설정
-  const category = localStorage.getItem('category');
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const category = localStorage.getItem('category') || '안드로이드';
   const mode = localStorage.getItem('mode') ?? 'neutral';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex')) || 0;
   const roomCode = localStorage.getItem('room_code');
   const myRoleId = localStorage.getItem('myrole_id');
 
-  //  커스텀 모드 여부
+  // 커스텀 모드 여부
   const isCustomMode = !!localStorage.getItem('code');
   const rawSubtopic = localStorage.getItem('subtopic');
   const creatorTitle = localStorage.getItem('creatorTitle') || '';
   const subtopic = isCustomMode ? creatorTitle : (rawSubtopic || '');
 
-  // 기본(비커스텀)용 이미지/문단
+  // ✅ 1. 이미지 로딩: 기존 getDilemmaImages 로직 100% 유지 
   const comicImages = getDilemmaImages(category, subtopic, mode, selectedIndex);
-  const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];
 
   // AI 이름 & 라운드
   const [mateName, setMateName] = useState('');
@@ -335,7 +295,7 @@ export default function Game02() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openProfile, setOpenProfile] = useState(null);
 
-  //  상대경로 → 절대경로 보정
+  // 상대경로 → 절대경로 보정
   const resolveImageUrl = (raw) => {
     if (!raw || raw === '-' || String(raw).trim() === '') return null;
     const u = String(raw).trim();
@@ -356,40 +316,32 @@ export default function Game02() {
     return resolved;
   };
 
-//  커스텀 모드 전용: 텍스트 & 이미지 세팅
-const [customImage, setCustomImage] = useState(null);
+  // 커스텀 모드 전용: 텍스트 & 이미지 세팅 (기존 유지)
+  const [customImage, setCustomImage] = useState(null);
+  useEffect(() => {
+    if (!isCustomMode) return;
+    let arr = [];
+    try {
+      const raw = localStorage.getItem('dilemma_sitation') || localStorage.getItem('dilemma_situation');
+      const parsed = raw ? JSON.parse(raw) : [];
+      arr = Array.isArray(parsed) ? parsed.filter((x) => x != null) : [];
+    } catch (e) {
+      console.warn('dilemma_sitation 파싱 실패:', e);
+      arr = [];
+    }
+    setParagraphs(arr.map((s) => ({ main: String(s) })));
+    const rawImg = localStorage.getItem('dilemma_image_3') || '';
+    const resolved = resolveImageUrl(rawImg);
+    setCustomImage(resolved || defaultImg); 
+  }, [isCustomMode]);
 
-useEffect(() => {
-  if (!isCustomMode) return;
-
-  // 텍스트: dilemma_sitation 배열 → paragraphs [{main}, ...]
-  let arr = [];
-  try {
-    const raw =
-      localStorage.getItem('dilemma_sitation') ||
-      localStorage.getItem('dilemma_situation'); // 오타 대비 폴백
-    const parsed = raw ? JSON.parse(raw) : [];
-    arr = Array.isArray(parsed) ? parsed.filter((x) => x != null) : [];
-  } catch (e) {
-    console.warn('dilemma_sitation 파싱 실패:', e);
-    arr = [];
-  }
-  setParagraphs(arr.map((s) => ({ main: String(s) })));
-
-  // 이미지: dilemma_image_3 (한 장만 사용)
-  const rawImg = localStorage.getItem('dilemma_image_3') || '';
-  const resolved = resolveImageUrl(rawImg);
-  setCustomImage(resolved || defaultImg); 
-}, [isCustomMode]);
-
-  // 라운드 설정 및 AI 이름 조회 (비커스텀/공통)
+  // 라운드 설정 및 AI 이름 조회
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     const nextRound = completed.length + 1;
     setRound(nextRound);
     localStorage.setItem('currentRound', String(nextRound));
 
-    // 커스텀 모드는 mateName 불필요하지만, 기존 로직 유지
     const stored = localStorage.getItem('mateName');
     if (stored) setMateName(stored);
     else {
@@ -404,13 +356,37 @@ useEffect(() => {
     }
   }, [roomCode]);
 
+  // ✅ 2. [핵심] 다국어 지문 로딩 로직 통합 
   useEffect(() => {
     if (isCustomMode) return;
     if (mateName) {
-      const resolved = resolveParagraphs(rawParagraphs, mateName);
+      const currentLangData = translations[lang] || translations['ko'];
+      const t_paragraphs = currentLangData.Paragraphs;
+      const t_map = currentLangData.GameMap;
+
+      // 카테고리/주제가 영어일 수 있으므로 한국어 키로 변환하는 'Stable Key' 전략 적용
+      const findStableCategory = () => {
+        if (category === t_map.categoryAWS || category === '자율 무기 시스템' || category === 'Autonomous Weapon Systems') return '자율 무기 시스템';
+        return '안드로이드';
+      };
+
+      const findStableSubtopic = (catKey) => {
+        // 1. 현재 언어팩의 GameMap에서 현재 subtopic이 어떤 key(예: andOption1_1)인지 찾음
+        const mapKey = Object.keys(t_map).find(k => t_map[k] === subtopic);
+        // 2. 한국어(ko) 언어팩의 동일한 key에서 실제 데이터용 주제명을 가져옴
+        if (mapKey) return translations['ko'].GameMap[mapKey];
+        return subtopic; // 못 찾으면 폴백
+      };
+
+      const stableCat = findStableCategory();
+      const stableSub = findStableSubtopic(stableCat);
+
+      // 데이터 추출
+      const rawData = t_paragraphs[stableCat]?.[stableSub]?.[mode] || [];
+      const resolved = resolveParagraphs(rawData, mateName);
       setParagraphs(resolved);
     }
-  }, [isCustomMode, mateName, rawParagraphs]);
+  }, [isCustomMode, mateName, lang, category, subtopic, mode]);
   
   const handleContinue = () => {
     navigate('/game03');
@@ -421,7 +397,7 @@ useEffect(() => {
     else navigate('/character_all');
   };
 
-  //  렌더 이미지 결정 (커스텀: 한 장 고정 / 기본: 페이지별)
+  // 렌더 이미지 결정
   const imageSrc = isCustomMode ? customImage : comicImages[currentIndex];
   
   // ✅ 이미지 타입 판별: 서버 URL만 CORS 필요

@@ -8,54 +8,11 @@ import defaultAndroidLeftImageSrc from "../assets/images/Android_dilemma_1_1.jpg
 import defaultAwsLeftImageSrc from "../assets/images/Killer_Character3.jpg";
 import lockIcon from "../assets/lock.svg";
 
-// 안드로이드 카테고리 질문
-const subtopicMapAndroid = {
-  "AI의 개인 정보 수집": {
-    question: "24시간 개인정보 수집 업데이트에 동의하시겠습니까?",
-    labels: { agree: "동의", disagree: "비동의" },
-  },
-  "안드로이드의 감정 표현": {
-    question: "감정 엔진 업데이트에 동의하시겠습니까?",
-    labels: { agree: "동의", disagree: "비동의" },
-  },
-  "아이들을 위한 서비스": {
-    question: "가정용 로봇 사용에 대한 연령 규제가 필요할까요?",
-    labels: { agree: "규제 필요", disagree: "규제 불필요" },
-  },
-  "설명 가능한 AI": {
-    question: "'설명 가능한 AI' 개발을 기업에 의무화해야 할까요?",
-    labels: { agree: "의무화 필요", disagree: "의무화 불필요" },
-  },
-  "지구, 인간, AI": {
-    question: "세계적으로 가정용 로봇의 업그레이드 혹은 사용에 제한이 필요할까요?",
-    labels: { agree: "제한 필요", disagree: "제한 불필요" },
-  },
-};
+// 언어팩 가져오기
+import { translations } from '../utils/language';
 
-// 자율 무기 시스템 카테고리 질문
-const subtopicMapAWS = {
-  "AI 알고리즘 공개": {
-    question: "AWS의 판단 로그 및 알고리즘 구조 공개 요구에 동의하시겠습니까?",
-    labels: { agree: "동의", disagree: "비동의" },
-  },
-  "AWS의 권한": {
-    question: "AWS의 권한을 강화해야 할까요? 제한해야 할까요?",
-    labels: { agree: "강화", disagree: "제한" },
-  },
-  "사람이 죽지 않는 전쟁": {
-    question: "사람이 죽지 않는 전쟁을 평화라고 할 수 있을까요?",
-    labels: { agree: "그렇다", disagree: "아니다" },
-  },
-  "AI의 권리와 책임": {
-    question: "AWS에게, 인간처럼 권리를 부여할 수 있을까요?",
-    labels: { agree: "그렇다", disagree: "아니다" },
-  },
-  "AWS 규제": {
-    question:
-      "AWS는 국제 사회에서 계속 유지되어야 할까요, 아니면 글로벌 규제를 통해 제한되어야 할까요?",
-    labels: { agree: "유지", disagree: "제한" },
-  },
-};
+// 안드로이드 카테고리 질문 (언어팩 연동으로 대체됨)
+// 자율 무기 시스템 카테고리 질문 (언어팩 연동으로 대체됨)
 
 export default function ResultStatCard({
   subtopic: subtopicProp,          // 외부 전달 (없으면 localStorage)
@@ -67,6 +24,14 @@ export default function ResultStatCard({
 }) {
   const navigate = useNavigate();
   const category = localStorage.getItem('category'); // '안드로이드' 또는 '자율 무기 시스템'
+
+  // 현재 언어 설정 확인
+  const lang = localStorage.getItem('language') || 'ko';
+  
+  // 대문자 Game09 데이터를 안전하게 가져오기
+  // 데이터가 로드되지 않았을 경우를 대비해 빈 객체({})와 items를 기본값으로 설정
+  const t = translations[lang]?.Game09 || translations['ko']?.Game09 || { items: {} };
+
   const resolvedLeftImageSrc =
     leftImageSrc ??
     (category === "자율 무기 시스템"
@@ -75,14 +40,15 @@ export default function ResultStatCard({
 
   const subtopic = subtopicProp;
 
-  // category에 따라 subtopicMap 다르게 할당
-  const map =
-    category === "자율 무기 시스템"
-      ? subtopicMapAWS[subtopic]
-      : subtopicMapAndroid[subtopic] ?? {
-          question: "질문을 준비 중입니다.",
-          labels: { agree: "동의", disagree: "비동의" },
-        };
+  // category에 따라 subtopicMap 다르게 할당 (기존 하드코딩을 언어팩 데이터로 변경)
+  // itemData.subtopicName이 있으면 그것을 제목으로 사용 (영문 지원)
+  const itemData = t.items?.[subtopic] || {
+    subtopicName: subtopic,
+    question: "Loading...",
+    labels: { agree: "Agree", disagree: "Disagree" },
+    words: { agree: "", disagree: "" },
+    template: ""
+  };
 
   // 선택 결과 & 완료 여부
   const results = useMemo(() => {
@@ -117,127 +83,46 @@ export default function ResultStatCard({
   // ----- 동적 캡션 (내가 고른 쪽의 퍼센트 사용) -----
   const Caption = () => {
     if (!isUnlocked || !isSelected) return null;
+    
     const selectedPct = isSelected === "agree" ? agreePct : disagreePct;
-    const pct = `${selectedPct}%`;
-    const bold = (txt) => <span style={{ color: BRAND }}>{txt}</span>;
+    const pctText = `${selectedPct}%`;
+    const bold = (txt) => <span style={{ color: BRAND, fontWeight: 'bold' }}>{txt}</span>;
 
     // "여러분을 포함한"을 앞에 추가할지 여부
-    const prefix = myChoice === isSelected ? "여러분을 포함한 " : "";
+    const prefixText = myChoice === isSelected ? t.prefix : "";
 
     // category에 따라 동적으로 캡션 변경
-    if (category === "안드로이드") {
-      switch (subtopic) {
-        case "AI의 개인 정보 수집": {
-          const word = isSelected === "agree" ? "정확한" : "안전한";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              {prefix} {bold(pct)}의 사람들은 가정용 로봇이 보다 {bold(word)} 서비스를
-              제공하도록 선택하였습니다.
-            </div>
-          );
-        }
-        case "안드로이드의 감정 표현": {
-          const word = isSelected === "agree" ? "친구처럼" : "보조 도구로서";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              {prefix} {bold(pct)}의 사람들의 가정용 로봇은 {bold(word)} 제 역할을
-              다하고 있습니다.
-            </div>
-          );
-        }
-        case "아이들을 위한 서비스": {
-          const word = isSelected === "agree" ? "제한된" : "다양한";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              {prefix} {bold(pct)}의 사람들이 선택한 국가의 미래에서는 아이들을 위해 {bold(word)}{" "}
-              서비스를 제공합니다.
-            </div>
-          );
-        }
-        case "설명 가능한 AI": {
-          const phrase =
-            isSelected === "agree" ? "투명하게 공개되었습니다." : "기업의 보호 하에 빠르게 발전하였습니다.";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              또한, {prefix} {bold(pct)}의 사람들의 선택으로 가정용 로봇의 알고리즘은 {bold(phrase)}{" "}
-            </div>
-          );
-        }
-        case "지구, 인간, AI": {
-          const phrase =
-            isSelected === "agree"
-              ? "기술적 발전을 조금 늦추었지만 환경과 미래를 위해 나아가고 있죠."
-              : "기술적 편리함을 누리며 점점 빠른 발전을 이루고 있죠.";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              그리고 {prefix} {bold(pct)}의 사람들이 선택한 세계의 미래는, {bold(phrase)}.
-            </div>
-          );
-        }
-        default:
-          return null;
-      }
-    }
+    // 기존의 switch-case 문을 언어팩의 template 기능으로 대체하여 간소화
+    const selectedWord = isSelected === "agree" ? itemData.words.agree : itemData.words.disagree;
 
-    // 자율 무기 시스템일 경우
-    if (category === "자율 무기 시스템") {
-      switch (subtopic) {
-        case "AI 알고리즘 공개": {
-          const phrase =
-            isSelected === "agree" ? "보안 문제에 따른 안보 위협에 대한 방안" : "책임 규명을 위한 투명성을 높이는 방안";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              {prefix} {bold(pct)}의 사람들은 자율 무기 시스템에 대하여 {bold(phrase)}에 대한 논의에 더 관심을 두었습니다.
-            </div>
-          );
-        }
-        case "AWS의 권한": {
-          const phrase = isSelected === "agree" ? "동료처럼" : "보조 도구로서";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              {prefix} {bold(pct)}의 사람들은 AWS가 그들의 {bold(phrase)} 역할을 해야 한다고 생각했습니다.
-            </div>
-          );
-        }
-        case "사람이 죽지 않는 전쟁": {
-          const phrase =
-            isSelected === "agree" ? "평화" : "불안정";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              {prefix} {bold(pct)}의 사람들이 선택한 국가의 미래는 AWS가 국가에 {bold(phrase)}를 가져다 줄 것으로 예상했습니다.
-            </div>
-          );
-        }
-        case "AI의 권리와 책임": {
-          const phrase = isSelected === "agree" ? "부여할 수 있다" : "부여할 수 없다";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              {prefix} {bold(pct)}의 사람들은, AWS에게 권리를 {bold(phrase)}고 생각했습니다.
-            </div>
-          );
-        }
-        case "AWS 규제": {
-          const phrase = isSelected === "agree" ? "더욱 발전시켜야 하는" : "제한해야 하는";
-          return (
-            <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
-              그리고 {prefix} {bold(pct)}의 사람들이 선택한 세계의 미래는, AWS를 {bold(phrase)} 것으로 그려졌습니다.
-            </div>
-          );
-        }
-        default:
-          return null;
-      }
-    }
+    if (!itemData.template) return null;
 
-    return null;
+    let templateStr = itemData.template;
+    templateStr = templateStr.replace("{prefix}", prefixText); 
+
+    // 템플릿 쪼개기 ({pct}, {word} 등 스타일 적용을 위해)
+    const parts = templateStr.split(/(\{pct\}|\{word\})/g);
+
+    return (
+      <div style={{ marginTop: 16, ...FontStyles.caption, color: GREY06 }}>
+        {parts.map((part, index) => {
+          if (part === "{pct}") return <React.Fragment key={index}>{bold(pctText)}</React.Fragment>;
+          if (part === "{word}") return <React.Fragment key={index}>{bold(selectedWord)}</React.Fragment>;
+          return <span key={index}>{part}</span>;
+        })}
+      </div>
+    );
   };
+
   const handleGoToSubtopic=()=>{
-        localStorage.setItem('subtopic', subtopic);
-        localStorage.setItem('mode', 'neutral');
-        navigate('/game02');
-      };
+    localStorage.setItem('subtopic', subtopic);
+    localStorage.setItem('mode', 'neutral');
+    navigate('/game02');
+  };
+
   const getPlayParticle = (title) =>
-          (title === "AI의 개인 정보 수집" || title === "안드로이드의 감정 표현"|| title==="AWS의 권한"||title ==="사람이 죽지 않는 전쟁" || title === "AI의 권리와 책임") ? "을" : "를";
+    (title === "AI의 개인 정보 수집" || title === "안드로이드의 감정 표현"|| title==="AWS의 권한"||title ==="사람이 죽지 않는 전쟁" || title === "AI의 권리와 책임") ? "을" : "를";
+  
   return (
     <div style={{ position: "relative", width: "100%", maxWidth: 936, margin: "0 auto" }}>
       <img src={frame} alt="" style={{ width: "100%", display: "block" }} />
@@ -277,7 +162,8 @@ export default function ResultStatCard({
                 padding: "0 2px",
               }}
             >
-              {subtopic}
+              {/* 화면에는 언어팩의 subtopicName(영어 등)을 보여주고, 없으면 키값(한글) 사용 */}
+              {itemData.subtopicName || subtopic}
             </div>
             <span style={{ ...FontStyles.bodyBold, color: BRAND, justifySelf: "end" }}>]</span>
           </div>
@@ -341,7 +227,7 @@ export default function ResultStatCard({
         {/* 오른쪽: 질문 + 막대 + 설명/CTA */}
         <div>
           <div style={{ ...FontStyles.bodyBold, color: GREY06, marginBottom: 16, lineHeight: 1.35 }}>
-            {map.question}
+            {itemData.question}
           </div>
 
           {isUnlocked ? (
@@ -361,7 +247,7 @@ export default function ResultStatCard({
                   }}
                 >
                   <span style={{ ...FontStyles.bodyBold, color: "#FFFFFF" }}>
-                    {map.labels.agree}
+                    {itemData.labels.agree}
                   </span>
                   <span style={{ marginLeft: 4, ...FontStyles.body, color: "#FFFFFF", opacity: 0.9 }}>
                     {agreePct}%
@@ -385,7 +271,7 @@ export default function ResultStatCard({
                     {disagreePct}%
                   </span>
                   <span style={{ ...FontStyles.bodyBold, color: "#FFFFFF" }}>
-                    {map.labels.disagree}
+                    {itemData.labels.disagree}
                   </span>
                 </div>
               </div>
@@ -418,11 +304,16 @@ export default function ResultStatCard({
                   }}
                 >
                   <span style={{ whiteSpace: "nowrap" }}>
-                    <span style={{ ...FontStyles.body, color: GREY06 }}>잠금 해제하려면 </span>
+                    <span style={{ ...FontStyles.body, color: GREY06 }}>{t.lock?.prefix}</span>
                     <span style={{ ...FontStyles.bodyBold, color: GREY06 }}>
-                      {subtopic}
+                      {/* 화면 표시용 제목 (영문/한글) */}
+                      {itemData.subtopicName || subtopic}
                     </span>
-                    <span style={{ ...FontStyles.body, color: GREY06 }}>{getPlayParticle(subtopic)} 플레이하세요</span>
+                    <span style={{ ...FontStyles.body, color: GREY06 }}>
+                       {/* 한국어일 때만 조사 함수 실행하여 붙임 */}
+                       {lang === 'ko' ? getPlayParticle(subtopic) : ''} 
+                       {t.lock?.suffix}
+                    </span>
                   </span>
                   <img src={nextIcon} alt="" style={{ width: 40, height: 40 }} />
                 </div>

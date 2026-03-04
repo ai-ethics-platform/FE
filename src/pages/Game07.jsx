@@ -1,5 +1,4 @@
-// pages/Game07.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';
@@ -8,7 +7,11 @@ import Continue from '../components/Continue';
 import Continue3 from '../components/Continue3';
 import ResultPopup from '../components/Results';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
-import { paragraphsData } from '../components/paragraphs';
+
+//  구형 데이터 import 삭제 -> 다국어 패키지 import
+// import { paragraphsData } from '../components/paragraphs'; 
+import { translations } from '../utils/language';
+
 import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
@@ -19,22 +22,49 @@ import { clearAllLocalStorageKeys } from '../utils/storage';
 export default function Game07() {
   const navigate = useNavigate();
 
-  const { isConnected, reconnectAttempts, maxReconnectAttempts,disconnect,finalizeDisconnection } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts, disconnect, finalizeDisconnection } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost } = useHostActions();
 
-  //  커스텀 모드/제목 치환
+  // 1. 기초 환경 설정
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  
   const isCustomMode   = !!localStorage.getItem('code');
   const creatorTitle   = localStorage.getItem('creatorTitle') || '';
   const baseSubtopic   = localStorage.getItem('subtopic') || '';
   const headerSubtopic = isCustomMode ? (creatorTitle || baseSubtopic) : baseSubtopic;
 
-  const category = localStorage.getItem('category');
-  const subtopic = baseSubtopic;
-  const roomCode = localStorage.getItem('room_code');
-  const mode     = 'ending2'; // disagree 엔딩
+  const rawCategory = localStorage.getItem('category') || '안드로이드';
+  const rawSubtopic = baseSubtopic;
+  const roomCode    = localStorage.getItem('room_code');
+  const mateName    = localStorage.getItem('mateName') || 'HomeMate';
+  
+  // Game07은 비동의(ending2) 고정
+  const ENDING_MODE = 'ending2'; 
 
-  const [paragraphs, setParagraphs] = useState([]);
+  // 2. [구조 대응] 데이터 봉투 해제
+  const currentLangData = translations[lang] || translations['ko'];
+  
+  // UiElements (버튼용)
+  const ui = useMemo(() => {
+    const root = currentLangData?.UiElements || {};
+    return root.UiElements || root;
+  }, [currentLangData]);
+
+  // Paragraphs (지문용)
+  const langParagraphs = useMemo(() => {
+    const root = currentLangData?.Paragraphs || {};
+    return root.Paragraphs || root;
+  }, [currentLangData]);
+
+  // 3. [키 매칭] Stable Key 도출
+  const stableKeys = useMemo(() => {
+    const category = rawCategory.includes('자율 무기 시스템') || rawCategory.toLowerCase().includes('weapon') 
+      ? '자율 무기 시스템' 
+      : '안드로이드';
+    return { category, subtopic: rawSubtopic };
+  }, [rawCategory, rawSubtopic]);
+
   const [displayText, setDisplayText] = useState(''); 
   const [completedTopics, setCompletedTopics] = useState([]);
   const [currentRound, setCurrentRound] = useState(1);
@@ -52,104 +82,88 @@ export default function Game07() {
     setCurrentRound(saved.length);
   }, []);
 
-  // 기본(템플릿) 엔딩 텍스트 준비
+  // 4. [지문 출력] 다국어 데이터 연동
   useEffect(() => {
-    const storedName = localStorage.getItem('mateName') || 'HomeMate';
-    const rawParagraphs = paragraphsData[category]?.[subtopic]?.[mode] || [];
-    const resolved = resolveParagraphs(rawParagraphs, storedName);
-    setParagraphs(resolved);
-    const joined = resolved.map(p => p?.main).filter(Boolean).join('\n\n');
-    if (!isCustomMode) setDisplayText(joined || '');
-  }, [category, subtopic, mode, isCustomMode]);
-  
-
-    // useEffect(() => {
-    //   if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
-    //     console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
-    //     alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
-    //     clearAllLocalStorageKeys();
-    //     navigate('/');
-    //   }
-    // }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
-    
-
-    // 수정 끝나면 돌아와야함 
-    // useEffect(() => {
-    //         let cancelled = false;
-    //         const isReloadingGraceLocal = () => {
-    //           const flag = sessionStorage.getItem('reloading') === 'true';
-    //           const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-    //           if (!flag) return false;
-    //           if (Date.now() > expire) {
-    //             sessionStorage.removeItem('reloading');
-    //             sessionStorage.removeItem('reloading_expire_at');
-    //             return false;
-    //           }
-    //           return true;
-    //         };
-          
-    //         if (!isConnected) {
-    //           // 1) reloading-grace가 켜져 있으면 finalize 억제
-    //           if (isReloadingGraceLocal()) {
-    //             console.log('♻️ reloading grace active — finalize 억제');
-    //             return;
-    //           }
-          
-    //           // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-    //           const DEBOUNCE_MS = 1200;
-    //           const timer = setTimeout(() => {
-    //             if (cancelled) return;
-    //             if (!isConnected && !isReloadingGraceLocal()) {
-    //               console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-    //               finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-    //             } else {
-    //               console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-    //             }
-    //           }, DEBOUNCE_MS);
-          
-    //           return () => {
-    //             cancelled = true;
-    //             clearTimeout(timer);
-    //           };
-    //         }
-    //       }, [isConnected, finalizeDisconnection]);
-      
-    
-
-  //  커스텀 모드: disagree_Ending 적용
-  useEffect(() => {
-    if (!isCustomMode) return;
-
-    const raw = localStorage.getItem('disagreeEnding');
-    if (!raw) {
-      const fallback = paragraphs.map(p => p?.main).filter(Boolean).join('\n\n');
-      setDisplayText(fallback || '');
-      return;
-    }
-
-    let text = '';
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        text = parsed.map(s => String(s ?? '').trim()).filter(Boolean).join('\n\n');
-      } else {
-        text = String(parsed ?? '').trim();
+    if (isCustomMode) {
+      const raw = localStorage.getItem('disagreeEnding');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          setDisplayText(Array.isArray(parsed) ? parsed.join('\n\n') : String(parsed));
+        } catch { setDisplayText(String(raw)); }
+        return;
       }
-    } catch {
-      text = String(raw ?? '').trim();
     }
 
-    if (!text) {
-      const fallback = paragraphs.map(p => p?.main).filter(Boolean).join('\n\n');
-      setDisplayText(fallback || '');
+    // 표준 지문 로드: [카테고리][주제][ending2]
+    const categoryData = langParagraphs[stableKeys.category];
+    const subtopicData = categoryData ? categoryData[stableKeys.subtopic] : null;
+    const rawParagraphs = subtopicData ? subtopicData[ENDING_MODE] : [];
+
+    if (rawParagraphs && rawParagraphs.length > 0) {
+      const resolved = resolveParagraphs(rawParagraphs, mateName);
+      setDisplayText(resolved.map(p => p?.main).filter(Boolean).join('\n\n'));
     } else {
-      setDisplayText(text);
+      setDisplayText(lang === 'ko' ? '지문을 불러올 수 없습니다.' : 'Ending text not found.');
     }
-  }, [isCustomMode, paragraphs]);
+  }, [stableKeys, isCustomMode, langParagraphs, mateName, lang]);
+
+
+  // [복구 완료] 기존 개발자 주석 및 미구현 코드 유지
+  // useEffect(() => {
+  //    if (!isConnected && reconnectAttempts >= maxReconnectAttempts) {
+  //      console.warn('🚫 WebSocket 재연결 실패 → 게임 초기화');
+  //      alert('⚠️ 연결을 복구하지 못했습니다. 게임이 초기화됩니다.');
+  //      clearAllLocalStorageKeys();
+  //      navigate('/');
+  //    }
+  // }, [isConnected, reconnectAttempts, maxReconnectAttempts]);
+    
+
+  // 수정 끝나면 돌아와야함 
+  // useEffect(() => {
+  //         let cancelled = false;
+  //         const isReloadingGraceLocal = () => {
+  //           const flag = sessionStorage.getItem('reloading') === 'true';
+  //           const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+  //           if (!flag) return false;
+  //           if (Date.now() > expire) {
+  //             sessionStorage.removeItem('reloading');
+  //             sessionStorage.removeItem('reloading_expire_at');
+  //             return false;
+  //           }
+  //           return true;
+  //         };
+          
+  //         if (!isConnected) {
+  //           // 1) reloading-grace가 켜져 있으면 finalize 억제
+  //           if (isReloadingGraceLocal()) {
+  //             console.log('♻️ reloading grace active — finalize 억제');
+  //             return;
+  //           }
+          
+  //           // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+  //           const DEBOUNCE_MS = 1200;
+  //           const timer = setTimeout(() => {
+  //             if (cancelled) return;
+  //             if (!isConnected && !isReloadingGraceLocal()) {
+  //               console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+  //               finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+  //             } else {
+  //               console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+  //             }
+  //           }, DEBOUNCE_MS);
+          
+  //           return () => {
+  //             cancelled = true;
+  //             clearTimeout(timer);
+  //           };
+  //         }
+  //       }, [isConnected, finalizeDisconnection]);
+
 
   // 기존 흐름 유지용 핸들러
   const handleNextRound = () => {
-    //localStorage.removeItem('category');
     localStorage.removeItem('subtopic');
     localStorage.removeItem('mode');
     navigate('/gamemap');
@@ -170,14 +184,20 @@ export default function Game07() {
     else navigate('/game05_1');
   };
 
-  // ===== Game08의 “나가기” 종료 루틴 이식 (로그인 페이지로 이동) =====
+  // 5. [버튼 라벨] UiElements 강제 주입
+  const uiLabels = {
+    exit: ui.exit || (lang === 'ko' ? "나가기" : "Exit"),
+    view_result: ui.view_result || (lang === 'ko' ? "결과 보기" : "View Results"),
+    go_to_map: ui.go_to_map || (lang === 'ko' ? "라운드 선택으로" : "Back to Map")
+  };
+
+  // ===== Game08의 “나가기” 종료 루틴 이식 =====
   function clearGameSession() {
     [
       'myrole_id','host_id','user_id','role1_user_id','role2_user_id','role3_user_id',
       'room_code','category','subtopic','mode','access_token','refresh_token',
       'mateName','nickname','title','session_id','selectedCharacterIndex',
       'currentRound','completedTopics','subtopicResults',
-      // 커스텀 관련 키들도 정리
       'code','creatorTitle','char1','char2','char3','charDes1','charDes2','charDes3',
       'dilemma_image_3','dilemma_image_4_1','dilemma_image_4_2',
       'dilemma_situation','dilmma_situation','question','agree_label','disagree_label',
@@ -238,30 +258,15 @@ export default function Game07() {
     console.log(`📊 [${step}] 미디어 상태 디버깅:`);
     if (window.voiceManager) {
       const status = window.voiceManager.getStatus?.() ?? {};
-      console.log('  VoiceManager 상태:', status);
-      if (window.voiceManager.mediaStream) {
-        const tracks = window.voiceManager.mediaStream.getTracks();
-        console.log('  MediaStream:', {
-          id: window.voiceManager.mediaStream.id,
-          active: window.voiceManager.mediaStream.active,
-          trackCount: tracks.length
-        });
-        tracks.forEach((t, i) => console.log(`    Track ${i+1}:`, {
-          kind: t.kind, enabled: t.enabled, readyState: t.readyState, label: t.label
-        }));
-      }
+      console.log('   VoiceManager 상태:', status);
     }
-    const els = document.querySelectorAll('*');
-    let cnt = 0;
-    els.forEach(el => { if (el.srcObject) cnt++; });
-    console.log(`  DOM srcObject 개수: ${cnt}`);
   };
 
   const handleExit = async () => {
     try {
       await debugMediaState('종료 전');
       
-      // 🚨 중요: 업로드(녹음 종료)는 정리보다 먼저 실행해야 함
+      // 중요: 업로드(녹음 종료)는 정리보다 먼저 실행해야 함
       const result = await voiceManager?.terminateVoiceSession?.();
       console.log(result ? '음성 세션 종료 성공' : '별도 종료 처리 없음');
       
@@ -302,13 +307,13 @@ export default function Game07() {
 
           {/* 커스텀 모드: 나가기 / 기본: 기존 버튼 */}
           {isCustomMode ? (
-            <Continue3 label="나가기" onClick={handleExit} />
+            <Continue3 label={uiLabels.exit} onClick={handleExit} />
           ) : (
             showResultButton ? (
-              <Continue3 label="결과 보기" onClick={handleViewResult} />
+              <Continue3 label={uiLabels.view_result} onClick={handleViewResult} />
             ) : (
               <Continue
-                label="라운드 선택으로"
+                label={uiLabels.go_to_map}
                 onClick={handleNextRound}
                 style={{ width: 264, height: 72 }}
               />

@@ -1,6 +1,11 @@
 import { useEffect, useRef } from 'react';
 import axiosInstance from '../api/axiosInstance';
 
+/**
+ * 웹소켓 베이스 주소를 환경변수에서 가져옵니다.
+ */
+const WS_BASE = import.meta.env.VITE_WS_BASE_URL || 'wss://dilemmai-idl.com';
+
 export default function useVoiceWebSocket(room_code, onParticipantsUpdate) {
   const ws = useRef(null);
 
@@ -47,8 +52,9 @@ export default function useVoiceWebSocket(room_code, onParticipantsUpdate) {
       const session_id = data.session_id;
       const accessToken = localStorage.getItem('access_token');
 
+      // 하드코딩된 주소를 환경변수(WS_BASE) 기반으로 변경
       ws.current = new WebSocket(
-        `wss://dilemmai-idl.com/ws/voice/${session_id}?token=${accessToken}`
+        `${WS_BASE}/ws/voice/${session_id}?token=${accessToken}`
       );
 
       ws.current.onopen = () => {
@@ -91,3 +97,9 @@ export default function useVoiceWebSocket(room_code, onParticipantsUpdate) {
 
   return { sendMessage };
 }
+
+/**
+ * 수정 내용:
+ * 1. 상단에 WS_BASE 상수를 선언하여 환경변수 VITE_WS_BASE_URL을 참조하도록 함.
+ * 2. WebSocket 생성자 내부의 하드코딩된 'wss://dilemmai-idl.com' 주소를 변수 처리함.
+ */

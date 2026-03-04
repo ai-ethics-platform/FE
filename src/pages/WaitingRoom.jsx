@@ -610,7 +610,7 @@ export default function WaitingRoom() {
             style={{ 
               position: 'relative', 
               zIndex: 2, 
-              fontSize: '11px', 
+              fontSize: lang === 'ko' ? '11px' : '9px', 
               color: 'white',
               fontWeight: '500',
               marginTop: '5px' 

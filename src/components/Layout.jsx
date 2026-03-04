@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom'; // 페이지 이동 감지를 위해 추가
 import Background from '../components/Background';
 import UserProfile from '../components/Userprofile';
 import GameFrame from '../components/GameFrame';
@@ -6,9 +7,10 @@ import { useVoiceRoleStates } from '../hooks/useVoiceRoleStates';
 import voiceManager from '../utils/voiceManager';
 import BackButton from './BackButton';
 import hostInfoSvg from '../assets/host_info.svg'; 
+import hostInfoSvg_en from '../assets/en/host_info_en.svg'; // 영문용 에셋 추가
 import HostInfoBadge from '../components/HostInfoBadge';
 
-//  서버 데이터 동기화를 위한 axios 인스턴스 임포트
+// 서버 데이터 동기화를 위한 axios 인스턴스 임포트
 import axiosInstance from '../api/axiosInstance';
 
 // Character popup components
@@ -28,11 +30,14 @@ export default function Layout({
   popupStep = null, sidebarExtra = null,
 }) {
   const [zoom, setZoom] = useState(1);
+  const location = useLocation(); // 현재 경로 감지
   
-  // 실시간 동기화를 위해 현재 언어와 언어팩을 변수화
+  // [다국어 확장 설계] 현재 언어 로드 및 폴백(Fallback) 처리
   const lang = localStorage.getItem('app_lang') || 'ko';
-  const t_small = translations[lang]?.SmallDescription || {};
-  const t_map = translations[lang]?.GameMap || {};
+  const currentLangData = translations[lang] || translations['en'] || translations['ko'];
+  
+  const t_small = currentLangData.SmallDescription || {};
+  const t_map = currentLangData.GameMap || {};
   const t_ko_map = translations['ko']?.GameMap || {}; 
 
   const [hostId, setHostId] = useState(null);
@@ -49,81 +54,92 @@ export default function Layout({
   const [openProfile, setOpenProfile] = useState(null);
   const roleIdMap = { '1P': 1, '2P': 2, '3P': 3 };
 
-  //  mateName을 상태(State)로 관리하여 서버 응답 시 즉시 UI 반영
+  // mateName을 상태(State)로 관리하여 서버 응답 시 즉시 UI 반영
   const [mateName, setMateName] = useState(localStorage.getItem('mateName') || 'HomeMate'); 
 
-  //  서버에서 AI 이름을 불러와 로컬 스토리지 및 상태에 동기화
-  useEffect(() => {
-    const syncMateName = async () => {
-      const roomCode = localStorage.getItem('room_code');
-      if (!roomCode) return;
+  // [동기화 강화] 서버에서 AI 이름을 불러와 로컬 스토리지 및 상태에 동기화
+  const syncMateName = async () => {
+    const roomCode = localStorage.getItem('room_code');
+    if (!roomCode) return;
 
-      try {
-        const { data } = await axiosInstance.get('/rooms/ai-select', {
-          params: { room_code: roomCode },
-        });
+    try {
+      const { data } = await axiosInstance.get('/rooms/ai-select', {
+        params: { room_code: roomCode },
+      });
 
-        if (data && data.ai_name) {
-          localStorage.setItem('mateName', data.ai_name);
-          setMateName(data.ai_name); // 상태를 업데이트하여 화면에 즉시 표시
-          console.log('✅ [Layout] AI 이름 서버 동기화 완료:', data.ai_name);
-        }
-      } catch (err) {
-        console.error('❌ [Layout] AI 이름 동기화 실패:', err);
+      if (data && data.ai_name) {
+        localStorage.setItem('mateName', data.ai_name);
+        setMateName(data.ai_name); // 상태 업데이트로 모든 자식 컴포넌트 리렌더링 유도
+        console.log('✅ [Layout] AI 이름 서버 동기화 완료:', data.ai_name);
       }
-    };
+    } catch (err) {
+      console.error('❌ [Layout] AI 이름 동기화 실패:', err);
+    }
+  };
 
+  // 마운트 시 및 "페이지 이동 시마다" 최신 이름을 서버에서 가져옵니다.
+  useEffect(() => {
     syncMateName();
-  }, []);
+  }, [location.pathname]);
 
   // 역방향 매칭 및 실시간 재번역 헬퍼 함수
   const getTranslatedValue = (raw) => {
     if (!raw) return '';
     let foundKey = null;
     const allLangs = Object.keys(translations);
+    
+    // 1단계: 모든 언어팩을 뒤져서 현재 텍스트의 내부 키(Key)를 찾습니다.
     for (const l of allLangs) {
       const map = translations[l]?.GameMap || {};
       const key = Object.keys(map).find(k => map[k] === raw);
       if (key) { foundKey = key; break; }
     }
+    
     let resultText = raw;
+    // 2단계: 찾은 키를 현재 설정된 언어의 텍스트로 바꿉니다.
     if (foundKey && t_map[foundKey]) { resultText = t_map[foundKey]; }
     
     // [중요] 최신 mateName이 반영되도록 리플레이스 실행
     return resultText.replaceAll('{{mateName}}', mateName);
   };
 
+  // [사이드바 다국어 오류 수정] 한글 하드코딩 제거 및 키 기반 매핑
   const getSidebarRoleName = (player) => {
     const roleId = roleIdMap[player];
     const category = (localStorage.getItem('category') || '').trim();
     const title = (localStorage.getItem('title') || '').trim();
-    const currentTitle = getTranslatedValue(title);
-    const currentSubtopic = getTranslatedValue(subtopic);
-    const isAndroid = category === '안드로이드' || category === 'Android' || category === t_map.categoryAndroid;
-    const isAWS = category === '자율 무기 시스템' || category === 'Autonomous Weapon Systems' || category === t_map.categoryAWS;
+    
+    // 현재 타이틀과 서브토픽이 어느 언어팩의 어떤 키에 해당하는지 확인
+    const isAndroid = category.includes('안드로이드') || category.toLowerCase().includes('android') || category === t_map.categoryAndroid;
+    const isAWS = category.includes('무기') || category.toLowerCase().includes('weapon') || category === t_map.categoryAWS;
 
     if (isAndroid) {
-      if (currentTitle === '가정' || currentTitle === t_ko_map.andSection1Title || currentTitle === t_map.andSection1Title) {
+      // 1세션: 가정 (한글 원문 또는 현재 언어팩 값과 대조)
+      if (title === '가정' || title === t_ko_map.andSection1Title || title === t_map.andSection1Title) {
         return roleId === 1 ? t_small.title_caregiver_k : roleId === 2 ? t_small.title_mother_l : t_small.title_child_j;
       }
-      if (currentTitle === '국가 인공지능 위원회' || currentTitle === t_ko_map.andSection2Title || currentTitle === t_map.andSection2Title) {
+      // 2세션: 국가 인공지능 위원회
+      if (title === '국가 인공지능 위원회' || title === t_ko_map.andSection2Title || title === t_map.andSection2Title) {
         return roleId === 1 ? t_small.title_industry_rep : roleId === 2 ? t_small.title_consumer_rep : t_small.title_council_rep;
       }
-      if (currentTitle === '국제 인류 발전 위원회' || currentTitle === t_ko_map.andSection3Title || currentTitle === t_map.andSection3Title) {
+      // 3세션: 국제 인류 발전 위원회
+      if (title === '국제 인류 발전 위원회' || title === t_ko_map.andSection3Title || title === t_map.andSection3Title) {
         return roleId === 1 ? t_small.title_industry_rep : roleId === 2 ? t_small.title_env_rep : t_small.title_consumer_rep;
       }
     }
+    
     if (isAWS) {
-      if (currentSubtopic === 'AI 알고리즘 공개' || currentSubtopic === t_ko_map.awsOption1_1 || currentSubtopic === t_map.awsOption1_1) {
+      // subtopic 비교 시에도 한글 원문 + 각 언어팩 값을 모두 체크하여 범용성 확보
+      if (subtopic === 'AI 알고리즘 공개' || subtopic === t_ko_map.awsOption1_1 || subtopic === t_map.awsOption1_1) {
         return roleId === 1 ? t_small.title_resident : roleId === 2 ? t_small.title_soldier_j : t_small.title_ethics_expert;
       }
-      if (currentSubtopic === 'AWS의 권한' || currentSubtopic === t_ko_map.awsOption1_2 || currentSubtopic === t_map.awsOption1_2) {
+      if (subtopic === 'AWS의 권한' || subtopic === t_ko_map.awsOption1_2 || subtopic === t_map.awsOption1_2) {
         return roleId === 1 ? t_small.title_new_soldier : roleId === 2 ? t_small.title_veteran_soldier : t_small.title_commander;
       }
-      if (currentSubtopic === '사람이 죽지 않는 전쟁' || currentSubtopic === t_ko_map.awsOption2_1 || currentSubtopic === t_map.awsOption2_1 || currentSubtopic === t_ko_map.awsOption2_2 || currentSubtopic === t_map.awsOption2_2) {
+      if (subtopic === '사람이 죽지 않는 전쟁' || subtopic === t_ko_map.awsOption2_1 || subtopic === t_map.awsOption2_1 || subtopic === t_ko_map.awsOption2_2 || subtopic === t_map.awsOption2_2) {
         return roleId === 1 ? t_small.title_developer : roleId === 2 ? t_small.title_minister : t_small.title_council_rep;
       }
-      if (currentSubtopic === 'AWS 규제' || currentSubtopic === t_ko_map.awsOption3_1 || currentSubtopic === t_map.awsOption3_1) {
+      if (subtopic === 'AWS 규제' || subtopic === t_ko_map.awsOption3_1 || subtopic === t_map.awsOption3_1) {
         return roleId === 1 ? t_small.title_advisor : roleId === 2 ? t_small.title_diplomat : t_small.title_ngo_activist;
       }
     }
@@ -190,7 +206,13 @@ export default function Layout({
         )}
         {hostmessage && hostId === myRoleId && (
           <div style={{ position: 'fixed', top: '50%', left: '20px', transform: `translateY(calc(-50% + 200px)) scale(${zoom})`, transformOrigin: 'left top', zIndex: 10 }}>
-            <HostInfoBadge src={hostInfoSvg} alt="Host Info" preset="hostInfo" width={300} height={300} />
+            <HostInfoBadge 
+              src={lang === 'ko' ? hostInfoSvg : hostInfoSvg_en} 
+              alt="Host Info" 
+              preset="hostInfo" 
+              width={300} 
+              height={300} 
+            />
           </div>
         )}
         <style>{`

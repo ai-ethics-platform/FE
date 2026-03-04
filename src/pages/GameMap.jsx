@@ -260,7 +260,8 @@ export default function GameMap() {
   return (
     <Layout subtopic={subtopic} nodescription={true} onBackClick={handleBackClick}> 
       <div style={{
-        width: 500,
+        width: '100%',
+        maxWidth: 900,
         minHeight: 0,
         ...FontStyles.headlineSmall,
         color: Colors.systemRed,
@@ -268,7 +269,7 @@ export default function GameMap() {
         alignItems: 'center',
         justifyContent: 'center',
         userSelect: 'none',
-        whiteSpace: 'pre-wrap', 
+        whiteSpace: 'nowrap', 
         textAlign: 'center'
       }}>
         {tm.guideText || '합의 후 같은 라운드를 선택하세요.'}

@@ -1,6 +1,6 @@
 export const GameMap = {
   subtopic: "Round Selection",
-  guideText: "After reaching an agreement, \nplease select the same round.",
+  guideText: "After reaching an agreement, please select the same round.",
   awsSection1Title: "Residential and Military Areas",
   awsOption1_1: "AI Algorithm Disclosure",
   awsOption1_2: "Authority of AWS",

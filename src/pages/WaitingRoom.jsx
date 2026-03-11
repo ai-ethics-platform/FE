@@ -13,7 +13,8 @@ import axiosInstance from '../api/axiosInstance';
 import { FontStyles, Colors } from '../components/styleConstants';
 import codeBg from '../assets/roomcodebackground.svg';
 // 상단 ESM 방식 임포트
-import infoFrame from '../assets/Frame 345.svg';
+import infoFrame from '../assets/infoframe.svg';
+import infoFrame2 from '../assets/infoframe2.svg';
 import CancelReadyPopup from '../components/CancelReadyPopup';
 // 언어팩 임포트
 import { translations } from '../utils/language/index';
@@ -592,9 +593,9 @@ export default function WaitingRoom() {
         <div 
           style={{ 
             position: 'absolute', 
-            top: 65,  
-            left: 150, 
-            width: 210, 
+            top: lang === 'ko' ? 65 : 70,  
+            left: lang === 'ko' ? 150 : 125, 
+            width: lang === 'ko' ? 210 : 255, 
             height: 60, 
             display: 'flex',
             alignItems: 'center',
@@ -602,7 +603,7 @@ export default function WaitingRoom() {
           }}
         >
           <img 
-            src={infoFrame} 
+            src={lang === 'ko' ? infoFrame : infoFrame2} 
             alt="info frame" 
             style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 1 }} 
           />
@@ -610,10 +611,11 @@ export default function WaitingRoom() {
             style={{ 
               position: 'relative', 
               zIndex: 2, 
-              fontSize: lang === 'ko' ? '11px' : '9px', 
+              fontSize: lang === 'ko' ? '11px' : '11px', 
               color: 'white',
               fontWeight: '500',
-              marginTop: '5px' 
+              marginTop: '5px',
+              whitespace : lang === 'ko' ? 'normal' : 'nowrap', 
             }}
           >
             {tw.infoText}

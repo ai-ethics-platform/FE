@@ -5,5 +5,5 @@ export const UiElements = {
   cancel: "취소 (미번역)",
   go_to_map: "Go to Round Selection",
   view_result: "View Results",
-  exit: "나가기"
+  exit: "Exit",
 };

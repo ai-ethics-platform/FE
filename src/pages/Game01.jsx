@@ -356,7 +356,7 @@ export default function Game01() {
   const category = localStorage.getItem('category') || '안드로이드';
   
   // 확장성을 고려한 카테고리 판별
-  const isAndroid = category && (category.includes('안드로이드') || category.toLowerCase().includes('android'));
+  const isAndroid = category === '안드로이드';
   const isAWS = !isAndroid;
 
   const mateName = localStorage.getItem('mateName') || 'HomeMate';
@@ -365,7 +365,7 @@ export default function Game01() {
   const isCustomMode = !!localStorage.getItem('code');
   const subtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || '') : (localStorage.getItem('subtopic') || '');
 
-  //  Game01은 인물 실루엣을 고정으로 사용합니다.
+  //  Game01은 인물 실루엣을 고정으로 사용
   const silhouetteImages = [charSilhouette1, charSilhouette2, charSilhouette3];
 
   useEffect(() => {
@@ -407,7 +407,7 @@ export default function Game01() {
     }
   };
 
-  // 원본(upstream) 이미지 유틸리티 로직 통합
+  // 이미지 유틸리티 로직 통합
   const resolveImageUrl = (raw) => {
     if (!raw || raw === '-' || String(raw).trim() === '') return null;
     const u = String(raw).trim();
@@ -460,7 +460,7 @@ export default function Game01() {
             />
           ) : null
         ) : (
-          /*  실루엣 이미지 배열 출력 + 원본의 안전 로직 적용 */
+          /*  실루엣 이미지 배열 출력 */
           silhouetteImages.map((src, i) => {
             const isServerImage = src && (typeof src === 'string') && (src.startsWith('http://') || src.startsWith('https://'));
             return (

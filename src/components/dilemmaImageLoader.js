@@ -1,27 +1,10 @@
 import { translations } from '../utils/language/index';
 
-// ✅ Vite 빌드 시 이미지가 제대로 포함되도록 import.meta.glob 사용
-// eager: true로 빌드 타임에 모든 이미지를 번들에 포함
+// ✅ Vite 빌드 시 모든 이미지를 번들에 포함 (eager: true)
 const allImages = import.meta.glob('../assets/images/*_dilemma_*.jpg', { 
   eager: true,
-  import: 'default' // ✅ 중요: default export만 가져오기
+  import: 'default' 
 });
-
-// Safari 디버깅용: 로드된 이미지 확인
-console.log('📦 import.meta.glob 로드된 이미지 개수:', Object.keys(allImages).length);
-if (Object.keys(allImages).length === 0) {
-  console.error('❌ 이미지가 하나도 로드되지 않았습니다!');
-  console.error('💡 빌드 환경에서는 이미지가 번들에 포함되지 않았을 수 있습니다.');
-} else {
-  console.log('✅ 샘플 이미지 키:', Object.keys(allImages).slice(0, 3));
-  const firstEntry = Object.entries(allImages)[0];
-  console.log('✅ 첫 번째 이미지 구조:', {
-    key: firstEntry[0],
-    value: firstEntry[1],
-    valueType: typeof firstEntry[1],
-    isString: typeof firstEntry[1] === 'string',
-  });
-}
 
 const topicPrefixes = {
   '안드로이드': 'Android',
@@ -34,7 +17,6 @@ const subtopicToBaseIndex = {
   '아이들을 위한 서비스': 7,
   '설명 가능한 AI': 10,
   '지구, 인간, AI': 13,
-
   'AI 알고리즘 공개': 1,
   'AWS의 권한': 4,
   '사람이 죽지 않는 전쟁': 7,
@@ -48,68 +30,47 @@ const modeToOffset = {
   disagree: 2,
 };
 
+/**
+ * 카테고리, 서브토픽, 모드에 따른 딜레마 이미지 4장을 반환합니다.
+ */
 export function getDilemmaImages(category, subtopic, mode = 'neutral', selectedCharacterIndex = 0) {
-  // 현재 언어팩 로드
   const lang = localStorage.getItem('app_lang') || 'ko';
   const t_map = translations[lang]?.GameMap || {};
   const t_ko_map = translations['ko']?.GameMap || {};
 
-  // 1. 카테고리 정규화 (어떤 언어든 한국어 원문으로 변환)
-  let stableCategory = category;
-  if (category === 'Android' || category === t_map.categoryAndroid) {
-    stableCategory = '안드로이드';
-  } else if (category === 'Autonomous Weapon Systems' || category === t_map.categoryAWS) {
-    stableCategory = '자율 무기 시스템';
-  }
+  const categoryMap = {
+    'Android': '안드로이드',
+    'Autonomous Weapon Systems': '자율 무기 시스템'
+  };
+  const stableCategory = categoryMap[category] || category;
 
-  // 2. 주제(subtopic) 정규화
+  
   let stableSubtopic = subtopic;
-  // 현재 입력된 subtopic이 어떤 '키(Key)'인지 찾아서 한국어 원문으로 치환
   const subtopicKey = Object.keys(t_map).find(key => t_map[key] === subtopic);
   if (subtopicKey && t_ko_map[subtopicKey]) {
     stableSubtopic = t_ko_map[subtopicKey];
   }
 
-  // 정규화된 stableCategory와 stableSubtopic을 사용하여 데이터 조회
+  // 데이터 조회용 변수 계산
   const prefix = topicPrefixes[stableCategory] || 'Android';
   const base = subtopicToBaseIndex[stableSubtopic] || 1;
   const offset = modeToOffset[mode] || 0;
   const index = base + offset;
 
-  console.log('🔍 getDilemmaImages 호출:', { category, subtopic, mode, selectedCharacterIndex, prefix, base, offset, index });
-
+  // 4. 이미지 배열 생성 및 반환
   return Array.from({ length: 4 }).map((_, i) => {
     const baseName = `${prefix}_dilemma_${index}_${i + 1}`;
     const suffix = selectedCharacterIndex > 0 ? `(${selectedCharacterIndex + 1})` : '';
     const filename = `${baseName}${suffix}.jpg`;
 
-    const entry = Object.entries(allImages).find(([key]) => key.includes(filename));
-    
+    // 이미지 뭉치에서 파일명 포함 여부 확인
+    const entry = Object.entries(allImages).find(([path]) => path.includes(filename));
     if (!entry) {
-      console.warn(`❌ 이미지 누락: ${filename}`, {
-        prefix,
-        index,
-        selectedCharacterIndex,
-        찾는파일: filename,
-      });
-      console.log('📦 사용 가능한 이미지 키 샘플:', Object.keys(allImages).filter(k => k.includes(prefix)).slice(0, 5));
+      console.warn(`⚠️ 이미지 누락: ${filename} (Category: ${stableCategory}, Subtopic: ${stableSubtopic})`);
       return null;
     }
     
-    // ✅ import: 'default' 옵션 사용 시 entry[1]이 직접 URL 문자열
-    // 옵션 없이 사용 시 entry[1].default가 URL
-    const imageUrl = typeof entry[1] === 'string' ? entry[1] : entry[1]?.default;
-    
-    if (!imageUrl) {
-      console.error(`❌ 이미지 URL 추출 실패: ${filename}`, {
-        entryValue: entry[1],
-        entryType: typeof entry[1],
-      });
-      return null;
-    }
-    
-    console.log(`✅ 이미지 로드: ${filename} →`, imageUrl.substring(0, 80));
-    
-    return imageUrl;
-  }).filter(Boolean);
+    // URL 추출 (Vite 설정에 따라 문자열이거나 .default 객체일 수 있음)
+    return typeof entry[1] === 'string' ? entry[1] : entry[1]?.default;
+  }).filter(Boolean); // null 값(이미지 누락 시) 제거
 }

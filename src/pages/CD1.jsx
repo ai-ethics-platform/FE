@@ -45,8 +45,8 @@ export default function CD1() {
 
   // 2. 카테고리 판별 (한국어/영어 모두 대응 가능하도록 키워드 체크)
   const category = localStorage.getItem('category') || '';
-  const isAWS = category.includes('무기') || category.toLowerCase().includes('weapon') || category.includes('AWS');
-  const isAndroid = category.includes('안드로이드') || category.toLowerCase().includes('android');
+  const isAWS = category === '자율 무기 시스템';
+  const isAndroid = category === '안드로이드';
 
   const isCustomMode = !!localStorage.getItem('code');
   const rawSubtopic = localStorage.getItem('subtopic') || '';

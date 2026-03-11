@@ -58,8 +58,8 @@ export default function CharacterPopup({ subtopic, roleId, mateName, onClose }) 
   let mainText = '';
 
   // 카테고리 판별 (일반화된 로직 사용)
-  const isAndroid = category === '안드로이드' || category === 'Android' || category === t_map.categoryAndroid;
-  const isAWS = category === '자율 무기 시스템' || category === 'Autonomous Weapon Systems' || category === t_map.categoryAWS;
+  const isAndroid = category === '안드로이드';
+  const isAWS = category === '자율 무기 시스템';
 
   if (isAndroid) {
     // 안드로이드 카테고리

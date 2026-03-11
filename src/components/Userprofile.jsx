@@ -1,5 +1,6 @@
 import React from 'react';
 import { Colors, FontStyles } from './styleConstants';
+// 아이콘 임포트 생략 (기존과 동일)
 import icon1 from '../assets/1player.svg';
 import icon2 from '../assets/2player.svg';
 import icon3 from '../assets/3player.svg';
@@ -39,103 +40,96 @@ export default function UserProfile({
   description = '',
   ...rest
 }) {
-  const lang = localStorage.getItem('app_lang') || 'ko';
-  const t_map = translations[lang]?.GameMap || {};
-  const t_ko_map = translations['ko']?.GameMap || {};
-
   const isCustomMode = !!localStorage.getItem('code');
-  const rawSubtopic = localStorage.getItem('subtopic');
-  const subtopic = nodescription ? null : rawSubtopic;
-  
-  // 1순위: 프롭으로 전달된 설명, 2순위: 커스텀 모드 이름
-  let mappedDesc = (description || '').trim();
-
-  // [수정 핵심] customKey를 조건문 밖 상단에서 미리 정의하여 'ReferenceError'를 방지합니다.
-  const customKey = player === '1P' ? 'char1' : player === '2P' ? 'char2' : 'char3';
   const roleNum = parseInt(player.replace('P', ''), 10);
-  const hasSubtopic = !!subtopic;
 
-  // 2) 커스텀 모드일 때 로컬 스토리지에서 설명을 가져오는 로직
-  if (mappedDesc === '' && !nodescription && isCustomMode) {
-    // [두 변경 사항 모두 수락 및 통합]
-    const customDesc = (localStorage.getItem(customKey) || '').trim();
-    if (customDesc) {
-      mappedDesc = customDesc;
-    }
-  }
-  // 3) 기본(비커스텀) 매핑 - 원본(upstream)의 새로운 시나리오 데이터 유지
-  else if (hasSubtopic) {
-    switch (subtopic) {
-      // 안드로이드 관련 서브토픽
-      case 'AI의 개인 정보 수집':
-      case '안드로이드의 감정 표현':
-        mappedDesc = roleNum === 1 ? '요양보호사 K' : roleNum === 2 ? '노모 L' : '자녀 J';
-        break;
-      case '아이들을 위한 서비스':
-      case '설명 가능한 AI':
-        mappedDesc =
-          roleNum === 1 ? '로봇 제조사 연합회 대표' : roleNum === 2 ? '소비자 대표' : '국가 인공지능 위원회 대표';
-        break;
-      case '지구, 인간, AI':
-        mappedDesc =
-          roleNum === 1 ? '기업 연합체 대표' : roleNum === 2 ? '국제 환경단체 대표' : '소비자 대표';
-        break;
+  // 1. 현재 언어팩 로드 (자동 감지)
+  const lang = localStorage.getItem('app_lang') || localStorage.getItem('language') || 'ko';
+  const currentLangData = translations[lang] || translations['ko'];
+  const t_small = currentLangData.SmallDescription || {};
 
-      // 자율 무기 시스템 관련 서브토픽
-      case 'AI 알고리즘 공개': {
-        mappedDesc = roleNum === 1 ? '지역 주민' : roleNum === 2 ? '병사 J' : '군사 AI 윤리 전문가';
-        break;
+  // 2. 설명값 결정 (우선순위 로직)
+  let mappedDesc = '';
+
+  if (description && description.trim() !== '') {
+    // [우선순위 1] 부모(Layout 등)가 직접 번역해서 넘겨준 경우
+    mappedDesc = description;
+  } else if (!nodescription && isCustomMode) {
+    // [우선순위 2] 커스텀 모드
+    const customKey = player === '1P' ? 'char1' : player === '2P' ? 'char2' : 'char3';
+    mappedDesc = (localStorage.getItem(customKey) || '').trim();
+  } else if (!nodescription) {
+    // [우선순위 3] 자동 감지 폴백 (MateName 등에서 유용)
+    const subtopic = (localStorage.getItem('subtopic') || '').trim();
+    const title = (localStorage.getItem('title') || '').trim();
+    const category = (localStorage.getItem('category') || '').trim();
+    const isAndroid = category === '안드로이드';
+
+    if (isAndroid) {
+      if (title === '가정') {
+        mappedDesc = roleNum === 1 ? t_small.title_caregiver_k : roleNum === 2 ? t_small.title_mother_l : t_small.title_child_j;
+      } else if (title.includes('국가')) {
+        mappedDesc = roleNum === 1 ? t_small.title_industry_rep : roleNum === 2 ? t_small.title_consumer_rep : t_small.title_council_rep;
+      } else if (title.includes('국제')) {
+        mappedDesc = roleNum === 1 ? t_small.title_industry_rep : roleNum === 2 ? t_small.title_env_rep : t_small.title_consumer_rep;
       }
-      case 'AWS의 권한': {
-        mappedDesc = roleNum === 1 ? '신입 병사' : roleNum === 2 ? '베테랑 병사 A' : '군 지휘관';
-        break;
+    } else {
+      // AWS 시나리오 (subtopic 기준)
+      if (subtopic === 'AI 알고리즘 공개') {
+        mappedDesc = roleNum === 1 ? t_small.title_resident : roleNum === 2 ? t_small.title_soldier_j : t_small.title_ethics_expert;
+      } else if (subtopic === 'AWS의 권한') {
+        mappedDesc = roleNum === 1 ? t_small.title_new_soldier : roleNum === 2 ? t_small.title_veteran_soldier : t_small.title_commander;
+      } else if (subtopic === '사람이 죽지 않는 전쟁' || subtopic === 'AI의 권리와 책임') {
+        mappedDesc = roleNum === 1 ? t_small.title_developer : roleNum === 2 ? t_small.title_minister : t_small.title_council_rep;
+      } else if (subtopic === 'AWS 규제') {
+        mappedDesc = roleNum === 1 ? t_small.title_advisor : roleNum === 2 ? t_small.title_diplomat : t_small.title_ngo_activist;
       }
-      case '사람이 죽지 않는 전쟁': {
-        mappedDesc = roleNum === 1 ? '개발자' : roleNum === 2 ? '국방부 장관' : '국가 인공지능 위원회 대표';
-        break;
-      }
-      case 'AI의 권리와 책임': {
-        mappedDesc = roleNum === 1 ? '개발자' : roleNum === 2 ? '국방부 장관' : '국가 인공지능 위원회 대표';
-        break;
-      }
-      case 'AWS 규제': {
-        mappedDesc = roleNum === 1 ? '국방 기술 고문' : roleNum === 2 ? '국제기구 외교 대표' : '글로벌 NGO 활동가';
-        break;
-      }
-      default:
-        mappedDesc = '';
-    }
-    
-    // 만약 switch문에서 매핑된 결과가 없다면 로컬 스토리지에서 한 번 더 확인합니다.
-    if (mappedDesc === '') {
-      mappedDesc = (localStorage.getItem(customKey) || '').trim();
     }
   }
 
   const isDetailed = !nodescription && mappedDesc !== '';
   const finalDesc = isDetailed ? mappedDesc : '';
 
+  // 이미지 로직 및 렌더링 부분은 이전과 동일 (생략 없이 유지)
   const resolveImageSrc = (raw) => {
     if (!raw || raw === '-' || String(raw).trim() === '') return null;
     const u = String(raw).trim();
     if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
     const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
-    return base ? `${base}${u.startsWith('/') ? '' : '/'}${u}` : u;
+    return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
+  };
+
+  const readLocalUrl = (key) => {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    let val = raw.trim();
+    try {
+      const parsed = JSON.parse(val);
+      if (typeof parsed === 'string') val = parsed.trim();
+    } catch (_) {}
+    return val || null;
+  };
+
+  const customRoleImageMap = {
+    '1P': readLocalUrl('role_image_1'),
+    '2P': readLocalUrl('role_image_2'),
+    '3P': readLocalUrl('role_image_3'),
   };
 
   const getIcon = () => {
     if (create) return frame235;
     if (isCustomMode) {
-      const customImg = localStorage.getItem(`role_image_${player.replace('P', '')}`);
+      const customImg = customRoleImageMap[player];
       return customImg ? resolveImageSrc(customImg) : defaultimg;
     }
-
-    // 상세 아이콘(프로필) 로직 - 확장형 매칭
+    const subtopic = localStorage.getItem('subtopic') || '';
     if (!nodescription && mappedDesc !== '') {
       if (player === '2P') {
-        const isHome = subtopic === 'AI의 개인 정보 수집' || subtopic === t_ko_map.andOption1_1 || subtopic === t_map.andOption1_1;
-        if (isHome) return isSpeaking ? profile2MicOn : profile2;
-        return isSpeaking ? profile2Micon_default : profile2_default;
+        if (subtopic.includes('개인 정보') || subtopic.includes('감정 표현')) {
+          return isSpeaking ? profile2MicOn : profile2;
+        } else {
+          return isSpeaking ? profile2Micon_default : profile2_default;
+        }
       }
       return isSpeaking ? profileMicOnMap[player] : profileMap[player];
     }
@@ -144,19 +138,20 @@ export default function UserProfile({
 
   const icon = getIcon();
   const { style: externalStyle, ...divProps } = rest;
+  const baseStyle = {
+    position: 'relative', width: 200, height: 96,
+    backgroundColor: Colors.componentBackgroundFloat,
+    padding: '12px 12px 12px 20px', boxSizing: 'border-box',
+    display: 'flex', alignItems: 'center', cursor: 'pointer',
+  };
+  const containerSize = isSpeaking ? 70 : 64;
 
   return (
-    <div {...divProps} style={{ 
-      position: 'relative', width: 215, height: 96, 
-      backgroundColor: Colors.componentBackgroundFloat, 
-      padding: '12px 12px 12px 20px', boxSizing: 'border-box', 
-      display: 'flex', alignItems: 'center', cursor: 'pointer',
-      ...externalStyle 
-    }}>
+    <div {...divProps} style={{ ...baseStyle, ...externalStyle }}>
       {isMe && (
         <img src={isMeIcon} alt="me" style={{ position: 'absolute', top: 0, left: 0, width: 8, height: '100%' }} />
       )}
-      <div style={{ width: isSpeaking ? 70 : 64, height: isSpeaking ? 70 : 64, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ width: containerSize, height: containerSize, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <img src={icon} alt={player} style={{ width: 70, height: 70, objectFit: 'cover', borderRadius: '50%' }} onError={(e) => { e.currentTarget.src = defaultimg; }} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 12 }}>
@@ -165,7 +160,7 @@ export default function UserProfile({
           {isLeader && <img src={crownIcon} alt="leader" style={{ width: 20, height: 20, marginLeft: 6 }} />}
         </div>
         {isDetailed && (
-          <div style={{ ...FontStyles.body, color: colorMap[player], marginTop: 2, maxWidth: 230, wordBreak: 'keep-all', whiteSpace: 'normal', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
+          <div style={{ ...FontStyles.body, color: colorMap[player], marginTop: 2, maxWidth: 180, wordBreak: 'keep-all', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
             {finalDesc}
           </div>
         )}

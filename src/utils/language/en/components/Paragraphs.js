@@ -20,7 +20,7 @@ export const Paragraphs = {
                 { main: ' Would it be better to agree to the update?' },
             ],
             ending1: [{ main: 'In the end, our family agreed to provide personal information.\n\n By accepting a certain level of inconvenience related to privacy, we were able to use improved services. \n \nFor the sake of your family’s life, what values did you choose, \nand what did you give up?' }],
-            ending2: [{ main: 'In the end, our family chose not to consent to providing personal information.\n\n Although this caused some inconvenience in using the service, \n we were satisfied with protecting our family’s privacy.\n\nFor the sake of your family’s life, \n what values did you choose, and what did you give up?' }],
+            ending2: [{ main: 'In the end, our family chose not to consent to providing \npersonal information.\n\n Although this caused some inconvenience in using the service, \n we were satisfied with protecting our family’s privacy.\n\nFor the sake of your family’s life, \n what values did you choose, and what did you give up?' }],
         },
         '안드로이드의 감정 표현': {
             neutral: [
@@ -158,7 +158,7 @@ export const Paragraphs = {
         },
         '사람이 죽지 않는 전쟁': {
             neutral: [
-                { main: ' Five years ago, war meant many soldiers dying and families suffering. Now, war reports only say things like, “Five robots damaged, zero soldiers killed.”' },
+                { main: ' Five years ago, war meant many soldiers dying and families suffering. \nNow, war reports only say things like, “Five robots damaged, zero soldiers killed.”' },
                 { main: ' The government claims that peace has been achieved while protecting citizens’ lives.' },
                 { main: ' But behind this peace, people pay less attention to war, and no one takes responsibility when robots cause harm. \nThe AI systems that control combat are still hidden from the public.' },
                 { main: ' If no people die, can it really be called peace?' },
@@ -198,7 +198,7 @@ export const Paragraphs = {
                 { main: ' If AWS can make better ethical decisions than humans, should we give those decisions rights and dignity?' },
             ],
             ending1: [{ main: 'The group decided to see the autonomous weapon system as more than a tool and began discussing rights for non-human beings.\n\nFor a better future of the nation, \nwhat values did you choose, and what did you give up?' }],
-            ending2: [{ main: 'The group decided not to give rights to the system because it cannot take legal responsibility. Questions about how much power the system should have continue.\n\nFor a better future of the nation,\n what values did you choose, and what did you give up?' }],
+            ending2: [{ main: 'The group decided not to give rights to the system because it cannot take legal responsibility. \nQuestions about how much power the system should have continue.\n\nFor a better future of the nation,\n what values did you choose, and what did you give up?' }],
         },
         'AWS 규제': {
             neutral: [

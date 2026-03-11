@@ -199,14 +199,14 @@
 // }
 
 // pages/Game05.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout';
 import ContentTextBox2 from '../components/ContentTextBox2';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
-// ✅  기존 paragraphsData 대신 translations 언어팩 통합 사용
+// ✅ 언어팩 통합 사용
 import { translations } from '../utils/language';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 
@@ -220,12 +220,14 @@ import defaultImg from '../assets/images/default.png';
 export default function Game05() {
   const navigate = useNavigate();
 
-  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
+  const { isConnected, reconnectAttempts, maxReconnectAttempts, finalizeDisconnection } = useWebSocket();
   const { isInitialized: webrtcInitialized } = useWebRTC();
   const { isHost, sendNextPage } = useHostActions();
+  
+  // 방장 이동 시 참여자 동기화 훅
   useWebSocketNavigation(navigate, { nextPagePath: '/game05_1', infoPath: '/game05_1' });
 
-  // 연결 상태 (로그만 유지)
+  // 연결 상태 (로그 유지)
   const [connectionStatus, setConnectionStatus] = useState({
     websocket: true,
     webrtc: true,
@@ -241,10 +243,6 @@ export default function Game05() {
     console.log(' [Game05] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
 
-  const handleContinue = () => {
-    navigate('/game05_1');
-  };
-
   // 공통 상태
   const [paragraphs, setParagraphs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -255,16 +253,16 @@ export default function Game05() {
   const lang = localStorage.getItem('app_lang') || 'ko';
   const mainTopic     = localStorage.getItem('category') || '안드로이드';
   const rawSubtopic   = localStorage.getItem('subtopic');
-  const mode          = localStorage.getItem('mode'); // 'agree' | 'disagree'
+  const mode           = localStorage.getItem('mode'); // 'agree' | 'disagree'
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
-  const roomCode      = localStorage.getItem('room_code');
+  const roomCode       = localStorage.getItem('room_code');
 
   // 커스텀 모드 판별 + 커스텀 제목
   const isCustomMode  = !!localStorage.getItem('code');
   const creatorTitle  = localStorage.getItem('creatorTitle') || '';
   const subtopic      = isCustomMode ? (creatorTitle || rawSubtopic) : rawSubtopic;
 
-  // ✅ 1. 이미지 로딩: 기존 로직 유지
+  // 이미지 리소스 로딩
   const comicImages   = getDilemmaImages(mainTopic, rawSubtopic, mode, selectedIndex);
 
   // 이미지 URL 보정
@@ -290,7 +288,9 @@ export default function Game05() {
       (async () => {
         try {
           const { data } = await axiosInstance.get('/rooms/ai-name', { params: { room_code: roomCode } });
-          setMateName(data.ai_name || 'HOMEMATE');
+          const aiName = data.ai_name || 'HOMEMATE';
+          setMateName(aiName);
+          localStorage.setItem('mateName', aiName);
         } catch (err) {
           console.error('[Game05] mateName API 실패:', err);
           setMateName('HOMEMATE');
@@ -299,10 +299,21 @@ export default function Game05() {
     }
   }, [roomCode]);
 
-  // ✅ 2. [핵심] 다국어 지문 로딩 (Game02 규칙 적용)
+  // 페이지 진입 신호 전송 (Game05_1의 방장이 인원을 파악할 수 있도록 신호 송신)
+  useEffect(() => {
+    const nickname = localStorage.getItem('nickname');
+    if (!roomCode || !round || !nickname) return;
+
+    axiosInstance.post('/rooms/page-arrival', {
+      room_code: roomCode,
+      page_number: 5, // Game05 단계를 식별하는 번호
+      user_identifier: nickname,
+    }).catch((e) => console.error('[Game05] page-arrival 실패:', e));
+  }, [roomCode, round]);
+
+  // 다국어 지문 로딩 및 치환
   useEffect(() => {
     if (isCustomMode) {
-      // 커스텀 텍스트 배열 파싱
       const keyTexts = mode === 'agree' ? 'flips_agree_texts' : 'flips_disagree_texts';
       let arr = [];
       try {
@@ -319,7 +330,7 @@ export default function Game05() {
       const t_paragraphs = currentLangData.Paragraphs;
       const t_map = currentLangData.GameMap;
 
-      // Stable Key 전략 적용
+      // Stable Key 추출 전략
       const findStableCategory = () => {
         if (mainTopic === t_map.categoryAWS || mainTopic === '자율 무기 시스템' || mainTopic === 'Autonomous Weapon Systems') return '자율 무기 시스템';
         return '안드로이드';
@@ -334,12 +345,16 @@ export default function Game05() {
       const stableCat = findStableCategory();
       const stableSub = findStableSubtopic();
 
-      // 지문 추출 및 치환
       const rawData = t_paragraphs[stableCat]?.[stableSub]?.[mode] || [];
-      const resolved = resolveParagraphs(rawData, mateName);
-      setParagraphs(resolved);
+      setParagraphs(resolveParagraphs(rawData, mateName));
     }
   }, [isCustomMode, mode, mateName, lang, mainTopic, rawSubtopic]);
+
+  const handleContinue = () => {
+    // 원본 서비스 로직에 맞춰 이동의 자유를 보장합니다.
+    // 방장의 이동은 useWebSocketNavigation을 통해 참여자들에게 동기화됩니다.
+    navigate('/game05_1');
+  };
 
   const customImgKey = mode === 'agree' ? 'dilemma_image_4_1' : 'dilemma_image_4_2';
   const rawCustomImg = localStorage.getItem(customImgKey) || '';
@@ -363,23 +378,7 @@ export default function Game05() {
             src={imageSrc}
             alt="comic"
             style={{ width: 744, height: 360, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-            onError={(e) => { 
-              const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
-              if (retryCount < 3) {
-                e.currentTarget.dataset.retryCount = String(retryCount + 1);
-                const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
-                const newSrc = imageSrc.includes('?') ? `${imageSrc.split('?')[0]}${cacheBuster}` : `${imageSrc}${cacheBuster}`;
-                setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
-                return;
-              }
-              if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
-                e.currentTarget.dataset.fallbackAttempted = 'true';
-                e.currentTarget.dataset.retryCount = '0';
-                e.currentTarget.src = defaultImg;
-                return;
-              }
-              e.currentTarget.style.display = 'none';
-            }}
+            onError={(e) => { e.currentTarget.src = defaultImg; }}
             />
         )}
         <div style={{ width: '100%', maxWidth: 900 }}>

@@ -1,7 +1,7 @@
 export const Game03 = {
   // 공통 UI 텍스트
   you_are: "You are {{roleName}}.",
-  waiting_msg: "Waiting for other player to make their selection...",
+  waiting_msg: "Waiting for other players to make their selection...",
   step2_title: "How confident are you in your decision?",
 
   // 역할명 정의 (ID 순서: 1P, 2P, 3P)
@@ -63,7 +63,7 @@ export const Game03 = {
       labels: { agree: 'Yes ', disagree: 'No' },
     },
     'AWS 규제': {
-      question: 'Should AWS continue to be used in the international community, or should it be restricted through global regulation?',
+      question: 'Should AWS continue to be used in the international community, \nor should it be restricted through global regulation?',
       labels: { agree: 'Maintain', disagree: 'Restrict' },
     },
   }

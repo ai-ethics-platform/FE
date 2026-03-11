@@ -3,9 +3,9 @@ export const Game05_1 = {
   consensus_msg: "Please reach a final decision through discussion.",
   step2_title: "How confident are you in your group's choice?",
   alerts: {
-    host_only: "⚠️ Only the host can make a selection. (미번역)",
-    wait_others: "Please wait until other players have finished reading the story. (미번역)",
-    select_first: "⚠️ Please select Agree or Disagree first. (미번역)",
+    host_only: "⚠️ Only the host can make a selection.",
+    wait_others: "Please wait until other players have finished reading the story.",
+    select_first: "⚠️ Please select Agree or Disagree first.",
     select_confidence: "Please select your confidence level. (미번역)"
   },
   questions: {
@@ -46,7 +46,7 @@ export const Game05_1 = {
       labels: { agree: "Yes", disagree: "No" } 
     },
     "AWS 규제": { 
-      question: "Should AWS continue to be used in the international community, or should it be restricted through global regulation?", 
+      question: "Should AWS continue to be used in the international community, \nor should it be restricted through global regulation?", 
       labels: { agree: "Maintain", disagree: "Restrict" } 
     }
   },
@@ -60,6 +60,6 @@ export const Game05_1 = {
     "AWS의 권한": ["New Soldier B", "Experienced Soldier A", "Military Commander"],
     "사람이 죽지 않는 전쟁": ["AI Developer", "Defense Minister", "National AI Committee Representative"],
     "AI의 권리와 책임": ["AI Developer", "Defense Minister", "National AI Committee Representative"],
-    "AWS 규제": ["Defense Tech. Advisor", "INternational Diplomat", "NGO Activist"]
+    "AWS 규제": ["Defense Tech. Advisor", "International Diplomat", "NGO Activist"]
   }
 };

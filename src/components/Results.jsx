@@ -28,7 +28,7 @@ export default function ResultPopup({ onClose }) {
   };
 
   // 카테고리 판별 로직 (확장형 구조 지향) 
-  const isAWS = category === '자율 무기 시스템' || category === t_map.categoryAWS || category === t_ko_map.categoryAWS;
+  const isAWS = category === '자율 무기 시스템';
 
   const allRequired = isAWS
     ? [t_map.awsOption1_1, t_map.awsOption2_1, t_map.awsOption3_1]

@@ -42,7 +42,7 @@ export default function CD3() {
   const t_ko_map = translations['ko']?.GameMap || {};
 
   const category = localStorage.getItem('category') || '';
-  const isAWS = category.includes('무기') || category.toLowerCase().includes('weapon') || category.includes('AWS');
+  const isAWS = category === '자율 무기 시스템';
   const isCustomMode = !!localStorage.getItem('code');
   const rawSubtopic = localStorage.getItem('subtopic') || '';
   const subtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || '') : rawSubtopic;

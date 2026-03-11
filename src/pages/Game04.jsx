@@ -78,7 +78,7 @@ export default function Game04() {
   // 1. 다국어 및 기본 설정
   const lang = localStorage.getItem('app_lang') || 'ko';
   const currentLangData = translations[lang] || translations['ko'];
-  const t = currentLangData.Game04 || {}; // Game04 전용 언어팩 (없을 경우 대비 빈 객체)
+  const t = currentLangData.Game04 || {}; 
   const t_map = currentLangData.GameMap || {};
   const t_ui = currentLangData.UiElements || {};
 
@@ -99,14 +99,51 @@ export default function Game04() {
     console.log('[Game04] 연결 상태 업데이트:', newStatus);
   }, [isConnected, webrtcInitialized]);
 
-  // 기존 개발자 주석 유지 (로직 미사용 상태 보존)
-  // useEffect(() => { ... (중략) ... }, [isConnected, finalizeDisconnection]);
+ // useEffect(() => {
+  //       let cancelled = false;
+  //       const isReloadingGraceLocal = () => {
+  //         const flag = sessionStorage.getItem('reloading') === 'true';
+  //         const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
+  //         if (!flag) return false;
+  //         if (Date.now() > expire) {
+  //           sessionStorage.removeItem('reloading');
+  //           sessionStorage.removeItem('reloading_expire_at');
+  //           return false;
+  //         }
+  //         return true;
+  //       };
+      
+  //       if (!isConnected) {
+  //         // 1) reloading-grace가 켜져 있으면 finalize 억제
+  //         if (isReloadingGraceLocal()) {
+  //           console.log('♻️ reloading grace active — finalize 억제');
+  //           return;
+  //         }
+      
+  //         // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
+  //         const DEBOUNCE_MS = 1200;
+  //         const timer = setTimeout(() => {
+  //           if (cancelled) return;
+  //           if (!isConnected && !isReloadingGraceLocal()) {
+  //             console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
+  //             finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
+  //           } else {
+  //             console.log('🔁 재연결/리로드 감지 — finalize 스킵');
+  //           }
+  //         }, DEBOUNCE_MS);
+      
+  //         return () => {
+  //           cancelled = true;
+  //           clearTimeout(timer);
+  //         };
+  //       }
+  //     }, [isConnected, finalizeDisconnection]);
 
   const myVote   = state?.agreement ?? null;
 
   // 기본 로컬 값들
-  const rawSubtopic = localStorage.getItem('subtopic') ?? 'AI의 개인 정보 수집';
-  const roomCode    = localStorage.getItem('room_code') ?? '';
+  const rawSubtopic = localStorage.getItem('subtopic') || 'AI의 개인 정보 수집';
+  const roomCode    = localStorage.getItem('room_code') || '';
   const category    = localStorage.getItem('category') || '안드로이드';
   const isAWS       = category === '자율 무기 시스템';
 

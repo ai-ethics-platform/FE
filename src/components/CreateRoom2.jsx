@@ -1,3 +1,5 @@
+//SelectRoom.jsx에서 방 유형 선택과 주제 선택을 하나의 컴포넌트로 통합한 CreateRoom2.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
@@ -26,7 +28,7 @@ export default function CreateRoom2({ onClose }) {
     if (!selectedTopic) return;
   
     const title = `${selectedTopic}`;
-    const description = t.apiDesc ? t.apiDesc(selectedTopic) : `AI 윤리 주제 중 '${selectedTopic}'에 대한 토론`;
+    const description = `AI 윤리 주제 중 '${selectedTopic}'에 대한 토론`;
     const topic = selectedTopic;
   
     try {
@@ -104,11 +106,11 @@ export default function CreateRoom2({ onClose }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
-        {(t.topics || []).map((topic) => (
+        {(t.topics || []).map((topicObj) => (
           <div
-            key={topic}
-            onClick={() => setSelectedTopic(topic)}
-            onMouseEnter={() => setHoveredTopic(topic)}
+            key={topicObj.value}
+            onClick={() => setSelectedTopic(topicObj.value)}
+            onMouseEnter={() => setHoveredTopic(topicObj.value)}
             onMouseLeave={() => setHoveredTopic(null)}
             style={{
               width: 360,
@@ -121,12 +123,12 @@ export default function CreateRoom2({ onClose }) {
             }}
           >
             <img
-              src={getFrameSrc(topic)}
+              src={getFrameSrc(topicObj.value)}
               alt="frame"
               style={{ position: 'absolute', width: '100%', height: '100%' }}
             />
-            <div style={{ zIndex: 1, ...FontStyles.body, color: selectedTopic === topic ? Colors.grey01 : Colors.grey06 }}>
-              {topic}
+            <div style={{ zIndex: 1, ...FontStyles.body, color: selectedTopic === topicObj.value ? Colors.grey01 : Colors.grey06 }}>
+              {topicObj.label}
             </div>
           </div>
         ))}

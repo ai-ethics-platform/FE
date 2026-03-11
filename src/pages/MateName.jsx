@@ -49,8 +49,8 @@ export default function MateName() {
   
   // 카테고리 인식 로직 강화 (확장형 판별)
   const category = localStorage.getItem('category') || '';
-  const isAndroid = category.includes('안드로이드') || category.toLowerCase().includes('android');
-  const isAWS = !isAndroid;
+  const isAndroid = category === '안드로이드';
+  const isAWS = category === '자율 무기 시스템';
 
   // 카테고리별 이미지 세트 설정
   const images = isAWS
@@ -188,7 +188,7 @@ export default function MateName() {
   return (
     <Background bgIndex={2}>
       {hostId === myRoleId && (
-        <div style={{ position: 'absolute', top: '-115px', right: '0px', zIndex: 10 }}>
+        <div style={{ position: 'fixed', top: '-115px', right: '0px', zIndex: 10 }}>
           <HostInfoBadge
             src={currentHostInfoSvg}
             alt="Host Info"

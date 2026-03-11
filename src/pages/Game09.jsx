@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ResultStatCard from '../components/ResultStatCard';
 import axiosInstance from '../api/axiosInstance';
-
-// [이미지 임포트] 기존 개발자가 설정한 기본 캐릭터 이미지 경로
 import defaultAndroidLeftImageSrc from "../assets/images/Android_dilemma_1_1.jpg";
 import defaultAwsLeftImageSrc from "../assets/images/Killer_Character3.jpg";
 
@@ -17,9 +15,8 @@ export default function Game09() {
   const [stats, setStats] = useState({});  
   
   const lang = localStorage.getItem('app_lang') || 'ko';
-  const rawCategory = (localStorage.getItem('category') || '안드로이드').trim();
+  const rawCategory = (localStorage.getItem('category')).trim();
 
-  // [기존 디버깅 로그 유지] 
   window.DEBUG_TRANS = translations;
   window.DEBUG_LANG = lang;
   
@@ -93,7 +90,7 @@ export default function Game09() {
       onBackClick={handleBackClick}
       allowScroll
     >
-      {/* 사용자님이 유지하길 원하시는 기존 grid 레이아웃 스타일 */}
+      
       <div style={{ display: 'grid', gap: 24, width: '100%' }}>
         {subtopics.map((topic) => (
           <ResultStatCard

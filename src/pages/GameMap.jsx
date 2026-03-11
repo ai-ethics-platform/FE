@@ -115,8 +115,8 @@ export default function GameMap() {
 
   // 카테고리 판별 로직 (확장형 적용)
   const category = localStorage.getItem('category') || '';
-  const isAndroid = category.includes('안드로이드') || category.toLowerCase().includes('android');
-  const isAWS = !isAndroid;
+  const isAndroid = category === '안드로이드';
+  const isAWS = category === '자율 무기 시스템';
 
   // 라운드 계산 로직
   const [round, setRound] = useState(() => {
@@ -157,7 +157,7 @@ export default function GameMap() {
 
   const handleSelect = (topic, title) => {
     const prevTitle = localStorage.getItem('title');
-    const categoryStored = localStorage.getItem('category') || (isAWS ? '자율 무기 시스템' : '안드로이드');
+    const categoryStored = localStorage.getItem('category');
     const mode = 'neutral';
   
     // 한국어 원본 텍스트로 변환하여 저장

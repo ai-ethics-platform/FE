@@ -223,14 +223,11 @@
 // 이미지 오류 시 디폴트 이미지 사용 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import Layout from '../components/Layout';
 import ContentTextBox2 from '../components/ContentTextBox2';
 import closeIcon from '../assets/close.svg';
-
-// ✅ 기존 이미지 로더 유지
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
-// ✅ 기존 paragraphsData 대신 새 언어팩 사용을 위해 translations 임포트
+// 기존 paragraphsData 대신 새 언어팩 사용을 위해 translations 임포트
 import { translations } from '../utils/language';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 
@@ -243,7 +240,7 @@ import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMessage';
 import { clearAllLocalStorageKeys } from '../utils/storage';
-import defaultImg from '../assets/images/default.png';  // ✅ 기본 이미지 추가
+import defaultImg from '../assets/images/default.png';
 const profileImages = { '1P': profile1Img, '2P': profile2Img, '3P': profile3Img };
 
 export default function Game02() {
@@ -356,7 +353,7 @@ export default function Game02() {
     }
   }, [roomCode]);
 
-  // ✅ 2. [핵심] 다국어 지문 로딩 로직 통합 
+  // 다국어 지문 로딩 로직 통합 
   useEffect(() => {
     if (isCustomMode) return;
     if (mateName) {

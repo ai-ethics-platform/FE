@@ -103,6 +103,7 @@ export default function Game05_01() {
   const pct = conf ? ((conf - 1) / 4) * 100 : 0;
   
   const [consensusChoice, setConsensusChoice] = useState(null);
+  const [didSyncChoice, setDidSyncChoice] = useState(false);
 
   const [showHostBadge, setShowHostBadge] = useState(true);
   const [arrivalStatus, setArrivalStatus] = useState({ arrived_users: 0, total_required: 3, all_arrived: false });
@@ -118,11 +119,21 @@ export default function Game05_01() {
   const selectedLocalImg = localStorage.getItem('mode') === 'agree' ? (localAgreeImg || defaultImg) : (localDisagreeImg || defaultImg);
 
   const pollingTimerRef = useRef(null);
+  const statusPollingTimerRef = useRef(null);
 
+  // 페이지 진입 신호 전송
   useEffect(() => {
-    localStorage.removeItem('consensus_choice');
-  }, []);
+    const nickname = localStorage.getItem('nickname');
+    if (!roomCode || !round || !nickname) return;
 
+    axiosInstance.post('/rooms/page-arrival', {
+      room_code: roomCode,
+      page_number: round,
+      user_identifier: nickname,
+    }).catch((e) => console.error('page-arrival 실패:', e));
+  }, [roomCode, round]);
+
+  // 참여자 도착 상태 폴링
   useEffect(() => {
     const pollArrival = async () => {
       if (!roomCode || !round) return;
@@ -140,6 +151,36 @@ export default function Game05_01() {
     return () => { if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current); };
   }, [roomCode, round]);
 
+  // ✅ 동기화 핵심: Step 1 상태에서도 서버의 합의 완료 여부를 계속 체크 (Catch-up 로직)
+  useEffect(() => {
+    const pollStatus = async () => {
+      try {
+        const res = await axiosInstance.get(`/rooms/${roomCode}/rounds/${round}/status`);
+        // 서버에서 합의가 이미 완료되었다면 참여자 화면을 Step 2로 점프시킴
+        if (res.data.consensus_completed) {
+          const choice = res.data.consensus_choice === 1 ? 'agree' : 'disagree';
+          setConsensusChoice(choice);
+          localStorage.setItem('consensus_choice', choice);
+          localStorage.setItem('mode', choice);
+          setDidSyncChoice(true);
+          
+          if (step === 1) setStep(2); // 동기화 핵심 부분
+        } else {
+          statusPollingTimerRef.current = setTimeout(pollStatus, 2000);
+        }
+      } catch {
+        statusPollingTimerRef.current = setTimeout(pollStatus, 5000);
+      }
+    };
+
+    if (!didSyncChoice) {
+      pollStatus();
+    }
+    
+    return () => { if (statusPollingTimerRef.current) clearTimeout(statusPollingTimerRef.current); };
+  }, [roomCode, round, step, didSyncChoice]);
+
+  // 소켓 메시지 수신 핸들러
   useWebSocketMessage('next_page', () => {
     const finalChoice = consensusChoice || localStorage.getItem('consensus_choice');
     if (step === 1) {
@@ -147,34 +188,62 @@ export default function Game05_01() {
     } else {
       if (finalChoice) {
         localStorage.setItem('mode', finalChoice);
-      } else {
-        const fallbackChoice = window.location.pathname.includes('07') ? 'disagree' : 'agree';
-        localStorage.setItem('mode', finalChoice || fallbackChoice);
       }
       const nextRoute = finalChoice === 'agree' ? '/game06' : '/game07';
       nav(nextRoute, { state: { consensus: finalChoice } });
     }
   });
 
-  const handleStep1Continue = async () => {
-    if (!isHost) return;
-    if (!consensusChoice) return;
-    
-    localStorage.setItem('consensus_choice', consensusChoice);
-    localStorage.setItem('mode', consensusChoice); 
+  // 방장 선택 검문소 함수 (경고 시스템)
+  const handleConsensus = (choice) => {
+    if (!isHost) {
+      alert(t?.alerts?.host_only || tKo?.alerts?.host_only);
+      return;
+    }
+    if (!arrivalStatus.all_arrived) {
+      alert(t?.alerts?.wait_others || tKo?.alerts?.wait_others);
+      return;
+    }
+    setConsensusChoice(choice);
+  };
 
+  const handleStep1Continue = async () => {
+    // 1. 방장 권한 및 필수 선택값 체크
+    if (!isHost) return; // 훅 내부에서 경고가 처리됨
+
+    if (!consensusChoice) {
+      alert(t?.alerts?.select_first || tKo?.alerts?.select_first);
+      return;
+    }
+
+    if (!arrivalStatus.all_arrived) {
+      alert(t?.alerts?.wait_others || tKo?.alerts?.wait_others);
+      return;
+    }
+    
+    // 2. 서버에 합의 결과 기록 (DB 업데이트 선행)
     try {
       await axiosInstance.post(`/rooms/rooms/round/${roomCode}/consensus`, {
         round_number: round,
         choice: consensusChoice === 'agree' ? 1 : 2,
         subtopic: rawSubtopic, 
       });
-      sendNextPage();
-    } catch (e) { console.error(e); }
+
+      localStorage.setItem('consensus_choice', consensusChoice);
+      localStorage.setItem('mode', consensusChoice); 
+
+      // 3. 기록 성공 후 소켓 신호 송신 (모두 이동 명령)
+      sendNextPage(); 
+    } catch (e) { 
+      console.error(e); 
+    }
   };
 
   const submitConfidence = async () => {
-    if (conf === 0) return;
+    if (conf === 0) {
+      alert(t?.alerts?.select_confidence || tKo?.alerts?.select_confidence);
+      return;
+    }
     const finalChoice = consensusChoice || localStorage.getItem('consensus_choice');
     
     try {
@@ -197,8 +266,6 @@ export default function Game05_01() {
       nav(nextRoute, { state: { consensus: finalChoice } });
     } catch (err) { console.error(err); }
   };
-
-  const canClickStep1Next = isHost && Boolean(consensusChoice);
 
   const handleBackClick = () => {
     const idx = window.history.state?.idx ?? 0;
@@ -231,23 +298,7 @@ export default function Game05_01() {
                 src={selectedLocalImg}
                 alt="합의 결과 미리보기"
                 style={{ width: 400, height: 200, objectFit: 'cover', borderRadius: 8 }}
-                onError={(e) => { 
-                  const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
-                  if (retryCount < 3) {
-                    e.currentTarget.dataset.retryCount = String(retryCount + 1);
-                    const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
-                    const newSrc = selectedLocalImg.includes('?') ? `${selectedLocalImg.split('?')[0]}${cacheBuster}` : `${selectedLocalImg}${cacheBuster}`;
-                    setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
-                    return;
-                  }
-                  if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
-                    e.currentTarget.dataset.fallbackAttempted = 'true';
-                    e.currentTarget.dataset.retryCount = '0';
-                    e.currentTarget.src = defaultImg;
-                    return;
-                  }
-                  e.currentTarget.style.display = 'none';
-                }}
+                onError={(e) => { e.currentTarget.src = defaultImg; }}
                />
             </div>
           ) : (
@@ -258,23 +309,7 @@ export default function Game05_01() {
                   src={img}
                   alt={`설명 이미지 ${idx + 1}`}
                   style={{ width: 400, height: 200, objectFit: 'fill' }}
-                  onError={(e) => { 
-                    const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
-                    if (retryCount < 3) {
-                      e.currentTarget.dataset.retryCount = String(retryCount + 1);
-                      const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
-                      const newSrc = img.includes('?') ? `${img.split('?')[0]}${cacheBuster}` : `${img}${cacheBuster}`;
-                      setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
-                      return;
-                    }
-                    if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
-                      e.currentTarget.dataset.fallbackAttempted = 'true';
-                      e.currentTarget.dataset.retryCount = '0';
-                      e.currentTarget.src = defaultImg;
-                      return;
-                    }
-                    e.currentTarget.style.display = 'none';
-                  }}
+                  onError={(e) => { e.currentTarget.src = defaultImg; }}
                 />
               ))}
             </div>
@@ -292,53 +327,66 @@ export default function Game05_01() {
               <SelectCardToggle 
                 label={agreeLabel} 
                 selected={consensusChoice === 'agree'} 
-                onClick={() => isHost && setConsensusChoice('agree')} 
+                onClick={() => handleConsensus('agree')} 
                 disabled={!isHost} 
                 width={330} height={62} 
               />
               <SelectCardToggle 
                 label={disagreeLabel} 
                 selected={consensusChoice === 'disagree'} 
-                onClick={() => isHost && setConsensusChoice('disagree')} 
+                onClick={() => handleConsensus('disagree')} 
                 disabled={!isHost} 
                 width={330} height={62} 
               />
             </div>
           </Card>
           <div style={{ marginTop: 40 }}>
-            <Continue2 width={264} height={72} label={nextButtonLabel} disabled={!canClickStep1Next} onClick={handleStep1Continue} />
+            <Continue2 width={264} height={72} label={nextButtonLabel} onClick={handleStep1Continue} />
           </div>
         </>
       )}
 
       {step === 2 && (
-        <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Card width={936} height={216} extraTop={0}>
-              <p style={title}>{t?.step2_title || tKo?.step2_title || "여러분의 선택에 당신은 얼마나 확신을 가지고 있나요?"}</p>
-              <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
-                <div style={{ position: 'absolute', top: 8, left: 0, right: 0, height: LINE, background: Colors.grey03, zIndex: 0 }} />
-                <div style={{ position: 'absolute', top: 8, left: 0, width: `${pct}%`, height: LINE, background: Colors.brandPrimary, zIndex: 1 }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <div key={n} style={{ textAlign: 'center' }}>
-                      <div
-                        onClick={() => setConf(n)}
-                        style={{ width: CIRCLE, height: CIRCLE, borderRadius: '50%', background: n <= conf ? Colors.brandPrimary : Colors.grey03, cursor: 'pointer', margin: '0 auto' }}
-                      />
-                      <span style={{ ...FontStyles.caption, color: Colors.grey06, marginTop: 4, display: 'inline-block' }}>{n}</span>
-                    </div>
-                  ))}
+  <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Card width={936} height={216} extraTop={0}>
+        {/* 💡 핵심: 텍스트와 슬라이더를 하나의 div로 묶어서 '한 덩어리'로 만듭니다. */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          width: '100%',
+          paddingTop: '45px', // 1. 박스 상단에서 이 덩어리 전체가 얼마나 내려올지 결정 (수치 조절 가능)
+          gap: '50px'         // 2. 텍스트와 슬라이더 바 사이의 간격 고정
+        }}>
+          <p style={title}>{t?.step2_title || tKo?.step2_title || "여러분의 선택에 당신은 얼마나 확신을 가지고 있나요?"}</p>
+          
+          <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
+            <div style={{ position: 'absolute', top: 8, left: 0, right: 0, height: LINE, background: Colors.grey03, zIndex: 0 }} />
+            <div style={{ position: 'absolute', top: 8, left: 0, width: `${pct}%`, height: LINE, background: Colors.brandPrimary, zIndex: 1 }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <div key={n} style={{ textAlign: 'center' }}>
+                  <div
+                    onClick={() => setConf(n)}
+                    style={{ width: CIRCLE, height: CIRCLE, borderRadius: '50%', background: n <= conf ? Colors.brandPrimary : Colors.grey03, cursor: 'pointer', margin: '0 auto' }}
+                  />
+                  <span style={{ ...FontStyles.caption, color: Colors.grey06, marginTop: 4, display: 'inline-block' }}>{n}</span>
                 </div>
-              </div>
-              <div />
-            </Card>
-          </div>
-          <div style={{ textAlign: 'center', marginBottom: 8 }}>
-            <Continue width={264} height={72} label={nextButtonLabel} disabled={conf === 0} onClick={submitConfidence} />
+              ))}
+            </div>
           </div>
         </div>
-      )}
+        
+        {/* 💡 Card 컴포넌트의 두 번째 자식 슬롯을 비워둠으로써 슬라이더가 맨 아래로 튕겨나가는 것을 방지합니다. */}
+        <div />
+      </Card>
+    </div>
+    <div style={{ marginBottom: 8 }}>
+      <Continue width={264} height={72} step={2} disabled={conf === 0} label={nextButtonLabel} onClick={submitConfidence} />
+    </div>
+  </div>
+)}
     </Layout>
   );
 }
@@ -359,7 +407,7 @@ function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H }) {
         flexDirection: 'column', 
         alignItems: 'center',
         zIndex: 1
-      }}>
+       }}>
         {textContent}
       </div>
       {buttonContent && (

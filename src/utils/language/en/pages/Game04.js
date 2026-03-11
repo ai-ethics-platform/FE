@@ -1,7 +1,7 @@
 export const Game04 = {
   unit_person: " People",
   finish_msg: "Please wrap up and proceed to the next step.",
-  share_reason_msg: "Please Freely share the reasons for your choice.",
+  share_reason_msg: "Please freely share the reasons for your choice.",
   labels: {
     "AI의 개인 정보 수집": { agree: "Agree", disagree: "Disagree" },
     "안드로이드의 감정 표현": { agree: "Agree", disagree: "Disagree" },

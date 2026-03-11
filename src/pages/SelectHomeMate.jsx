@@ -213,8 +213,8 @@ export default function SelectHomeMate() {
   }, [initializeVoice]);
 
   const currentCategory = localStorage.getItem('category') || '';
-  const isAndroid = currentCategory.includes('안드로이드') || currentCategory.toLowerCase().includes('android');
-  const isAWS = !isAndroid;
+  const isAndroid = currentCategory === '안드로이드';
+  const isAWS = currentCategory === '자율 무기 시스템';
 
   const images = isAWS 
     ? [killerCharacter1, killerCharacter2, killerCharacter3] 
@@ -273,7 +273,7 @@ export default function SelectHomeMate() {
   return (
     <Background bgIndex={2}>
       {hostId === myRoleId && (
-        <div style={{ position: 'absolute', top: '-120px', right: '0px', zIndex: 10 }}>
+        <div style={{ position: 'fixed', top: '-115px', right: '0px', zIndex: 10 }}>
           <HostInfoBadge
             src={currentHostInfoSvg}
             alt="Host Info"

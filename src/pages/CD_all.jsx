@@ -112,7 +112,7 @@ export default function CD_all() {
     }
 
     const isEn = lang !== 'ko';
-    const isAndroid = category.includes('안드로이드') || category.toLowerCase().includes('android');
+    const isAndroid = category === '안드로이드';
     let selectedSet = [create02Image, create02Image, create02Image];
 
     if (isAndroid) {

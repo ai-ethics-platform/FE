@@ -54,8 +54,8 @@ export default function GameIntro() {
   const category = localStorage.getItem('category');
   
   // 확장형 로직: Android 미포함 시 AWS로 간주
-  const isAndroid = category && (category.includes('안드로이드') || category.toLowerCase().includes('android'));
-  const isAWS = !isAndroid;
+  const isAndroid = category === '안드로이드';
+  const isAWS = category === '자율 무기 시스템';
 
   // 언어팩 기반 동적 텍스트 할당
   const ANDROID_TEXT = tg.androidText || '';
@@ -239,7 +239,7 @@ export default function GameIntro() {
     }
   };
 
-  const debugSpeed = window.location.hostname === 'localhost' ? 0 : 70;
+  //const debugSpeed = 20;
 
   return (
     <Background bgIndex={2}>
@@ -256,7 +256,7 @@ export default function GameIntro() {
             text={fullText} 
             leftText={isAWS} 
             leftTextContent={isAWS? AWS_TEXT_LEFT : ''} 
-            typingSpeed={debugSpeed}
+            typingSpeed={undefined}
           />
           <div style={{ marginTop: 20 }}>
             <Continue

@@ -452,7 +452,7 @@ import { resolveParagraphs } from '../utils/resolveParagraphs';
 
 import defaultImg from '../assets/images/default.png';
 
-const CARD_W = 936; // 원본 코드의 렌더링 값 기반으로 조정
+const CARD_W = 936;
 const CARD_H = 216;
 const CIRCLE = 16;
 const BORDER = 2;
@@ -465,12 +465,12 @@ export default function Game03() {
   // 1. 다국어 및 기본 설정
   const lang = localStorage.getItem('app_lang') || 'ko';
   const currentLangData = translations[lang] || translations['ko'];
-  const t = currentLangData.Game03;   // Game03 전용 언어팩
+  const t = currentLangData.Game03;  
   const t_map = currentLangData.GameMap;
 
   const roleId = Number(localStorage.getItem('myrole_id') || 1);
-  const roomCode = localStorage.getItem('room_code') ?? '';
-  const category = localStorage.getItem('category') ?? '안드로이드';
+  const roomCode = localStorage.getItem('room_code') || '';
+  const category = localStorage.getItem('category') || '안드로이드';
   const rawMateName = localStorage.getItem('mateName');
   const mateName = rawMateName && rawMateName.trim() !== '' 
     ? rawMateName 
@@ -521,7 +521,7 @@ export default function Game03() {
   // {{mateName}} 치환 적용
   const finalQuestion = resolveParagraphs([{ main: questionData.question }], mateName)[0]?.main;
 
-  // 이미지 세팅 (기존 유지)
+  // 이미지 세팅
   const comicImages = getDilemmaImages(category, rawSubtopic, 'neutral', selectedIndex);
   const resolveImageUrl = (raw) => {
     if (!raw || raw === '-' || String(raw).trim() === '') return null;
@@ -553,7 +553,7 @@ export default function Game03() {
   const { isHost } = useHostActions();
   useWebSocketNavigation(nav, { nextPagePath: '/game04', infoPath: '/game04' });
 
-  // API 통신 로직 (기존 유지)
+  // API 통신 로직
   const handleSubmitChoice = async () => {
     const choiceInt = agree === 'agree' ? 1 : 2;
     try {
@@ -680,7 +680,7 @@ export default function Game03() {
             <Card width={936} height={216} extraTop={0}>
               <p style={title}>{t.step2_title}</p>
               <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
-                {/* 확신도 슬라이더 바 로직 (기존 유지) */}
+                {/* 확신도 슬라이더 바 */}
                 <div style={{ position: 'absolute', top: 8, left: 0, right: 0, height: LINE, background: Colors.grey03, zIndex: 0 }} />
                 <div style={{ position: 'absolute', top: 8, left: 0, width: `${pct}%`, height: LINE, background: Colors.brandPrimary, zIndex: 1 }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 2 }}>
@@ -717,4 +717,4 @@ function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style =
   );
 }
 
-const title = { ...FontStyles.title, color: Colors.grey06, textAlign: 'center' };
+const title = { ...FontStyles.title, color: Colors.grey06, textAlign: 'center', whiteSpace: 'pre-wrap', lineHeight: '1.25' };

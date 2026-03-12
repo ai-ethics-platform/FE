@@ -12,7 +12,6 @@ import player3 from "../assets/3player_withnum.svg";
 import axiosInstance from '../api/axiosInstance';
 import { FontStyles, Colors } from '../components/styleConstants';
 import codeBg from '../assets/roomcodebackground.svg';
-// 상단 ESM 방식 임포트
 import infoFrame from '../assets/infoframe.svg';
 import infoFrame2 from '../assets/infoframe2.svg';
 import CancelReadyPopup from '../components/CancelReadyPopup';
@@ -590,6 +589,7 @@ export default function WaitingRoom() {
         </div>
 
         {/* 정보 안내 프레임 */}
+        {/* 언어값이 한글이 아닐 시 infoframe2 이미지 에셋 사용*/}
         <div 
           style={{ 
             position: 'absolute', 
@@ -604,7 +604,7 @@ export default function WaitingRoom() {
         >
           <img 
             src={lang === 'ko' ? infoFrame : infoFrame2} 
-            alt="info frame" 
+            alt="info_frame" 
             style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 1 }} 
           />
           <span 

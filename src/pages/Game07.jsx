@@ -9,12 +9,10 @@ import ResultPopup from '../components/Results';
 import { resolveParagraphs } from '../utils/resolveParagraphs';
 
 import { translations } from '../utils/language';
-import axiosInstance from '../api/axiosInstance';
 import { useWebSocket } from '../WebSocketProvider';
 import { useWebRTC } from '../WebRTCProvider';
 import { useHostActions } from '../hooks/useWebSocketMessage';
 import voiceManager from '../utils/voiceManager';
-import { clearAllLocalStorageKeys } from '../utils/storage';
 
 export default function Game07() {
   const navigate = useNavigate();
@@ -29,8 +27,7 @@ export default function Game07() {
   const headerSubtopic = isCustomMode ? (creatorTitle || baseSubtopic) : baseSubtopic;
 
   const rawCategory = localStorage.getItem('category') || '안드로이드';
-  const rawSubtopic = baseSubtopic;
-  const roomCode    = localStorage.getItem('room_code');
+  const rawSubtopic = baseSubtopic; // 한글값 유지됨
   const mateName    = localStorage.getItem('mateName') || 'HomeMate';
   const ENDING_MODE = 'ending2'; 
 
@@ -47,22 +44,22 @@ export default function Game07() {
 
   const [displayText, setDisplayText] = useState(''); 
   const [completedTopics, setCompletedTopics] = useState([]);
-  const [currentRound, setCurrentRound] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
-  const [openProfile, setOpenProfile] = useState(null);
 
-  // 결과 보기 버튼 활성화 여부 판별 (5라운드 이상 완료 시)
-  const showResultButton = useMemo(() => completedTopics.length >= 5, [completedTopics]);
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+    setCompletedTopics(saved);
+  }, []);
 
   const stableCategory = useMemo(() => {
     return rawCategory === '자율 무기 시스템' ? '자율 무기 시스템' : '안드로이드';
   }, [rawCategory]);
 
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-    setCompletedTopics(saved);
-    setCurrentRound(saved.length);
-  }, []);
+  // ✅ [최적화] subtopic 한글 고정값을 직접 비교하여 마지막 라운드 판별
+  const isFinalRound = useMemo(() => {
+    const target = rawSubtopic.trim();
+    return target === '지구, 인간, AI' || target === 'AWS 규제';
+  }, [rawSubtopic]);
 
   useEffect(() => {
     if (isCustomMode) {
@@ -94,8 +91,8 @@ export default function Game07() {
   };
 
   const handleViewResult = () => {
+    localStorage.setItem('mode', 'disagree');
     if (completedTopics.length >= 5) {
-      localStorage.setItem('mode', 'disagree');
       navigate('/game08');
     } else {
       setShowPopup(true);
@@ -108,94 +105,33 @@ export default function Game07() {
     go_to_map: ui.go_to_map || (lang === 'ko' ? "라운드 선택으로" : "Go to Round Selection"),
   };
 
-  function clearGameSession() {
-    [
-      'myrole_id','host_id','user_id','role1_user_id','role2_user_id','role3_user_id',
-      'room_code','category','subtopic','mode','access_token','refresh_token',
-      'mateName','nickname','title','session_id','selectedCharacterIndex',
-      'currentRound','completedTopics','subtopicResults',
-      'code','creatorTitle','char1','char2','char3','charDes1','charDes2','charDes3',
-      'dilemma_image_3','dilemma_image_4_1','dilemma_image_4_2',
-      'dilemma_situation','dilmma_situation','question','agree_label','disagree_label',
-      'agreeEnding','disagreeEnding','flips_agree_texts','flips_disagree_texts'
-    ].forEach(key => localStorage.removeItem(key));
-  }
-
-  const forceBrowserCleanupWithoutDummy = async () => {
-    try {
-      if (window.voiceManager) {
-        if (window.voiceManager.mediaRecorder) {
-          try {
-            if (window.voiceManager.mediaRecorder.state === 'recording') {
-              window.voiceManager.mediaRecorder.stop();
-            }
-          } catch {}
-          window.voiceManager.mediaRecorder = null;
-        }
-        if (window.voiceManager.mediaStream) {
-          window.voiceManager.mediaStream.getTracks().forEach(track => {
-            if (track.readyState !== 'ended') track.stop();
-          });
-          window.voiceManager.mediaStream = null;
-        }
-        window.voiceManager.isRecording = false;
-        window.voiceManager.isConnected = false;
-        window.voiceManager.sessionInitialized = false;
-        window.voiceManager.recordedChunks = [];
-        if (window.voiceManager.audioContext) {
-          try {
-            if (window.voiceManager.audioContext.state !== 'closed') {
-              await window.voiceManager.audioContext.close();
-            }
-          } catch {}
-          window.voiceManager.audioContext = null;
-        }
-      }
-      document.querySelectorAll('*').forEach(el => {
-        if (el.srcObject && typeof el.srcObject.getTracks === 'function') {
-          el.srcObject.getTracks().forEach(track => {
-            if (track.readyState !== 'ended') track.stop();
-          });
-          el.srcObject = null;
-        }
-      });
-    } catch (error) {
-      console.error('브라우저 강제 정리 중 오류:', error);
-    }
-  };
-
   const handleExit = async () => {
     try {
-      const result = await voiceManager?.terminateVoiceSession?.();
-      if (window.stopAllOutgoingAudioGlobal) {
-        window.stopAllOutgoingAudioGlobal();
-      }
-      await forceBrowserCleanupWithoutDummy();
+      await voiceManager?.terminateVoiceSession?.();
       if (disconnect) disconnect();
-      setTimeout(async () => {
-        clearGameSession();
+      setTimeout(() => { 
+        ['myrole_id','host_id','user_id','room_code','category','subtopic','mode'].forEach(k => localStorage.removeItem(k));
         window.location.href = '/'; 
       }, 500);
-    } catch (e) {
-      clearGameSession();
-      window.location.href = '/'; 
-    }
+    } catch (e) { window.location.href = '/'; }
   };
 
   return (
     <>
-      <Layout round={currentRound} subtopic={headerSubtopic} onBackClick={() => navigate('/game05_1')}>
+      <Layout round={completedTopics.length} subtopic={headerSubtopic} onBackClick={() => navigate('/game05_1')}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
           <ContentBox2 text={displayText || ''} width={936} height={407} />
-          {isCustomMode ? (
-            <Continue3 label={uiLabels.exit} onClick={handleExit} />
-          ) : (
-            showResultButton ? (
-              <Continue3 label={uiLabels.view_result} onClick={handleViewResult} />
+          <div style={{ display: 'flex', gap: 24 }}>
+            {isCustomMode ? (
+              <Continue3 label={uiLabels.exit} onClick={handleExit} />
             ) : (
-              <Continue label={uiLabels.go_to_map} onClick={handleNextRound} style={{ width: 264, height: 72 }} />
-            )
-          )}
+              isFinalRound ? (
+                <Continue3 label={uiLabels.view_result} onClick={handleViewResult} />
+              ) : (
+                <Continue label={uiLabels.go_to_map} onClick={handleNextRound} style={{ width: 264, height: 72 }} />
+              )
+            )}
+          </div>
         </div>
       </Layout>
       {showPopup && !isCustomMode && (

@@ -38,7 +38,7 @@ export const Paragraphs = {
             disagree: [
                 { main: ' Recently, as the mother’s friends have passed away one by one,\n she has gradually reduced her communication with the outside world.' },
                 { main: ' She tried to open up emotionally to {{mateName}}, but felt that its responses lacked genuine sincerity.' },
-                { main: ' She tried several times to express her true feelings, but as meaningful interaction failed to take place,\n the mother gradually spoke less and her everyday emotional expressions noticeably diminished.' },
+                { main: ' She tried several times to express her true feelings, but as meaningful interaction failed to take place, the mother gradually spoke less and her everyday emotional expressions noticeably diminished.' },
                 { main: ' For the sake of the mother, should our family agree to the emotional engine update?' },
             ],
             ending1: [{ main: 'In the end, our family agreed to the emotional update, and {{mateName}} became someone with whom we could share even more intimate and emotionally close interactions.\n\n For the relationship between our family and {{mateName}}, what values did you choose, and what did you give up?' }],
@@ -71,7 +71,7 @@ export const Paragraphs = {
                 { main: 'Many users report that when {{mateName}} interacts with family members, it often makes decisions or takes actions whose reasons are difficult to understand.\nThey point out that the system does not provide explanations for why it made such decisions.' },
                 { main: ' As a result, demands are growing for {{mateName}} to disclose its decision-making algorithms and to enhance the explainability of its AI.' },
                 { main: 'In response, the company stated the following: \n “If we use AI models that are simplified enough to disclose and explain their decision-making structures, the performance of the AI may be significantly reduced. In addition, if internal algorithms are disclosed, there is also a risk of hacking or malicious misuse.”' },
-                { main: ' As AI becomes deeply embedded in everyday home life, should companies be required to develop *Explainable AI*?' },
+                { main: ' As AI becomes deeply embedded in everyday home life, should companies be required to develop "Explainable AI"?' },
             ],
             agree: [
                 { main: ' In the meeting, it was decided by a majority vote to make the development of explainable AI mandatory as a first step.' },

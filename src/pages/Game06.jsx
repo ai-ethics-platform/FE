@@ -15,7 +15,7 @@ import { translations } from '../utils/language';
 
 export default function Game06() {
   const navigate = useNavigate();
-  const { disconnect } = useWebSocket();
+  const { disconnect, finalizeDisconnection } = useWebSocket(); 
   const lang = localStorage.getItem('app_lang') || 'ko';
   
   const currentLangData = translations[lang] || translations['ko'];
@@ -32,7 +32,7 @@ export default function Game06() {
 
   const isCustomMode = !!localStorage.getItem('code');
   const rawCategory = localStorage.getItem('category') || '안드로이드';
-  const rawSubtopic = localStorage.getItem('subtopic') || '';
+  const rawSubtopic = localStorage.getItem('subtopic') || ''; // 한글값 유지됨
   const headerSubtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || rawSubtopic) : rawSubtopic;
   const mateName = localStorage.getItem('mateName') || 'HomeMate';
 
@@ -51,11 +51,16 @@ export default function Game06() {
     return rawCategory === '자율 무기 시스템' ? '자율 무기 시스템' : '안드로이드';
   }, [rawCategory]);
 
+  // ✅ [최적화] subtopic 한글 고정값을 직접 비교하여 마지막 라운드 판별
+  const isFinalRound = useMemo(() => {
+    const target = rawSubtopic.trim();
+    return target === '지구, 인간, AI' || target === 'AWS 규제';
+  }, [rawSubtopic]);
+
   useEffect(() => {
     if (isCustomMode) {
       const raw = localStorage.getItem('agreeEnding');
-      if (!raw) return;
-      setDisplayText(String(raw));
+      if (raw) setDisplayText(String(raw));
       return;
     }
 
@@ -78,18 +83,18 @@ export default function Game06() {
   };
 
   const handleViewResult = () => {
-    if (completedTopics.length >= 5){
-      localStorage.setItem('mode', 'agree');
+    localStorage.setItem('mode', 'agree');
+    // 라운드 개수(5개) 미달 시 팝업, 충족 시 바로 이동
+    if (completedTopics.length >= 5) {
       navigate('/game08');
-    } else { setShowPopup(true); }
+    } else { 
+      setShowPopup(true); 
+    }
   };
 
   const handleExit = async () => {
     try {
-      const result = await voiceManager?.terminateVoiceSession?.();
-      if (window.stopAllOutgoingAudioGlobal) {
-        window.stopAllOutgoingAudioGlobal();
-      }
+      await voiceManager?.terminateVoiceSession?.();
       if (disconnect) disconnect();
       setTimeout(() => { 
         ['myrole_id','host_id','user_id','room_code','category','subtopic','mode'].forEach(k => localStorage.removeItem(k));
@@ -101,7 +106,7 @@ export default function Game06() {
   const uiLabels = {
     exit: ui.exit || (lang === 'ko' ? "나가기" : "Exit"),
     view_result: ui.view_result || (lang === 'ko' ? "결과 보기" : "View Results"),
-    go_to_map: ui.go_to_map || (lang === 'ko' ? "라운드 선택으로" : "GO to Round Selection"),
+    go_to_map: ui.go_to_map || (lang === 'ko' ? "라운드 선택으로" : "Go to Round Selection"),
   };
 
   return (
@@ -113,7 +118,7 @@ export default function Game06() {
             {isCustomMode ? (
               <Continue3 label={uiLabels.exit} onClick={handleExit} />
             ) : (
-              (completedTopics.includes('지구, 인간, AI') || completedTopics.includes('AWS 규제')) ? (
+              isFinalRound ? (
                 <Continue3 label={uiLabels.view_result} onClick={handleViewResult} />
               ) : (
                 <Continue label={uiLabels.go_to_map} onClick={handleNextRound} style={{ width: 264, height: 72 }} />

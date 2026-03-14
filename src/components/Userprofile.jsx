@@ -139,7 +139,7 @@ export default function UserProfile({
   const icon = getIcon();
   const { style: externalStyle, ...divProps } = rest;
   const baseStyle = {
-    position: 'relative', width: 200, height: 96,
+    position: 'relative', width: 210, height: 96,
     backgroundColor: Colors.componentBackgroundFloat,
     padding: '12px 12px 12px 20px', boxSizing: 'border-box',
     display: 'flex', alignItems: 'center', cursor: 'pointer',

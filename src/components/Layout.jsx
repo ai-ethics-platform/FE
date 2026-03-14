@@ -215,10 +215,10 @@ export default function Layout({
         <style>{`
           html, body, #root { margin: 0; padding: 0; height: 100%; overflow: hidden; }
           .layout-viewport { position: fixed; inset: 0; overflow: auto; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-          .layout-sidebar { position: fixed; top: 50%; left: 0; transform: translateY(-50%) scale(${zoom}); transform-origin: left center; width: 220px; padding: 20px 0; display: flex; flex-direction: column; gap: 0px; align-items: flex-start; z-index: 10; }
+          .layout-sidebar { position: fixed; top: 50%; left: 0; transform: translateY(-50%) scale(${zoom}); transform-origin: left center; width: 300px; padding: 20px 0; display: flex; flex-direction: column; gap: 0px; align-items: flex-start; z-index: 10; }
           .layout-sidebar-profiles { display: flex; flex-direction: column; gap: 24px; align-items: flex-start; width: 100%; }
           .layout-sidebar-extra { margin-top: 10px; margin-left: 14px; align-self: flex-start; }
-          .layout-stage { width: 1060px; min-height: 720px; height: auto; position: relative; transform: scale(${zoom}); transform-origin: center center; display: flex; flex-direction: column; align-items: center; padding: 42px 24px 32px; margin: 40px auto; }
+          .layout-stage { width: 1060px; min-height: 720px; height: auto; position: relative; transform: scale(${zoom}); transform-origin: center center; display: flex; flex-direction: column; align-items: center; padding: 5px 24px 32px; margin: 40px auto; }
           .layout-gameframe { width: auto; max-width: none; margin-bottom: 10px; display: flex; justify-content: center; }
         `}</style>
         <div className="layout-viewport" style={viewportOverride}>

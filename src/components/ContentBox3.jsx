@@ -2,7 +2,7 @@ import React from 'react';
 import  useTypingEffect  from '../hooks/useTypingEffect';
 import contentBoxFrame from '../assets/contentBox2.svg';
 import { Colors, FontStyles } from './styleConstants';
-export default function ContentBox2({ text, typingSpeed = 20 }) {
+export default function ContentBox2({ text, typingSpeed = 70 }) {
   
 const typedText = useTypingEffect(text, typingSpeed);
   

@@ -100,10 +100,7 @@ export default function GameMapOptionBox({
     const isInteractive = !option.locked && !option.disabled;
 
     // 2) 텍스트 길이에 따른 폰트 크기 조절
-    const textLength = option.text?.length || 0;
-    const dynamicFontSize = !isKo && textLength > 25 
-      ? `${Math.max(1.1, 1.5 * (25 / textLength))}vw` 
-      : '1.5vw';
+   const dynamicFontSize = isKo ? '1.5vw' : '1.3vw';
 
     return (
       <div

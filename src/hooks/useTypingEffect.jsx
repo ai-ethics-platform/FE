@@ -1,6 +1,6 @@
 import { useEffect, useState, useLayoutEffect, useRef } from 'react';
 
-export default function useTypingEffect(text = '', speed = 70, onComplete) {
+export default function useTypingEffect(text = '', speed = 40, onComplete) {
   const [displayedText, setDisplayedText] = useState('');
   const intervalRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
@@ -10,10 +10,11 @@ export default function useTypingEffect(text = '', speed = 70, onComplete) {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
-  // ✅ 인덱스/문장이 바뀔 때 "그리기 전에" 타이핑 상태를 즉시 리셋해서
-  //    잠깐 텍스트가 보였다가 사라지는 플리커(점프)를 방지
+  // 인덱스/문장이 바뀔 때 "그리기 전에" 타이핑 상태를 즉시 리셋해서
+  // 잠깐 텍스트가 보였다가 사라지는 플리커(점프)를 방지
   useLayoutEffect(() => {
     // 이전 interval 정리
+    console.log("현재 적용된 타이핑 속도:", speed);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -34,7 +35,7 @@ export default function useTypingEffect(text = '', speed = 70, onComplete) {
         intervalRef.current = null;
         onCompleteRef.current?.();
       }
-    }, speed);
+    }, speed); 
 
     return () => {
       if (intervalRef.current) {
@@ -42,7 +43,7 @@ export default function useTypingEffect(text = '', speed = 70, onComplete) {
         intervalRef.current = null;
       }
     };
-  }, [text, speed]);
+  }, [text, speed]); 
 
   return displayedText;
 }

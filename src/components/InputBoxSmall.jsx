@@ -11,6 +11,7 @@ export default function InputBoxSmall({
   height = 56,
   value = '',
   onChange = () => {},
+  style = {}, // ✅ 외부에서 스타일을 넘겨받을 수 있도록 props 추가
 }) {
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -83,8 +84,17 @@ export default function InputBoxSmall({
               border: 'none',
               outline: 'none',
               background: 'transparent',
-              ...FontStyles.body,
-              color: Colors.grey05,
+              ...FontStyles.body, // 기본 폰트 스타일
+              color: value.length > 0 ? '#000000' : Colors.grey05,
+              // 값이 없을 때(placeholder 상태)만 외부에서 넘겨준 작은 사이즈 사용,
+              // 사용자가 입력한 값이 있을 때는 원래의 사이즈 유지.
+              fontSize: (value.length === 0 && !isFocused)
+                ? (style.fontSize || 'inherit')
+                : '20px',
+              ...Object.entries(style).reduce((acc, [k, v]) => {
+                if (k !== 'fontSize') acc[k] = v; // fontSize는 위에서 조건부로 처리했으므로 제외
+                return acc;
+              }, {}),
             }}
           />
         </div>

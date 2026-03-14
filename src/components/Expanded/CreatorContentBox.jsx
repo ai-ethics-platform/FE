@@ -72,7 +72,7 @@ import { Colors, FontStyles } from '../styleConstants';
 export default function CreatorContentBox({
   text, 
   topicText, 
-  typingSpeed = 70, 
+  typingSpeed = 40, 
   orangeText // 부모로부터 받은 오렌지 텍스트
 }) {
   const [showOrangeText, setShowOrangeText] = useState(false); // 오렌지 텍스트 타이핑 시작 여부

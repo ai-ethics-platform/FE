@@ -27,7 +27,7 @@ export default function ContentTextBox2({
 
   const typedMain = useTypingEffect(
     isTextReady ? currentParagraph.main : '',
-    70,
+    20,
     () => setTypingDone(true)
   );
   const typedSub = typingDone ? currentParagraph.sub : '';

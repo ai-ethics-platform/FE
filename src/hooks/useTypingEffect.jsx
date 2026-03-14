@@ -1,6 +1,6 @@
 import { useEffect, useState, useLayoutEffect, useRef } from 'react';
 
-export default function useTypingEffect(text = '', speed = 20, onComplete) {
+export default function useTypingEffect(text = '', speed = 40, onComplete) {
   const [displayedText, setDisplayedText] = useState('');
   const intervalRef = useRef(null);
   const onCompleteRef = useRef(onComplete);

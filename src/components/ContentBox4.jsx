@@ -3,7 +3,7 @@ import useTypingEffect from '../hooks/useTypingEffect';
 import contentBoxFrame from '../assets/contentBox2.svg';
 import { Colors, FontStyles } from './styleConstants';
 
-export default function ContentBox4({ text, leftText = false, leftTextContent = '', typingSpeed = 20 }) {
+export default function ContentBox4({ text, leftText = false, leftTextContent = '', typingSpeed = 40 }) {
     const typedText = useTypingEffect(text, typingSpeed);
   
     const [startLeftTyping, setStartLeftTyping] = useState(false);

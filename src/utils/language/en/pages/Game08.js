@@ -1,5 +1,5 @@
 export const Game08 = {
-  subtopic: "Result: Our Choice",
+  subtopic: "Results: Our Choice",
 
   android: {
     p1: {

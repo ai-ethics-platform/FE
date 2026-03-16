@@ -402,7 +402,7 @@ function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H }) {
       <div style={{ 
         position: 'absolute', 
         top: 0, left: 0, right: 0,
-        padding: '15px 24px 0 24px', 
+        padding: '25px 24px 0 24px', 
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center',

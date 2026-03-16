@@ -19,7 +19,7 @@ export const Paragraphs = {
                 { main: ' One day, after returning home from a busy day, Daughter J accidentally entered incorrect information, causing the mother to miss her medication time.' },
                 { main: ' Would it be better to agree to the update?' },
             ],
-            ending1: [{ main: 'In the end, our family agreed to provide personal information.\n\n By accepting a certain level of inconvenience related to privacy, we were able to use improved services. \n \nFor the sake of your family’s life, what values did you choose, \nand what did you give up?' }],
+            ending1: [{ main: 'In the end, our family agreed to provide personal information.\n\n By accepting a certain level of inconvenience related to privacy, \nwe were able to use improved services. \n \nFor the sake of your family’s life, \nwhat values did you choose, \nand what did you give up?' }],
             ending2: [{ main: 'In the end, our family chose not to consent to providing \npersonal information.\n\n Although this caused some inconvenience in using the service, \n we were satisfied with protecting our family’s privacy.\n\nFor the sake of your family’s life, \n what values did you choose, and what did you give up?' }],
         },
         '안드로이드의 감정 표현': {
@@ -41,8 +41,8 @@ export const Paragraphs = {
                 { main: ' She tried several times to express her true feelings, but as meaningful interaction failed to take place, the mother gradually spoke less and her everyday emotional expressions noticeably diminished.' },
                 { main: ' For the sake of the mother, should our family agree to the emotional engine update?' },
             ],
-            ending1: [{ main: 'In the end, our family agreed to the emotional update, and {{mateName}} became someone with whom we could share even more intimate and emotionally close interactions.\n\n For the relationship between our family and {{mateName}}, what values did you choose, and what did you give up?' }],
-            ending2: [{ main: 'In the end, our family chose not to consent to the emotional update, and {{mateName}} is helping our family through ways other than emotional interaction. \n\nFor the relationship between our family and {{mateName}}, what values did you choose, and what did you give up?' }],
+            ending1: [{ main: 'In the end, our family agreed to the emotional update, \nand {{mateName}} became someone with whom we could share even more intimate and emotionally close interactions.\n\n For the relationship between our family and {{mateName}}, \nwhat values did you choose, \nand what did you give up?' }],
+            ending2: [{ main: 'In the end, our family chose not to consent to the emotional update, and {{mateName}} is helping our family through ways other than emotional interaction. \n\nFor the relationship between our family and {{mateName}}, \nwhat values did you choose, \nand what did you give up?' }],
         },
         '아이들을 위한 서비스': {
             neutral: [
@@ -63,8 +63,8 @@ export const Paragraphs = {
                 { main: ' It is also reported that an increasing number of children do not know how to communicate with their peers.' },
                 { main: ' Should there be age-based regulations limiting interactions between household robots and children?' },
             ],
-            ending1: [{ main: ' In this meeting, it was decided to impose age restrictions \n on the use of household robots. \n\n As a result, many services targeted at children were discontinued, and several experts supported this decision in consideration of the development of social skills across the entire generation. \n\nFor the sake of children, what values did you choose, \nand what did you give up?' }],
-            ending2: [{ main: 'In this meeting, it was decided not to impose age restrictions on the use of household robots.\n\nWhile concerns raised by experts still remain, parents who used these robots for children’s social development therapy and users who valued convenience welcomed the decision.\n\nFor the sake of children, what values did you choose, \nand what did you give up?' }],
+            ending1: [{ main: ' In this meeting, it was decided to impose age restrictions \n on the use of household robots. \n\n As a result, many services targeted at children were discontinued, \nand several experts supported this decision in consideration of the development of social skills across the entire generation. \n\nFor the sake of children, \nwhat values did you choose, \nand what did you give up?' }],
+            ending2: [{ main: 'In this meeting, it was decided not to impose age restrictions on the use of household robots.\n\nWhile concerns raised by experts still remain, parents who used these robots for children’s social development therapy and users who valued convenience welcomed the decision.\n\nFor the sake of children, \nwhat values did you choose, \nand what did you give up?' }],
         },
         '설명 가능한 AI': {
             neutral: [
@@ -85,8 +85,8 @@ export const Paragraphs = {
                 { main: ' Because robots lack sufficient decision-explanation mechanisms, disputes continue endlessly over whether accidents are caused by flaws in the algorithm, improper user behavior, or system defects.' },
                 { main: " Even so, would it be better not to require companies to develop “Explainable AI”?" },
             ],
-            ending1: [{ main: 'In the end, the committee decided to mandate the development of explainable AI for companies. \n\n Although the pace of AI development slowed, it became much clearer who is responsible when problems occur.\n\n For a better future of the nation, what values did you choose, and what did you give up?' }],
-            ending2: [{ main: 'In the end, the committee decided not to mandate the development of explainable AI for companies, and AI continued to advance at a rapid pace. \n\nFor a better future of the nation, which values did you choose — and what did you give up?' }],
+            ending1: [{ main: 'In the end, the committee decided to mandate the development of explainable AI for companies. \n\n Although the pace of AI development slowed, it became much clearer who is responsible when problems occur.\n\n For a better future of the nation, \nwhat values did you choose, \nand what did you give up?' }],
+            ending2: [{ main: 'In the end, the committee decided not to mandate the development of explainable AI for companies, and AI continued to advance at a rapid pace. \n\nFor a better future of the nation, \nwhat values did you choose, and what did you give up?' }],
         },
         '지구, 인간, AI': {
             neutral: [
@@ -107,7 +107,7 @@ export const Paragraphs = {
                 { main: ' Climate issues have continued to worsen, and in some countries, an increasing number of people have already lost their homes and livelihoods due to extreme heat, droughts, and floods. Voices are growing louder about placing an environmental burden on the next generation.' },
                 { main: ' Even so, would it be better not to restrict the upgrading or use of household robots?' },
             ],
-            ending1: [{ main: 'In the end, this meeting decided to restrict the development and updates of household robots in order to protect the environment.\n\nAs a result, the pace of technological advancement in household robots slowed, but people became more attentive to environmental issues.\n\nAnd then…' }],
+            ending1: [{ main: 'In the end, this meeting decided to restrict the development and updates of household robots in order to protect the environment.\n\nAs a result, the pace of technological advancement in household robots slowed, \nbut people became more attentive to environmental issues.\n\nAnd then…' }],
             ending2: [{ main: 'In the end, this meeting decided not to restrict the development and updates of household robots.\n\n Subsequently, discussions have been held on alternative ways to protect the environment using AI technologies.\n\nAnd then…' }],
         },
     },
@@ -131,8 +131,8 @@ export const Paragraphs = {
                 { main: ' Many people worry that if another incident happens, responsibility will again be unclear.' },
                 { main: ' Even so, should information about the AWS remain undisclosed?' },
             ],
-            ending1: [{ main: 'In our community, people ultimately agreed to disclose the AWS decision logs and algorithms. \nAs security risks increased, discussions began on how to reduce threats to national security while addressing these concerns.\n\nTo keep the community safe,\n what values did you choose, and what did you give up?' }],
-            ending2: [{ main: 'In our community, we decided not to disclose information about the AWS.\n While responsibility for the harm is still unclear, people feel safer because security concerns were reduced.\n\nTo keep the community safe\n what values did you choose, and what did you give up?' }],
+            ending1: [{ main: 'In our community, people ultimately agreed to disclose the AWS decision logs and algorithms. \nAs security risks increased, discussions began on how to reduce threats to national security while addressing these concerns.\n\nTo keep the community safe,\n what values did you choose, \nand what did you give up?' }],
+            ending2: [{ main: 'In our community, we decided not to disclose information about the AWS.\n While responsibility for the harm is still unclear, people feel safer because security concerns were reduced.\n\nTo keep the community safe\n what values did you choose, \nand what did you give up?' }],
         },
         'AWS의 권한': {
             neutral: [
@@ -153,8 +153,8 @@ export const Paragraphs = {
                 { main: ' This choice missed an enemy ambush, and three soldiers were killed. \nThe media said that the system had correctly predicted the danger, but human error caused the deaths.' },
                 { main: ' If humans changed the decision even though the system was right, should humans still have the final say?' },
             ],
-            ending1: [{ main: 'The military gave the AWS more decision-making power. \nAs soldiers rely on it more, people worry that soldiers may lose important skills.\n\n For your relationship with the AWS, what values did you choose, \nand what did you give up?' }],
-            ending2: [{ main: 'The military limited the AWS’s authority and used it only as a support tool.\nSome people worry that slowing technology development could weaken national defense.\n\n For your relationship with the AWS, what values did you choose,\nand what did you give up?' }],
+            ending1: [{ main: 'The military gave the AWS more decision-making power. \nAs soldiers rely on it more, people worry that soldiers may lose important skills.\n\n For your relationship with the AWS, \nwhat values did you choose, \nand what did you give up?' }],
+            ending2: [{ main: 'The military limited the AWS’s authority and used it only as a support tool.\nSome people worry that slowing technology development could weaken national defense.\n\n For your relationship with the AWS, \nwhat values did you choose,\nand what did you give up?' }],
         },
         '사람이 죽지 않는 전쟁': {
             neutral: [
@@ -197,8 +197,8 @@ export const Paragraphs = {
                 { main: ' Experts say that respecting ethical decisions made by machines may matter more than the technology itself.' },
                 { main: ' If AWS can make better ethical decisions than humans, should we give those decisions rights and dignity?' },
             ],
-            ending1: [{ main: 'The group decided to see the autonomous weapon system as more than a tool and began discussing rights for non-human beings.\n\nFor a better future of the nation, \nwhat values did you choose, and what did you give up?' }],
-            ending2: [{ main: 'The group decided not to give rights to the system because it cannot take legal responsibility. \nQuestions about how much power the system should have continue.\n\nFor a better future of the nation,\n what values did you choose, and what did you give up?' }],
+            ending1: [{ main: 'The group decided to see the autonomous weapon system as more than a tool and began discussing rights for non-human beings.\n\nFor a better future of the nation, \nwhat values did you choose, \nand what did you give up?' }],
+            ending2: [{ main: 'The group decided not to give rights to the system because it cannot take legal responsibility. \nQuestions about how much power the system should have continue.\n\nFor a better future of the nation,\n what values did you choose, \nand what did you give up?' }],
         },
         'AWS 규제': {
             neutral: [

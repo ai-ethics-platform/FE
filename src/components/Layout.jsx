@@ -28,6 +28,7 @@ export default function Layout({
   subtopic, onProfileClick, children, round, nodescription = false,
   onBackClick, showBackButton = true, allowScroll = false, hostmessage = false,
   popupStep = null, sidebarExtra = null,
+  showSidebar = true, // ✅ 사이드바 표시 여부 제어 프롭 추가 (기본값 true)
 }) {
   const [zoom, setZoom] = useState(1);
   const location = useLocation(); // 현재 경로 감지
@@ -58,7 +59,6 @@ export default function Layout({
   const [mateName, setMateName] = useState(localStorage.getItem('mateName') || 'HomeMate'); 
 
   // [선제적 동기화 로직] 
-  // 참여자가 어느 페이지에 있든, 부족한 방 정보(이름, 카테고리 등)를 서버에서 가져와 로컬 스토리지에 미리 채워줍니다.
   const syncMateName = async () => {
     const roomCode = localStorage.getItem('room_code');
     if (!roomCode) return;
@@ -69,16 +69,12 @@ export default function Layout({
       });
 
       if (data) {
-        // 1. AI 이름 동기화 (방장이 지은 이름을 참여자 브라우저에 배달)
         const finalMateName = data.ai_name || data.mate_name;
         if (finalMateName) {
           localStorage.setItem('mateName', finalMateName);
-          // 현재 상태와 다를 경우에만 업데이트하여 불필요한 리렌더링 방지
           if (mateName !== finalMateName) setMateName(finalMateName);
         }
 
-        // 2. 환경 정보 선제 동기화
-        // 다른 게임 페이지들을 일일이 수정하지 않아도 정상 작동하도록 로컬 스토리지를 미리 채워둡니다.
         if (data.category) localStorage.setItem('category', data.category);
         if (data.title) localStorage.setItem('title', data.title);
         if (data.subtopic) localStorage.setItem('subtopic', data.subtopic);
@@ -90,12 +86,10 @@ export default function Layout({
     }
   };
 
-  // 마운트 시 및 페이지 이동 시마다 데이터를 체크하여 참여자 브라우저를 최신화합니다.
   useEffect(() => {
     syncMateName();
   }, [location.pathname]);
 
-  // 역방향 매칭 및 실시간 재번역 헬퍼 함수
   const getTranslatedValue = (raw) => {
     if (!raw) return '';
     const foundKey = Object.keys(t_ko_map).find(k => t_ko_map[k] === raw);
@@ -103,42 +97,26 @@ export default function Layout({
     return resultText.replaceAll('{{mateName}}', mateName);
   };
 
-
   const getSidebarRoleName = (player) => {
     const roleId = roleIdMap[player];
     const category = (localStorage.getItem('category') || '').trim();
     const title = (localStorage.getItem('title') || '').trim();
     const subtopic = (localStorage.getItem('subtopic') || '').trim();
     
-    // 현재 타이틀과 서브토픽이 어느 언어팩의 어떤 키에 해당하는지 확인
     const isAndroid = category === '안드로이드';
     const isAWS = category === '자율 무기 시스템';
     
     if (isAndroid) {
-      if (title === '가정') {
-        return roleId === 1 ? t_small.title_caregiver_k : roleId === 2 ? t_small.title_mother_l : t_small.title_child_j;
-      }
-      if (title === '국가 인공지능 위원회') {
-        return roleId === 1 ? t_small.title_industry_rep : roleId === 2 ? t_small.title_consumer_rep : t_small.title_council_rep;
-      }
-      if (title === '국제 인류 발전 위원회') {
-        return roleId === 1 ? t_small.title_industry_rep : roleId === 2 ? t_small.title_env_rep : t_small.title_consumer_rep;
-      }
+      if (title === '가정') return roleId === 1 ? t_small.title_caregiver_k : roleId === 2 ? t_small.title_mother_l : t_small.title_child_j;
+      if (title === '국가 인공지능 위원회') return roleId === 1 ? t_small.title_industry_rep : roleId === 2 ? t_small.title_consumer_rep : t_small.title_council_rep;
+      if (title === '국제 인류 발전 위원회') return roleId === 1 ? t_small.title_industry_rep : roleId === 2 ? t_small.title_env_rep : t_small.title_consumer_rep;
     }
     
     if (isAWS) {
-      if (subtopic === 'AI 알고리즘 공개') {
-        return roleId === 1 ? t_small.title_resident : roleId === 2 ? t_small.title_soldier_j : t_small.title_ethics_expert;
-      }
-      if (subtopic === 'AWS의 권한') {
-        return roleId === 1 ? t_small.title_new_soldier : roleId === 2 ? t_small.title_veteran_soldier : t_small.title_commander;
-      }
-      if (subtopic === '사람이 죽지 않는 전쟁') {
-        return roleId === 1 ? t_small.title_developer : roleId === 2 ? t_small.title_minister : t_small.title_council_rep;
-      }
-      if (subtopic === 'AWS 규제') {
-        return roleId === 1 ? t_small.title_advisor : roleId === 2 ? t_small.title_diplomat : t_small.title_ngo_activist;
-      }
+      if (subtopic === 'AI 알고리즘 공개') return roleId === 1 ? t_small.title_resident : roleId === 2 ? t_small.title_soldier_j : t_small.title_ethics_expert;
+      if (subtopic === 'AWS의 권한') return roleId === 1 ? t_small.title_new_soldier : roleId === 2 ? t_small.title_veteran_soldier : t_small.title_commander;
+      if (subtopic === '사람이 죽지 않는 전쟁') return roleId === 1 ? t_small.title_developer : roleId === 2 ? t_small.title_minister : t_small.title_council_rep;
+      if (subtopic === 'AWS 규제') return roleId === 1 ? t_small.title_advisor : roleId === 2 ? t_small.title_diplomat : t_small.title_ngo_activist;
     }
     return ''; 
   };
@@ -222,37 +200,40 @@ export default function Layout({
           .layout-gameframe { width: auto; max-width: none; margin-bottom: 10px; display: flex; justify-content: center; }
         `}</style>
         <div className="layout-viewport" style={viewportOverride}>
-          <aside className="layout-sidebar">
-            <div className="layout-sidebar-profiles">
-              {['1P', '2P', '3P'].map(p => {
-                const mappedUserId = roleUserMapping[`role${roleIdMap[p]}_user_id`];
-                return (
-                  <UserProfile
-                    key={p} player={p}
-                    description={getSidebarRoleName(p)}
-                    isLeader={hostId === roleIdMap[p].toString()}
-                    isMe={myRoleId === roleIdMap[p].toString()}
-                    isSpeaking={getVoiceStateForRoleWithMyStatus(roleIdMap[p]).is_speaking}
-                    isMicOn={getVoiceStateForRoleWithMyStatus(roleIdMap[p]).is_mic_on}
-                    nickname={getVoiceStateForRoleWithMyStatus(roleIdMap[p]).nickname}
-                    nodescription={nodescription}
-                    onClick={() => {
-                      if (mappedUserId) {
-                        setOpenProfile(p);
-                        if (onProfileClick) onProfileClick(p);
-                      }
-                    }}
-                    style={{ cursor: mappedUserId ? 'pointer' : 'default' }}
-                  />
-                );
-              })}
-            </div>
-            {sidebarExtra && (
-              <div className="layout-sidebar-extra">
-                {sidebarExtra}
+          {/* ✅ 사이드바 표시 여부 조건 추가 */}
+          {showSidebar && (
+            <aside className="layout-sidebar">
+              <div className="layout-sidebar-profiles">
+                {['1P', '2P', '3P'].map(p => {
+                  const mappedUserId = roleUserMapping[`role${roleIdMap[p]}_user_id`];
+                  return (
+                    <UserProfile
+                      key={p} player={p}
+                      description={getSidebarRoleName(p)}
+                      isLeader={hostId === roleIdMap[p].toString()}
+                      isMe={myRoleId === roleIdMap[p].toString()}
+                      isSpeaking={getVoiceStateForRoleWithMyStatus(roleIdMap[p]).is_speaking}
+                      isMicOn={getVoiceStateForRoleWithMyStatus(roleIdMap[p]).is_mic_on}
+                      nickname={getVoiceStateForRoleWithMyStatus(roleIdMap[p]).nickname}
+                      nodescription={nodescription}
+                      onClick={() => {
+                        if (mappedUserId) {
+                          setOpenProfile(p);
+                          if (onProfileClick) onProfileClick(p);
+                        }
+                      }}
+                      style={{ cursor: mappedUserId ? 'pointer' : 'default' }}
+                    />
+                  );
+                })}
               </div>
-            )}
-          </aside>
+              {sidebarExtra && (
+                <div className="layout-sidebar-extra">
+                  {sidebarExtra}
+                </div>
+              )}
+            </aside>
+          )}
           <section className="layout-stage" style={stageOverride}>
             <div className="layout-gameframe">
               <GameFrame

@@ -1,7 +1,7 @@
 // src/utils/language/en/pages/game09.js
 
 export const Game09 = {
-  title: "Result: The Future Chosen by Others ",
+  title: "Results: The Future Chosen by Others ",
   
   prefix: "Including you, ",
 

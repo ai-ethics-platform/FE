@@ -5,7 +5,7 @@ export const Game05_1 = {
   alerts: {
     host_only: "⚠️ Only the host can make a selection.",
     wait_others: "Please wait until other players have finished reading the story.",
-    select_first: "⚠️ Please select Agree or Disagree first.",
+    select_first: "⚠️ Please make a selection fist.",
     select_confidence: "Please select your confidence level. (미번역)"
   },
   questions: {

@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 //  다국어 지원 임포트
 import { translations } from '../utils/language/index';
 
-export default function ResultPopup({ onClose }) {
+export default function ResultPopup({ onClose, onViewResult }) {
   const navigate = useNavigate();
 
   //  언어 설정 및 언어팩 로드
@@ -88,74 +88,91 @@ export default function ResultPopup({ onClose }) {
   };
 
   return (
-    <div
-      style={{
-        width: 552,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: '40px 32px',
-        position: 'relative',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      <img
-        src={closeIcon}
-        alt="close"
-        onClick={onClose}
-        style={{
-          position: 'absolute',
-          top: 24,
-          right: 24,
-          width: 24,
-          height: 24,
-          cursor: 'pointer',
-        }}
-      />
-
+    /* ✅ [추가] 팝업을 화면 정중앙에 띄우기 위한 Overlay 레이어 */
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 5000, // 최상단에 배치
+    }} onClick={onClose}>
       <div
+        /* 팝업 몸통 클릭 시 닫히지 않도록 이벤트 전파 중단 */
+        onClick={(e) => e.stopPropagation()}
         style={{
-          ...FontStyles.headlineSmall,
-          color: Colors.brandPrimary,
-          textAlign: 'center',
-          lineHeight: '1.5',
-          marginBottom: 24,
+          width: 552,
+          backgroundColor: '#FFFFFF',
+          borderRadius: 16,
+          padding: '40px 32px',
+          position: 'relative',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
         }}
       >
-        {t.titleMain || '아직 플레이하지 않은 라운드가 있습니다.'}
-        <br />
-        {t.titleSub || '이대로 결과를 볼까요?'}
-      </div>
-
-      {unplayedOptions.map((opt) => (
-        <SecondaryButton
-          key={opt.value}
+        <img
+          src={closeIcon}
+          alt="close"
+          onClick={onClose}
           style={{
-            width: 360,
-            height: 72,
-            justifyContent: 'center',
-            marginBottom: 12,
+            position: 'absolute',
+            top: 24,
+            right: 24,
+            width: 24,
+            height: 24,
+            cursor: 'pointer',
           }}
-          onClick={() => handleGoToSubtopic(opt.value)}
-        >
-          {opt.label}
-        </SecondaryButton>
-      ))}
+        />
 
-      <div style={{ marginTop: 20 }}>
-        <SecondaryButton
+        <div
           style={{
-            width: 168,
-            height: 72,
-            justifyContent: 'center',
-            marginBottom: 12,
+            ...FontStyles.headlineSmall,
+            color: Colors.brandPrimary,
+            textAlign: 'center',
+            lineHeight: '1.5',
+            marginBottom: 24,
           }}
-          onClick={() => navigate('/game08')}
         >
-          {t.viewResult || '결과 보기'}
-        </SecondaryButton>
+          {t.titleMain || '아직 플레이하지 않은 라운드가 있습니다.'}
+          <br />
+          {t.titleSub || '이대로 결과를 볼까요?'}
+        </div>
+
+        {unplayedOptions.map((opt) => (
+          <SecondaryButton
+            key={opt.value}
+            style={{
+              width: 360,
+              height: 72,
+              justifyContent: 'center',
+              marginBottom: 12,
+            }}
+            onClick={() => handleGoToSubtopic(opt.value)}
+          >
+            {opt.label}
+          </SecondaryButton>
+        ))}
+
+        <div style={{ marginTop: 20 }}>
+          <SecondaryButton
+            style={{
+              width: 168,
+              height: 72,
+              justifyContent: 'center',
+              marginBottom: 12,
+            }}
+            /* Game06에서 넘겨준 onViewResult가 있다면 실행, 없다면 기본 경로 이동 */
+            onClick={() => {
+              if (onViewResult) onViewResult();
+              else navigate('/game08');
+            }}
+          >
+            {t.viewResult || '결과 보기'}
+          </SecondaryButton>
+        </div>
       </div>
     </div>
   );

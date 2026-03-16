@@ -115,7 +115,7 @@ export default function Game08() {
   };
 
   return (
-    <Layout subtopic={subtopic} onProfileClick={setOpenProfile} onBackClick={handleBackClick} >
+    <Layout subtopic={subtopic} onProfileClick={setOpenProfile} onBackClick={handleBackClick} showSidebar={false}>
       <div style={{ position: 'absolute', top: '60%', left: '50%', transform: 'translate(-50%,-50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 16px' }}>
         <ContentBox3 text={paragraphs.join('\n\n')} width={936} height={407} />
         

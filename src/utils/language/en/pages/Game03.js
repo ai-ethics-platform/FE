@@ -37,7 +37,7 @@ export const Game03 = {
       labels: { agree: 'Necessary', disagree: 'Unnecessary' },
     },
     '설명 가능한 AI': {
-      question: "Should companies be required to develop *Explainable AI*?",
+      question: 'Should companies be required to develop "Explainable AI"?',
       labels: { agree: 'Required', disagree: 'Not Required' },
     },
     '지구, 인간, AI': {

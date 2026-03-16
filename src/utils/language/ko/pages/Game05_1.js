@@ -5,7 +5,7 @@ export const Game05_1 = {
   alerts: {
     host_only: "⚠️ 방장만 선택할 수 있습니다.",
     wait_others: "다른 플레이어들이 스토리를 다 읽을 때까지 기다려주세요.",
-    select_first: "⚠️ 먼저 동의 혹은 비동의를 선택해주세요.",
+    select_first: "⚠️ 먼저 하나의 항목을 선택한 후 진행해주세요.",
     select_confidence: "확신도를 선택해주세요."
   },
   questions: {

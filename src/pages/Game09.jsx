@@ -88,6 +88,7 @@ export default function Game09() {
       subtopic={subtopicTitle}
       onProfileClick={setOpenProfile}
       onBackClick={handleBackClick}
+      showSidebar={false}
       allowScroll
     >
       

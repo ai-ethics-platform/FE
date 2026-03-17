@@ -27,13 +27,6 @@ export default function WaitingRoom() {
   const t = (lang !== 'ko') ? (translations[lang] || translations['en']) : translations['ko'];
   const tw = t.WaitingRoom || {}; // WaitingRoom 섹션 별도 참조
 
-  // zoom 수정
-  // const allTopics = ['안드로이드', '자율 무기 시스템'];
-
-  // const initialTopic = location.state?.topic || '안드로이드';
-  // const initialIndex = allTopics.indexOf(initialTopic);
-
-  // zoom 수정
   // 기본 토픽 목록 (언어팩 적용)
   const defaultTopics = [tw.topics?.android, tw.topics?.aws];
   const [category, setCategory] = useState();
@@ -81,12 +74,6 @@ export default function WaitingRoom() {
       setTimeout(() => setCopied(false), 1000); // 1초 후 제거
     });
   };
-
-  // const setCategoryFromRoom = (room) => {
-  //    if (room && typeof room.title === 'string' && room.title.length > 0) {
-  //       localStorage.setItem('category', room.title);
-  //    }
-  // };
 
   // 폴링 타이머 ID 관리
   const pollingIntervalRef = useRef(null);
@@ -589,7 +576,6 @@ export default function WaitingRoom() {
         </div>
 
         {/* 정보 안내 프레임 */}
-        {/* 언어값이 한글이 아닐 시 infoframe2 이미지 에셋 사용*/}
         <div 
           style={{ 
             position: 'absolute', 
@@ -678,6 +664,7 @@ export default function WaitingRoom() {
         <MicTestPopup
           userImage={getPlayerImage(Number(localStorage.getItem('myrole_id')))}
           onConfirm={handleMicConfirm}
+          onClose={() => setShowMicPopup(false)} // ✅ 단순 닫기 기능 추가
         />
       )}
 

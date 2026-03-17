@@ -4,7 +4,7 @@ import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import { translations } from '../utils/language/index';
 
-export default function MicTestPopup({ onConfirm, userImage }) {
+export default function MicTestPopup({ onConfirm, userImage, onClose }) {
   // --- 언어 설정 로직 ---
   const lang = localStorage.getItem('app_lang') || 'ko';
   const t = translations?.[lang]?.MicTestPopup || {};
@@ -30,7 +30,6 @@ export default function MicTestPopup({ onConfirm, userImage }) {
       setError(null);
       console.log('🎤 마이크 접근 시도...');
       
-      // 마이크 권한 요청
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -42,15 +41,12 @@ export default function MicTestPopup({ onConfirm, userImage }) {
       
       mediaStreamRef.current = stream;
       
-      // 오디오 컨텍스트 생성
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       analyserRef.current = audioContextRef.current.createAnalyser();
       
-      // 마이크 소스 연결
       const microphone = audioContextRef.current.createMediaStreamSource(stream);
       microphone.connect(analyserRef.current);
       
-      // 분석기 설정
       analyserRef.current.fftSize = 512;
       const bufferLength = analyserRef.current.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
@@ -58,17 +54,14 @@ export default function MicTestPopup({ onConfirm, userImage }) {
       setIsConnected(true);
       console.log('✅ 마이크 연결 성공!');
       
-      // 음성 레벨 감지 시작
       const detectSpeech = () => {
         if (!analyserRef.current) return;
         
         analyserRef.current.getByteFrequencyData(dataArray);
         
-        // 평균 음성 레벨 계산
         const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
-        const threshold = 25; // 음성 감지 임계값
+        const threshold = 25; 
         
-        // 마이크 레벨 업데이트 (0-100 범위로 정규화)
         const normalizedLevel = Math.min(average * 2, 100);
         setMicLevel(normalizedLevel);
         
@@ -76,11 +69,8 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         
         if (currentlySpeaking !== isSpeaking) {
           setIsSpeaking(currentlySpeaking);
-          console.log('🗣️ 음성 상태:', currentlySpeaking ? '말하는 중' : '조용함', 
-                      `(레벨: ${average.toFixed(1)})`);
         }
         
-        // 말하기 타이머 관리
         if (currentlySpeaking) {
           if (speakingTimeoutRef.current) {
             clearTimeout(speakingTimeoutRef.current);
@@ -139,11 +129,8 @@ export default function MicTestPopup({ onConfirm, userImage }) {
     setError(null);
   };
 
-  // 컴포넌트 마운트 시 자동으로 마이크 연결 시도
   useEffect(() => {
     startMic();
-    
-    // 컴포넌트 언마운트 시 정리
     return () => {
       stopMic();
     };
@@ -151,23 +138,20 @@ export default function MicTestPopup({ onConfirm, userImage }) {
 
   // 준비하기 버튼 클릭 시
   const handleConfirm = () => {
-    // 마이크 테스트 성공 여부를 localStorage에 저장
     localStorage.setItem('mic_test_passed', 'true');
-    
-    // 마이크 리소스 정리
     stopMic();
-    
-    // 부모 컴포넌트로 확인 이벤트 전달
     onConfirm();
   };
 
-  // 닫기 버튼 클릭 시
+  // 닫기 버튼 클릭 시 (단순 닫기 기능 수행)
   const handleClose = () => {
     stopMic();
-    onConfirm();
+    // ✅ 부모에게 받은 onClose가 있다면 실행 (onConfirm 우회 방지)
+    if (onClose) {
+      onClose();
+    }
   };
 
-  // 마이크 레벨에 따른 막대 색상 결정
   const getBarColor = () => {
     if (micLevel > 50) return Colors.brandPrimary;
     if (micLevel > 20) return Colors.brandDark;
@@ -207,7 +191,6 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         }} 
       />
 
-      {/*  제목 영역: whiteSpace 추가 */}
       <div style={{ 
         marginBottom: 32, 
         ...FontStyles.headlineNormal, 
@@ -218,7 +201,6 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         {t.title || '마이크를 테스트해 주세요'}
       </div>
 
-      {/* 사용자 이미지 */}
       <div style={{ position: 'relative', marginBottom: 32 }}>
         <img
           src={userImage}
@@ -228,13 +210,11 @@ export default function MicTestPopup({ onConfirm, userImage }) {
             height: 120,
             borderRadius: '50%',
             objectFit: 'cover',
-            // 말하는 중일 때 테두리 효과
             border: isSpeaking ? `3px solid ${Colors.brandPrimary}` : '3px solid transparent',
             transition: 'border-color 0.3s ease',
           }}
         />
         
-        {/* 마이크 상태 표시 */}
         {isConnected && (
           <div style={{
             position: 'absolute',
@@ -260,7 +240,6 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         )}
       </div>
 
-      {/* 마이크 레벨 막대 */}
       <div
         style={{
           width: 240,
@@ -281,7 +260,6 @@ export default function MicTestPopup({ onConfirm, userImage }) {
           }}
         />
         
-        {/* 임계값 표시선 */}
         <div style={{
           position: 'absolute',
           left: '50%',
@@ -293,10 +271,9 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         }} />
       </div>
 
-      {/*  상태 메시지 영역: whiteSpace 추가 */}
       <div style={{ 
         marginBottom: 20, 
-        height: 'auto', // 줄바꿈 대응을 위해 height를 유연하게 변경
+        height: 'auto',
         minHeight: 20,
         ...FontStyles.body,
         color: Colors.textSecondary,
@@ -316,7 +293,6 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         )}
       </div>
 
-      {/* 준비하기 버튼 */}
       <PrimaryButton 
         style={{ 
           width: lang === 'en' ? 200 : 168, 
@@ -330,7 +306,6 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         {t.confirmBtn || '준비하기'}
       </PrimaryButton>
       
-      {/* 재시도 버튼 (에러 발생 시) */}
       {error && (
         <button
           onClick={startMic}
@@ -349,7 +324,6 @@ export default function MicTestPopup({ onConfirm, userImage }) {
         </button>
       )}
 
-      {/* CSS 애니메이션 */}
       <style jsx>{`
         @keyframes pulse {
           0%, 100% { transform: scale(1); opacity: 1; }

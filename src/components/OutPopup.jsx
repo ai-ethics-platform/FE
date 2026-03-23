@@ -40,7 +40,20 @@ export default function OutPopup({ onClose }) {
   
       console.log("🚪 방 나가기 응답:", res.data);
   
-      alert(message); // 사용자에게 메시지 표시
+      // 상황별 메시지 가공 로직
+      let finalMsg = "";
+      if (room_deleted) {
+        finalMsg = t.roomDeleted;
+      } else if (new_host) {
+        const hostName = new_host.username || new_host.nickname || "someone";
+        finalMsg = t.newHost.replace("{name}", hostName);
+      } else {
+        finalMsg = t.leftWithPlayers.replace("{count}", player_count || 0);
+      }
+
+      // 서버의 한국어 message 대신 가공된 다국어 메시지 우선 표시
+      alert(finalMsg || message); 
+
       //clearAllLocalStorageKeys();  // 로컬 스토리지 정리 함수 호출
 
       //  로컬 스토리지 정리
@@ -72,7 +85,7 @@ export default function OutPopup({ onClose }) {
     } catch (err) {
       console.error("❌ 방 나가기 실패:", err);
       // 에러 메시지 다국어 처리 적용
-      alert(t.leaveFail + err.response.data);
+      alert(`${t.leaveFail} ${err.response?.data?.message || err.message}`);
     }
   };
   

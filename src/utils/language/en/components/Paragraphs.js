@@ -186,7 +186,7 @@ export const Paragraphs = {
                 { main: ' Should an AWS be given rights like those of humans?' },
             ],
             agree: [
-                { main: ' After AWS were given limited rights, different systems began making different moral decisions— some refused orders, some delayed actions, and some focused on protecting civilians.' },
+                { main: ' After AWS were granted even a limited degree of rights, different systems began making different moral decisions—some refused orders, some delayed actions, and some focused on protecting civilians.' },
                 { main: " This made military operations harder to predict, and commanders started to see robot autonomy as a risk." },
                 { main: ' One defense official said that robots are no longer just tools, but something humans must negotiate with.' },
                 { main: ' Is it fair to give robots rights if they cannot be held responsible like humans?' },

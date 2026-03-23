@@ -1414,9 +1414,14 @@ const WebRTCProvider = ({ children }) => {
     };
 
     pc.onconnectionstatechange = () => {
-      console.log(`PC(${key}) connectionState=`, pc.connectionState);
+      console.log(`[${providerId}] PC(${key}) connectionState=`, pc.connectionState);
+  
+  // ✅ 추가: 상태가 변할 때마다 리액트의 peerConnections 상태를 갱신합니다.
+  // 이 코드가 있어야 GameIntro의 peerCount가 0에서 2로 올라갑니다.
+      setPeerConnections(new Map(pcsRef.current));
+
       if (['disconnected', 'failed', 'closed'].includes(pc.connectionState)) {
-        // 필요시 정리
+    // 필요 시 정리 로직 유지
       }
     };
 
@@ -1606,7 +1611,7 @@ const WebRTCProvider = ({ children }) => {
             ws.close();
             tryConnection(urlIndex + 1);
           }
-        }, 3000);
+        }, 5000);
         ws.onopen = () => {
           clearTimeout(connectionTimeout);
           console.log(`✅ [${providerId}] WebSocket 연결 성공 (signaling)`);
@@ -1643,15 +1648,15 @@ const WebRTCProvider = ({ children }) => {
             if (msg.type === 'peers' && Array.isArray(msg.peers)) {
               console.log('👥 [signaling] peers list:', msg.peers);
               for (const otherId of msg.peers) {
-                if (!otherId) continue;
+                if (!otherId || String(otherId) === SELF()) continue;
                 // 레이스로 myPeerIdRef.current가 아직 null일 수 있으니 SELF() 기준으로 자기 자신 제외
                 if (String(otherId) === SELF()) continue;
                 // ✅ 원칙 (3): 글레어 방지 - userId 비교로 offer initiator 제한
                 // 🚨 임시 비활성화: 연결 테스트를 위해 글레어 방지를 우선 꺼둠
-                // if (!shouldInitiate(String(otherId))) {
-                //   console.log(`⏭️ [signaling] 글레어 방지: ${SELF()} < ${otherId}, offer 스킵`);
-                //   continue;
-                // }
+                if (!shouldInitiate(String(otherId))) {
+                  console.log(`⏭️ [signaling] 글레어 방지: ${SELF()} < ${otherId}, offer 스킵`);
+                  continue;
+                 }
                 console.log(`📤 [signaling] peers → offer 생성 시작: ${SELF()} → ${otherId}`);
                 await createOfferTo(String(otherId));
               }
@@ -1664,10 +1669,10 @@ const WebRTCProvider = ({ children }) => {
               if (otherId === SELF()) return;
               // ✅ 원칙 (3): 글레어 방지 - userId 비교로 offer initiator 제한
               // 🚨 임시 비활성화: 연결 테스트를 위해 글레어 방지를 우선 꺼둠
-              // if (!shouldInitiate(otherId)) {
-              //   console.log(`⏭️ [signaling] 글레어 방지: ${SELF()} < ${otherId}, offer 스킵 (join/joined)`);
-              //   return;
-              // }
+              if (!shouldInitiate(otherId)) {
+                 console.log(`⏭️ [signaling] 글레어 방지: ${SELF()} < ${otherId}, offer 스킵 (join/joined)`);
+                 return;
+               }
               console.log(`📤 [signaling] join/joined → offer 생성 시작: ${SELF()} → ${otherId}`);
               await createOfferTo(otherId);
               return;
@@ -2281,7 +2286,9 @@ const WebRTCProvider = ({ children }) => {
       if (cancelled) return;
       // 퇴장/종료 진행 중이면 절대 자동으로 녹음/초기화 재시작하지 않음 (레이스 방지)
       if (voiceManager?.exitInProgress) return;
-
+      if (isInitialized || initializationPromiseRef.current) {
+        return;
+      }
       // ✅ 0) WebRTC/세션 준비 전이라도 "로컬 녹음"은 먼저 켜서 시작점을 앞으로 당김
       // - user가 말한 증상(마지막 1~2초만 녹음)은 보통 초반 init 실패로 발생
       try {
@@ -2399,7 +2406,9 @@ const WebRTCProvider = ({ children }) => {
       if (!(roomCode && nickname)) return;
 
       if (!isReloadingGraceLocal()) return;
-
+      if (isInitialized || signalingConnected || initializationPromiseRef.current) {
+        return;
+      }
       console.log(`♻️ [${providerId}] 페이지 새로고침 감지 — WebRTC 자동 재연결 시도 (grace)`);
       const MAX_WAIT_MS = RECONNECT_GRACE_MS;
       const RETRY_INTERVAL_MS = 2000;
@@ -2633,20 +2642,24 @@ const WebRTCProvider = ({ children }) => {
   // 정리 useEffect (언마운트)
   useEffect(() => {
     return () => {
-      console.log(`🧹 [${providerId}] WebRTC Provider 정리 시작`);
-      peerConnections.forEach(pc => { pc.close(); });
-      if (signalingWsRef.current) {
-        signalingWsRef.current.close();
-        signalingWsRef.current = null;
+      if (voiceManager.exitInProgress) {
+        console.log(`🧹 [${providerId}] WebRTC Provider 정리 시작`);
+        peerConnections.forEach(pc => { pc.close(); });
+        if (signalingWsRef.current) {
+          signalingWsRef.current.close();
+          signalingWsRef.current = null;
+        }
+        const audioElements = document.querySelectorAll('audio[data-user-id]');
+        audioElements.forEach(audio => { audio.remove(); });
+        offerSentToRoles.current.clear();
+        offerReceivedFromRoles.current.clear();
+        pendingCandidates.current.clear();
+        console.log(`✅ [${providerId}] WebRTC Provider 정리 완료`);
+      } else {
+        console.log(`ℹ️ [${providerId}] WebRTC Provider 소프트 정리 (인스턴스 교체) - 연결 유지`);
       }
-      const audioElements = document.querySelectorAll('audio[data-user-id]');
-      audioElements.forEach(audio => { audio.remove(); });
-      offerSentToRoles.current.clear();
-      offerReceivedFromRoles.current.clear();
-      pendingCandidates.current.clear();
-      console.log(`✅ [${providerId}] WebRTC Provider 정리 완료`);
-    };
-  }, []); // 마운트 시 한 번
+    }
+  }, [providerId, peerConnections]); // 마운트 시 한 번
 // ----------------------------
 // 디버그 유틸리티
 // ----------------------------

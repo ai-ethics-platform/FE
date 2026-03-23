@@ -3,7 +3,7 @@ import useTypingEffect from '../hooks/useTypingEffect';
 import contentBoxFrame from '../assets/contentBox2.svg';
 import { Colors, FontStyles } from './styleConstants';
 
-export default function ContentBox2({ text, typingSpeed = 45 }) {
+export default function ContentBox2({ text, typingSpeed = 1 }) {
   // 1. 타이핑 중인 텍스트 가져오기
   const typedText = useTypingEffect(text, typingSpeed);
 
@@ -36,7 +36,7 @@ export default function ContentBox2({ text, typingSpeed = 45 }) {
       />
       <div style={{
         position: 'relative',
-        lineHeight: '32px',
+        lineHeight: '28px',
         color: Colors.grey06,
         ...FontStyles.headlineSmall,
         textAlign: 'center',

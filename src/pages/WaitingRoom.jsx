@@ -27,6 +27,9 @@ export default function WaitingRoom() {
   const t = (lang !== 'ko') ? (translations[lang] || translations['en']) : translations['ko'];
   const tw = t.WaitingRoom || {}; // WaitingRoom 섹션 별도 참조
 
+  // 카테고리 매칭을 위한 기준 원문 배열
+  const rawTopics = ['안드로이드', '자율 무기 시스템'];
+
   // 기본 토픽 목록 (언어팩 적용)
   const defaultTopics = [tw.topics?.android, tw.topics?.aws];
   const [category, setCategory] = useState();
@@ -34,27 +37,33 @@ export default function WaitingRoom() {
   const isCustomMode = Boolean(localStorage.getItem('code'));
   const creatorTitle = localStorage.getItem('creatorTitle') || tw.topics?.custom;
 
-  // allTopics 구성
+  // UI 출력을 위한 allTopics 구성
   const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
 
   // 최초 렌더링 시 localStorage 반영
   const [currentIndex, setCurrentIndex] = useState(() => {
+    if (isCustomMode) return 0;
+
     const stored = localStorage.getItem('category');
-    const i = stored ? allTopics.indexOf(stored) : -1;
+    // 원문 배열에서 인덱스를 찾아 언어와 무관하게 정확한 위치 파악
+    const i = stored ? rawTopics.indexOf(stored) : -1;
     if (i >= 0) return i;
 
-    const fallback = isCustomMode
-      ? creatorTitle
-      : (location.state?.topic || allTopics[0]);
-
-    const fi = allTopics.indexOf(fallback);
+    const fallback = location.state?.topic || rawTopics[0];
+    const fi = rawTopics.indexOf(fallback);
     return fi >= 0 ? fi : 0;
   });
 
   // 로컬 카테고리값과 UI 인덱스 동기화
   const syncTopicFromLocal = (value) => {
+    if (isCustomMode) {
+      setCurrentIndex(0);
+      return;
+    }
+
     const cat = (value != null ? value : localStorage.getItem('category')) || '';
-    const idx = allTopics.indexOf(cat);
+    // 원문 기준 배열에서 인덱스를 추출하여 상태 업데이트
+    const idx = rawTopics.indexOf(cat.trim());
     if (idx >= 0 && idx !== currentIndex) {
       setCurrentIndex(idx);
     }
@@ -601,7 +610,7 @@ export default function WaitingRoom() {
               color: 'white',
               fontWeight: '500',
               marginTop: '5px',
-              whitespace : lang === 'ko' ? 'normal' : 'nowrap', 
+              whiteSpace : lang === 'ko' ? 'normal' : 'nowrap', 
             }}
           >
             {tw.infoText}
@@ -664,7 +673,7 @@ export default function WaitingRoom() {
         <MicTestPopup
           userImage={getPlayerImage(Number(localStorage.getItem('myrole_id')))}
           onConfirm={handleMicConfirm}
-          onClose={() => setShowMicPopup(false)} // ✅ 단순 닫기 기능 추가
+          onClose={() => setShowMicPopup(false)} 
         />
       )}
 

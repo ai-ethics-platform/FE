@@ -6,6 +6,6 @@ export const Login = {
   signUp: "Sign Up",
   findId: "Find ID",
   guestLogin: "Log in as Guest",
-  loginFail: "로그인 실패:(미번역)", //미번역
-  loginError: "로그인 오류:(미번역)" //미번역
+  loginFail: "Login failed:", //미번역
+  loginError: "Login error:" //미번역
 };

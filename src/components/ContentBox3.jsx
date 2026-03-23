@@ -36,7 +36,7 @@ export default function ContentBox2({ text, typingSpeed = 45 }) {
       />
       <div style={{
         position: 'relative',
-        lineHeight: '32px', // 줄바꿈 시 가독성을 위한 간격 확보
+        lineHeight: '28px', // 줄바꿈 시 가독성을 위한 간격 확보
         color: Colors.grey06,
         ...FontStyles.headlineSmall,
         alignItems: 'center',       

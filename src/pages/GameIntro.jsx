@@ -226,6 +226,7 @@ export default function GameIntro() {
 
   const allVoicesConnected = connectedPeerCount >= 2;
 
+
   // 다음 단계 진행 가능 여부 판별
   const canProceed = isCustomMode
     ? true

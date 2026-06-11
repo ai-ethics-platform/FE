@@ -12,11 +12,10 @@ export default function OutPopup({ onClose }) {
   const navigate = useNavigate();
 
   // --- 시스템 설정된 언어(app_lang)를 로드하는 로직 ---
-  // 이후 개발 담당자가 이해하기 쉽게 app_lang 기반 동적 로드를 주석으로 명시합니다.
   const savedLang = localStorage.getItem('app_lang');
   const currentLang = (savedLang === 'en') ? 'en' : 'ko';
   
-  // index.js의 translations 객체 구조에 맞춰 직접 참조합니다.
+  // index.js의 translations 객체 구조에 맞춰 직접 참조.
   const t = translations[currentLang].OutPopup;
   // ----------------------------------------------
 

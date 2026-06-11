@@ -102,9 +102,26 @@ export default function Game08() {
 
   const handleExit = async () => {
     try {
-      await voiceManager.terminateVoiceSession();
+      // 1. 음성 세션 종료 (연결 해제 및 마이크 정지)
+      const result = await voiceManager.terminateVoiceSession();
+
+      // 2.서버에 음성 파일 업로드 필요 시 아래 주석 해제
+      /*
+      if (result && result.blob) {
+        console.log("📤 서버로 음성 데이터를 전송합니다...");
+        await voiceManager.uploadRecordingToServer(result);
+      }
+      */
+
+      // 3. 메모리 정리 (녹음 파편 삭제)
+      if (window.voiceManager) {
+        window.voiceManager.recordedChunks = [];
+      }
+
+      // 4. 소켓 연결 해제 및 메인으로 이동
       await finalizeDisconnection?.('게임을 나갔습니다.');
     } catch (e) {
+      console.error('종료 처리 중 오류:', e);
       window.location.href = '/';
     }
   };

@@ -29,7 +29,7 @@ export const CharacterDescription = {
   cd3_android_council: "You are the representative of the National Artificial Intelligence Committee, presiding over this meeting. \n You must carefully consider which decisions will best serve the country’s development.",
   cd3_android_international: "You are a consumer representative who uses household robots.\n You are considering what perspectives and concerns should be voiced from the consumers’ point of view.",
   cd3_aws_1: "You are an expert in military AI ethics. \nA school in your area was recently bombed by an autonomous weapon system.",
-  cd3_aws_2: "You listen to both soldiers and think about what direction the military should take next.",
+  cd3_aws_2: "You are a millitary commander. You listen to both soldiers and think about what direction the military should take next.",
   cd3_aws_3: "You lead the discussion and think about what decision is best for the country.",
   cd3_aws_4: "You lead the discussion and think about what decision is best for the country.",
   cd3_aws_5: "You are a global NGO activist from Country C, a less-developed nation.\n You are attending this meeting to bring voices from the field to the international community.",

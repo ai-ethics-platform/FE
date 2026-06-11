@@ -37,7 +37,7 @@ export default function GameIntro() {
     voiceSessionStatus,
   } = useWebRTC();
 
-  // [수정] 누락되었던 음성 세션 초기화 상태 추가
+  //  누락되었던 음성 세션 초기화 상태 추가
   const [voiceInitialized, setVoiceInitialized] = useState(false);
 
   // 호스트 ID와 내 역할 ID 상태
@@ -215,22 +215,10 @@ export default function GameIntro() {
 
   // const handleContinue = useCallback(() => { ... });
 
-  // P2P 연결 수 계산 (3인 기준 음성 연결 확인)
-  const connectedPeerCount = (() => {
-    try {
-      if (!peerConnections) return 0;
-      const pcs = peerConnections instanceof Map ? Array.from(peerConnections.values()) : Object.values(peerConnections);
-      return pcs.filter((pc) => pc && (pc.connectionState === 'connected' || pc.iceConnectionState === 'connected')).length;
-    } catch { return 0; }
-  })();
-
-  const allVoicesConnected = connectedPeerCount >= 2;
-
-
   // 다음 단계 진행 가능 여부 판별
-  const canProceed = isCustomMode
-    ? true
-    : (connectionEstablishedRef.current && webrtcInitialized && allVoicesConnected);
+const canProceed = isCustomMode
+  ? true
+  : (connectionEstablishedRef.current && webrtcInitialized);
 
   const handleContinue = () => {
     if (isCustomMode) {

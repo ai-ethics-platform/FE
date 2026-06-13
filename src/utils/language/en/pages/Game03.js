@@ -9,9 +9,9 @@ export const Game03 = {
     // --- 안드로이드 시나리오 ---
     'AI의 개인 정보 수집': ['Caregiver K', 'Mother L', 'Daughter J'],
     '안드로이드의 감정 표현': ['Caregiver K', 'Mother L', 'Daughter J'],
-    '아이들을 위한 서비스': ['a Representative of the Robotics Manufacturers Association', 'a Consumer Representative.', 'a Representative of the National AI Committee'],
-    '설명 가능한 AI': ['a Representative of the Robotics Manufacturers Association', 'a Consumer Representative.', 'a Representative of the National AI Committee'],
-    '지구, 인간, AI': ['a Robot Company Representative', 'an Environmental Group Representative', 'a Consumer Representative.'],
+    '아이들을 위한 서비스': ['a Representative of the Robotics Manufacturers Association', 'a Consumer Representative', 'a Representative of the National AI Committee'],
+    '설명 가능한 AI': ['a Representative of the Robotics Manufacturers Association', 'a Consumer Representative', 'a Representative of the National AI Committee'],
+    '지구, 인간, AI': ['a Robot Company Representative', 'an Environmental Group Representative', 'a Consumer Representative'],
 
     // --- 자율 무기 시스템(AWS) 시나리오 ---
     'AI 알고리즘 공개': ['a Local Resident', 'Soldier J', 'a Military AI Ethics Expert'],

@@ -47,7 +47,7 @@ export default function ContentBox2({ text, typingSpeed = 45 }) {
         overflowWrap: 'break-word',
         whiteSpace: 'pre-line',
         maxWidth: 820, // 텍스트가 박스 테두리에 닿지 않도록 너비 제한 조절
-        padding: '60px 80px',
+        padding: '40px 40px',
         zIndex: 1,
       }}>
         {/* 현재 출력되는 실제 텍스트 */}

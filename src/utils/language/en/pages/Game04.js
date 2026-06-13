@@ -1,5 +1,5 @@
 export const Game04 = {
-  unit_person: " People",
+
   finish_msg: "Please wrap up and proceed to the next step.",
   share_reason_msg: "Please freely share the reasons for your choice.",
   labels: {

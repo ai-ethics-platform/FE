@@ -80,7 +80,7 @@ const handleContinueClick = () => {
       <div
         style={{
           position: 'absolute',
-          top: 30,
+          top: 15,
           left: 40,
           right: 40,
           bottom: 24,

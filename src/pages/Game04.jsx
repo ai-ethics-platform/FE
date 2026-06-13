@@ -328,7 +328,10 @@ export default function Game04() {
                 {labels[key] ?? (key === 'agree' ? (lang === 'ko' ? '동의' : 'Agree') : (lang === 'ko' ? '비동의' : 'Disagree'))}
               </p>
               <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, margin: '16px 0' }}>
-                {list.length}{t.unit_person || (lang === 'ko' ? '명' : '')}
+              {lang === 'ko'
+                  ? `${list.length}명`
+                  : `${list.length} ${list.length === 1 ? 'Player' : 'Players'}`
+                }
               </p>
             </div>
           </div>

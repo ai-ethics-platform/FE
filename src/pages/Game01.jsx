@@ -336,7 +336,7 @@ export default function Game01() {
   const navigate = useNavigate();
   
   // 언어 설정 가져오기
-  const lang = localStorage.getItem('language') || localStorage.getItem('app_lang') || 'ko';
+  const lang = localStorage.getItem('app_lang') || localStorage.getItem('language') || 'ko';
   const currentLangData = translations[lang] || translations['ko'] || {};
   const t = currentLangData.Game01 || {};
   const t_map = currentLangData.GameMap || {};

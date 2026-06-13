@@ -281,6 +281,19 @@ export default function Login() {
           )}
         </div>
       </div>
+      <div
+  style={{
+    position: 'fixed',
+    right: '20px',
+    bottom: '12px',
+    fontSize: '12px',
+    color: '#ffffff62',
+    zIndex: 1000,
+    userSelect: 'none',
+  }}
+>
+  Latest Update : 06-13
+</div>
     </Background>
   );
 }

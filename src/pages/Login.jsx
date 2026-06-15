@@ -292,7 +292,7 @@ export default function Login() {
     userSelect: 'none',
   }}
 >
-  Latest Update : 06-13
+  Latest Update : 06-15
 </div>
     </Background>
   );

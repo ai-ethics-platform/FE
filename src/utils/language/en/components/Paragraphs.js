@@ -170,7 +170,7 @@ export const Paragraphs = {
                 { main: ' War becomes normal. If war is accepted just because people do not die, what happens in the end?' },
             ],
             disagree: [
-                { main: ' By 2040, some countries still send human soldiers to war because they believe people must fight wars to take responsibility. \nThey say that wars without human deaths lose their moral meaning.’' },
+                { main: ' By 2040, some countries still send human soldiers to war because they believe people must fight wars to take responsibility. \nThey say that wars without human deaths lose their moral meaning.' },
                 { main: ' But in reality, young people from poorer countries are sent to fight, and soldiers still suffer from injuries and trauma.' },
                 { main: ' Powerful countries that use AWS make fun of those that still send people to war.' },
                 { main: ' If pain is seen as necessary to protect peace, whose pain is it?' },

@@ -16,7 +16,7 @@ export const SmallDescription = {
   title_commander: "Military Commander",
   title_developer: "AI Developer",
   title_minister: "Defense Minister",
-  title_advisor: "Defense Tech. Advisor",
+  title_advisor: "Defense Tech Advisor",
   title_diplomat: "International Diplomat",
   title_ngo_activist: "NGO Activist",
 

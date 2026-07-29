@@ -16,6 +16,9 @@ import { Colors, FontStyles } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
 import FindIdModal from '../components/FindIdModal';
 import FindPasswordModal from '../components/FindPasswordModal';
+
+const LATEST_UPDATE = '2026-07-29';
+
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -262,6 +265,21 @@ export default function Login() {
             </div>
           )} */}
         </div>
+      </div>
+       <div
+        style={{
+          position: 'fixed',
+          right: '12px',
+          bottom: '10px',
+          fontFamily: 'Pretendard, sans-serif',
+          fontSize: '11px',
+          color: 'rgba(0, 0, 0, 0.55)',
+          zIndex: 10000,
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      >
+        Latest Update : {LATEST_UPDATE}
       </div>
     </Background>
   );

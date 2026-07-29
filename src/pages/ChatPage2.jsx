@@ -1330,10 +1330,14 @@ export default function ChatPage2() {
   }, [step, context, messages]);
 
   // 항상 스크롤 가장 아래로
-  useEffect(
-    () => bottomRef.current?.scrollIntoView({ behavior: "smooth" }),
-    [messages, loading]
-  );
+  // scrollIntoView()의 반환값이 useEffect cleanup으로 인식되는 문제를 방지
+  // 일부 브라우저에서 Promise가 반환되며 발생하던 "is not a function" 흰 화면 오류를 해결
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages, loading]);
+
 
   // Markdown 제거
   function cleanMarkdown(text) {

@@ -1338,7 +1338,6 @@ export default function ChatPage2() {
     });
   }, [messages, loading]);
 
-
   // Markdown 제거
   function cleanMarkdown(text) {
     if (!text) return "";

@@ -16,12 +16,18 @@ import { Colors, FontStyles } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
 import FindIdModal from '../components/FindIdModal';
 import FindPasswordModal from '../components/FindPasswordModal';
+
 import { translations } from '../utils/language/index';
 
 /**
  * 하드코딩된 주소를 환경변수로 분리
  */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://dilemmai-idl.com';
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://dilemmai-idl.com';
+
+const LATEST_UPDATE = '2026-08-06';
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -281,7 +287,8 @@ export default function Login() {
           )}
         </div>
       </div>
-      <div
+
+    <div
   style={{
     position: 'fixed',
     right: '20px',
@@ -290,9 +297,10 @@ export default function Login() {
     color: '#ffffff62',
     zIndex: 1000,
     userSelect: 'none',
+    pointerEvents: 'none',
   }}
 >
-  Latest Update : 08-06
+  Latest Update : {LATEST_UPDATE}
 </div>
     </Background>
   );

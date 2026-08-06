@@ -6,7 +6,7 @@ export const Signup02 = {
   usernameFormatError: "Please enter an username using 4–20 letters, numbers, or underscores.",
   usernameAvailable: "This username is available.",
   usernameInUse: "This username is already in use.",
-  usernameCheckFail: "확인 중 오류가 발생했습니다.(미번역)",
+  usernameCheckFail: "An error occurred while checking availability.",
   emailPlaceholder: "Email",
   emailInvalid: "Please enter a valid email address.",
   passwordPlaceholder: "Password",
@@ -25,5 +25,5 @@ export const Signup02 = {
   eduOptions: ['Middle School Student', 'High School Student', 'Undergraduate Student', 'Graduate Student', 'Teacher', 'Other'],
   majorOptions: ['Arts', 'Engineering', 'Humanities', 'Social Sciences', 'Education', 'Natural Sciences', 'Others'],
   nextBtn: "Next",
-  signupError: "회원가입 오류:(미번역)"
+  signupError: "Sign-up error:"
 };

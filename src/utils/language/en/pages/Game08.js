@@ -15,7 +15,7 @@ export const Game08 = {
         opt1: { agree: "now provide more accurate services.", disagree: "now provide safer services." },
         end: ""
       },
-      default: "여러분의 결정으로 가정용 로봇은 보다 정확한 서비스를 제공하였습니다.(미번역)"
+      default: "Your decisions helped the home robot provide more accurate services."
     },
     p2: {
       full: {
@@ -33,7 +33,7 @@ export const Game08 = {
         opt1: { agree: "limited services", disagree: "a wide range of services" },
         end: " have come to be provided for children."
       },
-      default: "국가 내에서는 아이들을 위해 다양한 서비스를 제공하며, \n 가정용 로봇의 알고리즘은 투명하게 공개되었습니다.(미번역)"
+      default: "A variety of services are now provided for children nationwide, \n and the home robot's algorithms have been made transparent."
     },
     p3: {
       played: {
@@ -44,7 +44,7 @@ export const Game08 = {
         },
         end: "."
       },
-      default: "그리고 세계는 지금, 기술적 발전을 조금 늦추었지만 환경과 미래를 위해 \n나아가고 있죠.(미번역)"
+      default: "The world has slowed technological progress slightly, but continues moving forward for the environment and the future."
     },
     p4: "The values you chose have come together to create a single future.\nAre you ready to be part of that future?"
   },
@@ -66,7 +66,7 @@ export const Game08 = {
         opt1: { agree: "autonomous weapon systems have become safer.", disagree: "responsibility for autonomous weapon systems has become clearer." },
         end: ""
       },
-      default: "여러분의 결정으로 자율 무기 시스템은 변화의 기점에 서 있습니다.(미번역)"
+      default: "Your decisions have brought the autonomous weapon system to a turning point."
     },
     p2: {
       full: {
@@ -87,7 +87,7 @@ export const Game08 = {
         },
         end: ""
       },
-      default: "국가 차원에서도 여러 논의가 이어지고 있습니다.(미번역)"
+      default:  "Discussions are continuing at the national level."
     },
     p3: {
       played: {
@@ -98,7 +98,7 @@ export const Game08 = {
         },
         end: ""
       },
-      default: "그리고 세계는, 각자의 선택에 따라 새로운 안보 질서를 모색하고 있죠.(미번역)"
+      default: "The world is now exploring a new security order shaped by each choice."
     },
     p4: "The values you chose came together to create one possible future.\nAre you ready to live in the future you helped shape?"
   },

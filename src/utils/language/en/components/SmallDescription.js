@@ -40,5 +40,5 @@ export const SmallDescription = {
   desc_diplomat: "They are an international organization diplomatic representative from advanced Country B.\n They attended this meeting to consider an appropriate direction for the global proliferation of AWS.",
   desc_ngo_activist: "They are a global NGO activist from developing Country C.\nThey attended this meeting to bring voices from the field to the international community.",
   
-  aws_default: "자율 무기 시스템 시나리오입니다. 먼저, 역할을 확인하세요.(미번역)"
+  aws_default: "This is an autonomous weapon systems scenario. First, check your role."
 };

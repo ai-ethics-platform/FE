@@ -6,7 +6,7 @@ export const Game05_1 = {
     host_only: "⚠️ Only the host can make a selection.",
     wait_others: "Please wait until other players have finished reading the story.",
     select_first: "⚠️ Please make a selection fist.",
-    select_confidence: "Please select your confidence level. (미번역)"
+    select_confidence: "Please select your confidence level."
   },
   questions: {
     "AI의 개인 정보 수집": { 

@@ -26,7 +26,7 @@ export default function ResultStatCard({
   const category = localStorage.getItem('category'); // '안드로이드' 또는 '자율 무기 시스템'
 
   // 현재 언어 설정 확인
-  const lang = localStorage.getItem('language') || localStorage.getItem('language') || 'ko';
+  const lang = localStorage.getItem('app_lang') || localStorage.getItem('language') || 'ko';
   
   // 대문자 Game09 데이터를 안전하게 가져오기
   // 데이터가 로드되지 않았을 경우를 대비해 빈 객체({})와 items를 기본값으로 설정

@@ -1,0 +1,30 @@
+<svg width="40" height="64" viewBox="0 0 40 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_2693_14661)">
+<g clip-path="url(#clip1_2693_14661)">
+<foreignObject x="-244" y="-20" width="304" height="104"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(10px);clip-path:url(#bgblur_2_2693_14661_clip_path);height:100%;width:100%"></div></foreignObject><g data-figma-bg-blur-radius="20">
+<mask id="path-1-inside-1_2693_14661" fill="white">
+<path d="M40 32L8 64H-224V32L-192 0H40V32Z"/>
+</mask>
+<path d="M40 32L8 64H-224V32L-192 0H40V32Z" fill="#FCFDFA"/>
+<path d="M40 32L41.4142 33.4142L42 32.8284V32H40ZM8 64V66H8.82843L9.41422 65.4142L8 64ZM-224 64H-226V66H-224V64ZM-224 32L-225.414 30.5858L-226 31.1716V32H-224ZM-192 0V-2H-192.828L-193.414 -1.41421L-192 0ZM40 0H42V-2H40V0ZM40 32L38.5858 30.5858L6.58578 62.5858L8 64L9.41422 65.4142L41.4142 33.4142L40 32ZM8 64V62H-224V64V66H8V64ZM-224 64H-222V32H-224H-226V64H-224ZM-224 32L-222.586 33.4142L-190.586 1.41421L-192 0L-193.414 -1.41421L-225.414 30.5858L-224 32ZM-192 0V2H40V0V-2H-192V0ZM40 0H38V32H40H42V0H40Z" fill="#99BCBE" mask="url(#path-1-inside-1_2693_14661)"/>
+</g>
+<foreignObject x="-240.001" y="-16" width="296" height="96"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(10px);clip-path:url(#bgblur_3_2693_14661_clip_path);height:100%;width:100%"></div></foreignObject><g data-figma-bg-blur-radius="20">
+<mask id="path-3-inside-2_2693_14661" fill="white">
+<path d="M35.999 30.001L6 60H-220.001V4H-220V34L-190 4H35.999V30.001Z"/>
+</mask>
+<path d="M35.999 30.001L6 60H-220.001V4H-220V34L-190 4H35.999V30.001Z" fill="#FCFDFA"/>
+<path d="M35.999 30.001L36.7061 30.7081L36.999 30.4152V30.001H35.999ZM6 60V61H6.41422L6.70711 60.7071L6 60ZM-220.001 60H-221.001V61H-220.001V60ZM-220.001 4V3H-221.001V4H-220.001ZM-220 4H-219V3H-220V4ZM-220 34H-221V36.4142L-219.293 34.7071L-220 34ZM-190 4V3H-190.414L-190.707 3.29289L-190 4ZM35.999 4H36.999V3H35.999V4ZM35.999 30.001L35.2919 29.2939L5.29289 59.2929L6 60L6.70711 60.7071L36.7061 30.7081L35.999 30.001ZM6 60V59H-220.001V60V61H6V60ZM-220.001 60H-219.001V4H-220.001H-221.001V60H-220.001ZM-220.001 4V5H-220V4V3H-220.001V4ZM-220 4H-221V34H-220H-219V4H-220ZM-220 34L-219.293 34.7071L-189.293 4.70711L-190 4L-190.707 3.29289L-220.707 33.2929L-220 34ZM-190 4V5H35.999V4V3H-190V4ZM35.999 4H34.999V30.001H35.999H36.999V4H35.999Z" fill="#99BCBE" mask="url(#path-3-inside-2_2693_14661)"/>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="bgblur_2_2693_14661_clip_path" transform="translate(244 20)"><path d="M40 32L8 64H-224V32L-192 0H40V32Z"/>
+</clipPath><clipPath id="bgblur_3_2693_14661_clip_path" transform="translate(240.001 16)"><path d="M35.999 30.001L6 60H-220.001V4H-220V34L-190 4H35.999V30.001Z"/>
+</clipPath><clipPath id="clip0_2693_14661">
+<rect width="40" height="64" fill="white"/>
+</clipPath>
+<clipPath id="clip1_2693_14661">
+<rect width="264" height="64" fill="white" transform="translate(-224)"/>
+</clipPath>
+</defs>
+</svg>

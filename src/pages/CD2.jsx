@@ -1,285 +1,136 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import Layout from '../components/Layout';
 import ContentTextBox from '../components/ContentTextBox2';
-import UserProfile from '../components/Userprofile';
 
-import { useWebRTC } from '../WebRTCProvider';
-import { useVoiceRoleStates } from '../hooks/useVoiceWebSocket';
-import voiceManager from '../utils/voiceManager';
-import { useHostActions, useWebSocketNavigation } from '../hooks/useWebSocketMessage';
-// Player2 description images for different subtopics
+// 2P 이미지 에셋
 import player2DescImg_title1 from '../assets/2player_des1.svg';
 import player2DescImg_title2 from '../assets/2player_des2.svg';
 import player2DescImg_title3 from '../assets/2player_des3.svg';
-import { resolveParagraphs } from '../utils/resolveParagraphs';
-import AWS_1 from "../assets/2player_AWS_1.svg";
-import AWS_2 from "../assets/2player_AWS_2.svg";
-import AWS_3 from "../assets/2player_AWS_3.svg";
-import AWS_4 from "../assets/2player_AWS_4.svg";
-import AWS_5 from "../assets/2player_AWS_5.svg";
-import { useWebSocket } from '../WebSocketProvider';
+import AWS_1 from '../assets/2player_AWS_1.svg';
+import AWS_2 from '../assets/2player_AWS_2.svg';
+import AWS_3 from '../assets/2player_AWS_3.svg';
+import AWS_4 from '../assets/2player_AWS_4.svg';
+import AWS_5 from '../assets/2player_AWS_5.svg';
+
+import player2DescImg_title1_en from '../assets/en/2player_des1_en.svg';
+import player2DescImg_title2_en from '../assets/en/2player_des2_en.svg'; 
+import player2DescImg_title3_en from '../assets/en/2player_des3_en.svg'; 
+import AWS_1_en from '../assets/en/2player_AWS_1_en.svg';
+import AWS_2_en from '../assets/en/2player_AWS_2_en.svg';
+import AWS_3_en from '../assets/en/2player_AWS_3_en.svg';
+import AWS_4_en from '../assets/en/2player_AWS_4_en.svg';
+import AWS_5_en from '../assets/en/2player_AWS_5_en.svg';
+
 import defaultimg from "../assets/images/Frame235.png";
 
+import { translations } from '../utils/language';
+import { useWebSocketNavigation } from '../hooks/useWebSocketMessage';
+import { useWebSocket } from '../WebSocketProvider';
 import axiosInstance from '../api/axiosInstance';
+import voiceManager from '../utils/voiceManager';
 
 export default function CD2() {
   const navigate = useNavigate();
-  useWebSocketNavigation(navigate, { 
-    infoPath: '/game02',
-    nextPagePath: '/game02'
-  });
-  const { isConnected, reconnectAttempts, maxReconnectAttempts,finalizeDisconnection } = useWebSocket();
+  useWebSocketNavigation(navigate, { infoPath: '/game02', nextPagePath: '/game02' });
+  const { isConnected: websocketConnected } = useWebSocket();
 
-  const category = localStorage.getItem('category') || '안드로이드';
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const currentLangData = translations?.[lang] || translations['ko'] || {};
+  const t = currentLangData.CharacterDescription || {};
+  const t_map = currentLangData.GameMap || {};
+  const t_ko_map = translations['ko']?.GameMap || {};
+
+  const category = localStorage.getItem('category') || '';
   const isAWS = category === '자율 무기 시스템';
-
-  //  커스텀 모드 판단: code 존재 여부
   const isCustomMode = !!localStorage.getItem('code');
+  const rawSubtopic = localStorage.getItem('subtopic') || '';
+  const subtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || '') : rawSubtopic;
 
-  //  커스텀 모드일 때 subtopic은 creatorTitle로 대체
-  const creatorTitle = localStorage.getItem('creatorTitle') || '';
-  const rawSubtopic = localStorage.getItem('subtopic');
-  const subtopic = isCustomMode ? creatorTitle : (rawSubtopic ?? 'AI의 개인 정보 수집');
+  const [round, setRound] = useState();
+  const [voiceInitialized, setVoiceInitialized] = useState(false);
 
-  const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
+  useEffect(() => {
+    const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+    const nextRound = completed.length + 1;
+    setRound(nextRound);
+    localStorage.setItem('currentRound', String(nextRound));
+  }, []);
 
-   const [round, setRound] = useState();
-   // 1. 라운드 계산
-    useEffect(() => {
-      const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
-      const nextRound = completed.length + 1;
-      setRound(nextRound);
-      localStorage.setItem('currentRound', String(nextRound));
-    }, []);
-  const { isHost, sendNextPage } = useHostActions();
-//  // 새로고침 시 재연결 로직 
-//   useEffect(() => {
-//       let cancelled = false;
-//       const isReloadingGraceLocal = () => {
-//         const flag = sessionStorage.getItem('reloading') === 'true';
-//         const expire = parseInt(sessionStorage.getItem('reloading_expire_at') || '0', 10);
-//         if (!flag) return false;
-//         if (Date.now() > expire) {
-//           sessionStorage.removeItem('reloading');
-//           sessionStorage.removeItem('reloading_expire_at');
-//           return false;
-//         }
-//         return true;
-//       };
-    
-//       if (!isConnected) {
-//         // 1) reloading-grace가 켜져 있으면 finalize 억제
-//         if (isReloadingGraceLocal()) {
-//           console.log('♻️ reloading grace active — finalize 억제');
-//           return;
-//         }
-    
-//         // 2) debounce: 잠깐 기다렸다가 여전히 끊겨있으면 finalize
-//         const DEBOUNCE_MS = 1200;
-//         const timer = setTimeout(() => {
-//           if (cancelled) return;
-//           if (!isConnected && !isReloadingGraceLocal()) {
-//             console.warn('🔌 WebSocket 연결 끊김 → 초기화 (확정)');
-//             finalizeDisconnection('❌ 연결이 끊겨 게임이 초기화됩니다.');
-//           } else {
-//             console.log('🔁 재연결/리로드 감지 — finalize 스킵');
-//           }
-//         }, DEBOUNCE_MS);
-    
-//         return () => {
-//           cancelled = true;
-//           clearTimeout(timer);
-//         };
-//       }
-//     }, [isConnected, finalizeDisconnection]);
+  const initializeVoice = useCallback(async () => {
+    if (voiceInitialized) return;
+    const sessionId = localStorage.getItem('session_id');
+    if (!sessionId || !websocketConnected) return;
+    try {
+      const success = await voiceManager.initializeVoiceSession();
+      if (success) {
+        setVoiceInitialized(true);
+        setTimeout(() => voiceManager.startSpeechDetection(), 1000);
+      }
+    } catch (err) { console.error(err); }
+  }, [voiceInitialized, websocketConnected]);
 
-  // WebRTC audio state
-  const { voiceSessionStatus, roleUserMapping, myRoleId } = useWebRTC();
-  const { getVoiceStateForRole } = useVoiceRoleStates(roleUserMapping);
-  
-  const getVoiceState = (role) => {
-    if (String(role) === myRoleId) {
-      return {
-        is_speaking: voiceSessionStatus.isSpeaking,
-        is_mic_on: voiceSessionStatus.isConnected,
-        nickname: voiceSessionStatus.nickname || ''
-      };
-    }
-    return getVoiceStateForRole(role);
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => initializeVoice(), 1000);
+    return () => clearTimeout(timer);
+  }, [initializeVoice]);
 
- 
-// 받침(종성) 유무 판별
-function hasFinalConsonant(kor) {
-  const lastChar = kor[kor.length - 1];
-  const code = lastChar.charCodeAt(0);
-  if (code >= 0xac00 && code <= 0xd7a3) {
-    const jong = (code - 0xac00) % 28;
-    return jong !== 0;
-  }
-  return false;
-}
-
-// 을/를
- function getEulReul(word) {
-  if (!word) return '';
-  return hasFinalConsonant(word) ? '을' : '를';
-}
-
-// 과/와
- function getGwaWa(word) {
-  if (!word) return '';
-  return hasFinalConsonant(word) ? '과' : '와';
-}
-
-// 은/는
- function getEunNeun(word) {
-  if (!word) return '';
-  return hasFinalConsonant(word) ? '은' : '는';
-}
-  // 기본 이미지 & 텍스트
-  let descImg = player2DescImg_title1;
-  let mainText =
-    `당신은 자녀 J씨의 노모입니다.\n 가사도우미의 도움을 받다가 최근 A사의 돌봄 로봇 ${mateName}의 도움을 받고 있습니다.`;
+  const getImg = (ko, en) => (lang !== 'ko' ? en : ko);
+  let descImg = getImg(player2DescImg_title1, player2DescImg_title1_en);
+  let mainTextKey = 'cd2_android_home';
 
   if (!isAWS) {
-    if (subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI') {
-      descImg = player2DescImg_title2;
-      mainText =
-        `당신은 HomeMate를 사용해 온 소비자 대표입니다. \n 당신은 사용자로서 HomeMate 규제 여부와 관련한 목소리를 내고자 참여하였습니다.`;
-    } else if (subtopic === '지구, 인간, AI') {
-      descImg = player2DescImg_title3;
-      mainText =
-        `당신은 국제적인 환경단체의 대표로 온 환경운동가입니다.\n AI의 발전이 환경에 도움이 될지, 문제가 될지 고민 중입니다.`;
+    const isCouncil = subtopic === '아이들을 위한 서비스' || subtopic === '설명 가능한 AI' || subtopic === t_map.andOption2_1 || subtopic === t_ko_map.andOption2_1;
+    const isInternational = subtopic === '지구, 인간, AI' || subtopic === t_map.andOption3_1 || subtopic === t_ko_map.andOption3_1;
+
+    if (isCouncil) {
+      descImg = getImg(player2DescImg_title2, player2DescImg_title2_en);
+      mainTextKey = 'cd2_android_council';
+    } else if (isInternational) {
+      descImg = getImg(player2DescImg_title3, player2DescImg_title3_en);
+      mainTextKey = 'cd2_android_international';
     }
   } else {
-    // 자율 무기 시스템 분기
-    switch (true) {
-      case subtopic === 'AI 알고리즘 공개':
-        descImg = AWS_1;
-        mainText =
-          '당신은 자율 무기 시스템과 작전을 함께 수행 중인 병사 J입니다. ' +
-          '당신이 살고 있는 지역에 최근 자율 무기 시스템의 학교 폭격 사건이 일어났습니다.';
-        break;
-
-      case subtopic === 'AWS의 권한':
-        descImg = AWS_2;
-        mainText =
-          '당신은 수년간 작전을 수행해 온 베테랑 병사 A입니다. ' +
-          `자율 무기 시스템 ${mateName}${getEunNeun(mateName)} 전장에서 병사보다 빠르고 정확하지만,` +
-          '그로 인해 병사들이 판단하지 않는 습관에 빠지고 있다고 느낍니다.';
-        break;
-
-      case subtopic === '사람이 죽지 않는 전쟁':
-        descImg = AWS_3;
-        mainText =
-          '당신은 AWS 중심의 전쟁 시스템을 주도한 군사 전략의 최고 책임자인 국방부 장관입니다.\n' +
-          '자국 병사 사망자 수는 ‘0’이고, 전투는 정밀하고 자동화된 시스템으로 수행되고 있습니다.\n' +
-          '당신은 이것이 기술 진보의 결과이며, 국민의 생명을 지키면서도 국가적 안보를 유지하는 이상적인 방식이라고 믿고 있습니다.';
-        break;
-
-      case subtopic === 'AI의 권리와 책임':
-        descImg = AWS_4;
-        mainText =
-          '당신은 AWS 중심의 전쟁 시스템을 주도한 군사 전략의 최고 책임자인 국방부 장관입니다.\n' +
-          '자국 병사 사망자 수는 ‘0’이고, 전투는 정밀하고 자동화된 시스템으로 수행되고 있습니다.\n' +
-          '당신은 이것이 기술 진보의 결과이며, 국민의 생명을 지키면서도 국가적 안보를 유지하는 이상적인 방식이라고 믿고 있습니다.';
-        break;
-
-      case subtopic === 'AWS 규제':
-        descImg = AWS_5;
-        mainText =
-          '당신은 선진국 B의 국제기구 외교 대표입니다. ' +
-          'AWS의 국제적 확산에 대한 바람직한 방향을 고민하기 위해 이 자리에 참석했습니다.';
-        break;
-
-      default:
-        mainText = '자율 무기 시스템 시나리오입니다. 먼저, 역할을 확인하세요.';
-        break;
-    }
+    if (subtopic === 'AI 알고리즘 공개' || subtopic === t_map.awsOption1_1 || subtopic === t_ko_map.awsOption1_1) { descImg = getImg(AWS_1, AWS_1_en); mainTextKey = 'cd2_aws_1'; }
+    else if (subtopic === 'AWS의 권한' || subtopic === t_map.awsOption1_2 || subtopic === t_ko_map.awsOption1_2) { descImg = getImg(AWS_2, AWS_2_en); mainTextKey = 'cd2_aws_2'; }
+    else if (subtopic === '사람이 죽지 않는 전쟁' || subtopic === t_map.awsOption2_1 || subtopic === t_ko_map.awsOption2_1) { descImg = getImg(AWS_3, AWS_3_en); mainTextKey = 'cd2_aws_3'; }
+    else if (subtopic === 'AI의 권리와 책임' || subtopic === t_map.awsOption2_2 || subtopic === t_ko_map.awsOption2_2) { descImg = getImg(AWS_4, AWS_4_en); mainTextKey = 'cd2_aws_4'; }
+    else if (subtopic === 'AWS 규제' || subtopic === t_map.awsOption3_1 || subtopic === t_ko_map.awsOption3_1) { descImg = getImg(AWS_5, AWS_5_en); mainTextKey = 'cd2_aws_5'; }
+    else { mainTextKey = 'aws_default'; }
   }
 
-  // URL 보정 유틸 (Editor 계열과 동일)
-  const resolveImageUrl = (raw) => {
-    if (!raw || raw === '-' || String(raw).trim() === '') return null;
-    const u = String(raw).trim();
-    if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
-    const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
-    if (!base) return u;
-    return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
-  };
+  let mainText = t[mainTextKey] || '';
 
-  //  커스텀 모드: 텍스트/이미지/서브토픽 교체
   if (isCustomMode) {
-    // 텍스트: charDes2 (단일 문자열)
     const charDes2 = (localStorage.getItem('charDes2') || '').trim();
-    if (charDes2) {
-      mainText = charDes2;
-    }
-
-    // 이미지: role_image_2 (문자열 경로)
+    if (charDes2) mainText = charDes2;
     const rawRoleImg = localStorage.getItem('role_image_2') || '';
-    const customImg = resolveImageUrl(rawRoleImg);
-    // ✅ 커스텀 모드에서는 role_image가 없으면 기본 이미지(Frame235)로 표시
-    descImg = customImg ?? defaultimg;
-    // subtopic은 위에서 creatorTitle로 이미 치환됨
+    descImg = rawRoleImg || defaultimg;
   }
 
-  const paragraphs = [{ main: mainText }];
-
-  const handleContinue = () => {
-    navigate('/character_all');
-    // if (isHost) sendNextPage();
-    // else alert('⚠️ 방장만 진행할 수 있습니다.');
+  const mateName = localStorage.getItem('mateName') ?? 'HomeMate';
+  const hasBatchim = (word) => {
+    if (lang !== 'ko' || !word) return false;
+    const code = word[word.length - 1].charCodeAt(0);
+    return (code >= 0xac00 && code <= 0xd7a3) && (code - 0xac00) % 28 !== 0;
   };
 
-  const handleBackClick = () => {
-    navigate('/game01'); 
-  };
+  const finalStr = (mainText || "")
+    .replaceAll('{{mateName}}', mateName)
+    .replaceAll('{{eulReul}}', lang === 'ko' ? (hasBatchim(mateName) ? '을' : '를') : '')
+    .replaceAll('{{gwaWa}}', lang === 'ko' ? (hasBatchim(mateName) ? '과' : '와') : '')
+    .replaceAll('{{eunNeun}}', lang === 'ko' ? (hasBatchim(mateName) ? '은' : '는') : '');
+
+  const paragraphs = [{ main: finalStr }];
 
   return (
-    <>
-      <Layout round={round} subtopic={subtopic} me="2P" onBackClick={handleBackClick}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 32,
-          marginTop: 22
-        }}>
-          <img
-            src={descImg}
-            alt="Player 2 설명 이미지"
-            style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: -20 }}
-            onError={(e) => {
-              const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
-              if (retryCount < 3) {
-                e.currentTarget.dataset.retryCount = String(retryCount + 1);
-                const imgSrc = e.currentTarget.src;
-                const cacheBuster = `?retry=${retryCount + 1}&t=${Date.now()}`;
-                const newSrc = imgSrc.includes('?') ? `${imgSrc.split('?')[0]}${cacheBuster}` : `${imgSrc}${cacheBuster}`;
-                setTimeout(() => { if (e.currentTarget) e.currentTarget.src = newSrc; }, 300 * retryCount);
-                return;
-              }
-              if (e.currentTarget.dataset.fallbackAttempted !== 'true') {
-                e.currentTarget.dataset.fallbackAttempted = 'true';
-                e.currentTarget.dataset.retryCount = '0';
-                e.currentTarget.src = defaultimg;
-                return;
-              }
-              e.currentTarget.style.display = 'none'; 
-            }}
-          />
-          <div style={{ width: '100%', maxWidth: 900 }}>
-            <ContentTextBox
-              paragraphs={paragraphs}
-              onContinue={handleContinue}
-            />
-          </div>
+    <Layout round={round} subtopic={subtopic} me="2P" onBackClick={() => navigate('/game01')}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32, marginTop: 22 }}>
+        <img src={descImg} alt="Character" style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: -20 }} onError={(e) => { e.currentTarget.src = defaultimg; }} />
+        <div style={{ width: '100%', maxWidth: 900 }}>
+          <ContentTextBox paragraphs={paragraphs} onContinue={() => navigate('/character_all')} />
         </div>
-      </Layout>
-    </>
+      </div>
+    </Layout>
   );
 }

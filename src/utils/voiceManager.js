@@ -44,6 +44,8 @@ class VoiceManager {
         return false;
       }
       const safeName = filename || `download_${Date.now()}.bin`;
+      // 실제 다운로드는 하지 않고, 저장 시도 로그만 남김, 추후 로컬 다운로드 기능 구현 시 주석 해제
+      /*
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -56,6 +58,7 @@ class VoiceManager {
       setTimeout(() => {
         try { URL.revokeObjectURL(url); } catch {}
       }, 10_000);
+      */
       return true;
     } catch (e) {
       console.error('❌ saveBlobAs 실패:', e);
@@ -303,7 +306,9 @@ class VoiceManager {
         sizeHuman: this.formatBytes(blob.size),
         durationMs: recordingData?.duration ?? null,
       });
-      return this.saveBlobAs(blob, filename);
+      // 실제 다운로드는 하지 않고, 저장 시도 로그만 남김, 추후 로컬 다운로드 기능 구현 시 주석 해제 
+      //return this.saveBlobAs(blob, filename);
+      return true;
     } catch (e) {
       console.error('❌ saveRecordingToLocal 실패:', e);
       return false;
@@ -342,7 +347,9 @@ class VoiceManager {
         return false;
       }
       console.log('✅ 서버 파일 다운로드 완료:', { size: blob.size, sizeHuman: this.formatBytes(blob.size) });
-      return this.saveBlobAs(blob, filename);
+      //서버에서 받은 파일의 자동 로컬 다운로드 방지를 위해 아래 주석 처리, 필요 시 주석 해제
+      //return this.saveBlobAs(blob, filename);
+      return true;
     } catch (e) {
       console.warn('⚠️ downloadServerRecordingFile 실패(무시):', e?.response?.status, e?.response?.data || e?.message || e);
       return false;

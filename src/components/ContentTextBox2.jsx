@@ -27,7 +27,7 @@ export default function ContentTextBox2({
 
   const typedMain = useTypingEffect(
     isTextReady ? currentParagraph.main : '',
-    70,
+    undefined,
     () => setTypingDone(true)
   );
   const typedSub = typingDone ? currentParagraph.sub : '';
@@ -80,7 +80,7 @@ const handleContinueClick = () => {
       <div
         style={{
           position: 'absolute',
-          top: 30,
+          top: 15,
           left: 40,
           right: 40,
           bottom: 24,

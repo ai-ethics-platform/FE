@@ -5,8 +5,20 @@ import { useNavigate } from 'react-router-dom';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance'; // ✅ 추가
 import { clearAllLocalStorageKeys } from '../utils/storage';
+// 다국어 관리를 위한 언어팩 임포트
+import { translations } from '../utils/language/index';
+
 export default function OutPopup({ onClose }) {
   const navigate = useNavigate();
+
+  // --- 시스템 설정된 언어(app_lang)를 로드하는 로직 ---
+  const savedLang = localStorage.getItem('app_lang');
+  const currentLang = (savedLang === 'en') ? 'en' : 'ko';
+  
+  // index.js의 translations 객체 구조에 맞춰 직접 참조.
+  const t = translations[currentLang].OutPopup;
+  // ----------------------------------------------
+
   const handleLeaveRoom = async () => {
     const room_code = String(localStorage.getItem("room_code"));
     console.log("room_code:", room_code);
@@ -27,7 +39,20 @@ export default function OutPopup({ onClose }) {
   
       console.log("🚪 방 나가기 응답:", res.data);
   
-      alert(message); // 사용자에게 메시지 표시
+      // 상황별 메시지 가공 로직
+      let finalMsg = "";
+      if (room_deleted) {
+        finalMsg = t.roomDeleted;
+      } else if (new_host) {
+        const hostName = new_host.username || new_host.nickname || "someone";
+        finalMsg = t.newHost.replace("{name}", hostName);
+      } else {
+        finalMsg = t.leftWithPlayers.replace("{count}", player_count || 0);
+      }
+
+      // 서버의 한국어 message 대신 가공된 다국어 메시지 우선 표시
+      alert(finalMsg || message); 
+
       //clearAllLocalStorageKeys();  // 로컬 스토리지 정리 함수 호출
 
       //  로컬 스토리지 정리
@@ -58,7 +83,8 @@ export default function OutPopup({ onClose }) {
      }
     } catch (err) {
       console.error("❌ 방 나가기 실패:", err);
-      alert("방 나가기 실패: " +  err.response.data);
+      // 에러 메시지 다국어 처리 적용
+      alert(`${t.leaveFail} ${err.response?.data?.message || err.message}`);
     }
   };
   
@@ -81,7 +107,7 @@ export default function OutPopup({ onClose }) {
     >
       <img
         src={closeIcon}
-        alt="닫기"
+        alt={t.closeAlt}
         onClick={onClose}
         style={{
           position: 'absolute',
@@ -94,14 +120,14 @@ export default function OutPopup({ onClose }) {
       />
 
       <p style={{ ...FontStyles.headlineSmall, marginBottom: 40 }}>
-        이 방을 나갈까요?
+        {t.title}
       </p>
 
       <SecondaryButton 
         style={{ width: 168, height: 72}}
         onClick={handleLeaveRoom}
       > 
-        방나가기
+        {t.leaveBtn}
       </SecondaryButton> 
     </div>
   );

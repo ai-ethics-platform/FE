@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import nextFrame from '../assets/contentBox3.svg';
 import { FontStyles, Colors } from './styleConstants';
 
-export default function Continue({
+export default function Continue2({
   width = 264,
   height = 72,
   onClick,
-  disabled = false,          
+  disabled = false,
+  label, //  label props 추가
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive,  setIsActive]  = useState(false);
@@ -27,12 +28,10 @@ export default function Continue({
   return (
     <div
       onClick={interactive ? onClick : undefined}
-
       onMouseEnter={interactive ? () => setIsHovered(true)  : undefined}
       onMouseLeave={interactive ? () => { setIsHovered(false); setIsActive(false); } : undefined}
       onMouseDown={interactive ? () => setIsActive(true)   : undefined}
       onMouseUp  ={interactive ? () => setIsActive(false)  : undefined}
-
       style={{
         width,
         height,
@@ -69,7 +68,8 @@ export default function Continue({
         }}
       >
         <span style={{ ...FontStyles.headlineSmall, color: textColor }}>
-          다음
+          {/*  하드코딩 '다음' 제거하고 label 출력 */}
+          {label || "다음"}
         </span>
         
       </div>

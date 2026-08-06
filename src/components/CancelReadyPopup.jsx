@@ -3,8 +3,18 @@ import closeIcon from '../assets/close.svg';
 import SecondaryButton from './SecondaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance';
+import { translations } from '../utils/language/index';
 
 export default function CancelReadyPopup({ onClose, onCancelConfirmed }) {
+  // --- 언어 설정 로직 ---
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t = translations?.[lang]?.CancelReadyPopup || {};
+
+  // 방어 코드: 데이터가 로드되지 않았을 경우 기본값 설정
+  const displayQuestion = t.question || (lang === 'en' ? "Cancel your ready status?" : "준비 상태를 취소하시겠습니까?");
+  const displayBtn = t.cancelBtn || (lang === 'en' ? "Cancel Ready" : "준비 취소");
+  const errorMsg = t.errorMsg || (lang === 'en' ? "Failed to cancel ready status" : "준비 취소 실패");
+
   const handleCancelReady = async () => {
     const room_code = localStorage.getItem('room_code');
     try {
@@ -13,7 +23,7 @@ export default function CancelReadyPopup({ onClose, onCancelConfirmed }) {
       onClose();           // -> 팝업 닫기
     } catch (err) {
       console.error('❌ 준비 취소 실패:', err);
-      alert('준비 취소 실패');
+      alert(errorMsg);
     }
   };
 
@@ -36,7 +46,7 @@ export default function CancelReadyPopup({ onClose, onCancelConfirmed }) {
     >
       <img
         src={closeIcon}
-        alt="닫기"
+        alt="close"
         onClick={onClose}
         style={{
           position: 'absolute',
@@ -48,15 +58,24 @@ export default function CancelReadyPopup({ onClose, onCancelConfirmed }) {
         }}
       />
 
-      <p style={{ ...FontStyles.headlineSmall, marginBottom: 40 }}>
-        준비 상태를 취소하시겠습니까?
+      <p style={{ 
+        ...FontStyles.headlineSmall, 
+        marginBottom: 40,
+        textAlign: 'center',
+        // 영문일 경우 텍스트가 길어질 수 있어 가독성을 위해 추가
+        fontSize: lang === 'en' ? 'clamp(1.2rem, 1.5vw, 1.5rem)' : 'inherit'
+      }}>
+        {displayQuestion}
       </p>
 
       <SecondaryButton 
-        style={{ width: 168, height: 72 }}
+        style={{ 
+          width: lang === 'en' ? 200 : 168, // 영문 텍스트 길이를 고려한 너비 조정
+          height: 72 
+        }}
         onClick={handleCancelReady}
       >
-        준비 취소
+        {displayBtn}
       </SecondaryButton>
     </div>
   );

@@ -4,49 +4,55 @@ import SecondaryButton from './SecondaryButton';
 import { FontStyles, Colors } from './styleConstants';
 import { useNavigate } from 'react-router-dom';
 
-export default function ResultPopup({ onClose }) {
+//  다국어 지원 임포트
+import { translations } from '../utils/language/index';
+
+export default function ResultPopup({ onClose, onViewResult }) {
   const navigate = useNavigate();
 
-  // const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
+  //  언어 설정 및 언어팩 로드
+  const lang = localStorage.getItem('app_lang') || 'ko';
+  const t = translations?.[lang]?.ResultPopup || {};
+  const t_map = translations?.[lang]?.GameMap || {};
+  const t_ko_map = translations?.['ko']?.GameMap || {}; // 기준 데이터인 한국어 맵
 
-  // const allRequired = [
-  //   'AI의 개인 정보 수집',
-  //   '아이들을 위한 서비스',
-  //   '지구, 인간, AI',
-  // ];
-
-  // const optionalTopics = [
-  //   { label: '안드로이드의 감정 표현', value: '안드로이드의 감정 표현' },
-  //   { label: '설명 가능한 AI', value: '설명 가능한 AI' },
-  // ];
-
-  // const unplayedOptions = optionalTopics.filter(
-  //   (opt) => !completedTopics.includes(opt.value)
-  // );
   const completedTopics = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
   const category = localStorage.getItem('category') ?? '';
 
-  const allRequired = category === '자율 무기 시스템'
-    ? ['AI 알고리즘 공개', '사람이 죽지 않는 전쟁', 'AWS 규제']
-    : ['AI의 개인 정보 수집', '아이들을 위한 서비스', '지구, 인간, AI'];
+  //  영문 텍스트/키를 한국어 원문으로 변환하는 안정화 함수 (이중 매칭)
+  const getStableText = (text) => {
+    if (lang === 'ko') return text;
+    const key = Object.keys(t_map).find(k => t_map[k] === text);
+    if (key && t_ko_map[key]) return t_ko_map[key];
+    return text;
+  };
 
-  const optionalTopics =
-    category === '자율 무기 시스템'
-      ? [
-          { label: 'AWS의 권한', value: 'AWS의 권한' },
-          { label: 'AI의 권리와 책임', value: 'AI의 권리와 책임' },
-        ]
-      : [
-          { label: '안드로이드의 감정 표현', value: '안드로이드의 감정 표현' },
-          { label: '설명 가능한 AI', value: '설명 가능한 AI' },
-        ];
+  // 카테고리 판별 로직 (확장형 구조 지향) 
+  const isAWS = category === '자율 무기 시스템';
+
+  const allRequired = isAWS
+    ? [t_map.awsOption1_1, t_map.awsOption2_1, t_map.awsOption3_1]
+    : [t_map.andOption1_1, t_map.andOption2_1, t_map.andOption3_1];
+
+  // 옵션 리스트 구성 (라벨은 번역, 밸류는 한국어 원문 유지) 
+  const optionalTopics = isAWS
+    ? [
+        { label: t_map.awsOption1_2 || 'AWS의 권한', value: t_ko_map.awsOption1_2 || 'AWS의 권한' },
+        { label: t_map.awsOption2_2 || 'AI의 권리와 책임', value: t_ko_map.awsOption2_2 || 'AI의 권리와 책임' },
+      ]
+    : [
+        { label: t_map.andOption1_2 || '안드로이드의 감정 표현', value: t_ko_map.andOption1_2 || '안드로이드의 감정 표현' },
+        { label: t_map.andOption2_2 || '설명 가능한 AI', value: t_ko_map.andOption2_2 || '설명 가능한 AI' },
+      ];
 
   const unplayedOptions = optionalTopics.filter(
     (opt) => !completedTopics.includes(opt.value)
   );
 
   const getTitleForSubtopic = (cat, subtopic) => {
-    // GameMap.jsx의 섹션(title)-옵션 매핑과 동일하게 유지
+    // 내부 비교 시 항상 한국어 원문(Stable)으로 비교 
+    const stableSubtopic = getStableText(subtopic);
+    
     const titleByCategory = {
       안드로이드: {
         'AI의 개인 정보 수집': '가정',
@@ -64,86 +70,109 @@ export default function ResultPopup({ onClose }) {
       },
     };
 
-    return titleByCategory?.[cat]?.[subtopic] ?? '';
+    // [중요] 카테고리 명칭도 유연하게 대응
+    const catKey = (cat === '자율 무기 시스템' || cat === t_map.categoryAWS || cat === t_ko_map.categoryAWS) 
+      ? '자율 무기 시스템' 
+      : '안드로이드';
+
+    return titleByCategory?.[catKey]?.[stableSubtopic] ?? '';
   };
 
-  const handleGoToSubtopic = (subtopic) => {
-    localStorage.setItem('subtopic', subtopic);
-    const title = getTitleForSubtopic(category, subtopic);
+  const handleGoToSubtopic = (stableValue) => {
+    // 로컬 스토리지에는 항상 한국어 원본을 저장하여 로직 일관성 유지 
+    localStorage.setItem('subtopic', stableValue);
+    const title = getTitleForSubtopic(category, stableValue);
     if (title) localStorage.setItem('title', title);
     localStorage.setItem('mode', 'neutral');
     navigate('/game02');
   };
 
   return (
-    <div
-      style={{
-        width: 552,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: '40px 32px',
-        position: 'relative',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      <img
-        src={closeIcon}
-        alt="close"
-        onClick={onClose}
-        style={{
-          position: 'absolute',
-          top: 24,
-          right: 24,
-          width: 24,
-          height: 24,
-          cursor: 'pointer',
-        }}
-      />
-
+    /* ✅ [추가] 팝업을 화면 정중앙에 띄우기 위한 Overlay 레이어 */
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 5000, // 최상단에 배치
+    }} onClick={onClose}>
       <div
+        /* 팝업 몸통 클릭 시 닫히지 않도록 이벤트 전파 중단 */
+        onClick={(e) => e.stopPropagation()}
         style={{
-          ...FontStyles.headlineSmall,
-          color: Colors.brandPrimary,
-          textAlign: 'center',
-          lineHeight: '1.5',
-          marginBottom: 24,
+          width: 552,
+          backgroundColor: '#FFFFFF',
+          borderRadius: 16,
+          padding: '40px 32px',
+          position: 'relative',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
         }}
       >
-        아직 플레이하지 않은 라운드가 있습니다.
-        <br />
-        이대로 결과를 볼까요?
-      </div>
-
-      {unplayedOptions.map((opt) => (
-        <SecondaryButton
-          key={opt.value}
+        <img
+          src={closeIcon}
+          alt="close"
+          onClick={onClose}
           style={{
-            width: 360,
-            height: 72,
-            justifyContent: 'center',
-            marginBottom: 12,
+            position: 'absolute',
+            top: 24,
+            right: 24,
+            width: 24,
+            height: 24,
+            cursor: 'pointer',
           }}
-          onClick={() => handleGoToSubtopic(opt.value)}
-        >
-          {opt.label}
-        </SecondaryButton>
-      ))}
+        />
 
-      <div style={{ marginTop: 20 }}>
-        <SecondaryButton
+        <div
           style={{
-            width: 168,
-            height: 72,
-            justifyContent: 'center',
-            marginBottom: 12,
+            ...FontStyles.headlineSmall,
+            color: Colors.brandPrimary,
+            textAlign: 'center',
+            lineHeight: '1.5',
+            marginBottom: 24,
           }}
-          onClick={() => navigate('/game08')}
         >
-          결과 보기
-        </SecondaryButton>
+          {t.titleMain || '아직 플레이하지 않은 라운드가 있습니다.'}
+          <br />
+          {t.titleSub || '이대로 결과를 볼까요?'}
+        </div>
+
+        {unplayedOptions.map((opt) => (
+          <SecondaryButton
+            key={opt.value}
+            style={{
+              width: 360,
+              height: 72,
+              justifyContent: 'center',
+              marginBottom: 12,
+            }}
+            onClick={() => handleGoToSubtopic(opt.value)}
+          >
+            {opt.label}
+          </SecondaryButton>
+        ))}
+
+        <div style={{ marginTop: 20 }}>
+          <SecondaryButton
+            style={{
+              width: 168,
+              height: 72,
+              justifyContent: 'center',
+              marginBottom: 12,
+            }}
+            /* Game06에서 넘겨준 onViewResult가 있다면 실행, 없다면 기본 경로 이동 */
+            onClick={() => {
+              if (onViewResult) onViewResult();
+              else navigate('/game08');
+            }}
+          >
+            {t.viewResult || '결과 보기'}
+          </SecondaryButton>
+        </div>
       </div>
     </div>
   );

@@ -1,3 +1,19 @@
+
+// export function resolveParagraphs(rawParagraphs, mateName) {
+//   const replaceHomeMate = (text) => {
+//     if (!text) return '';
+//     return text
+//       .replace(/Homemate\(([^)]+)\)/g, (_, pattern) => attachJosa(mateName, pattern))
+//       .replace(/Homemate/g, mateName);
+//   };
+
+//   return rawParagraphs.map((para) => ({
+//     ...para,
+//     ...(para.main && { main: replaceHomeMate(para.main) }),
+//     ...(para.sub && { sub: replaceHomeMate(para.sub) }),
+//   }));
+// }
+
 export function hasFinalConsonant(kor) {
   const trimmed = String(kor ?? '').trim();
   if (!trimmed) return false;
@@ -25,6 +41,14 @@ export function attachJosa(name, pattern) {
   const trimmed = String(name ?? '').trim();
   if (!trimmed) return '';
 
+  // 현재 언어 설정 확인
+  const lang = localStorage.getItem('app_lang') || 'ko';
+
+  // 한국어(ko)를 제외한 모든 언어에서는 조사가 붙지 않도록 무력화
+  if (lang !== 'ko') {
+    return trimmed;
+  }
+
   const final = hasFinalConsonant(trimmed);
 
   switch (pattern) {
@@ -36,26 +60,20 @@ export function attachJosa(name, pattern) {
   }
 }
 
-// export function resolveParagraphs(rawParagraphs, mateName) {
-//   const replaceHomeMate = (text) => {
-//     if (!text) return '';
-//     return text
-//       .replace(/Homemate\(([^)]+)\)/g, (_, pattern) => attachJosa(mateName, pattern))
-//       .replace(/Homemate/g, mateName);
-//   };
-
-//   return rawParagraphs.map((para) => ({
-//     ...para,
-//     ...(para.main && { main: replaceHomeMate(para.main) }),
-//     ...(para.sub && { sub: replaceHomeMate(para.sub) }),
-//   }));
-// }
-
 export function resolveParagraphs(rawParagraphs, mateName) {
   const category = localStorage.getItem('category') || '';
 
   const replaceDynamic = (text) => {
     if (!text) return '';
+
+    // 1. 표준 태그 치환 ({{mateName}} 및 조사 태그)
+    // - {{mateName}}을 실제 설정된 이름으로 변경
+    // - {{eunNeun}} 등의 태그를 이름의 받침에 맞는 조사로 변경
+    text = text.replace(/{{mateName}}/g, mateName);
+    text = text.replace(/{{eunNeun}}/g, attachJosa(mateName, '은/는').replace(mateName, ''));
+    text = text.replace(/{{iGa}}/g, attachJosa(mateName, '이/가').replace(mateName, ''));
+    text = text.replace(/{{eulReul}}/g, attachJosa(mateName, '을/를').replace(mateName, ''));
+    text = text.replace(/{{gwaWa}}/g, attachJosa(mateName, '과/와').replace(mateName, ''));
 
     if (category === '안드로이드') {
       // Homemate → mateName
@@ -82,7 +100,6 @@ export function resolveParagraphs(rawParagraphs, mateName) {
       text = text.replace(/TALOS/g, mateName);
     }
     
-
     return text;
   };
 

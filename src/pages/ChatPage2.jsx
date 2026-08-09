@@ -787,7 +787,8 @@ function normalize(res) {
   };
 }
 
-const HISTORY_LIMIT = 5;
+// 한 단계 안에서 왕복이 6~8턴까지 가므로 5줄은 앞서 정한 값이 창밖으로 밀려난다.
+const HISTORY_LIMIT = 12;
 
 function buildInputWithHistory(messages, raw, isInit = false) {
   const recent = messages

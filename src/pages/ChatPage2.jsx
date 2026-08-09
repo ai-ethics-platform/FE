@@ -1282,21 +1282,16 @@ export default function ChatPage2() {
     const raw = (userText ?? input).trim();
     if (!raw) return;
 
-    // 🔥 수정: "다음 단계" 처리 로직 개선
-    if (
-      raw.replace(/\s+/g, "").includes("다음단계") || 
-      (raw.includes("다음") && raw.includes("단계"))
-    ) {
-      console.log("➡️ 다음 단계 요청:", {
-        currentStep: step,
-        context: context
-      });
+    // "다음 단계" 요청은 여기서 가로채 바로 다음 방을 열지 않는다.
+    // 이 말이 현재 단계 프롬프트에 도달해야 모델이 [확정 단계] 포맷을 내놓고,
+    // 변수 추출이 읽을 대상이 생긴다. 이동은 응답을 받은 뒤에 한다.
+    const wantsNextStep =
+      raw.replace(/\s+/g, "").includes("다음단계") ||
+      (raw.includes("다음") && raw.includes("단계"));
 
-      // 다음 step INIT이 추가될 "경계"는 (현재 messages + user 메시지 1개) 시점
-      const boundaryForNextStep = messagesRef.current.length + 1;
-      setMessages(prev => [...prev, { role: "user", content: raw, skipHistory: true }]);
+    let advanceTo = null;
 
-      // step advance
+    if (wantsNextStep) {
       const idx = STEP_ORDER.indexOf(step);
       const next = idx < STEP_ORDER.length - 1 ? STEP_ORDER[idx + 1] : step;
 
@@ -1309,7 +1304,7 @@ export default function ChatPage2() {
         return;
       }
 
-      // 🔥 수정: step 변경 전에 context 검증
+      // step 변경 전에 context 검증
       if (next === "question" && !context.topic) {
         setMessages(prev => [
           ...prev,
@@ -1319,6 +1314,8 @@ export default function ChatPage2() {
         return;
       }
 
+      advanceTo = next;
+
       // 다음 단계 INIT이 실패(400)하면 "직전 유저 입력"을 다시 보내야 하므로 미리 저장
       pendingNextStepRef.current = {
         fromStep: step,
@@ -1326,19 +1323,18 @@ export default function ChatPage2() {
         retryText: lastUserTextRef.current,
       };
 
-      // INIT 호출
-      setTimeout(() => {
-        handleInit(next, { boundaryOverride: boundaryForNextStep });
-      }, 50);
-
-      setInput("");
-      return;
+      console.log("➡️ 다음 단계 요청:", { currentStep: step, next, context });
     }
 
     // 일반 메시지 처리
     const userMsg = raw;
     lastUserTextRef.current = userMsg;
-    setMessages(prev => [...prev, { role: "user", content: userMsg }]);
+    setMessages(prev => [
+      ...prev,
+      advanceTo
+        ? { role: "user", content: userMsg, skipHistory: true }
+        : { role: "user", content: userMsg }
+    ]);
     setLoading(true);
     let preserveInput = false;
 
@@ -1454,7 +1450,13 @@ keys.forEach((k) => {
   setNextReady(true);
 }
 
-      
+      // 확정 응답을 받은 뒤에 다음 단계를 연다.
+      // loading을 끄지 않고 이어서 호출해야 입력창이 깜빡이지 않는다.
+      // (setMessages 반영을 기다려야 handleInit이 단계 경계를 제대로 잡는다)
+      if (advanceTo) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        await handleInit(advanceTo);
+      }
 
     } catch (err) {
       const status = err?.response?.status;
@@ -1464,6 +1466,9 @@ keys.forEach((k) => {
         "요청 실패";
 
       console.error("❌ 요청 실패:", err);
+
+      // 확정 요청이 실패했으면 단계를 넘기지 않는다
+      if (advanceTo) pendingNextStepRef.current = null;
 
       // 400이면 "방금 입력한 메시지"를 인풋에 다시 채워서 재전송 UX 제공
       if (status === 400) {

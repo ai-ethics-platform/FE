@@ -959,75 +959,6 @@ function normalizeContext(ctx) {
   return next;
 }
 
-function looksLikeSkeletonEndingText(text) {
-  if (typeof text !== "string") return false;
-  // 현재 문제 케이스의 전형적인 placeholder/가이드 문구들
-  return (
-    text.includes("[여기서") ||
-    text.includes("원초적인 구조") ||
-    text.includes("이 초안으로 확정지을까요?")
-  );
-}
-
-function buildEndingScriptFromContext(ctx) {
-  const openingTopic = coalesce(ctx.topic, ctx.opening_topic, "AI");
-
-  const opening = ensureArray(ctx.opening);
-  const openingLines = opening.length
-    ? opening
-    : [
-        `최근 ${openingTopic} 관련 기술이 빠르게 도입되면서, 효율성과 공정성 사이의 갈등이 현실 문제로 떠올랐습니다.`,
-        `오늘은 한 사건을 두고 서로 다른 이해관계자들이 한자리에 모여 판단 기준을 토론하게 됩니다.`,
-      ];
-
-  const dilemmaSituation = ensureArray(ctx.dilemma_situation);
-  const flipsAgree = ensureArray(ctx.flips_agree_texts);
-  const flipsDisagree = ensureArray(ctx.flips_disagree_texts);
-
-  const question = coalesce(ctx.question, "어떤 선택이 더 윤리적일까요?");
-  const choice1 = coalesce(ctx.choice1, "예");
-  const choice2 = coalesce(ctx.choice2, "아니오");
-
-  const char1 = coalesce(ctx.char1, "역할 1");
-  const char2 = coalesce(ctx.char2, "역할 2");
-  const char3 = coalesce(ctx.char3, "역할 3");
-  const charDes1 = coalesce(ctx.chardes1, ctx.charDes1, "");
-  const charDes2 = coalesce(ctx.chardes2, ctx.charDes2, "");
-  const charDes3 = coalesce(ctx.chardes3, ctx.charDes3, "");
-
-  // 최종 멘트가 없을 때는 토론 확장용 질문으로 안전하게 생성
-  const agreeEnding =
-    coalesce(ctx.agreeEnding, "") ||
-    `정확성을 우선한 결정이 반복될 때, 소수자 집단이 겪는 불이익을 누가/어떻게 보정해야 할까요?`;
-  const disagreeEnding =
-    coalesce(ctx.disagreeEnding, "") ||
-    `공정성을 우선해 정확도가 떨어질 때, 잘못된 판결의 책임은 누구에게 있고 어떤 안전장치를 둬야 할까요?`;
-
-  return [
-    "🎬 오프닝 멘트",
-    ...openingLines.map((s) => `- ${s}`),
-    "",
-    "🎭 역할",
-    `- [${char1}] : ${charDes1}`.trim(),
-    `- [${char2}] : ${charDes2}`.trim(),
-    `- [${char3}] : ${charDes3}`.trim(),
-    "",
-    "🎯 상황 및 딜레마 질문",
-    ...(dilemmaSituation.length ? dilemmaSituation.map((s) => `- ${s}`) : []),
-    `질문: ${question}`,
-    "",
-    `✅ 선택지 1: ${choice1}`,
-    `📎 플립 자료: ${flipsAgree.join(" ")}`.trim(),
-    "",
-    `✅ 선택지 2: ${choice2}`,
-    `📎 플립 자료: ${flipsDisagree.join(" ")}`.trim(),
-    "",
-    "🌀 최종 멘트",
-    `-- 선택지 1 최종 선택: ${agreeEnding}`,
-    `-- 선택지 2 최종 선택: ${disagreeEnding}`,
-  ].join("\n");
-}
-
 export default function ChatPage2() {
   const navigate = useNavigate();
 
@@ -1230,16 +1161,10 @@ export default function ChatPage2() {
       const { text, newContext, parsedVars } = normalize(res);
 
       // 기존 메시지 유지 + assistant 추가
-      const mergedForDisplay = normalizeContext({
-        ...(ctxToUse || {}),
-        ...(newContext || {}),
-        ...(parsedVars || {}),
-      });
-
-      const displayText =
-        targetStep === "ending" && looksLikeSkeletonEndingText(text)
-          ? buildEndingScriptFromContext(mergedForDisplay)
-          : cleanMarkdown(text);
+      // 서버 응답을 그대로 보여준다.
+      // (ending 단계에서 응답을 FE 하드코딩 대본으로 갈아치우던 분기는 제거했다.
+      //  화면과 실제 저장/발행 값이 어긋나 오염을 아무도 못 보던 원인이었다.)
+      const displayText = cleanMarkdown(text);
 
       setMessages(prev => [
         ...prev,
@@ -1448,10 +1373,7 @@ export default function ChatPage2() {
         ...prev,
         {
           role: "assistant",
-          content:
-            step === "ending" && looksLikeSkeletonEndingText(text)
-              ? buildEndingScriptFromContext(mergedForDisplay)
-              : cleanMarkdown(text),
+          content: cleanMarkdown(text),
         }
       ]);
 

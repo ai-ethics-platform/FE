@@ -911,15 +911,19 @@ function normalizeContext(ctx) {
   next.topic = coalesce(next.topic, next.dilemma_topic, next.opening_topic);
 
   // 딜레마 핵심(상황/질문/선택지/플립)
+  // ending_* 접두 키는 BE가 세션 context에 보존하는 ending 단계 추출 결과.
+  // 이번 턴 추출(parsedVars)이 비어도 과거 턴에 성공한 값을 살린다. (QA #13)
   next.dilemma_situation = coalesce(
     next.dilemma_situation,
     next.flip_dilemma_situation,
+    next.ending_dilemma_situation,
     next.flip_result // flip_result가 통문장으로 오기도 함
   );
   next.question = coalesce(
     next.question,
     next.flip_question,
-    next.question_question
+    next.question_question,
+    next.ending_question
   );
   next.choice1 = coalesce(
     next.choice1,
@@ -933,11 +937,13 @@ function normalizeContext(ctx) {
   );
   next.flips_agree_texts = coalesce(
     next.flips_agree_texts,
-    next.flip_flips_agree_texts
+    next.flip_flips_agree_texts,
+    next.ending_flips_agree_texts
   );
   next.flips_disagree_texts = coalesce(
     next.flips_disagree_texts,
-    next.flip_flips_disagree_texts
+    next.flip_flips_disagree_texts,
+    next.ending_flips_disagree_texts
   );
 
   // 역할(이름/설명)
@@ -946,16 +952,29 @@ function normalizeContext(ctx) {
   next.char3 = coalesce(next.char3, next.roles_char3, next.ending_char3);
 
   // 백엔드/프론트 키 혼재 방어: chardes* / charDes* 둘 다 채움
-  next.chardes1 = coalesce(next.chardes1, next.roles_chardes1, next.charDes1);
-  next.chardes2 = coalesce(next.chardes2, next.roles_chardes2, next.charDes2);
-  next.chardes3 = coalesce(next.chardes3, next.roles_chardes3, next.charDes3);
+  next.chardes1 = coalesce(next.chardes1, next.roles_chardes1, next.ending_chardes1, next.charDes1);
+  next.chardes2 = coalesce(next.chardes2, next.roles_chardes2, next.ending_chardes2, next.charDes2);
+  next.chardes3 = coalesce(next.chardes3, next.roles_chardes3, next.ending_chardes3, next.charDes3);
   next.charDes1 = next.chardes1;
   next.charDes2 = next.chardes2;
   next.charDes3 = next.chardes3;
 
   // opening: 서버가 다양한 형태로 줄 수 있어 우선순위로 흡수
   // - opening은 "문장 배열"을 기대하지만, 여기서는 문자열/배열 모두 허용
-  next.opening = coalesce(next.opening, next.opening_texts, next.opening_result);
+  next.opening = coalesce(
+    next.opening,
+    next.opening_texts,
+    next.ending_opening,
+    next.opening_result
+  );
+
+  // 최종 멘트/선택지 라벨: ending 단계 추출에서만 나온다.
+  // 템플릿 버튼 조건(agreeEnding && disagreeEnding && …)이 이번 턴 추출에만
+  // 매달리지 않도록, BE context에 보존된 ending_ 값을 폴백으로 쓴다. (QA #13)
+  next.agreeEnding = coalesce(next.agreeEnding, next.ending_agreeEnding);
+  next.disagreeEnding = coalesce(next.disagreeEnding, next.ending_disagreeEnding);
+  next.agree_label = coalesce(next.agree_label, next.ending_agree_label);
+  next.disagree_label = coalesce(next.disagree_label, next.ending_disagree_label);
 
   return next;
 }

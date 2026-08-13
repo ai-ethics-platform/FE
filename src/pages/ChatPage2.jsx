@@ -960,6 +960,16 @@ function normalizeContext(ctx) {
   return next;
 }
 
+// 모델이 상태 관리용으로 출력하는 내부 단계 라벨([수정 단계]/[확정 단계]).
+// 프롬프트(v24~)가 이 라벨로 자기 상태를 추적하므로 히스토리에는 남기고,
+// 교사에게 보이는 화면에서만 지운다. (QA #3)
+function stripStageLabels(text) {
+  if (typeof text !== "string") return text;
+  return text
+    .replace(/^[ \t]*\[(?:수정|확정) ?단계\][ \t]*\n?/gm, "")
+    .replace(/^\n+/, "");
+}
+
 export default function ChatPage2() {
   const navigate = useNavigate();
 
@@ -1736,7 +1746,13 @@ keys.forEach((k) => {
           {messages
             .filter((m) => !m.hidden)
             .map((m, idx) => (
-              <Bubble key={idx} role={m.role} text={m.content} />
+              <Bubble
+                key={idx}
+                role={m.role}
+                text={
+                  m.role === "assistant" ? stripStageLabels(m.content) : m.content
+                }
+              />
             ))}
 
           {loading && <Bubble role="assistant" text="메시지 입력 중…" typing />}

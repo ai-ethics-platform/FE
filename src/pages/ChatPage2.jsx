@@ -1366,11 +1366,21 @@ export default function ChatPage2() {
       });
 
       // 서버 응답 출력
+      // "다음 단계" 턴의 응답은 화면에 그리지 않는다.
+      // 이 왕복은 모델이 [확정 단계] 포맷을 내놓게 해서 백엔드 변수 추출에
+      // 읽을 대상을 주기 위한 것이고, 교사에게는 곧바로 뒤따르는 다음 단계
+      // 안내만 보이면 된다. 그리면 한 턴에 두 번 말하는 것처럼 보인다.
+      //
+      // 배열에서 빼는 대신 표시만 끄는 이유:
+      // - buildInputWithHistory는 skipHistory만 보므로 히스토리에는 그대로 남는다
+      // - stepBoundariesRef가 messages 길이를 step 경계로 쓰므로(이전 단계 복귀에
+      //   slice(0, boundary)를 쓴다) 인덱스가 밀리면 안 된다
       setMessages(prev => [
         ...prev,
         {
           role: "assistant",
           content: cleanMarkdown(text),
+          hidden: !!advanceTo,
         }
       ]);
 
@@ -1723,9 +1733,11 @@ keys.forEach((k) => {
             paddingBottom: "16px",
           }}
         >
-          {messages.map((m, idx) => (
-            <Bubble key={idx} role={m.role} text={m.content} />
-          ))}
+          {messages
+            .filter((m) => !m.hidden)
+            .map((m, idx) => (
+              <Bubble key={idx} role={m.role} text={m.content} />
+            ))}
 
           {loading && <Bubble role="assistant" text="메시지 입력 중…" typing />}
 

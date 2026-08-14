@@ -82,7 +82,10 @@
   
   /* 메시지 텍스트 */
   .bubble .msg{ line-height:1.6; font-size:16px; }
-  
+
+  /* 모델이 '## 소제목'으로 낸 줄 (QA #8) */
+  .bubble .msg .msg-heading{ font-weight:700; font-size:1.06em; }
+
   /* "메시지 입력 중…" 스타일(살짝 연한 느낌) */
   .bubble.typing{ opacity:.85; }
   .bubble.typing .msg{ position:relative; padding-right:18px; }

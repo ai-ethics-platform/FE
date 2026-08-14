@@ -989,6 +989,51 @@ function stripStageLabels(text) {
     .replace(/^\n+/, "");
 }
 
+// 모델은 소제목(##)과 강조(**)를 섞어 답한다. 예전에는 저장 전에 이 기호들을
+// 지웠는데(cleanMarkdown), 그러면 단계 구분이 사라져 한 덩어리 글로 보였다. (QA #8)
+// 이제 원문 그대로 저장하고 화면에서만 서식으로 그린다.
+// 히스토리·변수 추출은 영향받지 않는다 —
+// 히스토리는 모델이 직접 쓴 원문을 그대로 되돌려받고,
+// 변수 추출은 BE의 parsed_variables를 쓰기 때문에 화면 텍스트를 파싱하지 않는다.
+const BOLD_RE = /\*\*([^*]+)\*\*/g;
+const HEADING_RE = /^[ \t]*(#{1,6})[ \t]+(.*)$/;
+
+function renderInlineMarkdown(line, keyPrefix) {
+  const nodes = [];
+  let cursor = 0;
+  BOLD_RE.lastIndex = 0;
+
+  let match;
+  while ((match = BOLD_RE.exec(line)) !== null) {
+    if (match.index > cursor) nodes.push(line.slice(cursor, match.index));
+    nodes.push(<strong key={`${keyPrefix}-b${match.index}`}>{match[1]}</strong>);
+    cursor = match.index + match[0].length;
+  }
+  if (cursor < line.length) nodes.push(line.slice(cursor));
+
+  return nodes.length ? nodes : line;
+}
+
+// pre(white-space: pre-wrap) 안에서 그리므로 줄바꿈은 문자 그대로 넣는다.
+function renderMarkdownLite(text) {
+  if (typeof text !== "string") return text;
+
+  const lines = text.split("\n");
+  return lines.map((line, i) => {
+    const heading = line.match(HEADING_RE);
+    const body = heading
+      ? <span className="msg-heading">{renderInlineMarkdown(heading[2], `h${i}`)}</span>
+      : renderInlineMarkdown(line, `l${i}`);
+
+    return (
+      <React.Fragment key={i}>
+        {body}
+        {i < lines.length - 1 ? "\n" : null}
+      </React.Fragment>
+    );
+  });
+}
+
 export default function ChatPage2() {
   const navigate = useNavigate();
 
@@ -1194,11 +1239,9 @@ export default function ChatPage2() {
       // 서버 응답을 그대로 보여준다.
       // (ending 단계에서 응답을 FE 하드코딩 대본으로 갈아치우던 분기는 제거했다.
       //  화면과 실제 저장/발행 값이 어긋나 오염을 아무도 못 보던 원인이었다.)
-      const displayText = cleanMarkdown(text);
-
       setMessages(prev => [
         ...prev,
-        { role: "assistant", content: displayText }
+        { role: "assistant", content: text }
       ]);
 
       // context 업데이트 (한 번에 처리)
@@ -1294,16 +1337,6 @@ export default function ChatPage2() {
   }, [messages, loading]);
 
   // Markdown 제거
-  function cleanMarkdown(text) {
-    if (!text) return "";
-    return text
-      .replace(/^#{1,6}\s*/gm, "")
-      .replace(/\*\*(.*?)\*\*/g, "$1")
-      .replace(/\*(.*?)\*/g, "$1")
-      .replace(/__(.*?)__/g, "$1")
-      .replace(/_(.*?)_/g, "$1");
-  }
-
   const handleSend = async (userText) => {
     if (loading) return;
     setError("");
@@ -1408,7 +1441,7 @@ export default function ChatPage2() {
         ...prev,
         {
           role: "assistant",
-          content: cleanMarkdown(text),
+          content: text,
           hidden: !!advanceTo,
         }
       ]);
@@ -1947,7 +1980,7 @@ function Bubble({ role, text, typing }) {
   return (
     <div className={`bubble-row ${side}`}>
       <div className={`bubble ${kind} ${typing ? "typing" : ""}`}>
-        <pre className="msg">{text}</pre>
+        <pre className="msg">{role === "assistant" ? renderMarkdownLite(text) : text}</pre>
       </div>
     </div>
   );

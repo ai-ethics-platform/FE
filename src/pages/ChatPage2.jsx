@@ -790,6 +790,9 @@ function normalize(res) {
 // 한 단계 안에서 왕복이 6~8턴까지 가므로 5줄은 앞서 정한 값이 창밖으로 밀려난다.
 const HISTORY_LIMIT = 12;
 
+// 입력창이 늘어날 수 있는 최대 높이(px). 넘어가면 입력창 안에서 스크롤한다.
+const INPUT_MAX_HEIGHT = 132;
+
 function buildInputWithHistory(messages, raw, isInit = false) {
   const recent = messages
     .filter(
@@ -1062,8 +1065,18 @@ export default function ChatPage2() {
   const lastUserTextRef = useRef("");
   const pendingNextStepRef = useRef(null); // { fromStep, toStep, retryText }
   const inputNoticeTimerRef = useRef(null);
+  const inputRef = useRef(null);
   const [showTemplateButton, setShowTemplateButton] = useState(false);
   const [showOutPopup, setShowOutPopup] = useState(false);
+
+  // 입력창은 한 줄 높이로 고정돼 있어서 아이디어를 길게 쓰면 자기가 쓴 글이
+  // 안 보였다. 내용에 맞춰 늘리고, 상한을 넘으면 그때부터 스크롤한다. (QA #6)
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, INPUT_MAX_HEIGHT)}px`;
+  }, [input]);
 
   const STEP_ORDER = useMemo(
     () => ["opening", "question", "flip", "roles", "ending"],
@@ -1844,7 +1857,8 @@ keys.forEach((k) => {
             position: "relative",
             display: "flex",
             gap: "8px",
-            alignItems: "stretch",
+            // 입력창이 세로로 늘어나도 버튼은 44px을 유지하며 아래에 붙는다.
+            alignItems: "flex-end",
           }}
         >
           {inputNotice && (
@@ -1863,20 +1877,22 @@ keys.forEach((k) => {
             </div>
           )}
           <textarea
+            ref={inputRef}
             placeholder={placeholder}
             value={input}
             rows={1}
             style={{
               flex: 1,
+              minWidth: 0,
               borderRadius: "8px",
               border: "1px solid #ccc",
               padding: "6px 8px",
               resize: "none",
               fontSize: "14px",
               lineHeight: 1.35,
-              height: "44px",
-              maxHeight: "44px",
-              overflowY: "hidden",
+              minHeight: "44px",
+              maxHeight: `${INPUT_MAX_HEIGHT}px`,
+              overflowY: "auto",
             }}
             onChange={(e) => {
               if (inputNotice) setInputNotice("");

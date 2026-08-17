@@ -760,7 +760,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { callChatbot } from "../api/axiosInstance";
 import { useNavigate } from 'react-router-dom';
 import "../components/chat.css";
-import { persistParsedToLocalStorage } from "../utils/templateparsing";
+import { persistParsedToLocalStorage, parseDilemmaText } from "../utils/templateparsing";
 import axiosInstance from "../api/axiosInstance";
 import { Colors } from "../components/styleConstants";
 import HeaderBar from "../components/Expanded/HeaderBar3";
@@ -992,6 +992,14 @@ function stripStageLabels(text) {
     .replace(/^\n+/, "");
 }
 
+// '플립(자료)'는 내부 용어라 교사에게 낯설다. 모델 출력의 '- 플립자료:' 라벨은
+// BE 추출·FE 파서(templateparsing.js)가 앵커로 쓰는 고정 문자열이므로 원문(히스토리·
+// localStorage)에는 그대로 두고, 화면에 그릴 때만 바꿔 보여준다. (QA 8/15 #4)
+function renameFlipTerms(text) {
+  if (typeof text !== "string") return text;
+  return text.replace(/📎?[ \t]*플립[ \t]*자료/g, "예상하지 못한 결과");
+}
+
 // 모델은 소제목(##)과 강조(**)를 섞어 답한다. 예전에는 저장 전에 이 기호들을
 // 지웠는데(cleanMarkdown), 그러면 단계 구분이 사라져 한 덩어리 글로 보였다. (QA #8)
 // 이제 원문 그대로 저장하고 화면에서만 서식으로 그린다.
@@ -1000,6 +1008,17 @@ function stripStageLabels(text) {
 // 변수 추출은 BE의 parsed_variables를 쓰기 때문에 화면 텍스트를 파싱하지 않는다.
 const BOLD_RE = /\*\*([^*]+)\*\*/g;
 const HEADING_RE = /^[ \t]*(#{1,6})[ \t]+(.*)$/;
+
+// 모델이 볼드(**)를 넣었다 뺐다 해서 단계별로 소제목이 굵었다 얇았다 한다. (QA 8/15 #13)
+// 마크다운 유무와 무관하게, 알려진 구획 표지는 FE가 항상 같은 서식으로 그린다.
+// - 섹션 제목 줄(🎬/🎭/🎯/🌀): 줄 전체를 msg-heading으로
+// - 라벨 줄("- 주제:", "✅ 선택지 1:", "-- 선택지1 최종선택:", "질문:" 등): 라벨만 strong으로
+// 이미 **가 들어 있는 줄은 기존 인라인 볼드 경로가 처리하므로 건드리지 않는다.
+// (라벨 정규식이 ** 문자를 라벨로 집어삼켜 리터럴 별표가 노출되는 회귀 방지)
+const SECTION_LINE_RE = /^[ \t]*(?:🎬|🎭|🎯|🌀)[^:\n]*$/;
+const CHOICE_LABEL_RE = /^([ \t]*)(✅[ \t]*선택지[ \t]*\d+[ \t]*[:：])(.*)$/;
+const LIST_LABEL_RE = /^([ \t]*-{1,2}[ \t]*)([^:\n]{1,24}[:：])(.*)$/;
+const QUESTION_LABEL_RE = /^([ \t]*)(질문[ \t]*[:：])(.*)$/;
 
 function renderInlineMarkdown(line, keyPrefix) {
   const nodes = [];
@@ -1024,9 +1043,31 @@ function renderMarkdownLite(text) {
   const lines = text.split("\n");
   return lines.map((line, i) => {
     const heading = line.match(HEADING_RE);
-    const body = heading
-      ? <span className="msg-heading">{renderInlineMarkdown(heading[2], `h${i}`)}</span>
-      : renderInlineMarkdown(line, `l${i}`);
+    let body;
+
+    if (heading) {
+      body = (
+        <span className="msg-heading">{renderInlineMarkdown(heading[2], `h${i}`)}</span>
+      );
+    } else if (!line.includes("**") && SECTION_LINE_RE.test(line)) {
+      body = <span className="msg-heading">{line}</span>;
+    } else if (!line.includes("**")) {
+      const label =
+        line.match(CHOICE_LABEL_RE) ||
+        line.match(LIST_LABEL_RE) ||
+        line.match(QUESTION_LABEL_RE);
+      body = label ? (
+        <>
+          {label[1]}
+          <strong>{label[2]}</strong>
+          {label[3]}
+        </>
+      ) : (
+        line
+      );
+    } else {
+      body = renderInlineMarkdown(line, `l${i}`);
+    }
 
     return (
       <React.Fragment key={i}>
@@ -1470,7 +1511,49 @@ export default function ChatPage2() {
         );
       }
 if (step === "ending") {
-  const finalPayload = mergedForDisplay;
+  // BE 추출(gpt-4o-mini)이 이 턴에 실패해 parsed_variables가 비어 와도,
+  // 확정 포맷 텍스트가 화면에 있으면 FE 파서로 직접 읽어 "빈 필드만" 보강한다.
+  // BE가 준 값은 절대 덮어쓰지 않는다. 파싱은 볼드(**)만 걷어낸 사본으로 하고
+  // 원문(messages/히스토리)은 건드리지 않는다. (QA 8/15 #18 — 템플릿 버튼이 거의 안 나옴)
+  const finalPayload = { ...mergedForDisplay };
+  if (typeof text === "string" && text.includes("🎬")) {
+    let parsedFromText = null;
+    try {
+      parsedFromText = parseDilemmaText(text.replace(/\*\*/g, ""));
+    } catch {
+      parsedFromText = null;
+    }
+    if (parsedFromText) {
+      const fallback = {
+        ...parsedFromText,
+        // 파서는 charDes*(대문자)·choice*로 돌려주므로 BE 키 이름으로도 채워준다
+        chardes1: parsedFromText.charDes1,
+        chardes2: parsedFromText.charDes2,
+        chardes3: parsedFromText.charDes3,
+        agree_label: parsedFromText.choice1,
+        disagree_label: parsedFromText.choice2,
+      };
+      const isEmptyVal = (v) =>
+        v === undefined ||
+        v === null ||
+        (typeof v === "string" && !v.trim()) ||
+        (Array.isArray(v) && v.length === 0);
+      Object.entries(fallback).forEach(([k, v]) => {
+        if (isEmptyVal(finalPayload[k]) && !isEmptyVal(v)) finalPayload[k] = v;
+      });
+
+      // 다음 턴에 모델이 확정 포맷 없이(🎬 없이) 답해도 버튼 조건이 유지되도록
+      // 보강값을 FE context에도 남긴다. 여기서도 빈 필드만 채운다 —
+      // BE가 이미 준 값이나 이후 턴의 새 추출값을 덮어쓰지 않는다.
+      setContext((prev) => {
+        const merged = { ...prev };
+        Object.entries(fallback).forEach(([k, v]) => {
+          if (isEmptyVal(merged[k]) && !isEmptyVal(v)) merged[k] = v;
+        });
+        return normalizeContext(merged);
+      });
+    }
+  }
 
   if (finalPayload) {
     localStorage.setItem("final_dilemma_payload", JSON.stringify(finalPayload));
@@ -1758,7 +1841,7 @@ keys.forEach((k) => {
       case "roles":
         return "예) 역할 자동 생성해줘 / 확정해줘";
       case "flip":
-        return "예) 상황/플립 추천해줘 / 확정해줘";
+        return "예) 상황 추천해줘 / 확정해줘";
       case "ending":
         return "예) 초안 제작해줘 / 확정";
       default:
@@ -1815,7 +1898,9 @@ keys.forEach((k) => {
                 key={idx}
                 role={m.role}
                 text={
-                  m.role === "assistant" ? stripStageLabels(m.content) : m.content
+                  m.role === "assistant"
+                    ? renameFlipTerms(stripStageLabels(m.content))
+                    : m.content
                 }
               />
             ))}

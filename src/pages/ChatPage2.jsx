@@ -1222,7 +1222,13 @@ export default function ChatPage2() {
       "agreeEnding", "disagreeEnding",
       "agree_label", "disagree_label",
       "topic", "dilemma_topic",
-      "chat_session_id"
+      "chat_session_id",
+      // 이전 편집 세션의 게임 데이터/이미지 캐시 (새 챗봇 세션 시작 = 새 게임)
+      "data", "creatorTitle", "url",
+      "rolesBackground", "dilemma_sitation",
+      "dilemma_image_1", "dilemma_image_3", "dilemma_image_4_1", "dilemma_image_4_2",
+      "role_image_1", "role_image_2", "role_image_3",
+      "dilemma_image_1_default_uploaded"
     ];
     
     keysToClear.forEach((k) => localStorage.removeItem(k));
@@ -1819,6 +1825,10 @@ keys.forEach((k) => {
 
     if (code) localStorage.setItem("code", code);
     if (gameUrl) localStorage.setItem("url", gameUrl);
+
+    // 새 게임 데이터로 편집 도구 localStorage를 시드 — 이전 게임 data가 남아 편집 도구가 옛 내용을 보여주는 문제 방지
+    localStorage.setItem("data", JSON.stringify(data));
+    localStorage.setItem("creatorTitle", payload.title || "");
 
     navigate("/create00");
     setShowTemplateButton(false);

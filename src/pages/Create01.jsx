@@ -953,7 +953,7 @@ async function fetchRepresentativeImages(code) {
 /* =========================
    기본 대표이미지 자동 업로드
    ========================= */
-const DEFAULT_UPLOAD_FLAG = 'dilemma_image_1';
+const DEFAULT_UPLOAD_FLAG = 'dilemma_image_1_default_uploaded';
 
 async function uploadDefaultDilemmaImage1(onApplied) {
   if (localStorage.getItem(DEFAULT_UPLOAD_FLAG) === '1') return null; // 중복 업로드 방지

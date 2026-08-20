@@ -18,6 +18,13 @@ const PREVIEW_GROUPS = [
   ['/editor10','/editor10_1'],
 ];
 
+const findModeAndIndex = (path) => {
+  const p = path.replace(/\/+$/, '');
+  for (let i = 0; i < EDIT_GROUPS.length; i++) if (EDIT_GROUPS[i].includes(p)) return { mode: 'edit', idx: i };
+  for (let i = 0; i < PREVIEW_GROUPS.length; i++) if (PREVIEW_GROUPS[i].includes(p)) return { mode: 'preview', idx: i };
+  return null;
+};
+
 export default function HeaderBar({
   nextDisabled = false,
   height = 56,
@@ -32,19 +39,13 @@ export default function HeaderBar({
   const location = useLocation();
 
   const [rightHover, setRightHover] = useState(false);
-  const [mode, setMode] = useState('edit');
-  const [internalCrumb, setInternalCrumb] = useState(0);
+  const initialHit = findModeAndIndex(location.pathname);
+  const [mode, setMode] = useState(initialHit?.mode ?? 'edit');
+  const [internalCrumb, setInternalCrumb] = useState(initialHit?.idx ?? 0);
 
   const h = typeof height === 'number' ? `${height}px` : height;
   const leftImg = homeIcon;
   const rightImg = nextDisabled ? nextDisabledIcon : rightHover ? nextHoverIcon : nextIcon;
-
-  const findModeAndIndex = (path) => {
-    const p = path.replace(/\/+$/, '');
-    for (let i = 0; i < EDIT_GROUPS.length; i++) if (EDIT_GROUPS[i].includes(p)) return { mode: 'edit', idx: i };
-    for (let i = 0; i < PREVIEW_GROUPS.length; i++) if (PREVIEW_GROUPS[i].includes(p)) return { mode: 'preview', idx: i };
-    return null;
-  };
 
   useEffect(() => {
     const hit = findModeAndIndex(location.pathname);
@@ -95,7 +96,7 @@ export default function HeaderBar({
         {/* 왼쪽 홈 버튼 */}
         <button
           type="button"
-          onClick={onLeftClick || defaultLeftClick} 
+          onClick={onLeftClick || handleLeftClick}
           aria-label="home"
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 32, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
         >

@@ -61,7 +61,9 @@ export default function GuestLogin({ onClose }) {
       }
 
       console.log('로그인 성공:', data);
-      navigate('/selectroom');
+      // 게임 링크(?code=...)로 들어온 경우 커스텀 게임 방으로 이동
+      const inviteCode = localStorage.getItem('code');
+      navigate(inviteCode ? '/customroom' : '/selectroom');
     } catch (err) {
       console.error('게스트 로그인 실패:', err?.response?.data || err);
       // 언어팩의 실패 메시지 적용

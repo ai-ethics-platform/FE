@@ -1301,7 +1301,6 @@ export default function Create01() {
                 alt="딜레마 이미지"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
                 onError={() => setUseFallback(true)}
-                onLoad={() => setUseFallback(false)}
               />
             </div>
 

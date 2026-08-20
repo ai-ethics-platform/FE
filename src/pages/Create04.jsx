@@ -1174,7 +1174,6 @@ export default function Create04() {
               alt="동의 이미지"
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
               onError={() => setAgreeFallback(true)}
-              onLoad={() => setAgreeFallback(false)}
             />
           </div>
           <div style={{ textAlign: 'center' }}>
@@ -1231,7 +1230,6 @@ export default function Create04() {
               alt="비동의 이미지"
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
               onError={() => setDisagreeFallback(true)}
-              onLoad={() => setDisagreeFallback(false)}
             />
           </div>
           <div style={{ textAlign: 'center' }}>

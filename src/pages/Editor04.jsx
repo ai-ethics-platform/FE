@@ -104,7 +104,6 @@ export default function Editor08() {
                 alt="딜레마 이미지(동의 분기)"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 onError={() => setUseFallback(true)}
-                onLoad={() => setUseFallback(false)}
               />
             </div>
           </div>

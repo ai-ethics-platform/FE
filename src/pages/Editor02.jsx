@@ -322,7 +322,6 @@ export default function Editor02() {
                   alt={`역할 이미지 ${idx}`}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   onError={() => setFallback(true)}
-                  onLoad={() => setFallback(false)}
                 />
               </div>
             ))}

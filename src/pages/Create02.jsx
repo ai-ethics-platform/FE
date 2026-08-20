@@ -404,7 +404,6 @@ export default function Create02() {
                     alt="역할1 이미지"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     onError={() => setFallback1(true)}
-                    onLoad={() => setFallback1(false)}
                   />
                 </div>
                 <span
@@ -450,7 +449,6 @@ export default function Create02() {
                     alt="역할2 이미지"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     onError={() => setFallback2(true)}
-                    onLoad={() => setFallback2(false)}
                   />
                 </div>
                 <span
@@ -496,7 +494,6 @@ export default function Create02() {
                     alt="역할3 이미지"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     onError={() => setFallback3(true)}
-                    onLoad={() => setFallback3(false)}
                   />
                 </div>
                 <span

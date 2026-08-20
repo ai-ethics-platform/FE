@@ -1152,7 +1152,6 @@ export default function Create03() {
               alt="딜레마 대표 이미지"
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
               onError={() => setUseFallback(true)}
-              onLoad={() => setUseFallback(false)}
             />
           </div>
           <div style={{ textAlign: 'center' }}>

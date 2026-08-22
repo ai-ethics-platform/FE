@@ -218,7 +218,7 @@ const handleImageChange = () => {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
             {/* 안내 라벨 */}
             <div style={{ ...FontStyles.bodyBold, color: Colors.systemRed, marginTop: -20 }}>
-              동의 선택시
+              [선택지 1] 선택 시
             </div>
 
             {/* 이미지 영역 */}

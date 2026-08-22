@@ -806,6 +806,8 @@ async function uploadDefaultFlipImage(slot /* 1 or 2 */, onApplied) {
 export default function Create04() {
   const navigate = useNavigate();
   const [title, setTitle] = useState(localStorage.getItem("creatorTitle") || "");
+  const agreeLabel = localStorage.getItem('agree_label') || '';
+  const disagreeLabel = localStorage.getItem('disagree_label') || '';
 
   // ── 이미지 URL(동의/비동의) + 폴백 플래그
   const [agreeUrl, setAgreeUrl] = useState(() => resolveImageUrl(localStorage.getItem('dilemma_image_4_1')));
@@ -1160,9 +1162,9 @@ export default function Create04() {
 
       {/* 동의 */}
       <div style={{ marginTop: 0, marginBottom: '30px' }}>
-        <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '0px', color: Colors.grey07 }}>[선택지1] 동의</h2>
+        <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '0px', color: Colors.grey07 }}>{`[선택지1]${agreeLabel ? ` ${agreeLabel}` : ''}`}</h2>
         <p style={{ ...FontStyles.title, color: Colors.grey05, marginBottom: '0px' }}>
-          '동의'을(를) 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
+          [선택지 1]을 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
         </p>
       </div>
       <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', marginBottom: '20px' }}>
@@ -1216,9 +1218,9 @@ export default function Create04() {
 
       {/* 비동의 */}
       <div style={{ marginTop: 50, marginBottom: '30px' }}>
-        <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '0px', color: Colors.grey07 }}>[선택지2] 비동의</h2>
+        <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '0px', color: Colors.grey07 }}>{`[선택지2]${disagreeLabel ? ` ${disagreeLabel}` : ''}`}</h2>
         <p style={{ ...FontStyles.title, color: Colors.grey05, marginBottom: '0px' }}>
-          '비동의'을(를) 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
+          [선택지 2]를 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
         </p>
       </div>
       <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', paddingBottom: 40 }}>

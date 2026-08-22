@@ -241,7 +241,7 @@ const handleImageChange = () => {
                 position: 'relative',
               }}
             >
-              비동의 선택시
+              [선택지 2] 선택 시
             </div>
 
             {/* 이미지 영역 */}

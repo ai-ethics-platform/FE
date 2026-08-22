@@ -105,14 +105,14 @@ export default function Editor10() {
                   left: 80,
                   right: 70,
                   top: '50%',
-                  height: 70,                 
+                  height: 200,
                   transform: 'translateY(-50%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <div style={{ ...labelBoxStyle, width: '100%', height: '100%' }}>{endingText}</div>
+                <div style={{ ...labelBoxStyle, width: '100%', height: '100%', padding: '12px 16px', boxSizing: 'border-box', overflowY: 'auto' }}>{endingText}</div>
               </div>
             </div>
 {/* 

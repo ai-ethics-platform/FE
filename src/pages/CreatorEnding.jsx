@@ -2,11 +2,12 @@ import DilemmaOutPopup from '../components/DilemmaOutPopup';
 import CreatorLayout from '../components/Expanded/CreatorLayout';
 import CreatorContentBox from "../components/Expanded/CreatorContentBox";
 import Continue from '../components/Expanded/CreateContinue';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 
 export default function Create00() {
   const navigate = useNavigate();
+  const location = useLocation();
   const combinedText =
     '수고 많으셨습니다! \n 학생들에게 아래의 URL 링크를 공유하여 \n 직접 만드신 딜레마 게임을 교육에서 활용해 보세요.';
   const [copied, setCopied] = useState(false);
@@ -14,7 +15,7 @@ export default function Create00() {
   const handleNext = () => {
     navigate('/selectroom');
   };
-  const linkUrl=localStorage.getItem("url") ||  null;
+  const linkUrl = location.state?.url || localStorage.getItem('url') || null;
 
   const handleCopy = async () => {
     try {

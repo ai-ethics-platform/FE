@@ -239,8 +239,13 @@ const putTitle = async (title) => {
       localStorage.setItem('disagreeEnding', disagree);
       localStorage.setItem('creatorTitle', titleSafe);
   
-      // 3) 이동
-      navigate('/creatorending');
+      // 3) 완료 후 로컬 정리 — 완료 페이지가 보여줄 게임 링크는 보존
+      const gameUrl = localStorage.getItem('url');
+      clearAllLocalStorageKeys();
+      if (gameUrl) localStorage.setItem('url', gameUrl);
+
+      // 4) 이동 (새로고침 대비 localStorage, 1차는 라우터 state로 전달)
+      navigate('/creatorending', { state: { url: gameUrl } });
     } catch (e) {
       console.error(e);
       alert('최종 멘트 저장 중 오류가 발생했습니다.');
@@ -326,8 +331,7 @@ const putTitle = async (title) => {
               onClose={() => setIsDoneOpen(false)}
               onConfirm={async () => {
                 setIsDoneOpen(false);
-                await handleSaveAndComplete(); 
-                clearAllLocalStorageKeys();
+                await handleSaveAndComplete();
               }}
             />
           </div>

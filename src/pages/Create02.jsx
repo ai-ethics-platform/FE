@@ -375,7 +375,7 @@ export default function Create02() {
         <div style={{ marginTop: -30, marginBottom: 30 }}>
           <h2 style={{ ...FontStyles.headlineNormal, color: Colors.grey07 }}>역할</h2>
           <p style={{ ...FontStyles.title, color: Colors.grey05, lineHeight: 1.5, marginBottom: '32px' }}>
-            딜레마 상황에 등장하는 세명의 역할을 설정하세요. 각 역할은 게임에 참여하는 3명의 플레이어에게 임의로 배정됩니다.
+            딜레마 상황에 등장하는 세 명의 역할을 설정하세요. 각 역할은 게임에 참여하는 3명의 플레이어에게 임의로 배정됩니다.
           </p>
 {/* 
           <h2 style={{ ...FontStyles.headlineSmall, color: Colors.grey07 }}>역할 배경 설정</h2>
@@ -392,7 +392,7 @@ export default function Create02() {
             }}
           /> */}
 
-          <h2 style={{ marginTop: 30, ...FontStyles.headlineSmall, color: Colors.grey07 }}>개별 배경 설정</h2>
+          <h2 style={{ marginTop: 30, ...FontStyles.headlineSmall, color: Colors.grey07 }}>역할별 설정</h2>
 
           <div style={{ display: "flex", flexDirection: "row", gap: 20, marginTop: 16 }}>
             {/* 1번 역할 */}

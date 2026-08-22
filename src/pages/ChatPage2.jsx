@@ -1915,7 +1915,7 @@ keys.forEach((k) => {
               />
             ))}
 
-          {loading && <Bubble role="assistant" text="메시지 입력 중…" typing />}
+          {loading && <Bubble role="assistant" text="AI가 딜레마에 빠졌어요... 금방 답변을 가져올게요!" typing />}
 
           <div ref={bottomRef} />
         </section>

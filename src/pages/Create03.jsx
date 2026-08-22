@@ -1177,6 +1177,7 @@ export default function Create03() {
               onChange={(e) => handleInputChange(input.id, e.target.value)}
               placeholder={input.placeholder}
               onDelete={input.canDelete ? () => handleDeleteInput(input.id) : undefined}
+              maxLength={200}
             />
           ))}
           {inputs.length < 5 && (
@@ -1205,6 +1206,7 @@ export default function Create03() {
           value={dilemmaQuestion}
           onChange={(e) => { const v = e.target.value ?? ''; setDilemmaQuestion(v); persistQuestion(v); }}
           placeholder="예: Homemate 사용자 최적화 시스템 업그레이드 공지"
+          maxLength={70}
         />
         <CreateInput
           width={900}
@@ -1212,6 +1214,7 @@ export default function Create03() {
           value={option1}
           onChange={(e) => { const v = e.target.value ?? ''; setOption1(v); persistAgreeLabel(v); }}
           placeholder="예: 동의"
+          maxLength={20}
         />
         <CreateInput
           width={900}
@@ -1219,6 +1222,7 @@ export default function Create03() {
           value={option2}
           onChange={(e) => { const v = e.target.value ?? ''; setOption2(v); persistDisagreeLabel(v); }}
           placeholder="예: 비동의"
+          maxLength={20}
         />
       </div>
 

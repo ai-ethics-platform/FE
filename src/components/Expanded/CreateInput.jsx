@@ -15,6 +15,7 @@ export default function CreateInput({
   onChange = () => {},
   onEnter = () => {},
   onDelete = null, // 삭제 콜백 (null이면 삭제 버튼 안 보임)
+  maxLength = undefined,
 }) {
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -95,6 +96,7 @@ export default function CreateInput({
               }
             }}
             placeholder="" // 기본 placeholder 제거
+            maxLength={maxLength}
             style={{
               flex: 1,
               height: '100%',

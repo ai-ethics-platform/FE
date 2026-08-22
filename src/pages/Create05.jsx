@@ -305,7 +305,9 @@ const putTitle = async (title) => {
                 const v = e.target.value;
                 setDisagreeEnding(v);
                 localStorage.setItem('disagreeEnding', v); // ✅ 입력 즉시 저장
-              }}            />
+              }}
+              maxLength={200}
+            />
           </div>
 
           <div style={{ position: 'absolute', bottom: '30px', left: '30px' }}>

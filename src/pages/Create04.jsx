@@ -1201,6 +1201,7 @@ export default function Create04() {
               onChange={(e) => handleAgreeInputChange(input.id, e.target.value)}
               placeholder={input.placeholder}
               onDelete={input.canDelete ? () => handleDeleteAgreeInput(input.id) : undefined}
+              maxLength={200}
             />
           ))}
           {agreeInputs.length < 5 && (
@@ -1257,6 +1258,7 @@ export default function Create04() {
               onChange={(e) => handleDisagreeInputChange(input.id, e.target.value)}
               placeholder={input.placeholder}
               onDelete={input.canDelete ? () => handleDeleteDisagreeInput(input.id) : undefined}
+              maxLength={200}
             />
           ))}
           {disagreeInputs.length < 5 && (

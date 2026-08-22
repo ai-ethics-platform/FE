@@ -1336,6 +1336,7 @@ export default function Create01() {
                 onChange={(e) => handleInputChange(input.id, e.target.value)}
                 placeholder={input.placeholder}
                 onDelete={input.canDelete ? () => handleDeleteInput(input.id) : undefined}
+                maxLength={200}
               />
             ))}
 

@@ -10,7 +10,8 @@ export default function CustomInput({
   useSvgBackground = true, 
   value,
   onChange,
-  padding = "20px 24px", 
+  padding = "20px 24px",
+  maxLength = undefined,
 }) {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -47,9 +48,10 @@ export default function CustomInput({
       <textarea
         value={value}
         onChange={onChange}
-        placeholder={formattedPlaceholder} 
+        placeholder={formattedPlaceholder}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
+        maxLength={maxLength}
         style={{
           position: "absolute",
           top: 0,

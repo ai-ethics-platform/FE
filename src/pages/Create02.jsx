@@ -425,6 +425,7 @@ export default function Create02() {
                   setChar1(v);
                   localStorage.setItem('char1', v);
                 }}
+                maxLength={15}
               />
               <h2 style={{ marginTop: 16, ...FontStyles.title, color: Colors.grey07, textAlign: "left", width: "100%" }}>설명</h2>
               <CustomInput
@@ -437,7 +438,11 @@ export default function Create02() {
                   setCharDes1(v);
                   localStorage.setItem('charDes1', v);
                 }}
+                maxLength={200}
               />
+              {charDes1.length > 200 && (
+                <p style={{ color: 'rgb(158, 45, 47)', ...FontStyles.body, margin: '4px 0 0' }}>글자 수를 줄여주세요. (200자 미만)</p>
+              )}
             </div>
 
             {/* 2번 역할 */}
@@ -470,6 +475,7 @@ export default function Create02() {
                   setChar2(v);
                   localStorage.setItem('char2', v);
                 }}
+                maxLength={15}
               />
               <h2 style={{ marginTop: 16, ...FontStyles.title, color: Colors.grey07, textAlign: "left", width: "100%" }}>설명</h2>
               <CustomInput
@@ -482,7 +488,11 @@ export default function Create02() {
                   setCharDes2(v);
                   localStorage.setItem('charDes2', v);
                 }}
+                maxLength={200}
               />
+              {charDes2.length > 200 && (
+                <p style={{ color: 'rgb(158, 45, 47)', ...FontStyles.body, margin: '4px 0 0' }}>글자 수를 줄여주세요. (200자 미만)</p>
+              )}
             </div>
 
             {/* 3번 역할 */}
@@ -515,6 +525,7 @@ export default function Create02() {
                   setChar3(v);
                   localStorage.setItem('char3', v);
                 }}
+                maxLength={15}
               />
               <h2 style={{ marginTop: 16, ...FontStyles.title, color: Colors.grey07, textAlign: "left", width: "100%" }}>설명</h2>
               <CustomInput
@@ -527,7 +538,11 @@ export default function Create02() {
                   setCharDes3(v);
                   localStorage.setItem('charDes3', v);
                 }}
+                maxLength={200}
               />
+              {charDes3.length > 200 && (
+                <p style={{ color: 'rgb(158, 45, 47)', ...FontStyles.body, margin: '4px 0 0' }}>글자 수를 줄여주세요. (200자 미만)</p>
+              )}
             </div>
           </div>
         </div>

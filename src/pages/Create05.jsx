@@ -281,7 +281,7 @@ const putTitle = async (title) => {
               최종적으로 선택한 합의 결과에 따른 간단한 엔딩을 작성해주세요.
             </p>
 
-            <h2 style={{ ...FontStyles.headlineSmall, color: Colors.grey07 }}>[동의 선택 시 엔딩]</h2>
+            <h2 style={{ ...FontStyles.headlineSmall, color: Colors.grey07 }}>[선택지 1] 선택 시 엔딩</h2>
             <CustomInput
               width={1060}
               height={140}
@@ -291,9 +291,11 @@ const putTitle = async (title) => {
                 const v = e.target.value;
                 setAgreeEnding(v);
                 localStorage.setItem('agreeEnding', v); // ✅ 입력 즉시 저장
-              }}            />
+              }}
+              maxLength={200}
+            />
 
-            <h2 style={{ marginTop: 30, ...FontStyles.headlineSmall, color: Colors.grey07 }}>[비동의 선택 시 엔딩]</h2>
+            <h2 style={{ marginTop: 30, ...FontStyles.headlineSmall, color: Colors.grey07 }}>[선택지 2] 선택 시 엔딩</h2>
             <CustomInput
               width={1060}
               height={140}

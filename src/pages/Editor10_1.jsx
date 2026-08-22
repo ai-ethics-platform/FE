@@ -84,7 +84,7 @@ export default function Editor10() {
               position: 'relative',
               textAlign: 'center',
             }}
-            > 최종 비동의 선택 시 엔딩 
+            > [선택지 2] 선택 시 엔딩
             </div>
             <div
               style={{

@@ -240,7 +240,11 @@ const putTitle = async (title) => {
       localStorage.setItem('creatorTitle', titleSafe);
   
       // 3) 완료 후 로컬 정리 — 완료 페이지가 보여줄 게임 링크는 보존
-      const gameUrl = localStorage.getItem('url');
+      // (챗봇을 거치지 않고 기존 게임을 편집한 경우 url 키가 없을 수 있어 code로 재구성)
+      const code = localStorage.getItem('code');
+      const gameUrl =
+        localStorage.getItem('url') ||
+        (code ? `${window.location.origin}/?code=${code}` : null);
       clearAllLocalStorageKeys();
       if (gameUrl) localStorage.setItem('url', gameUrl);
 

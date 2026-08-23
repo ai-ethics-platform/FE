@@ -117,7 +117,11 @@ export default function UserProfile({
   };
 
   const getIcon = () => {
-    if (create) return frame235;
+    if (create) {
+      // 커스텀 역할 이미지가 있으면 편집/미리보기 좌측 프로필에도 반영
+      const customImg = customRoleImageMap[player];
+      return customImg ? resolveImageSrc(customImg) : frame235;
+    }
     if (isCustomMode) {
       const customImg = customRoleImageMap[player];
       return customImg ? resolveImageSrc(customImg) : defaultimg;

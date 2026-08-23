@@ -175,6 +175,7 @@ export default function Editor02_1() {
         const uploadTarget = await twoStepCompress(file).catch(() => file);
         const rawUrl = await uploadRoleImageSlot1(uploadTarget);        localStorage.setItem(ROLE_IMG_KEY_2, rawUrl);
         localStorage.setItem(ROLE_IMG_KEY_2, rawUrl);
+        window.dispatchEvent(new Event('role-images-updated'));
         const resolved = resolveImageUrl(rawUrl);
         setImg1(resolved);
         setFallback1(!resolved);

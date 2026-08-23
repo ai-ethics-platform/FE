@@ -50,6 +50,7 @@ export default function EditorLayout({
     '노모',       // 기본값(2P)
     '자녀',       // 기본값(3P)
   ]);
+  const [, setRoleImgVersion] = useState(0);
 
   //  초기 로드 + 다른 탭/창에서 localStorage 변경까지 반영
   useEffect(() => {
@@ -67,7 +68,14 @@ export default function EditorLayout({
       loadFromLocal();
     };
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+
+    const onRoleImagesUpdated = () => setRoleImgVersion((v) => v + 1);
+    window.addEventListener('role-images-updated', onRoleImagesUpdated);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('role-images-updated', onRoleImagesUpdated);
+    };
   }, []);
   const topInset = bg2InsetTop ?? bg2Inset;
   const rightInset = bg2InsetRight ?? bg2Inset;

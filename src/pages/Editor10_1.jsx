@@ -28,7 +28,14 @@ export default function Editor10() {
 
   const handleCompleted = async () => {
     await putTitle(title);
-    navigate('/creatorending');
+    // 완료 페이지가 보여줄 게임 링크를 보존 (url이 없으면 code로 재구성)
+    const code = localStorage.getItem('code');
+    const gameUrl =
+      localStorage.getItem('url') ||
+      (code ? `${window.location.origin}/?code=${code}` : null);
+    clearAllLocalStorageKeys();
+    if (gameUrl) localStorage.setItem('url', gameUrl);
+    navigate('/creatorending', { state: { url: gameUrl } });
   };
 
   const putTitle = async (title) => {
@@ -161,8 +168,7 @@ export default function Editor10() {
               onClose={() => setIsDoneOpen(false)}
               onConfirm={async () => {
                 setIsDoneOpen(false);
-                await handleCompleted(); 
-                clearAllLocalStorageKeys();
+                await handleCompleted();
               }} />
           </div>
         </div>

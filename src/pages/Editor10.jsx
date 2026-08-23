@@ -6,6 +6,7 @@ import { Colors, FontStyles } from '../components/styleConstants';
 import endingFrame from '../assets/creatorendingbox.svg';
 import Continue3 from '../components/Continue3';
 import DilemmaDonePopUp from '../components/Expanded/DilemmaDonePopUp';
+import { clearAllLocalStorageKeys } from '../utils/storage';
 
 export default function Editor10() {
   const navigate = useNavigate();
@@ -25,7 +26,14 @@ export default function Editor10() {
   };
 
   const handleCompleted = () => {
-    navigate('/creatorending');
+    // 완료 페이지가 보여줄 게임 링크를 보존 (url이 없으면 code로 재구성)
+    const code = localStorage.getItem('code');
+    const gameUrl =
+      localStorage.getItem('url') ||
+      (code ? `${window.location.origin}/?code=${code}` : null);
+    clearAllLocalStorageKeys();
+    if (gameUrl) localStorage.setItem('url', gameUrl);
+    navigate('/creatorending', { state: { url: gameUrl } });
   };
 
   // 흰 텍스트 박스 스타일

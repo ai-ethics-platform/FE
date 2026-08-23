@@ -119,7 +119,7 @@ export default function Create05() {
                   alt=""
                   style={{ width: 160, height: 160, marginTop: 40, marginBottom: -10 }}
                 />
-                <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary }}>
+                <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary, paddingInline: 20, boxSizing: 'border-box', maxWidth: '100%' }}>
                   {key === 'agree' ?  agree_label : disagree_label}
                 </p>
                 <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, marginTop: -10 }}>

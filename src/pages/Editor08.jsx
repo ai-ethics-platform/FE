@@ -129,6 +129,8 @@ export default function Editor08() {
                     left: '50%',
                     top: 4,
                     transform: 'translateX(-50%)',
+                    width: 'max-content',
+                    maxWidth: 360,
                   }}
                 >
                   {agree_label}
@@ -151,6 +153,8 @@ export default function Editor08() {
                     left: '50%',
                     top: 4,
                     transform: 'translateX(-50%)',
+                    width: 'max-content',
+                    maxWidth: 360,
                   }}
                 >
                   {disagree_label}

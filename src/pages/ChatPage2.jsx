@@ -997,7 +997,8 @@ function stripStageLabels(text) {
 // localStorage)에는 그대로 두고, 화면에 그릴 때만 바꿔 보여준다. (QA 8/15 #4)
 function renameFlipTerms(text) {
   if (typeof text !== "string") return text;
-  return text.replace(/📎?[ \t]*플립[ \t]*자료/g, "예상하지 못한 결과");
+  // 📎는 서로게이트 페어라 u 플래그 없이는 '📎?'가 절대 optional로 동작하지 않음 (앞 절반이 필수가 됨)
+  return text.replace(/(?:📎[ \t]*)?플립[ \t]*자료/gu, "예상하지 못한 결과");
 }
 
 // 모델은 소제목(##)과 강조(**)를 섞어 답한다. 예전에는 저장 전에 이 기호들을

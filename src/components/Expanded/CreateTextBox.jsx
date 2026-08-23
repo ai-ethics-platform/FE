@@ -81,7 +81,7 @@ export default function ContentTextBox2({
           whiteSpace: 'normal',
         }}
       >
-        <div>
+        <div style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', marginBottom: 8 }}>
           <div style={{ ...FontStyles.bodyBold, marginBottom: 3 }}>
             {String(currentParagraph.main || '')
               .split('\n')

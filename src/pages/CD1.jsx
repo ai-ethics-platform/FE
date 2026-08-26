@@ -55,6 +55,14 @@ export default function CD1() {
   const [round, setRound] = useState();
   const [voiceInitialized, setVoiceInitialized] = useState(false);
 
+  const resolveImageUrl = (raw) => {
+    if (!raw || raw === '-' || String(raw).trim() === '') return null;
+    const u = String(raw).trim();
+    if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
+    const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
+    return base ? `${base}${u.startsWith('/') ? '' : '/'}${u}` : u;
+  };
+
   // 라운드 계산 로직 (기존 유지)
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
@@ -127,7 +135,7 @@ export default function CD1() {
     const charDes1 = (localStorage.getItem('charDes1') || '').trim();
     if (charDes1) mainText = charDes1;
     const rawRoleImg = localStorage.getItem('role_image_1') || '';
-    descImg = rawRoleImg || defaultimg;
+    descImg = resolveImageUrl(rawRoleImg) || defaultimg;
   }
 
   // 5. 조사 치환 (한국어 모드인 경우에만 작동)

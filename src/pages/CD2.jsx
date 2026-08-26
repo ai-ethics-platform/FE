@@ -50,6 +50,14 @@ export default function CD2() {
   const [round, setRound] = useState();
   const [voiceInitialized, setVoiceInitialized] = useState(false);
 
+  const resolveImageUrl = (raw) => {
+    if (!raw || raw === '-' || String(raw).trim() === '') return null;
+    const u = String(raw).trim();
+    if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:')) return u;
+    const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
+    return base ? `${base}${u.startsWith('/') ? '' : '/'}${u}` : u;
+  };
+
   useEffect(() => {
     const completed = JSON.parse(localStorage.getItem('completedTopics') ?? '[]');
     const nextRound = completed.length + 1;
@@ -105,7 +113,7 @@ export default function CD2() {
     const charDes2 = (localStorage.getItem('charDes2') || '').trim();
     if (charDes2) mainText = charDes2;
     const rawRoleImg = localStorage.getItem('role_image_2') || '';
-    descImg = rawRoleImg || defaultimg;
+    descImg = resolveImageUrl(rawRoleImg) || defaultimg;
   }
 
   const mateName = localStorage.getItem('mateName') ?? 'HomeMate';

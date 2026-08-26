@@ -72,7 +72,6 @@ export default function ContentTextBox2({
           left: 30,
           right: 40,
           bottom: 24,
-          paddingRight: 30,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -81,7 +80,7 @@ export default function ContentTextBox2({
           whiteSpace: 'normal',
         }}
       >
-        <div style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', marginBottom: 8 }}>
+        <div style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', marginBottom: 8, paddingRight: 12 }}>
           <div style={{ ...FontStyles.bodyBold, marginBottom: 3 }}>
             {String(currentParagraph.main || '')
               .split('\n')

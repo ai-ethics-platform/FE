@@ -744,7 +744,7 @@ async function fetchRepresentativeImages(code) {
 
 // ── 서버 응답에서 원하는 키를 다양한 레이어에서 탐색
 const pickFromLayers = (game, key) => {
-  const layers = [game, game?.data, game?.images, game?.data?.images];
+  const layers = [game, game?.data, game?.data?.representativeImages, game?.representative_images, game?.images, game?.data?.images];
   for (const layer of layers) {
     const v = layer?.[key];
     if (typeof v === 'string' && v.trim().length > 0) return v;
@@ -933,25 +933,7 @@ export default function Create04() {
       const localAgreeImg2 = resolveImageUrl(localStorage.getItem('dilemma_image_4_1'));
       const localDisagreeImg2 = resolveImageUrl(localStorage.getItem('dilemma_image_4_2'));
 
-      const hasAllLocal =
-        isNonEmptyStringArray(localAgreeTexts || []) &&
-        isNonEmptyStringArray(localDisagreeTexts || []) &&
-        !!localAgreeImg2 &&
-        !!localDisagreeImg2;
-
-      // 로컬 값이 있으면 상태 세팅하고 GET 스킵
-      if (hasAllLocal) {
-        // 텍스트 입력 상태 세팅(로컬 → state)
-        setAgreeInputs(buildInputsFromArray(localAgreeTexts, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));
-        setDisagreeInputs(buildInputsFromArray(localDisagreeTexts, '예: 비동의 시 발생할 수 있는 문제를 설명해주세요.'));
-
-        // 이미지 상태 세팅(로컬 → state)
-        setAgreeUrl(localAgreeImg2); setAgreeFallback(!localAgreeImg2);
-        setDisagreeUrl(localDisagreeImg2); setDisagreeFallback(!localDisagreeImg2);
-        return; // ✅ GET 건너뛰기
-      }
-
-      // 2) 일부만 있거나 아예 없으면: 필요 시 GET
+      // 2) 서버를 SSOT로 사용: 항상 GET을 시도한다
       const code2 = localStorage.getItem('code');
       if (!code2) {
         // code 없으면 GET 자체 불가 → 로컬/폴백만 세팅
@@ -994,10 +976,10 @@ export default function Create04() {
           ||null;
 
 
-        // 각 항목별 "없을 때만" 채움
+        // 서버 값을 우선 사용하고, 서버에 없을 때만 로컬로 폴백
         // 이미지
-        const agreeImgFinal = localAgreeImg || resolveImageUrl(rawAgreeImg);
-        const disagreeImgFinal = localDisagreeImg || resolveImageUrl(rawDisagreeImg);
+        const agreeImgFinal = resolveImageUrl(rawAgreeImg) || localAgreeImg;
+        const disagreeImgFinal = resolveImageUrl(rawDisagreeImg) || localDisagreeImg;
 
         if (!localAgreeImg && rawAgreeImg) localStorage.setItem('dilemma_image_4_1', rawAgreeImg);
         if (!localDisagreeImg && rawDisagreeImg) localStorage.setItem('dilemma_image_4_2', rawDisagreeImg);
@@ -1006,8 +988,8 @@ export default function Create04() {
         setDisagreeUrl(disagreeImgFinal); setDisagreeFallback(!disagreeImgFinal);
 
         // 텍스트
-        const agreeTextsFinal = localAgreeTexts || (isNonEmptyStringArray(serverAgreeArr) ? serverAgreeArr : null);
-        const disagreeTextsFinal = localDisagreeTexts || (isNonEmptyStringArray(serverDisagreeArr) ? serverDisagreeArr : null);
+        const agreeTextsFinal = isNonEmptyStringArray(serverAgreeArr) ? serverAgreeArr : localAgreeTexts;
+        const disagreeTextsFinal = isNonEmptyStringArray(serverDisagreeArr) ? serverDisagreeArr : localDisagreeTexts;
 
         if (agreeTextsFinal) {
           setAgreeInputs(buildInputsFromArray(agreeTextsFinal, '예: Homemate 사용자 최적화 시스템 업그레이드 공지'));

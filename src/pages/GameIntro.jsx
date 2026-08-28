@@ -70,24 +70,9 @@ export default function GameIntro() {
   
   const isCustomMode = !!localStorage.getItem('code');
 
-  // 저장된 opening(문자열 배열 JSON)을 파싱해 단일 텍스트로 합침
-  const parseOpening = () => {
-    try {
-      const raw = localStorage.getItem('opening');
-      if (!raw) return null;
-      const arr = JSON.parse(raw);
-      if (!Array.isArray(arr)) return null;
-      const cleaned = arr
-        .map(s => (typeof s === 'string' ? s.trim() : ''))
-        .filter(s => s.length > 0 && s !== '-');
-      return cleaned.length ? cleaned.join('\n\n') : null;
-    } catch {
-      return null;
-    }
-  };
-
-  // 커스텀 인트로 우선 사용 설정
-  const customIntroText = (isCustomMode && parseOpening()) || tg.customIntro || TEACHER_TEXT;
+  // 인트로는 '게임 시작 안내 문구' 자리다.
+  // opening(화면별 설명 배열)은 여기가 아니라 Game01에서 화면당 한 장씩 보여준다.
+  const customIntroText = tg.customIntro || TEACHER_TEXT;
   const rawFullText = isCustomMode ? customIntroText : (isAWS ? AWS_TEXT : ANDROID_TEXT);
 
   // {{mateName}} 치환 로직

@@ -425,8 +425,30 @@ export default function Game01() {
     customImg1.startsWith('https://')
   );
 
+  // 편집 도구의 '오프닝 멘트'는 화면별 설명 배열(opening)이다.
+  // 한 화면에 몰아 붙이지 말고, 화면당 한 장씩 넘겨 보여준다.
+  const readOpeningParagraphs = () => {
+    try {
+      const raw = localStorage.getItem('opening');
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((v) => (typeof v === 'string' ? v.trim() : ''))
+        .filter((v) => v.length > 0 && v !== '-')   // '-' 는 빈 값 센티널
+        .map((main) => ({ main }));
+    } catch (e) {
+      console.warn('opening 파싱 실패:', e);
+      return [];
+    }
+  };
+
   const defaultMain = getDefaultMain();
-  const paragraphs = isCustomMode ? [{ main: localStorage.getItem('rolesBackground') || defaultMain }] : [{ main: defaultMain }];
+  const openingParagraphs = isCustomMode ? readOpeningParagraphs() : [];
+  const rolesBg = (localStorage.getItem('rolesBackground') || '').trim();
+  const customFallbackMain = rolesBg && rolesBg !== '-' ? rolesBg : defaultMain;
+  const paragraphs = openingParagraphs.length > 0
+    ? openingParagraphs
+    : [{ main: isCustomMode ? customFallbackMain : defaultMain }];
 
   return (
     <Layout round={round} subtopic={subtopic} nodescription={true} onBackClick={() => navigate('/gamemap')}>

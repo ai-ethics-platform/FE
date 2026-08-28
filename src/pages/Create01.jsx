@@ -1225,6 +1225,20 @@ export default function Create01() {
     });
   };
 
+  // 현재 단계(오프닝 멘트)를 서버에 저장만 한다. 이동은 호출자가 판단.
+  // 헤더 브레드크럼/모드 토글로 빠져나갈 때도 이 함수를 태워 편집분 유실을 막는다.
+  const saveOpeningStep = async () => {
+    try {
+      localStorage.setItem('creatorTitle', title ?? '');
+      await putOpening(inputs);
+      return true;
+    } catch (e) {
+      console.error(e);
+      alert('오프닝 멘트 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      return false;
+    }
+  };
+
   // 다음 단계 저장
   const handleConfirm = async (finalTitle) => {
     const hasEmptyFirst = (inputs[0]?.value ?? '').trim().length === 0;
@@ -1249,6 +1263,7 @@ export default function Create01() {
       headerLeftType="home"
       headerNextDisabled={true}
       onHeaderNextClick={() => console.log('NEXT')}
+      onBeforeNavigate={saveOpeningStep}
       frameProps={{
         value: title,
         onChange: (val) => setTitle(val),

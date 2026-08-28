@@ -219,6 +219,30 @@ const putTitle = async (title) => {
       { headers: { 'Content-Type': 'application/json' } }
     );
   };
+  // 현재 단계(최종 멘트)를 서버에 저장만 한다. 로컬 정리/이동은 하지 않는다.
+  // 헤더 브레드크럼/모드 토글로 빠져나갈 때도 이 함수를 태워 편집분 유실을 막는다.
+  const saveEndingStep = async () => {
+    try {
+      const safe = (s) => {
+        const t = (s ?? '').trim();
+        return t.length > 0 ? t : '-';
+      };
+      const agree = safe(agreeEnding);
+      const disagree = safe(disagreeEnding);
+
+      await putEnding({ agree, disagree });
+      if ((title ?? '').trim()) await putTitle(title.trim());
+
+      localStorage.setItem('agreeEnding', agree);
+      localStorage.setItem('disagreeEnding', disagree);
+      return true;
+    } catch (e) {
+      console.error(e);
+      alert('최종 멘트 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      return false;
+    }
+  };
+
   const handleSaveAndComplete = async () => {
     try {
       const safe = (s) => {
@@ -262,6 +286,7 @@ const putTitle = async (title) => {
         headerbar={2}
         headerLeftType="home"
         headerNextDisabled={false}
+        onBeforeNavigate={saveEndingStep}
         onHeaderNextClick={() => {
           if (!title?.trim()) {
             alert('제목을 입력해주세요.');

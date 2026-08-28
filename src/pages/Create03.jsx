@@ -1089,7 +1089,9 @@ export default function Create03() {
     );
   };
 
-  const handleNext = async () => {
+  // 현재 단계(딜레마 상황·질문)를 서버에 저장만 한다. 이동은 호출자가 판단.
+  // 헤더 브레드크럼/모드 토글로 빠져나갈 때도 이 함수를 태워 편집분 유실을 막는다.
+  const saveDilemmaStep = async () => {
     try {
       const situationRaw = toSituationArray(inputs);
       const safe = s => (s && s.length > 0 ? s : '-');
@@ -1104,15 +1106,21 @@ export default function Create03() {
       // 로컬 보강 저장
       localStorage.setItem('dilmma_situation', JSON.stringify(situation)); // (오타 호환)
       localStorage.setItem('dilemma_situation', JSON.stringify(situation));
+      localStorage.setItem('dilemma_sitation', JSON.stringify(situation)); // 게임(Game02)이 읽는 키
       localStorage.setItem('question', question);
       localStorage.setItem('agree_label', agree_label);
       localStorage.setItem('disagree_label', disagree_label);
 
-      navigate('/create04');
+      return true;
     } catch (e) {
       console.error(e);
       alert('딜레마 저장 중 오류가 발생했습니다.');
+      return false;
     }
+  };
+
+  const handleNext = async () => {
+    if (await saveDilemmaStep()) navigate('/create04');
   };
 
   return (
@@ -1121,6 +1129,7 @@ export default function Create03() {
       headerLeftType="home"
       headerNextDisabled={true}
       onHeaderNextClick={() => {}}
+      onBeforeNavigate={saveDilemmaStep}
       frameProps={{
         value: title,
         onChange: (val) => setTitle(val),

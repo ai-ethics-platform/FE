@@ -34,11 +34,13 @@ export default function HeaderBar({
   onCrumbChange,
   onLeftClick,
   onNextClick = () => {},   // ⬅️ 기본값 포함해 prop 추가
+  onBeforeNavigate,         // 단계 이동 전에 현재 단계를 저장(PUT)하는 훅. false 반환 시 이동 취소
 }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [rightHover, setRightHover] = useState(false);
+  const [navBusy, setNavBusy] = useState(false);
   const initialHit = findModeAndIndex(location.pathname);
   const [mode, setMode] = useState(initialHit?.mode ?? 'edit');
   const [internalCrumb, setInternalCrumb] = useState(initialHit?.idx ?? 0);
@@ -58,18 +60,48 @@ export default function HeaderBar({
   const currentCrumb = typeof activeCrumb === 'number' ? activeCrumb : internalCrumb;
   const routeOf = (m, idx) => (m === 'preview' ? PREVIEW_GROUPS[idx]?.[0] : EDIT_GROUPS[idx]?.[0]);
 
-  const selectCrumb = (idx) => {
+  // 브레드크럼/모드 토글로 이동할 때도 현재 단계 편집분을 먼저 저장한다.
+  // (저장 없이 navigate 하면 편집 내용이 서버에 반영되지 않고 통째로 유실됨)
+  const runBeforeNavigate = async () => {
+    if (typeof onBeforeNavigate !== 'function') return true;
+    try {
+      const result = await onBeforeNavigate();
+      return result !== false;
+    } catch (e) {
+      console.error('이동 전 저장 실패:', e);
+      return false;
+    }
+  };
+
+  const selectCrumb = async (idx) => {
+    if (navBusy) return;
+    const route = routeOf(mode, idx);
+    if (!route) return;
+
+    setNavBusy(true);
+    const ok = await runBeforeNavigate();
+    setNavBusy(false);
+    if (!ok) return;
+
     if (typeof activeCrumb !== 'number') setInternalCrumb(idx);
     onCrumbChange?.(idx);
-    const route = routeOf(mode, idx);
-    if (route) navigate(route);
+    navigate(route);
   };
 
   const handleLeftClick = () => navigate('/selectroom');
-  const handleModeChange = (newMode) => {
-    setMode(newMode);
+
+  const handleModeChange = async (newMode) => {
+    if (navBusy) return;
     const target = routeOf(newMode, currentCrumb);
-    if (target) navigate(target);
+    if (!target) return;
+
+    setNavBusy(true);
+    const ok = await runBeforeNavigate();
+    setNavBusy(false);
+    if (!ok) return;
+
+    setMode(newMode);
+    navigate(target);
   };
 
   return (
@@ -130,11 +162,12 @@ export default function HeaderBar({
                 <button
                   type="button"
                   onClick={() => selectCrumb(idx)}
+                  disabled={navBusy}
                   style={{
                     background: 'transparent',
                     border: 'none',
                     padding: 0,
-                    cursor: 'pointer',
+                    cursor: navBusy ? 'wait' : 'pointer',
                     ...FontStyles.bodyBold,
                     color: active ? '#BB4E2D' : Colors.grey05,
                     whiteSpace: 'nowrap',

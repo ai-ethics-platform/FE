@@ -321,7 +321,9 @@ export default function Create02() {
     );
   };
 
-  const handleNext = async () => {
+  // 현재 단계(역할)를 서버에 저장만 한다. 이동은 호출자가 판단.
+  // 헤더 브레드크럼/모드 토글로 빠져나갈 때도 이 함수를 태워 편집분 유실을 막는다.
+  const saveRolesStep = async () => {
     try {
       const name1 = (char1 || '').trim();
       const name2 = (char2 || '').trim();
@@ -338,20 +340,26 @@ export default function Create02() {
         { name: safe(name3), description: safe(desc3) },
       ];
       await putRoles({ roles: rolesSafe, background: safe(background) });
-    // ✅ 서버에 보낸 값 그대로 로컬에도 정규화 반영
-     writeLocal('char1', rolesSafe[0].name);
-     writeLocal('char2', rolesSafe[1].name);
-     writeLocal('char3', rolesSafe[2].name);
-     writeLocal('charDes1', rolesSafe[0].description);
-     writeLocal('charDes2', rolesSafe[1].description);
-     writeLocal('charDes3', rolesSafe[2].description);
-     writeLocal('rolesBackground', safe(background));
 
-      navigate('/create03');
+      // ✅ 서버에 보낸 값 그대로 로컬에도 정규화 반영
+      writeLocal('char1', rolesSafe[0].name);
+      writeLocal('char2', rolesSafe[1].name);
+      writeLocal('char3', rolesSafe[2].name);
+      writeLocal('charDes1', rolesSafe[0].description);
+      writeLocal('charDes2', rolesSafe[1].description);
+      writeLocal('charDes3', rolesSafe[2].description);
+      writeLocal('rolesBackground', safe(background));
+
+      return true;
     } catch (err) {
       console.error(err);
       alert('역할 저장 중 오류가 발생했습니다.');
+      return false;
     }
+  };
+
+  const handleNext = async () => {
+    if (await saveRolesStep()) navigate('/create03');
   };
 
   const handleBack = () => navigate('/create01');
@@ -362,6 +370,7 @@ export default function Create02() {
       headerLeftType="home"
       headerNextDisabled={true}
       onHeaderNextClick={() => {}}
+      onBeforeNavigate={saveRolesStep}
       frameProps={{
         value: title,
         onChange: (val) => setTitle(val),

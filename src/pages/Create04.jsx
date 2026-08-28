@@ -1093,7 +1093,9 @@ export default function Create04() {
     );
   };
 
-  const handleNext = async () => {
+  // 현재 단계(플립)를 서버에 저장만 한다. 이동은 호출자가 판단.
+  // 헤더 브레드크럼/모드 토글로 빠져나갈 때도 이 함수를 태워 편집분 유실을 막는다.
+  const saveFlipsStep = async () => {
     try {
       const safe = s => {
         const t = (s ?? '').trim();
@@ -1113,11 +1115,16 @@ export default function Create04() {
       localStorage.setItem('flips_agree_texts', JSON.stringify(agree_texts));
       localStorage.setItem('flips_disagree_texts', JSON.stringify(disagree_texts));
 
-      navigate('/create05');
+      return true;
     } catch (e) {
       console.error(e);
       alert('플립 저장 중 오류가 발생했습니다.');
+      return false;
     }
+  };
+
+  const handleNext = async () => {
+    if (await saveFlipsStep()) navigate('/create05');
   };
 
   const handleBack = () => navigate('/create03');
@@ -1128,6 +1135,7 @@ export default function Create04() {
       headerLeftType="home"
       headerNextDisabled={true}
       onHeaderNextClick={() => console.log('NEXT')}
+      onBeforeNavigate={saveFlipsStep}
       frameProps={{
         value: title,
         onChange: (val) => setTitle(val),

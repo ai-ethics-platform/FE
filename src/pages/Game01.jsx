@@ -419,11 +419,6 @@ export default function Game01() {
 
   const rawCustomImg1 = localStorage.getItem('dilemma_image_1') || '';
   const customImg1 = resolveImageUrl(rawCustomImg1) || defaultImg;
-  
-  const isCustomImageFromServer = customImg1 && (
-    customImg1.startsWith('http://') || 
-    customImg1.startsWith('https://')
-  );
 
   // 편집 도구의 '오프닝 멘트'는 화면별 설명 배열(opening)이다.
   // 한 화면에 몰아 붙이지 말고, 화면당 한 장씩 넘겨 보여준다.
@@ -458,7 +453,6 @@ export default function Game01() {
             <img
               src={customImg1}
               alt=""
-              {...(isCustomImageFromServer && { crossOrigin: "anonymous" })}
               style={{ width: 744, height: 360, objectFit: 'cover', borderRadius: 4 }}
               loading="eager"
               decoding="async"
@@ -484,13 +478,11 @@ export default function Game01() {
         ) : (
           /*  실루엣 이미지 배열 출력 */
           silhouetteImages.map((src, i) => {
-            const isServerImage = src && (typeof src === 'string') && (src.startsWith('http://') || src.startsWith('https://'));
             return (
               <img
                 key={i}
                 src={src}
                 alt=""
-                {...(isServerImage && { crossOrigin: "anonymous" })}
                 style={{ width: 264, height: 360, objectFit: 'cover', borderRadius: 4 }}
                 onError={(e) => {
                   const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');

@@ -424,8 +424,7 @@ export default function Game02() {
          <img
          src={imageSrc}
          alt={`comic ${currentIndex + 1}`}
-         {...(isServerImage && { crossOrigin: "anonymous" })}
-         style={{ width: 744, height: 360, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+         style={{ width: 744, height: 360, objectFit: 'cover', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
          loading="eager"
          decoding="async"
          onError={(e) => {
@@ -477,7 +476,7 @@ export default function Game02() {
        <img
          src={defaultImg}
          alt="default"
-         style={{ width: 744, height: 360, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+         style={{ width: 744, height: 360, objectFit: 'cover', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
          loading="eager"
          decoding="async"
          onError={(e) => {

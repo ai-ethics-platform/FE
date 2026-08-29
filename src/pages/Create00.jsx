@@ -83,9 +83,10 @@ export default function Create00() {
     return () => { didCancel = true; };
   }, []);
 
-  const combinedText= 
-  "이제 만드신 딜레마 내용을 [편집 모드]에서 직접 수정하고, 내용과 함께 나올 \n" + " 그림을 추가할 수 있습니다. 또한 [미리보기 모드] 버튼을 통해 실제 게임에서의 \n" 
-  + "화면을 확인할 수 있어요.\n\n";
+  const combinedText =
+  "이제 만드신 딜레마 내용을 [편집 모드]에서 직접 수정하고,\n"
+  + "내용과 함께 나올 그림을 추가할 수 있습니다.\n"
+  + "또한 [미리보기 모드] 버튼을 통해 실제 게임에서의 화면을 확인할 수 있어요.\n\n";
   const orangeText = "최종 완성 전에 반드시 [미리보기 모드]로 전체를 검토하세요!";
 
   const handleNext = () => {

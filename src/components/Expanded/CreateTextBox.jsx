@@ -57,7 +57,10 @@ export default function ContentTextBox2({
             inset: 0,
             width: '100%',
             height: '100%',
-            objectFit: 'contain',  // ✅ 잘림 없이 전체 보이기
+            // 프레임을 패딩 박스에 정확히 채운다.
+            // contain 이면 SVG(750x212)와 박스 비율이 달라 레터박스가 생기는데,
+            // 아래 내용 영역은 박스 기준 고정 inset이라 흰 패널 밖으로 텍스트가 삐져나온다.
+            objectFit: 'fill',
             display: 'block',
           }}
           draggable={false}

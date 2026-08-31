@@ -2014,7 +2014,9 @@ keys.forEach((k) => {
               minWidth: 0,
               borderRadius: "8px",
               border: "1px solid #ccc",
-              padding: "6px 8px",
+              // 한 줄일 때 minHeight(44) 안에서 텍스트·placeholder 가 세로 중앙에 오도록
+              // 위아래 padding 을 (44 - 테두리 2 - 줄높이 18.9) / 2 로 맞춘다.
+              padding: "11.5px 8px",
               resize: "none",
               fontSize: "14px",
               lineHeight: 1.35,

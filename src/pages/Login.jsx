@@ -16,6 +16,7 @@ import { Colors, FontStyles } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
 import FindIdModal from '../components/FindIdModal';
 import FindPasswordModal from '../components/FindPasswordModal';
+import Toast from '../components/Toast';
 
 import { translations } from '../utils/language/index';
 
@@ -43,6 +44,7 @@ export default function Login() {
   const [showGuestLogin, setShowGuestLogin] = useState(false);
   const [showFindId, setShowFindId] = useState(false);
   const [showFindPw, setShowFindPw] = useState(false);
+  const [toast, setToast] = useState('');
 
   // 쿼리에서 code를 상태로 보관(초기값은 로컬스토리지)
   const [inviteCode, setInviteCode] = useState(() => localStorage.getItem('code') || '');
@@ -76,10 +78,18 @@ export default function Login() {
   }, [location.search]);
 
   const handleLogin = async () => {
+    // 빈 값이면 서버까지 보내지 않고 무엇이 빠졌는지 바로 알려준다.
+    // (예전에는 그대로 요청을 보내 401 응답의 detail JSON 을 alert 로 그대로 뿜었다)
+    const id = username.trim();
+    const pw = password;
+    if (!id && !pw) return setToast(t.emptyBoth);
+    if (!id) return setToast(t.emptyId);
+    if (!pw) return setToast(t.emptyPw);
+
     try {
       const form = new URLSearchParams();
-      form.append('username', username);
-      form.append('password', password);
+      form.append('username', id);
+      form.append('password', pw);
 
       //  하드코딩된 URL을 환경변수 기반 API_BASE로 교체
       const response = await axios.post(`${API_BASE}/auth/login`, form, {
@@ -100,12 +110,21 @@ export default function Login() {
         navigate('/selectroom', { replace: true });
       }
     } catch (error) {
-      if (error.response) {
-        console.error('로그인 실패:', error.response.data);
-        alert(t.loginFail + ' ' + JSON.stringify(error.response.data.detail, null, 2));
+      if (!error.response) {
+        console.error('로그인 오류:', error.message);
+        setToast(t.networkError);
+        return;
+      }
+      const { status, data } = error.response;
+      console.error('로그인 실패:', status, data);
+      // 401: 아이디/비밀번호 불일치 (BE detail 은 문자열)
+      // 422: 요청 형식 검증 실패 (detail 이 배열이라 그대로 노출하면 안 된다)
+      if (status === 401) {
+        setToast(typeof data?.detail === 'string' ? data.detail : t.wrongCredential);
+      } else if (status === 422) {
+        setToast(t.invalidInput);
       } else {
-        console.error('Error:', error.message);
-        alert(t.loginError + ' ' + error.message);
+        setToast(t.loginFail);
       }
     }
   };
@@ -302,6 +321,8 @@ export default function Login() {
 >
   Latest Update : {LATEST_UPDATE}
 </div>
+
+      <Toast message={toast} onClose={() => setToast('')} />
     </Background>
   );
 }

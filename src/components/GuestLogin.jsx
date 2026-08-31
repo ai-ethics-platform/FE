@@ -5,6 +5,7 @@ import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from "../api/axiosInstance";
 import { translations } from '../utils/language/index';
+import Toast from './Toast';
 
 export default function GuestLogin({ onClose }) {
   // 언어 설정 상태 관리 (로그인 화면과 동일하게 로컬스토리지 참조)
@@ -12,14 +13,36 @@ export default function GuestLogin({ onClose }) {
   const t = translations[lang].GuestLogin;
 
   const [guestId, setGuestId] = useState('');
+  const [toast, setToast] = useState('');
   const navigate = useNavigate();
   const isValid = guestId.trim().length > 0; 
-  
+
+  // POST /auth/guest 는 입력한 아이디로 user row 를 새로 만든다.
+  // username/email 이 unique 라서 이미 쓴 아이디면 DB 에서 터지고 500 이 내려온다.
+  // 그래서 실패 사유가 "중복"인지 서버 응답만으로는 알 수 없어, 아이디 사용 여부를 따로 확인한다.
+  // 근거: POST /auth/check-username -> { username, available } (dilemmai-idl.com/openapi.json)
+  const isGuestIdTaken = async (id) => {
+    const { data } = await axiosInstance.post('/auth/check-username', { username: id });
+    return data?.available === false;
+  };
+
   const handleJoin = async () => {
-    if (!isValid) return;
+    const id = guestId.trim();
+    if (!id) return setToast(t.emptyId);
+
+    try {
+      if (await isGuestIdTaken(id)) {
+        setToast(t.duplicatedId);
+        return;
+      }
+    } catch (err) {
+      // 중복 확인 자체가 실패하면 막지 않고 그대로 진행한다(아래 실패 처리에서 다시 판별).
+      console.warn('아이디 중복 확인 실패:', err?.response?.data || err?.message);
+    }
+
     try {
       const { data } = await axiosInstance.post('/auth/guest', {
-        guest_id: guestId.trim(),
+        guest_id: id,
       });
       
       const { access_token, refresh_token, token_type, user_id, is_guest } = data || {};
@@ -28,8 +51,8 @@ export default function GuestLogin({ onClose }) {
       if (token_type) localStorage.setItem('token_type', token_type);
       if (is_guest != null) localStorage.setItem('is_guest', String(is_guest));
       // ✅ 게스트 닉네임은 사용자가 입력한 값을 그대로 사용
-      localStorage.setItem('nickname', guestId.trim());
-      localStorage.setItem('guest_id', guestId.trim());
+      localStorage.setItem('nickname', id);
+      localStorage.setItem('guest_id', id);
       localStorage.setItem('guest_mode',"true");
 
       // ✅ 백엔드가 user_id를 내려주면 /users/me 없이도 WaitingRoom/WS/WebRTC가 동작합니다.
@@ -66,8 +89,20 @@ export default function GuestLogin({ onClose }) {
       navigate(inviteCode ? '/customroom' : '/selectroom');
     } catch (err) {
       console.error('게스트 로그인 실패:', err?.response?.data || err);
-      // 언어팩의 실패 메시지 적용
-      alert(t.loginFail);
+      if (!err.response) {
+        setToast(t.networkError);
+        return;
+      }
+      // 사전 확인과 실제 생성 사이에 선점됐거나, 확인 요청이 실패해 건너뛴 경우
+      try {
+        if (await isGuestIdTaken(id)) {
+          setToast(t.duplicatedId);
+          return;
+        }
+      } catch (e) {
+        console.warn('아이디 중복 재확인 실패:', e?.response?.data || e?.message);
+      }
+      setToast(t.loginFail);
     }
   };
 
@@ -138,6 +173,8 @@ export default function GuestLogin({ onClose }) {
       >
         {t.startBtn}
       </PrimaryButton>
+
+      <Toast message={toast} onClose={() => setToast('')} />
     </div>
   );
 }

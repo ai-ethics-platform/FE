@@ -128,7 +128,9 @@ export default function CreatorContentBox({
         textAlign: 'center',
         wordBreak: 'normal',
         overflowWrap: 'anywhere',
-        whiteSpace: 'normal',
+        // 안내 문구는 '\n' 으로 문장을 끊어 넘긴다.
+        // 'normal' 이면 개행이 공백으로 합쳐져 줄바꿈이 화면에 전혀 반영되지 않는다.
+        whiteSpace: 'pre-line',
         maxWidth: 600,
         padding: '20px 30px',
         zIndex: 1,

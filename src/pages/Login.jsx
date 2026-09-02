@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Background from '../components/Background';
 import Frame1 from '../components/Frame1';
 import InputBoxLarge from '../components/InputBoxLarge';
 import PrimaryButton from '../components/PrimaryButton';
-import SecondaryButton from '../components/SecondaryButton';
 import TextButton from '../components/TextButton';
 import profileIcon from '../assets/login.svg';
 import lockIcon from '../assets/password.svg';
 import eyeOnIcon from '../assets/eyeon.svg';
 import eyeOffIcon from '../assets/eyeoff.svg';
 import axios from 'axios';
-import GuestLogin from '../components/GuestLogin';
+import axiosInstance from '../api/axiosInstance';
 import { Colors, FontStyles } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
 import FindIdModal from '../components/FindIdModal';
@@ -40,9 +39,10 @@ export default function Login() {
   const [pwVisible, setPwVisible] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showGuestLogin, setShowGuestLogin] = useState(false);
   const [showFindId, setShowFindId] = useState(false);
   const [showFindPw, setShowFindPw] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const toastTimerRef = useRef(null);
 
   // 쿼리에서 code를 상태로 보관(초기값은 로컬스토리지)
   const [inviteCode, setInviteCode] = useState(() => localStorage.getItem('code') || '');
@@ -55,6 +55,19 @@ export default function Login() {
     localStorage.setItem('language', selectedLang); 
   };
 
+  // 기존 서비스의 하단 알림 방식 유지
+  const showToast = (message) => {
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+
+    setToastMessage(message);
+
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastMessage('');
+    }, 2500);
+  };
+
   // 로그인 처음 들어갈 때 로컬값 초기화
   useEffect(() => {
     clearAllLocalStorageKeys();
@@ -62,6 +75,15 @@ export default function Login() {
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = original;
+    };
+  }, []);
+
+  // 하단 알림 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
     };
   }, []);
   
@@ -75,13 +97,53 @@ export default function Login() {
     }
   }, [location.search]);
 
+  // 승인된 사용자는 기존 code 흐름에 따라 방 선택 화면으로 이동
+  const navigateApprovedUser = () => {
+    const codeToUse = inviteCode || localStorage.getItem('code');
+
+    if (codeToUse) {
+      navigate('/customroom', { replace: true });
+    } else {
+      navigate('/selectroom', { replace: true });
+    }
+  };
+
+  // 로그인 성공 후 현재 사용자의 플레이 승인 상태 확인
+  const checkApplicationAndNavigate = async () => {
+    try {
+      const response = await axiosInstance.get('/play-applications/me');
+      const application = response.data?.application || response.data;
+
+      if (application?.status === 'approved') {
+        navigateApprovedUser();
+        return;
+      }
+
+      if (application?.status === 'pending') {
+        navigate('/play-approval/pending', { replace: true });
+        return;
+      }
+
+      // rejected 또는 알 수 없는 상태는 신청 화면으로 이동
+      navigate('/play-approval/apply', { replace: true });
+    } catch (error) {
+      // 신청 기록이 없는 사용자는 최초 신청 화면으로 이동
+      if (error.response?.status === 404) {
+        navigate('/play-approval/apply', { replace: true });
+        return;
+      }
+
+      throw error;
+    }
+  };
+
   const handleLogin = async () => {
     try {
       const form = new URLSearchParams();
       form.append('username', username);
       form.append('password', password);
 
-      //  하드코딩된 URL을 환경변수 기반 API_BASE로 교체
+      // 하드코딩된 URL을 환경변수 기반 API_BASE로 교체
       const response = await axios.post(`${API_BASE}/auth/login`, form, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
@@ -90,28 +152,43 @@ export default function Login() {
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
 
-      // 상태값 우선, 없으면 로컬스토리지 fallback
-      const codeToUse = inviteCode || localStorage.getItem('code');
-
-      if (codeToUse) {
-        // 필요하다면 code를 쿼리로 넘길 수도 있음: `/customroom?code=${encodeURIComponent(codeToUse)}`
-        navigate('/customroom', { replace: true });
-      } else {
-        navigate('/selectroom', { replace: true });
+      try {
+        await checkApplicationAndNavigate();
+      } catch (approvalError) {
+        console.error(
+          '플레이 승인 상태 조회 실패:',
+          approvalError.response?.data || approvalError.message
+        );
+        showToast(t.loginError + ' ' + approvalError.message);
       }
     } catch (error) {
       if (error.response) {
         console.error('로그인 실패:', error.response.data);
-        alert(t.loginFail + ' ' + JSON.stringify(error.response.data.detail, null, 2));
+        showToast(t.loginFail + ' ' + JSON.stringify(error.response.data.detail, null, 2));
       } else {
         console.error('Error:', error.message);
-        alert(t.loginError + ' ' + error.message);
+        showToast(t.loginError + ' ' + error.message);
       }
     }
   };
 
   return (
     <Background bgIndex={1}>
+      <style>
+        {`
+          @keyframes toast-in {
+            from {
+              opacity: 0;
+              transform: translate(-50%, 8px);
+            }
+            to {
+              opacity: 1;
+              transform: translate(-50%, 0);
+            }
+          }
+        `}
+      </style>
+
       {/* 드롭박스(Select) 형식의 언어 선택기 
           추후 언어가 추가되면 <option> 태그만 추가.
       */}
@@ -237,35 +314,7 @@ export default function Login() {
             {/* <TextButton onClick={() => setShowFindPw(true)}>Find Password</TextButton> */}
           </div>
 
-          <SecondaryButton
-            style={{
-              width: '100%',
-              height: '8vh',
-              maxHeight: 64,
-              fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-              marginTop: '2vh',
-            }}
-            onClick={() => setShowGuestLogin(true)}
-            disabled={false}
-          >
-            {t.guestLogin}
-          </SecondaryButton>
-
-          {showGuestLogin && (
-            <div
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0,0,0,0.45)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 9999,
-              }}
-            >
-              <GuestLogin onClose={() => setShowGuestLogin(false)} />
-            </div>
-          )}
+          {/* 게스트 로그인 기능은 보존하되 로그인 페이지에서는 노출하지 않음 */}
 
           {showFindId && (
             <div
@@ -288,26 +337,60 @@ export default function Login() {
         </div>
       </div>
 
-    <div
-  style={{
-    position: 'fixed',
-    right: '20px',
-    bottom: '12px',
-    fontSize: '12px',
-    color: '#ffffff62',
-    zIndex: 1000,
-    userSelect: 'none',
-    pointerEvents: 'none',
-  }}
->
-  Latest Update : {LATEST_UPDATE}
-</div>
+      <div
+        style={{
+          position: 'fixed',
+          right: '20px',
+          bottom: '12px',
+          fontSize: '12px',
+          color: '#ffffff62',
+          zIndex: 1000,
+          userSelect: 'none',
+          pointerEvents: 'none',
+        }}
+      >
+        Latest Update : {LATEST_UPDATE}
+      </div>
+
+      {toastMessage && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            left: '50%',
+            bottom: '48px',
+            transform: 'translateX(-50%)',
+            maxWidth: 'min(90vw, 440px)',
+            padding: '14px 24px',
+            borderRadius: '8px',
+            backgroundColor: 'rgba(24, 24, 24, 0.88)',
+            color: '#E6ECEF',
+            fontFamily: 'Pretendard, sans-serif',
+            fontWeight: 400,
+            fontSize: '16px',
+            lineHeight: '24px',
+            letterSpacing: '-0.025em',
+            textAlign: 'center',
+            whiteSpace: 'pre-line',
+            wordBreak: 'keep-all',
+            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.24)',
+            zIndex: 10001,
+            pointerEvents: 'none',
+            animation: 'toast-in 180ms ease-out',
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
     </Background>
   );
 }
 
 /**
  *
- * 1. 파일 상단에 API_BASE 상수를 정의하고 import.meta.env.VITE_API_BASE_URL 환경변수를 적용함.
- * 2. handleLogin 함수 내의 axios.post URL을 하드코딩된 주소 대신 ${API_BASE}를 사용하도록 수정함.
+ * 1. 기존 API_BASE 환경변수 구성을 유지함.
+ * 2. 로그인 성공 후 플레이 승인 상태 확인 및 이동 분기를 추가함.
+ * 3. 게스트 로그인 UI를 로그인 페이지에서 숨김.
+ * 4. 로그인 오류는 기존 방식대로 언어팩과 백엔드 detail을 사용함.
  */

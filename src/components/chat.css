@@ -88,10 +88,17 @@
 
   /* "메시지 입력 중…" 스타일(살짝 연한 느낌) */
   .bubble.typing{ opacity:.85; }
-  .bubble.typing .msg{ position:relative; padding-right:18px; }
+  /* 점 3개(4px + 8px 간격 x2 = 20px)가 들어갈 자리를 문구 오른쪽에 확보한다.
+     18px 이면 자리가 모자라서 점이 말풍선 테두리에 닿을락말락 한다. */
+  .bubble.typing .msg{ position:relative; padding-right:28px; }
   .bubble.typing .msg::after{
-    content:""; position:absolute; right:0; top:6px; width:4px; height:4px; border-radius:50%;
-    background:#9aa7c9; box-shadow: 8px 0 0 #9aa7c9, 16px 0 0 #9aa7c9;
+    /* top 고정값이면 문구 높이와 무관하게 위쪽에 붙어 세로 중앙이 안 맞는다.
+       문구 영역의 세로 정중앙에 맞춘다. (blink 는 opacity 만 바꿔 transform 과 충돌하지 않음) */
+    content:""; position:absolute; right:0; top:50%; transform:translateY(-50%);
+    width:4px; height:4px; border-radius:50%;
+    /* box-shadow 를 +로 주면 점 2개가 문구 영역 밖(말풍선 여백)으로 삐져나간다.
+       -로 주면 확보한 padding-right 안쪽으로 그려져 말풍선을 벗어나지 않는다. */
+    background:#9aa7c9; box-shadow: -8px 0 0 #9aa7c9, -16px 0 0 #9aa7c9;
     animation: blink 1.2s infinite ease-in-out;
   }
   @keyframes blink{

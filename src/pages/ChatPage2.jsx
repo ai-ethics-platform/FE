@@ -765,6 +765,7 @@ import axiosInstance from "../api/axiosInstance";
 import { Colors } from "../components/styleConstants";
 import HeaderBar from "../components/Expanded/HeaderBar3";
 import DilemmaOutPopup from "../components/DilemmaOutPopup";
+import { sendIngestEvent } from "../api/adminIngest";
 
 const STORAGE_KEY = "dilemma.flow.v1";
 
@@ -1239,6 +1240,20 @@ export default function ChatPage2() {
     
     // 초기화 후 INIT 호출
     handleInit();
+
+    // admin-be ingest: 세션 시작 이벤트 (fire-and-forget, 기존 플로우에 영향 없음)
+    const startedAt = new Date().toISOString();
+    localStorage.setItem('admin_started_at', startedAt);
+    const teacher_name = localStorage.getItem("teacher_name") || "-";
+    const teacher_school = localStorage.getItem("teacher_school") || "-";
+    const teacher_email = localStorage.getItem("teacher_email") || "---";
+    sendIngestEvent('start', {
+      session_id: sessionId,
+      teacher_name,
+      teacher_school,
+      teacher_email,
+      started_at: startedAt,
+    });
   }, []);
 
   function pruneContextFromIndex(ctx, fromIdx) {
@@ -1824,6 +1839,23 @@ keys.forEach((k) => {
     const code = res?.code ?? null;
     const gameUrl = res?.url ?? null;
 
+    // admin-be ingest: 템플릿 생성 완료 이벤트 (fire-and-forget, 기존 플로우에 영향 없음)
+    const turnCount = messages.filter((m) => m.role === "user").length;
+    const endedAt = new Date().toISOString();
+    const startedAt = localStorage.getItem("admin_started_at");
+    sendIngestEvent('complete', {
+      session_id: sessionId,
+      teacher_name,
+      teacher_school,
+      teacher_email,
+      started_at: startedAt,
+      ended_at: endedAt,
+      turn_count: turnCount,
+      game_code: code,
+      game_url: gameUrl,
+      messages,
+    });
+
     if (code) localStorage.setItem("code", code);
     if (gameUrl) localStorage.setItem("url", gameUrl);
 
@@ -1982,7 +2014,9 @@ keys.forEach((k) => {
               minWidth: 0,
               borderRadius: "8px",
               border: "1px solid #ccc",
-              padding: "6px 8px",
+              // 한 줄일 때 minHeight(44) 안에서 텍스트·placeholder 가 세로 중앙에 오도록
+              // 위아래 padding 을 (44 - 테두리 2 - 줄높이 18.9) / 2 로 맞춘다.
+              padding: "11.5px 8px",
               resize: "none",
               fontSize: "14px",
               lineHeight: 1.35,
@@ -2068,6 +2102,23 @@ keys.forEach((k) => {
               onClose={() => setShowOutPopup(false)}
               onLogout={() => {
                 setShowOutPopup(false);
+
+                // admin-be ingest: 중도 이탈 이벤트 (fire-and-forget, 기존 플로우에 영향 없음)
+                const teacher_name = localStorage.getItem("teacher_name") || "-";
+                const teacher_school = localStorage.getItem("teacher_school") || "-";
+                const teacher_email = localStorage.getItem("teacher_email") || "---";
+                const turnCount = messages.filter((m) => m.role === "user").length;
+                sendIngestEvent('abandon', {
+                  session_id: sessionId,
+                  teacher_name,
+                  teacher_school,
+                  teacher_email,
+                  started_at: localStorage.getItem("admin_started_at"),
+                  ended_at: new Date().toISOString(),
+                  turn_count: turnCount,
+                  messages,
+                });
+
                 navigate("/selectroom");
               }}
             />

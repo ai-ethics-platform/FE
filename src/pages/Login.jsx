@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Background from '../components/Background';
 import Frame1 from '../components/Frame1';
@@ -15,6 +15,7 @@ import { Colors, FontStyles } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
 import FindIdModal from '../components/FindIdModal';
 import FindPasswordModal from '../components/FindPasswordModal';
+import Toast from '../components/Toast';
 
 import { translations } from '../utils/language/index';
 
@@ -41,8 +42,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showFindId, setShowFindId] = useState(false);
   const [showFindPw, setShowFindPw] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const toastTimerRef = useRef(null);
+  const [toast, setToast] = useState('');
 
   // 쿼리에서 code를 상태로 보관(초기값은 로컬스토리지)
   const [inviteCode, setInviteCode] = useState(() => localStorage.getItem('code') || '');
@@ -55,19 +55,6 @@ export default function Login() {
     localStorage.setItem('language', selectedLang); 
   };
 
-  // 기존 서비스의 하단 알림 방식 유지
-  const showToast = (message) => {
-    if (toastTimerRef.current) {
-      window.clearTimeout(toastTimerRef.current);
-    }
-
-    setToastMessage(message);
-
-    toastTimerRef.current = window.setTimeout(() => {
-      setToastMessage('');
-    }, 2500);
-  };
-
   // 로그인 처음 들어갈 때 로컬값 초기화
   useEffect(() => {
     clearAllLocalStorageKeys();
@@ -75,15 +62,6 @@ export default function Login() {
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = original;
-    };
-  }, []);
-
-  // 하단 알림 타이머 정리
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) {
-        window.clearTimeout(toastTimerRef.current);
-      }
     };
   }, []);
   
@@ -97,18 +75,18 @@ export default function Login() {
     }
   }, [location.search]);
 
-  // 승인된 사용자는 기존 code 흐름에 따라 방 선택 화면으로 이동
   const navigateApprovedUser = () => {
+    // 상태값 우선, 없으면 로컬스토리지 fallback
     const codeToUse = inviteCode || localStorage.getItem('code');
 
     if (codeToUse) {
+      // 필요하다면 code를 쿼리로 넘길 수도 있음: `/customroom?code=${encodeURIComponent(codeToUse)}`
       navigate('/customroom', { replace: true });
     } else {
       navigate('/selectroom', { replace: true });
     }
   };
 
-  // 로그인 성공 후 현재 사용자의 플레이 승인 상태 확인
   const checkApplicationAndNavigate = async () => {
     try {
       const response = await axiosInstance.get('/play-applications/me');
@@ -138,12 +116,20 @@ export default function Login() {
   };
 
   const handleLogin = async () => {
+    // 빈 값이면 서버까지 보내지 않고 무엇이 빠졌는지 바로 알려준다.
+    // (예전에는 그대로 요청을 보내 401 응답의 detail JSON 을 alert 로 그대로 뿜었다)
+    const id = username.trim();
+    const pw = password;
+    if (!id && !pw) return setToast(t.emptyBoth);
+    if (!id) return setToast(t.emptyId);
+    if (!pw) return setToast(t.emptyPw);
+
     try {
       const form = new URLSearchParams();
-      form.append('username', username);
-      form.append('password', password);
+      form.append('username', id);
+      form.append('password', pw);
 
-      // 하드코딩된 URL을 환경변수 기반 API_BASE로 교체
+      //  하드코딩된 URL을 환경변수 기반 API_BASE로 교체
       const response = await axios.post(`${API_BASE}/auth/login`, form, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
@@ -152,43 +138,29 @@ export default function Login() {
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
 
-      try {
-        await checkApplicationAndNavigate();
-      } catch (approvalError) {
-        console.error(
-          '플레이 승인 상태 조회 실패:',
-          approvalError.response?.data || approvalError.message
-        );
-        showToast(t.loginError + ' ' + approvalError.message);
-      }
+      await checkApplicationAndNavigate();
     } catch (error) {
-      if (error.response) {
-        console.error('로그인 실패:', error.response.data);
-        showToast(t.loginFail + ' ' + JSON.stringify(error.response.data.detail, null, 2));
+      if (!error.response) {
+        console.error('로그인 오류:', error.message);
+        setToast(t.networkError);
+        return;
+      }
+      const { status, data } = error.response;
+      console.error('로그인 실패:', status, data);
+      // 401: 아이디/비밀번호 불일치 (BE detail 은 문자열)
+      // 422: 요청 형식 검증 실패 (detail 이 배열이라 그대로 노출하면 안 된다)
+      if (status === 401) {
+        setToast(typeof data?.detail === 'string' ? data.detail : t.wrongCredential);
+      } else if (status === 422) {
+        setToast(t.invalidInput);
       } else {
-        console.error('Error:', error.message);
-        showToast(t.loginError + ' ' + error.message);
+        setToast(t.loginFail);
       }
     }
   };
 
   return (
     <Background bgIndex={1}>
-      <style>
-        {`
-          @keyframes toast-in {
-            from {
-              opacity: 0;
-              transform: translate(-50%, 8px);
-            }
-            to {
-              opacity: 1;
-              transform: translate(-50%, 0);
-            }
-          }
-        `}
-      </style>
-
       {/* 드롭박스(Select) 형식의 언어 선택기 
           추후 언어가 추가되면 <option> 태그만 추가.
       */}
@@ -314,8 +286,6 @@ export default function Login() {
             {/* <TextButton onClick={() => setShowFindPw(true)}>Find Password</TextButton> */}
           </div>
 
-          {/* 게스트 로그인 기능은 보존하되 로그인 페이지에서는 노출하지 않음 */}
-
           {showFindId && (
             <div
               style={{
@@ -337,60 +307,28 @@ export default function Login() {
         </div>
       </div>
 
-      <div
-        style={{
-          position: 'fixed',
-          right: '20px',
-          bottom: '12px',
-          fontSize: '12px',
-          color: '#ffffff62',
-          zIndex: 1000,
-          userSelect: 'none',
-          pointerEvents: 'none',
-        }}
-      >
-        Latest Update : {LATEST_UPDATE}
-      </div>
+    <div
+  style={{
+    position: 'fixed',
+    right: '20px',
+    bottom: '12px',
+    fontSize: '12px',
+    color: '#ffffff62',
+    zIndex: 1000,
+    userSelect: 'none',
+    pointerEvents: 'none',
+  }}
+>
+  Latest Update : {LATEST_UPDATE}
+</div>
 
-      {toastMessage && (
-        <div
-          role="status"
-          aria-live="polite"
-          style={{
-            position: 'fixed',
-            left: '50%',
-            bottom: '48px',
-            transform: 'translateX(-50%)',
-            maxWidth: 'min(90vw, 440px)',
-            padding: '14px 24px',
-            borderRadius: '8px',
-            backgroundColor: 'rgba(24, 24, 24, 0.88)',
-            color: '#E6ECEF',
-            fontFamily: 'Pretendard, sans-serif',
-            fontWeight: 400,
-            fontSize: '16px',
-            lineHeight: '24px',
-            letterSpacing: '-0.025em',
-            textAlign: 'center',
-            whiteSpace: 'pre-line',
-            wordBreak: 'keep-all',
-            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.24)',
-            zIndex: 10001,
-            pointerEvents: 'none',
-            animation: 'toast-in 180ms ease-out',
-          }}
-        >
-          {toastMessage}
-        </div>
-      )}
+      <Toast message={toast} onClose={() => setToast('')} />
     </Background>
   );
 }
 
 /**
  *
- * 1. 기존 API_BASE 환경변수 구성을 유지함.
- * 2. 로그인 성공 후 플레이 승인 상태 확인 및 이동 분기를 추가함.
- * 3. 게스트 로그인 UI를 로그인 페이지에서 숨김.
- * 4. 로그인 오류는 기존 방식대로 언어팩과 백엔드 detail을 사용함.
+ * 1. 파일 상단에 API_BASE 상수를 정의하고 import.meta.env.VITE_API_BASE_URL 환경변수를 적용함.
+ * 2. handleLogin 함수 내의 axios.post URL을 하드코딩된 주소 대신 ${API_BASE}를 사용하도록 수정함.
  */

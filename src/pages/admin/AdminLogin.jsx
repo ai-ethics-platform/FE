@@ -1,33 +1,103 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import adminAxiosInstance, {
+  clearAdminSession,
+  saveAdminSession,
+} from "../../api/adminAxiosInstance";
+
+function getErrorDetail(error) {
+  const detail = error?.response?.data?.detail;
+
+  if (typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+
+  return null;
+}
+
 function AdminLogin() {
   const navigate = useNavigate();
 
   const [adminId, setAdminId] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // 개발용 mock 관리자 계정
-    const MOCK_ADMIN_ID = "admin";
-    const MOCK_ADMIN_PASSWORD = "admin1234";
+    if (isSubmitting) return;
 
-    if (
-      adminId === MOCK_ADMIN_ID &&
-      password === MOCK_ADMIN_PASSWORD
-    ) {
-      sessionStorage.setItem("adminLoggedIn", "true");
+    const normalizedAdminId = adminId.trim();
 
-      setErrorMessage("");
-
-      navigate("/admin/applications");
+    if (!normalizedAdminId || !password) {
+      setErrorMessage(
+        "아이디와 비밀번호를 입력해주세요."
+      );
       return;
     }
 
-    setErrorMessage("아이디 또는 비밀번호가 올바르지 않습니다.");
+    setErrorMessage("");
+    setIsSubmitting(true);
+    clearAdminSession();
+
+    try {
+      const form = new URLSearchParams();
+      form.append("username", normalizedAdminId);
+      form.append("password", password);
+
+      const loginResponse = await adminAxiosInstance.post(
+        "/auth/login",
+        form,
+        {
+          headers: {
+            "Content-Type":
+              "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      if (!loginResponse.data?.access_token) {
+        throw new Error("ACCESS_TOKEN_NOT_FOUND");
+      }
+
+      saveAdminSession(loginResponse.data);
+
+      // 관리자 전용 API 호출로 실제 관리자 권한을 확인합니다.
+      await adminAxiosInstance.get(
+        "/admin/play-applications"
+      );
+
+      navigate("/admin/applications", {
+        replace: true,
+      });
+    } catch (error) {
+      clearAdminSession();
+
+      const status = error?.response?.status;
+
+      if (status === 401) {
+        setErrorMessage(
+          "아이디 또는 비밀번호가 올바르지 않습니다."
+        );
+      } else if (status === 403) {
+        setErrorMessage(
+          "관리자 권한이 없는 계정입니다."
+        );
+      } else if (!error?.response) {
+        setErrorMessage(
+          "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요."
+        );
+      } else {
+        setErrorMessage(
+          getErrorDetail(error) ||
+            "관리자 로그인 중 오류가 발생했습니다."
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -61,6 +131,7 @@ function AdminLogin() {
               placeholder="관리자 아이디를 입력하세요"
               autoComplete="username"
               style={styles.input}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -83,6 +154,7 @@ function AdminLogin() {
               placeholder="비밀번호를 입력하세요"
               autoComplete="current-password"
               style={styles.input}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -94,25 +166,17 @@ function AdminLogin() {
 
           <button
             type="submit"
-            style={styles.loginButton}
+            style={{
+              ...styles.loginButton,
+              ...(isSubmitting
+                ? styles.loginButtonDisabled
+                : {}),
+            }}
+            disabled={isSubmitting}
           >
-            로그인
+            {isSubmitting ? "로그인 중..." : "로그인"}
           </button>
         </form>
-
-        <div style={styles.testAccountBox}>
-          <div style={styles.testAccountTitle}>
-            개발용 테스트 계정
-          </div>
-
-          <div style={styles.testAccountText}>
-            ID: admin
-          </div>
-
-          <div style={styles.testAccountText}>
-            PW: admin1234
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -137,7 +201,8 @@ const styles = {
     border: "1px solid #e5e7eb",
     borderRadius: "14px",
     backgroundColor: "#ffffff",
-    boxShadow: "0 10px 30px rgba(17, 24, 39, 0.06)",
+    boxShadow:
+      "0 10px 30px rgba(17, 24, 39, 0.06)",
     boxSizing: "border-box",
   },
 
@@ -205,26 +270,9 @@ const styles = {
     cursor: "pointer",
   },
 
-  testAccountBox: {
-    marginTop: "24px",
-    padding: "14px 16px",
-    border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    backgroundColor: "#f9fafb",
-  },
-
-  testAccountTitle: {
-    marginBottom: "7px",
-    color: "#6b7280",
-    fontSize: "12px",
-    fontWeight: 600,
-  },
-
-  testAccountText: {
-    color: "#4b5563",
-    fontSize: "12px",
-    lineHeight: 1.6,
-    userSelect: "text",
+  loginButtonDisabled: {
+    cursor: "not-allowed",
+    opacity: 0.65,
   },
 };
 

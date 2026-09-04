@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 import axiosInstance from '../../api/axiosInstance';
 import Background from '../../components/Background';
+import BackButton from '../../components/BackButton';
+import IntroductionPopup from '../../components/IntroductionPopup';
 import { translations } from '../../utils/language/index';
 
 import logo from '../../assets/logo.svg';
@@ -18,10 +20,12 @@ function getApiErrorMessage(error, fallbackMessage) {
   }
 
   if (Array.isArray(detail) && detail.length > 0) {
-    return detail
-      .map((item) => item?.msg)
-      .filter(Boolean)
-      .join(', ') || fallbackMessage;
+    return (
+      detail
+        .map((item) => item?.msg)
+        .filter(Boolean)
+        .join(', ') || fallbackMessage
+    );
   }
 
   return fallbackMessage;
@@ -48,39 +52,70 @@ export default function PlayApplication() {
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] =
+    useState('');
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+
+  // 게임 소개 팝업
+  const [
+    isIntroPopupOpen,
+    setIsIntroPopupOpen,
+  ] = useState(false);
 
   useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
+    const originalOverflow =
+      document.body.style.overflow;
+
     document.body.style.overflow = 'hidden';
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow =
+        originalOverflow;
     };
   }, []);
+
+  // 로그인 화면으로 이동
+  const handleBackClick = () => {
+    navigate('/', {
+      replace: true,
+    });
+  };
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
 
-    const trimmedLastName = lastName.trim();
-    const trimmedFirstName = firstName.trim();
-    const trimmedEmail = email.trim();
-    const trimmedMessage = message.trim();
+    const trimmedLastName =
+      lastName.trim();
+    const trimmedFirstName =
+      firstName.trim();
+    const trimmedEmail =
+      email.trim();
+    const trimmedMessage =
+      message.trim();
 
     if (
       !trimmedLastName ||
       !trimmedFirstName ||
       !trimmedEmail
     ) {
-      setErrorMessage(t.requiredField);
+      setErrorMessage(
+        t.requiredField
+      );
       return;
     }
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailPattern =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailPattern.test(trimmedEmail)) {
-      setErrorMessage(t.invalidEmail);
+    if (
+      !emailPattern.test(
+        trimmedEmail
+      )
+    ) {
+      setErrorMessage(
+        t.invalidEmail
+      );
       return;
     }
 
@@ -88,37 +123,55 @@ export default function PlayApplication() {
     setIsSubmitting(true);
 
     try {
-      const response = await axiosInstance.post(
-        '/play-applications',
-        {
-          last_name: trimmedLastName,
-          first_name: trimmedFirstName,
-          email: trimmedEmail,
-          message: trimmedMessage || null,
-        }
-      );
+      const response =
+        await axiosInstance.post(
+          '/play-applications',
+          {
+            last_name:
+              trimmedLastName,
+            first_name:
+              trimmedFirstName,
+            email: trimmedEmail,
+            message:
+              trimmedMessage ||
+              null,
+          }
+        );
 
       const application =
-        response.data?.application || response.data;
+        response.data?.application ||
+        response.data;
 
-      if (application?.status === 'approved') {
-        navigate('/play-approval/approved', {
-          replace: true,
-        });
+      if (
+        application?.status ===
+        'approved'
+      ) {
+        navigate(
+          '/play-approval/approved',
+          {
+            replace: true,
+          }
+        );
         return;
       }
 
-      navigate('/play-approval/pending', {
-        replace: true,
-      });
+      navigate(
+        '/play-approval/pending',
+        {
+          replace: true,
+        }
+      );
     } catch (error) {
       const fallbackMessage =
         lang === 'en'
-          ? '신청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요. (미번역)'
+          ? "An error occurred while processing your application. Please try again."
           : '신청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
 
       setErrorMessage(
-        getApiErrorMessage(error, fallbackMessage)
+        getApiErrorMessage(
+          error,
+          fallbackMessage
+        )
       );
     } finally {
       setIsSubmitting(false);
@@ -128,15 +181,42 @@ export default function PlayApplication() {
   return (
     <Background bgIndex={2}>
       <div style={styles.page}>
+        {/* 좌측 상단 뒤로가기 */}
+        <div
+          style={
+            styles.backButtonWrapper
+          }
+        >
+          <BackButton
+            onClick={
+              handleBackClick
+            }
+          />
+        </div>
+
+        {/* 우측 상단 게임 소개 */}
         <img
           src={questionMark}
-          alt=""
+          alt="게임 소개"
           draggable={false}
-          style={styles.questionMark}
+          style={
+            styles.questionMark
+          }
+          onClick={() =>
+            setIsIntroPopupOpen(
+              true
+            )
+          }
         />
 
-        <main style={styles.container}>
-          <section style={styles.leftSection}>
+        <main
+          style={styles.container}
+        >
+          <section
+            style={
+              styles.leftSection
+            }
+          >
             <img
               src={logo}
               alt="DILEMMA.I"
@@ -144,45 +224,87 @@ export default function PlayApplication() {
               style={styles.logo}
             />
 
-            <div style={styles.title}>
+            <div
+              style={styles.title}
+            >
               {t.title}
             </div>
 
-            <div style={styles.descriptionArea}>
-              <div style={styles.description}>
+            <div
+              style={
+                styles.descriptionArea
+              }
+            >
+              <div
+                style={
+                  styles.description
+                }
+              >
                 {t.description}
               </div>
 
-              <div style={styles.periodDescription}>
-                {t.periodDescription}
+              <div
+                style={
+                  styles.periodDescription
+                }
+              >
+                {
+                  t.periodDescription
+                }
               </div>
             </div>
           </section>
 
-          <section style={styles.rightSection}>
-            <div style={styles.nameRow}>
+          <section
+            style={
+              styles.rightSection
+            }
+          >
+            <div
+              style={styles.nameRow}
+            >
               <input
                 type="text"
                 value={lastName}
                 onChange={(e) => {
-                  setLastName(e.target.value);
-                  setErrorMessage('');
+                  setLastName(
+                    e.target.value
+                  );
+                  setErrorMessage(
+                    ''
+                  );
                 }}
-                placeholder={t.lastNamePlaceholder}
-                style={styles.nameInput}
-                disabled={isSubmitting}
+                placeholder={
+                  t.lastNamePlaceholder
+                }
+                style={
+                  styles.nameInput
+                }
+                disabled={
+                  isSubmitting
+                }
               />
 
               <input
                 type="text"
                 value={firstName}
                 onChange={(e) => {
-                  setFirstName(e.target.value);
-                  setErrorMessage('');
+                  setFirstName(
+                    e.target.value
+                  );
+                  setErrorMessage(
+                    ''
+                  );
                 }}
-                placeholder={t.firstNamePlaceholder}
-                style={styles.nameInput}
-                disabled={isSubmitting}
+                placeholder={
+                  t.firstNamePlaceholder
+                }
+                style={
+                  styles.nameInput
+                }
+                disabled={
+                  isSubmitting
+                }
               />
             </div>
 
@@ -190,28 +312,56 @@ export default function PlayApplication() {
               type="email"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
-                setErrorMessage('');
+                setEmail(
+                  e.target.value
+                );
+                setErrorMessage(
+                  ''
+                );
               }}
-              placeholder={t.emailPlaceholder}
-              style={styles.emailInput}
-              disabled={isSubmitting}
+              placeholder={
+                t.emailPlaceholder
+              }
+              style={
+                styles.emailInput
+              }
+              disabled={
+                isSubmitting
+              }
             />
 
             <textarea
               value={message}
               onChange={(e) => {
-                setMessage(e.target.value);
-                setErrorMessage('');
+                setMessage(
+                  e.target.value
+                );
+                setErrorMessage(
+                  ''
+                );
               }}
-              placeholder={t.messagePlaceholder}
-              style={styles.messageInput}
-              disabled={isSubmitting}
+              placeholder={
+                t.messagePlaceholder
+              }
+              style={
+                styles.messageInput
+              }
+              disabled={
+                isSubmitting
+              }
             />
 
-            <div style={styles.errorArea}>
+            <div
+              style={
+                styles.errorArea
+              }
+            >
               {errorMessage && (
-                <div style={styles.errorMessage}>
+                <div
+                  style={
+                    styles.errorMessage
+                  }
+                >
                   {errorMessage}
                 </div>
               )}
@@ -219,24 +369,57 @@ export default function PlayApplication() {
 
             <button
               type="button"
-              onClick={handleSubmit}
+              onClick={
+                handleSubmit
+              }
               style={{
                 ...styles.submitButton,
                 ...(isSubmitting
                   ? styles.submitButtonDisabled
                   : {}),
               }}
-              disabled={isSubmitting}
+              disabled={
+                isSubmitting
+              }
             >
               <img
-                src={demoApplyButton}
+                src={
+                  demoApplyButton
+                }
                 alt=""
                 draggable={false}
-                style={styles.submitButtonImage}
+                style={
+                  styles.submitButtonImage
+                }
               />
             </button>
           </section>
         </main>
+
+        {/* 게임 소개 팝업 */}
+        {isIntroPopupOpen && (
+          <div
+            style={
+              styles.introOverlay
+            }
+            onClick={() =>
+              setIsIntroPopupOpen(
+                false
+              )
+            }
+          >
+            <IntroductionPopup
+              isOpen={
+                isIntroPopupOpen
+              }
+              onClose={() =>
+                setIsIntroPopupOpen(
+                  false
+                )
+              }
+            />
+          </div>
+        )}
       </div>
     </Background>
   );
@@ -254,6 +437,13 @@ const styles = {
     userSelect: 'none',
   },
 
+  backButtonWrapper: {
+    position: 'absolute',
+    top: '-10px',
+    left: '-10px',
+    zIndex: 10,
+  },
+
   questionMark: {
     position: 'absolute',
     top: '24px',
@@ -262,18 +452,34 @@ const styles = {
     height: '52px',
     objectFit: 'contain',
     zIndex: 10,
+    cursor: 'pointer',
+  },
+
+  introOverlay: {
+    position: 'fixed',
+    inset: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor:
+      'rgba(0, 0, 0, 0.45)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10001,
   },
 
   container: {
     width: 'min(1120px, 76vw)',
     minHeight: '620px',
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns:
+      '1fr 1fr',
     backgroundColor: '#FCFDFA',
     clipPath:
       'polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px)',
     boxSizing: 'border-box',
-    padding: '90px 90px 72px',
+    padding:
+      '90px 90px 72px',
   },
 
   leftSection: {
@@ -308,7 +514,8 @@ const styles = {
   },
 
   description: {
-    fontFamily: 'Pretendard, sans-serif',
+    fontFamily:
+      'Pretendard, sans-serif',
     fontSize: '18px',
     fontWeight: 500,
     lineHeight: 1.45,
@@ -318,7 +525,8 @@ const styles = {
   },
 
   periodDescription: {
-    fontFamily: 'Pretendard, sans-serif',
+    fontFamily:
+      'Pretendard, sans-serif',
     fontSize: '18px',
     fontWeight: 500,
     lineHeight: 1.45,
@@ -329,7 +537,8 @@ const styles = {
   rightSection: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'flex-start',
+    justifyContent:
+      'flex-start',
     paddingTop: '5px',
   },
 
@@ -346,7 +555,8 @@ const styles = {
     outline: 'none',
     padding: '0 24px',
     backgroundColor: '#E6ECEF',
-    fontFamily: 'Pretendard, sans-serif',
+    fontFamily:
+      'Pretendard, sans-serif',
     fontSize: '16px',
     color: '#252C30',
     boxSizing: 'border-box',
@@ -361,7 +571,8 @@ const styles = {
     outline: 'none',
     padding: '0 24px',
     backgroundColor: '#E6ECEF',
-    fontFamily: 'Pretendard, sans-serif',
+    fontFamily:
+      'Pretendard, sans-serif',
     fontSize: '16px',
     color: '#252C30',
     boxSizing: 'border-box',
@@ -377,7 +588,8 @@ const styles = {
     resize: 'none',
     padding: '24px',
     backgroundColor: '#E6ECEF',
-    fontFamily: 'Pretendard, sans-serif',
+    fontFamily:
+      'Pretendard, sans-serif',
     fontSize: '15px',
     lineHeight: 1.5,
     color: '#252C30',
@@ -391,7 +603,8 @@ const styles = {
   },
 
   errorMessage: {
-    fontFamily: 'Pretendard, sans-serif',
+    fontFamily:
+      'Pretendard, sans-serif',
     fontSize: '13px',
     color: '#dc2626',
   },

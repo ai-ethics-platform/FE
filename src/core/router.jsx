@@ -67,6 +67,7 @@ import AdminLogin from '../pages/admin/AdminLogin';
 import AdminProtectedRoute from '../components/admin/AdminProtectedRoute';
 
 import PlayApprovalProtectedRoute from '../components/playApproval/PlayApprovalProtectedRoute';
+import PlayApprovalAuthRoute from '../components/playApproval/PlayApprovalAuthRoute';
 
 function GameProvidersLayout() {
   return (
@@ -95,21 +96,21 @@ function Router() {
           element={<Componentcheck />}
         />
 
-        {/* 플레이 승인 */}
-        <Route
-          path="/play-approval/apply"
-          element={<PlayApplication />}
-        />
-
-        <Route
-          path="/play-approval/pending"
-          element={<PlayApprovalStatus />}
-        />
-
-        <Route
-          path="/play-approval/approved"
-          element={<PlayApprovalStatus />}
-        />
+        {/* 플레이 승인 - 로그인 사용자만 접근 가능 */}
+<Route element={<PlayApprovalAuthRoute />}>
+  <Route
+    path="/play-approval/apply"
+    element={<PlayApplication />}
+  />
+  <Route
+    path="/play-approval/pending"
+    element={<PlayApprovalStatus />}
+  />
+  <Route
+    path="/play-approval/approved"
+    element={<PlayApprovalStatus />}
+  />
+</Route>
 
         {/* 관리자 */}
         <Route

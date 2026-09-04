@@ -53,11 +53,20 @@ export default function PlayApprovalStatus() {
 
   const [applicationStatus, setApplicationStatus] =
     useState('pending');
-  const [isChecking, setIsChecking] = useState(true);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isIntroPopupOpen, setIsIntroPopupOpen] = useState(false);
 
-  const isApproved = applicationStatus === 'approved';
+  const [isChecking, setIsChecking] =
+    useState(true);
+
+  const [errorMessage, setErrorMessage] =
+    useState('');
+
+  const [
+    isIntroPopupOpen,
+    setIsIntroPopupOpen,
+  ] = useState(false);
+
+  const isApproved =
+    applicationStatus === 'approved';
 
   const title = isApproved
     ? t.approvedTitle
@@ -85,18 +94,39 @@ export default function PlayApprovalStatus() {
       setErrorMessage('');
 
       try {
-        const response = await axiosInstance.get(
-          '/play-applications/me'
-        );
+        const response =
+          await axiosInstance.get(
+            '/play-applications/me'
+          );
 
         const application =
-          response.data?.application || response.data;
-        const nextStatus = application?.status;
+          response.data?.application ||
+          response.data;
 
-        if (nextStatus === 'rejected') {
-          navigate('/play-approval/apply', {
-            replace: true,
-          });
+        const nextStatus =
+          application?.status;
+
+        /*
+         * rejected:
+         * 서버에서 거절 상태를 직접 반환하는 경우
+         *
+         * null / undefined:
+         * 거절 처리 이후 현재 유효한 신청 상태가
+         * 없는 것으로 반환되는 경우
+         *
+         * 두 경우 모두 다시 신청할 수 있도록
+         * 승인 신청 화면으로 이동한다.
+         */
+        if (
+          nextStatus === 'rejected' ||
+          nextStatus == null
+        ) {
+          navigate(
+            '/play-approval/apply',
+            {
+              replace: true,
+            }
+          );
           return;
         }
 
@@ -104,45 +134,70 @@ export default function PlayApprovalStatus() {
           nextStatus !== 'pending' &&
           nextStatus !== 'approved'
         ) {
-          throw new Error('UNKNOWN_APPLICATION_STATUS');
+          throw new Error(
+            'UNKNOWN_APPLICATION_STATUS'
+          );
         }
 
-        setApplicationStatus(nextStatus);
+        setApplicationStatus(
+          nextStatus
+        );
 
         if (
           showPendingMessage &&
           nextStatus === 'pending'
         ) {
-          alert(t.pendingCheckMessage);
+          alert(
+            t.pendingCheckMessage
+          );
         }
       } catch (error) {
-        if (error?.response?.status === 404) {
-          navigate('/play-approval/apply', {
-            replace: true,
-          });
+        /*
+         * 신청 내역 자체가 존재하지 않는 경우에도
+         * 다시 신청 화면으로 이동한다.
+         */
+        if (
+          error?.response?.status ===
+          404
+        ) {
+          navigate(
+            '/play-approval/apply',
+            {
+              replace: true,
+            }
+          );
           return;
         }
 
         const fallbackMessage =
           lang === 'en'
-            ? '승인 상태를 확인하지 못했습니다. 잠시 후 다시 시도해주세요. (미번역)'
+            ? 'Unable to check your approval status. Please try again'
             : '승인 상태를 확인하지 못했습니다. 잠시 후 다시 시도해주세요.';
 
         setErrorMessage(
-          getApiErrorMessage(error, fallbackMessage)
+          getApiErrorMessage(
+            error,
+            fallbackMessage
+          )
         );
       } finally {
         setIsChecking(false);
       }
     },
-    [lang, navigate, t.pendingCheckMessage]
+    [
+      lang,
+      navigate,
+      t.pendingCheckMessage,
+    ]
   );
 
   useEffect(() => {
     const originalOverflow =
       document.body.style.overflow;
 
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow =
+      'hidden';
+
     loadApplicationStatus();
 
     return () => {
@@ -157,11 +212,15 @@ export default function PlayApprovalStatus() {
 
   const handleAction = async () => {
     if (isApproved) {
-      const inviteCode = localStorage.getItem('code');
+      const inviteCode =
+        localStorage.getItem('code');
 
       navigate(
-        inviteCode ? '/customroom' : '/selectroom'
+        inviteCode
+          ? '/customroom'
+          : '/selectroom'
       );
+
       return;
     }
 
@@ -173,18 +232,22 @@ export default function PlayApprovalStatus() {
   return (
     <Background bgIndex={2}>
       <div style={styles.page}>
+        {/* 좌측 상단 뒤로가기 */}
         <div style={styles.backButton}>
           <div onClick={handleBackClick}>
             <BackButton />
           </div>
         </div>
 
+        {/* 우측 상단 게임 소개 */}
         <img
           src={questionMark}
           alt="게임 소개"
           draggable={false}
           style={styles.questionMark}
-          onClick={() => setIsIntroPopupOpen(true)}
+          onClick={() =>
+            setIsIntroPopupOpen(true)
+          }
         />
 
         <main style={styles.container}>
@@ -206,13 +269,19 @@ export default function PlayApprovalStatus() {
             style={styles.door}
           />
 
-          <div style={styles.description}>
+          <div
+            style={styles.description}
+          >
             {description}
           </div>
 
           <div style={styles.errorArea}>
             {errorMessage && (
-              <div style={styles.errorMessage}>
+              <div
+                style={
+                  styles.errorMessage
+                }
+              >
                 {errorMessage}
               </div>
             )}
@@ -233,18 +302,30 @@ export default function PlayApprovalStatus() {
               src={actionButtonImage}
               alt=""
               draggable={false}
-              style={styles.actionButtonImage}
+              style={
+                styles.actionButtonImage
+              }
             />
           </button>
         </main>
+
+        {/* 게임 소개 팝업 */}
         {isIntroPopupOpen && (
           <div
             style={styles.introOverlay}
-            onClick={() => setIsIntroPopupOpen(false)}
+            onClick={() =>
+              setIsIntroPopupOpen(false)
+            }
           >
             <IntroductionPopup
-              isOpen={isIntroPopupOpen}
-              onClose={() => setIsIntroPopupOpen(false)}
+              isOpen={
+                isIntroPopupOpen
+              }
+              onClose={() =>
+                setIsIntroPopupOpen(
+                  false
+                )
+              }
             />
           </div>
         )}
@@ -273,16 +354,17 @@ const styles = {
   },
 
   introOverlay: {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: '100vw',
-  height: '100vh',
-  backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  zIndex: 10001,
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor:
+      'rgba(0, 0, 0, 0.6)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10001,
   },
 
   questionMark: {
@@ -338,7 +420,8 @@ const styles = {
   },
 
   description: {
-    fontFamily: 'Pretendard, sans-serif',
+    fontFamily:
+      'Pretendard, sans-serif',
     fontSize: '17px',
     fontWeight: 500,
     lineHeight: 1.4,
@@ -354,7 +437,8 @@ const styles = {
   },
 
   errorMessage: {
-    fontFamily: 'Pretendard, sans-serif',
+    fontFamily:
+      'Pretendard, sans-serif',
     fontSize: '13px',
     color: '#dc2626',
     textAlign: 'center',

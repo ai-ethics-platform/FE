@@ -86,6 +86,12 @@ function AdminApplications() {
     useState("");
   const [isSearchingUser, setIsSearchingUser] =
     useState(false);
+  const [adminModalTab, setAdminModalTab] =
+    useState("grant");
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [isLoadingAdminUsers, setIsLoadingAdminUsers] =
+    useState(false);
+  const [adminListError, setAdminListError] = useState("");
 
   const moveToAdminLogin = useCallback(() => {
     clearAdminSession();
@@ -126,9 +132,47 @@ function AdminApplications() {
     }
   }, [moveToAdminLogin]);
 
+  const loadAdminUsers = useCallback(async () => {
+    setIsLoadingAdminUsers(true);
+    setAdminListError("");
+
+    try {
+      const response = await adminAxiosInstance.get(
+        "/admin/users/admins"
+      );
+
+      setAdminUsers(
+        Array.isArray(response.data) ? response.data : []
+      );
+    } catch (error) {
+      if (
+        error?.response?.status === 401 ||
+        error?.response?.status === 403
+      ) {
+        moveToAdminLogin();
+        return;
+      }
+
+      setAdminListError(
+        getApiErrorMessage(
+          error,
+          "관리자 목록을 불러오지 못했습니다."
+        )
+      );
+    } finally {
+      setIsLoadingAdminUsers(false);
+    }
+  }, [moveToAdminLogin]);
+
   useEffect(() => {
     loadApplications();
   }, [loadApplications]);
+
+  useEffect(() => {
+    if (adminModalOpen && adminModalTab === "list") {
+      loadAdminUsers();
+    }
+  }, [adminModalOpen, adminModalTab, loadAdminUsers]);
 
   const counts = useMemo(() => {
     return {
@@ -291,9 +335,12 @@ function AdminApplications() {
   };
 
   const openAdminModal = () => {
+    setAdminModalTab("grant");
     setAdminUsername("");
     setSearchedUser(null);
     setAdminModalMessage("");
+    setAdminUsers([]);
+    setAdminListError("");
     setAdminModalOpen(true);
   };
 
@@ -301,9 +348,12 @@ function AdminApplications() {
     if (isSearchingUser || isProcessing) return;
 
     setAdminModalOpen(false);
+    setAdminModalTab("grant");
     setAdminUsername("");
     setSearchedUser(null);
     setAdminModalMessage("");
+    setAdminUsers([]);
+    setAdminListError("");
   };
 
   const handleSearchUser = async (event) => {
@@ -870,108 +920,187 @@ function AdminApplications() {
             <div style={styles.messageModalHeader}>
               <div>
                 <h3 style={styles.modalTitle}>
-                  관리자 권한 추가
+                  관리자 권한 관리
                 </h3>
                 <p style={styles.modalSubtitle}>
-                  사용자 아이디를 검색하여 관리자 권한을 추가합니다.
+                  관리자 권한을 추가하거나 현재 관리자 계정을 확인합니다.
                 </p>
               </div>
               <button
                 type="button"
                 style={styles.closeButton}
                 onClick={closeAdminModal}
-                aria-label="관리자 권한 추가 팝업 닫기"
+                aria-label="관리자 권한 관리 팝업 닫기"
               >
                 ×
               </button>
             </div>
 
             <div style={styles.adminModalBody}>
-              <form
-                onSubmit={handleSearchUser}
-                style={styles.searchForm}
-              >
-                <input
-                  type="text"
-                  value={adminUsername}
-                  onChange={(event) => {
-                    setAdminUsername(event.target.value);
-                    setSearchedUser(null);
-                    setAdminModalMessage("");
-                  }}
-                  placeholder="사용자 아이디를 입력하세요"
-                  style={styles.searchInput}
-                  disabled={isSearchingUser || isProcessing}
-                />
+              <div style={styles.adminTabs}>
                 <button
-                  type="submit"
+                  type="button"
                   style={{
-                    ...styles.searchButton,
-                    ...(isSearchingUser
-                      ? styles.buttonDisabled
+                    ...styles.adminTabButton,
+                    ...(adminModalTab === "grant"
+                      ? styles.adminTabButtonActive
                       : {}),
                   }}
-                  disabled={isSearchingUser || isProcessing}
+                  onClick={() => setAdminModalTab("grant")}
                 >
-                  {isSearchingUser ? "검색 중..." : "검색"}
+                  권한 추가
                 </button>
-              </form>
 
-              {adminModalMessage && (
-                <div
+                <button
+                  type="button"
                   style={{
-                    ...styles.adminModalMessage,
-                    ...(searchedUser?.is_admin
-                      ? styles.adminModalInfoMessage
+                    ...styles.adminTabButton,
+                    ...(adminModalTab === "list"
+                      ? styles.adminTabButtonActive
                       : {}),
                   }}
+                  onClick={() => setAdminModalTab("list")}
                 >
-                  {adminModalMessage}
-                </div>
-              )}
+                  관리자 목록
+                </button>
+              </div>
 
-              {searchedUser && (
-                <div style={styles.userSearchResult}>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoLabel}>아이디</span>
-                    <span style={styles.infoValue}>
-                      {searchedUser.username}
-                    </span>
-                  </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoLabel}>이메일</span>
-                    <span style={styles.infoValue}>
-                      {searchedUser.email}
-                    </span>
-                  </div>
-                  <div style={styles.infoRow}>
-                    <span style={styles.infoLabel}>권한</span>
-                    <span style={styles.infoValue}>
-                      {searchedUser.is_admin
-                        ? "관리자"
-                        : "일반 사용자"}
-                    </span>
-                  </div>
-
-                  <div style={styles.adminModalFooter}>
+              {adminModalTab === "grant" && (
+                <>
+                  <form
+                    onSubmit={handleSearchUser}
+                    style={styles.searchForm}
+                  >
+                    <input
+                      type="text"
+                      value={adminUsername}
+                      onChange={(event) => {
+                        setAdminUsername(event.target.value);
+                        setSearchedUser(null);
+                        setAdminModalMessage("");
+                      }}
+                      placeholder="사용자 아이디를 입력하세요"
+                      style={styles.searchInput}
+                      disabled={isSearchingUser || isProcessing}
+                    />
                     <button
-                      type="button"
+                      type="submit"
                       style={{
-                        ...(searchedUser.is_admin
-                          ? styles.revokeAdminButton
-                          : styles.grantConfirmButton),
-                        ...(isProcessing
+                        ...styles.searchButton,
+                        ...(isSearchingUser
                           ? styles.buttonDisabled
                           : {}),
                       }}
-                      onClick={openAdminPermissionConfirm}
-                      disabled={isProcessing}
+                      disabled={isSearchingUser || isProcessing}
                     >
-                      {searchedUser.is_admin
-                        ? "관리 권한 해제"
-                        : "관리 권한 추가"}
+                      {isSearchingUser ? "검색 중..." : "검색"}
                     </button>
-                  </div>
+                  </form>
+
+                  {adminModalMessage && (
+                    <div
+                      style={{
+                        ...styles.adminModalMessage,
+                        ...(searchedUser?.is_admin
+                          ? styles.adminModalInfoMessage
+                          : {}),
+                      }}
+                    >
+                      {adminModalMessage}
+                    </div>
+                  )}
+
+                  {searchedUser && (
+                    <div style={styles.userSearchResult}>
+                      <div style={styles.infoRow}>
+                        <span style={styles.infoLabel}>아이디</span>
+                        <span style={styles.infoValue}>
+                          {searchedUser.username}
+                        </span>
+                      </div>
+                      <div style={styles.infoRow}>
+                        <span style={styles.infoLabel}>이메일</span>
+                        <span style={styles.infoValue}>
+                          {searchedUser.email}
+                        </span>
+                      </div>
+                      <div style={styles.infoRow}>
+                        <span style={styles.infoLabel}>권한</span>
+                        <span style={styles.infoValue}>
+                          {searchedUser.is_admin
+                            ? "관리자"
+                            : "일반 사용자"}
+                        </span>
+                      </div>
+
+                      <div style={styles.adminModalFooter}>
+                        <button
+                          type="button"
+                          style={{
+                            ...(searchedUser.is_admin
+                              ? styles.revokeAdminButton
+                              : styles.grantConfirmButton),
+                            ...(isProcessing
+                              ? styles.buttonDisabled
+                              : {}),
+                          }}
+                          onClick={openAdminPermissionConfirm}
+                          disabled={isProcessing}
+                        >
+                          {searchedUser.is_admin
+                            ? "관리 권한 해제"
+                            : "관리 권한 추가"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {adminModalTab === "list" && (
+                <div style={styles.adminListSection}>
+                  {isLoadingAdminUsers ? (
+                    <div style={styles.adminListState}>
+                      관리자 목록을 불러오고 있습니다.
+                    </div>
+                  ) : adminListError ? (
+                    <div style={styles.adminListError}>
+                      <span>{adminListError}</span>
+                      <button
+                        type="button"
+                        style={styles.adminListRetryButton}
+                        onClick={loadAdminUsers}
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  ) : adminUsers.length === 0 ? (
+                    <div style={styles.adminListState}>
+                      등록된 관리자 계정이 없습니다.
+                    </div>
+                  ) : (
+                    <div style={styles.adminList}>
+                      {adminUsers.map((adminUser) => (
+                        <div
+                          key={adminUser.id}
+                          style={styles.adminListItem}
+                        >
+                          <div style={styles.adminListUserInfo}>
+                            <strong style={styles.adminListUsername}>
+                              {adminUser.username}
+                            </strong>
+                            <span style={styles.adminListEmail}>
+                              {adminUser.email}
+                            </span>
+                          </div>
+
+                          <span style={styles.adminBadge}>
+                            관리자
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1408,6 +1537,29 @@ const styles = {
     overflow: "hidden",
   },
   adminModalBody: { padding: "22px 26px 26px" },
+  adminTabs: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    marginBottom: "22px",
+    padding: "4px",
+    borderRadius: "8px",
+    backgroundColor: "#f3f4f6",
+  },
+  adminTabButton: {
+    height: "38px",
+    border: "none",
+    borderRadius: "6px",
+    backgroundColor: "transparent",
+    color: "#6b7280",
+    fontSize: "13px",
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+  adminTabButtonActive: {
+    backgroundColor: "#ffffff",
+    color: "#111827",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.10)",
+  },
   searchForm: {
     display: "flex",
     alignItems: "center",
@@ -1448,6 +1600,83 @@ const styles = {
     border: "1px solid #e5e7eb",
     borderRadius: "8px",
     backgroundColor: "#f9fafb",
+  },
+  adminListSection: {
+    minHeight: "150px",
+  },
+  adminList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    maxHeight: "320px",
+    overflowY: "auto",
+  },
+  adminListItem: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "16px",
+    padding: "14px 16px",
+    border: "1px solid #e5e7eb",
+    borderRadius: "8px",
+    backgroundColor: "#f9fafb",
+  },
+  adminListUserInfo: {
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  adminListUsername: {
+    color: "#111827",
+    fontSize: "14px",
+    fontWeight: 700,
+    userSelect: "text",
+  },
+  adminListEmail: {
+    color: "#6b7280",
+    fontSize: "12px",
+    wordBreak: "break-all",
+    userSelect: "text",
+  },
+  adminBadge: {
+    flexShrink: 0,
+    padding: "5px 9px",
+    borderRadius: "999px",
+    backgroundColor: "#dbeafe",
+    color: "#1d4ed8",
+    fontSize: "11px",
+    fontWeight: 700,
+  },
+  adminListState: {
+    padding: "48px 12px",
+    color: "#9ca3af",
+    fontSize: "13px",
+    textAlign: "center",
+  },
+  adminListError: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "10px",
+    padding: "12px 14px",
+    border: "1px solid #fecaca",
+    borderRadius: "7px",
+    backgroundColor: "#fef2f2",
+    color: "#b91c1c",
+    fontSize: "13px",
+  },
+  adminListRetryButton: {
+    flexShrink: 0,
+    height: "30px",
+    padding: "0 10px",
+    border: "1px solid #dc2626",
+    borderRadius: "6px",
+    backgroundColor: "#ffffff",
+    color: "#dc2626",
+    fontSize: "12px",
+    fontWeight: 600,
+    cursor: "pointer",
   },
   adminModalFooter: {
     display: "flex",

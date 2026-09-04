@@ -4,14 +4,13 @@ import Background from '../components/Background';
 import Frame1 from '../components/Frame1';
 import InputBoxLarge from '../components/InputBoxLarge';
 import PrimaryButton from '../components/PrimaryButton';
-import SecondaryButton from '../components/SecondaryButton';
 import TextButton from '../components/TextButton';
 import profileIcon from '../assets/login.svg';
 import lockIcon from '../assets/password.svg';
 import eyeOnIcon from '../assets/eyeon.svg';
 import eyeOffIcon from '../assets/eyeoff.svg';
 import axios from 'axios';
-import GuestLogin from '../components/GuestLogin';
+import axiosInstance from '../api/axiosInstance';
 import { Colors, FontStyles } from '../components/styleConstants';
 import { clearAllLocalStorageKeys } from '../utils/storage';
 import FindIdModal from '../components/FindIdModal';
@@ -41,7 +40,6 @@ export default function Login() {
   const [pwVisible, setPwVisible] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showGuestLogin, setShowGuestLogin] = useState(false);
   const [showFindId, setShowFindId] = useState(false);
   const [showFindPw, setShowFindPw] = useState(false);
   const [toast, setToast] = useState('');
@@ -77,6 +75,46 @@ export default function Login() {
     }
   }, [location.search]);
 
+  const navigateApprovedUser = () => {
+    // 상태값 우선, 없으면 로컬스토리지 fallback
+    const codeToUse = inviteCode || localStorage.getItem('code');
+
+    if (codeToUse) {
+      // 필요하다면 code를 쿼리로 넘길 수도 있음: `/customroom?code=${encodeURIComponent(codeToUse)}`
+      navigate('/customroom', { replace: true });
+    } else {
+      navigate('/selectroom', { replace: true });
+    }
+  };
+
+  const checkApplicationAndNavigate = async () => {
+    try {
+      const response = await axiosInstance.get('/play-applications/me');
+      const application = response.data?.application || response.data;
+
+      if (application?.status === 'approved') {
+        navigateApprovedUser();
+        return;
+      }
+
+      if (application?.status === 'pending') {
+        navigate('/play-approval/pending', { replace: true });
+        return;
+      }
+
+      // rejected 또는 알 수 없는 상태는 신청 화면으로 이동
+      navigate('/play-approval/apply', { replace: true });
+    } catch (error) {
+      // 신청 기록이 없는 사용자는 최초 신청 화면으로 이동
+      if (error.response?.status === 404) {
+        navigate('/play-approval/apply', { replace: true });
+        return;
+      }
+
+      throw error;
+    }
+  };
+
   const handleLogin = async () => {
     // 빈 값이면 서버까지 보내지 않고 무엇이 빠졌는지 바로 알려준다.
     // (예전에는 그대로 요청을 보내 401 응답의 detail JSON 을 alert 로 그대로 뿜었다)
@@ -100,15 +138,7 @@ export default function Login() {
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
 
-      // 상태값 우선, 없으면 로컬스토리지 fallback
-      const codeToUse = inviteCode || localStorage.getItem('code');
-
-      if (codeToUse) {
-        // 필요하다면 code를 쿼리로 넘길 수도 있음: `/customroom?code=${encodeURIComponent(codeToUse)}`
-        navigate('/customroom', { replace: true });
-      } else {
-        navigate('/selectroom', { replace: true });
-      }
+      await checkApplicationAndNavigate();
     } catch (error) {
       if (!error.response) {
         console.error('로그인 오류:', error.message);
@@ -255,36 +285,6 @@ export default function Login() {
             <TextButton onClick={() => setShowFindId(true)}>{t.findId}</TextButton>
             {/* <TextButton onClick={() => setShowFindPw(true)}>Find Password</TextButton> */}
           </div>
-
-          <SecondaryButton
-            style={{
-              width: '100%',
-              height: '8vh',
-              maxHeight: 64,
-              fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-              marginTop: '2vh',
-            }}
-            onClick={() => setShowGuestLogin(true)}
-            disabled={false}
-          >
-            {t.guestLogin}
-          </SecondaryButton>
-
-          {showGuestLogin && (
-            <div
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0,0,0,0.45)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 9999,
-              }}
-            >
-              <GuestLogin onClose={() => setShowGuestLogin(false)} />
-            </div>
-          )}
 
           {showFindId && (
             <div

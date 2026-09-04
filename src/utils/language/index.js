@@ -1,5 +1,7 @@
 // --- 한국어(ko) 데이터 임포트 ---
 import { Login as LoginKo } from './ko/pages/Login';
+import { PlayApplication as PlayApplicationKo } from './ko/pages/PlayApplication';
+import { PlayApprovalStatus as PlayApprovalStatusKo } from './ko/pages/PlayApprovalStatus';
 import { Signup01 as Signup01Ko } from './ko/pages/Signup01';
 import { Signup02 as Signup02Ko } from './ko/pages/Signup02';
 import { SelectRoom as SelectRoomKo } from './ko/pages/SelectRoom';
@@ -34,6 +36,8 @@ import { IntroductionPopup as IntroductionPopupKo } from './ko/components/Introd
 
 // --- 영어(en) 데이터 임포트 ---
 import { Login as LoginEn } from './en/pages/Login';
+import { PlayApplication as PlayApplicationEn } from './en/pages/PlayApplication';
+import { PlayApprovalStatus as PlayApprovalStatusEn } from './en/pages/PlayApprovalStatus';
 import { Signup01 as Signup01En } from './en/pages/Signup01';
 import { Signup02 as Signup02En } from './en/pages/Signup02';
 import { SelectRoom as SelectRoomEn } from './en/pages/SelectRoom';
@@ -80,7 +84,7 @@ export const translations = {
     Paragraphs: ParagraphsKo, Game03: Game03Ko, UiElements: UiElementsKo, Game04: Game04Ko,
     Game05_1: Game05_1Ko, Game08: Game08Ko, Game09: Game09KoData,
     ResultPopup: ResultPopupKo, GuestLogin: koGuestLogin,
-    IntroductionPopup: IntroductionPopupKo, // ko 객체 추가
+    IntroductionPopup: IntroductionPopupKo, PlayApplication: PlayApplicationKo, PlayApprovalStatus: PlayApprovalStatusKo, // ko 객체 추가
   },
 
   en: {
@@ -93,6 +97,6 @@ export const translations = {
     Paragraphs: ParagraphsEn, Game03: Game03En, UiElements: UiElementsEn, Game04: Game04En,
     Game05_1: Game05_1En, Game08: Game08En, Game09: Game09EnData,
     ResultPopup: ResultPopupEn, GuestLogin: enGuestLogin,
-    IntroductionPopup: IntroductionPopupEn, // en 객체 추가
+    IntroductionPopup: IntroductionPopupEn, PlayApplication: PlayApplicationEn, PlayApprovalStatus: PlayApprovalStatusEn, // en 객체 추가
   } 
 };

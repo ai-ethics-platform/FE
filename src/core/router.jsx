@@ -61,9 +61,12 @@ import CustomRoom from '../pages/CustomRoom';
 import ChatPage from '../pages/ChatPage';
 import ChatPage2 from '../pages/ChatPage2';
 import ChatPage3 from '../pages/ChatPage3';
+
 import AdminApplications from '../pages/admin/AdminApplications';
 import AdminLogin from '../pages/admin/AdminLogin';
 import AdminProtectedRoute from '../components/admin/AdminProtectedRoute';
+
+import PlayApprovalProtectedRoute from '../components/playApproval/PlayApprovalProtectedRoute';
 
 function GameProvidersLayout() {
   return (
@@ -79,9 +82,14 @@ function Router() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* 로그인 */}
         <Route path="/" element={<Login />} />
+
+        {/* 회원가입 */}
         <Route path="/signup01" element={<Signup01 />} />
         <Route path="/signup02" element={<Signup02 />} />
+
+        {/* 컴포넌트 확인 */}
         <Route
           path="/componentcheck"
           element={<Componentcheck />}
@@ -92,17 +100,23 @@ function Router() {
           path="/play-approval/apply"
           element={<PlayApplication />}
         />
+
         <Route
           path="/play-approval/pending"
           element={<PlayApprovalStatus />}
         />
+
         <Route
           path="/play-approval/approved"
           element={<PlayApprovalStatus />}
         />
 
         {/* 관리자 */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin/login"
+          element={<AdminLogin />}
+        />
+
         <Route
           path="/admin/applications"
           element={
@@ -112,71 +126,262 @@ function Router() {
           }
         />
 
-        <Route path="/selectroom" element={<SelectRoom />} />
-        <Route path="/waitingroom" element={<WaitingRoom />} />
-        <Route path="/create00" element={<Create00 />} />
-        <Route path="/create01" element={<Create01 />} />
-        <Route path="/create02" element={<Create02 />} />
-        <Route path="/create03" element={<Create03 />} />
-        <Route path="/create04" element={<Create04 />} />
-        <Route path="/create05" element={<Create05 />} />
-        <Route path="/editor01" element={<Editor01 />} />
-        <Route path="/editor02" element={<Editor02 />} />
-        <Route path="/editor02_1" element={<Editor02_1 />} />
-        <Route path="/editor02_2" element={<Editor02_2 />} />
-        <Route path="/editor02_3" element={<Editor02_3 />} />
-        <Route path="/editor03" element={<Editor03 />} />
-        <Route path="/editor04" element={<Editor04 />} />
-        <Route path="/editor05" element={<Editor05 />} />
-        <Route path="/editor06" element={<Editor06 />} />
-        <Route path="/editor07" element={<Editor07 />} />
-        <Route path="/editor07_1" element={<Editor07_1 />} />
-        <Route path="/editor08" element={<Editor08 />} />
-        <Route path="/editor09" element={<Editor09 />} />
-        <Route path="/editor10" element={<Editor10 />} />
-        <Route path="/editor10_1" element={<Editor10_1 />} />
-        <Route path="/creatorending" element={<CreatorEnding />} />
-        <Route path="/customroom" element={<CustomRoom />} />
-        <Route path="/chatpage" element={<ChatPage />} />
-        <Route path="/chatpage2" element={<ChatPage2 />} />
-        <Route path="/chatpage3" element={<ChatPage3 />} />
+        {/* =========================================
+            승인된 사용자만 접근 가능한 서비스 영역
+        ========================================= */}
+        <Route element={<PlayApprovalProtectedRoute />}>
 
-        <Route element={<GameProvidersLayout />}>
-          <Route path="/gameintro" element={<GameIntro />} />
-          <Route path="/gameintro2" element={<GameIntro2 />} />
+          {/* 방 선택 / 대기 */}
           <Route
-            path="/selecthomemate"
-            element={<SelectHomeMate />}
+            path="/selectroom"
+            element={<SelectRoom />}
           />
-          <Route path="/matename" element={<MateName />} />
-          <Route path="/mictest" element={<MicTest />} />
-          <Route path="/game01" element={<Game01 />} />
-          <Route path="/game02" element={<Game02 />} />
-          <Route path="/game03" element={<Game03 />} />
-          <Route path="/game04" element={<Game04 />} />
-          <Route path="/game05" element={<Game05 />} />
-          <Route path="/game05_1" element={<Game05_1 />} />
-          <Route path="/game06" element={<Game06 />} />
-          <Route path="/game07" element={<Game07 />} />
-          <Route path="/game08" element={<Game08 />} />
-          <Route path="/game09" element={<Game09 />} />
+
           <Route
-            path="/character_description1"
-            element={<CD1 />}
+            path="/waitingroom"
+            element={<WaitingRoom />}
           />
+
+          {/* 커스텀 게임 생성 */}
           <Route
-            path="/character_description2"
-            element={<CD2 />}
+            path="/create00"
+            element={<Create00 />}
           />
+
           <Route
-            path="/character_description3"
-            element={<CD3 />}
+            path="/create01"
+            element={<Create01 />}
           />
-          <Route path="/gamemap" element={<GameMap />} />
+
           <Route
-            path="/character_all"
-            element={<CD_all />}
+            path="/create02"
+            element={<Create02 />}
           />
+
+          <Route
+            path="/create03"
+            element={<Create03 />}
+          />
+
+          <Route
+            path="/create04"
+            element={<Create04 />}
+          />
+
+          <Route
+            path="/create05"
+            element={<Create05 />}
+          />
+
+          {/* 커스텀 게임 편집 */}
+          <Route
+            path="/editor01"
+            element={<Editor01 />}
+          />
+
+          <Route
+            path="/editor02"
+            element={<Editor02 />}
+          />
+
+          <Route
+            path="/editor02_1"
+            element={<Editor02_1 />}
+          />
+
+          <Route
+            path="/editor02_2"
+            element={<Editor02_2 />}
+          />
+
+          <Route
+            path="/editor02_3"
+            element={<Editor02_3 />}
+          />
+
+          <Route
+            path="/editor03"
+            element={<Editor03 />}
+          />
+
+          <Route
+            path="/editor04"
+            element={<Editor04 />}
+          />
+
+          <Route
+            path="/editor05"
+            element={<Editor05 />}
+          />
+
+          <Route
+            path="/editor06"
+            element={<Editor06 />}
+          />
+
+          <Route
+            path="/editor07"
+            element={<Editor07 />}
+          />
+
+          <Route
+            path="/editor07_1"
+            element={<Editor07_1 />}
+          />
+
+          <Route
+            path="/editor08"
+            element={<Editor08 />}
+          />
+
+          <Route
+            path="/editor09"
+            element={<Editor09 />}
+          />
+
+          <Route
+            path="/editor10"
+            element={<Editor10 />}
+          />
+
+          <Route
+            path="/editor10_1"
+            element={<Editor10_1 />}
+          />
+
+          <Route
+            path="/creatorending"
+            element={<CreatorEnding />}
+          />
+
+          {/* 커스텀 방 */}
+          <Route
+            path="/customroom"
+            element={<CustomRoom />}
+          />
+
+          {/* 채팅 */}
+          <Route
+            path="/chatpage"
+            element={<ChatPage />}
+          />
+
+          <Route
+            path="/chatpage2"
+            element={<ChatPage2 />}
+          />
+
+          <Route
+            path="/chatpage3"
+            element={<ChatPage3 />}
+          />
+
+          {/* =========================================
+              WebSocket / WebRTC가 필요한 게임 영역
+          ========================================= */}
+          <Route element={<GameProvidersLayout />}>
+
+            <Route
+              path="/gameintro"
+              element={<GameIntro />}
+            />
+
+            <Route
+              path="/gameintro2"
+              element={<GameIntro2 />}
+            />
+
+            <Route
+              path="/selecthomemate"
+              element={<SelectHomeMate />}
+            />
+
+            <Route
+              path="/matename"
+              element={<MateName />}
+            />
+
+            <Route
+              path="/mictest"
+              element={<MicTest />}
+            />
+
+            <Route
+              path="/game01"
+              element={<Game01 />}
+            />
+
+            <Route
+              path="/game02"
+              element={<Game02 />}
+            />
+
+            <Route
+              path="/game03"
+              element={<Game03 />}
+            />
+
+            <Route
+              path="/game04"
+              element={<Game04 />}
+            />
+
+            <Route
+              path="/game05"
+              element={<Game05 />}
+            />
+
+            <Route
+              path="/game05_1"
+              element={<Game05_1 />}
+            />
+
+            <Route
+              path="/game06"
+              element={<Game06 />}
+            />
+
+            <Route
+              path="/game07"
+              element={<Game07 />}
+            />
+
+            <Route
+              path="/game08"
+              element={<Game08 />}
+            />
+
+            <Route
+              path="/game09"
+              element={<Game09 />}
+            />
+
+            <Route
+              path="/character_description1"
+              element={<CD1 />}
+            />
+
+            <Route
+              path="/character_description2"
+              element={<CD2 />}
+            />
+
+            <Route
+              path="/character_description3"
+              element={<CD3 />}
+            />
+
+            <Route
+              path="/gamemap"
+              element={<GameMap />}
+            />
+
+            <Route
+              path="/character_all"
+              element={<CD_all />}
+            />
+
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

@@ -26,7 +26,7 @@ const API_BASE =
   import.meta.env.VITE_API_BASE_URL ||
   'https://dilemmai-idl.com';
 
-const LATEST_UPDATE = '2026-08-06';
+const LATEST_UPDATE = '2026-09-04';
 
 
 export default function Login() {

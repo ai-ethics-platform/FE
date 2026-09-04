@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 
 import axiosInstance from '../../api/axiosInstance';
 import Background from '../../components/Background';
+import BackButton from '../../components/BackButton';
+import IntroductionPopup from '../../components/IntroductionPopup';
 import { translations } from '../../utils/language/index';
 
 import logo from '../../assets/logo.svg';
@@ -26,10 +28,12 @@ function getApiErrorMessage(error, fallbackMessage) {
   }
 
   if (Array.isArray(detail) && detail.length > 0) {
-    return detail
-      .map((item) => item?.msg)
-      .filter(Boolean)
-      .join(', ') || fallbackMessage;
+    return (
+      detail
+        .map((item) => item?.msg)
+        .filter(Boolean)
+        .join(', ') || fallbackMessage
+    );
   }
 
   return fallbackMessage;
@@ -51,6 +55,7 @@ export default function PlayApprovalStatus() {
     useState('pending');
   const [isChecking, setIsChecking] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isIntroPopupOpen, setIsIntroPopupOpen] = useState(false);
 
   const isApproved = applicationStatus === 'approved';
 
@@ -146,6 +151,10 @@ export default function PlayApprovalStatus() {
     };
   }, [loadApplicationStatus]);
 
+  const handleBackClick = () => {
+    navigate('/');
+  };
+
   const handleAction = async () => {
     if (isApproved) {
       const inviteCode = localStorage.getItem('code');
@@ -164,11 +173,18 @@ export default function PlayApprovalStatus() {
   return (
     <Background bgIndex={2}>
       <div style={styles.page}>
+        <div style={styles.backButton}>
+          <div onClick={handleBackClick}>
+            <BackButton />
+          </div>
+        </div>
+
         <img
           src={questionMark}
-          alt=""
+          alt="게임 소개"
           draggable={false}
           style={styles.questionMark}
+          onClick={() => setIsIntroPopupOpen(true)}
         />
 
         <main style={styles.container}>
@@ -221,6 +237,17 @@ export default function PlayApprovalStatus() {
             />
           </button>
         </main>
+        {isIntroPopupOpen && (
+          <div
+            style={styles.introOverlay}
+            onClick={() => setIsIntroPopupOpen(false)}
+          >
+            <IntroductionPopup
+              isOpen={isIntroPopupOpen}
+              onClose={() => setIsIntroPopupOpen(false)}
+            />
+          </div>
+        )}
       </div>
     </Background>
   );
@@ -238,6 +265,26 @@ const styles = {
     userSelect: 'none',
   },
 
+  backButton: {
+    position: 'absolute',
+    top: '-10px',
+    left: '-10px',
+    zIndex: 10,
+  },
+
+  introOverlay: {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100vw',
+  height: '100vh',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 10001,
+  },
+
   questionMark: {
     position: 'absolute',
     top: '24px',
@@ -246,6 +293,7 @@ const styles = {
     height: '52px',
     objectFit: 'contain',
     zIndex: 10,
+    cursor: 'pointer',
   },
 
   container: {

@@ -858,9 +858,6 @@ function AdminApplications() {
             <div style={styles.messageModalHeader}>
               <div>
                 <h3 style={styles.modalTitle}>신청 메시지</h3>
-                <p style={styles.modalSubtitle}>
-                  신청자가 승인 시 남긴 메시지입니다.
-                </p>
               </div>
               <button
                 type="button"

@@ -1,26 +1,27 @@
 /* Every rule is scoped to the lazy-loaded renewal screen, including dialogs. */
 .renewal-chat {
-  --rn-ink: #24262b;
-  --rn-body: #42464f;
-  --rn-muted: #656b75;
-  --rn-quiet: #6e7580;
-  --rn-line: #e4e7ec;
-  --rn-surface: #fff;
-  --rn-subtle: #f4f5f7;
-  --rn-neutral: #eceef2;
-  --rn-accent: #bc4b2b;
-  --rn-accent-hover: #9f4028;
-  --rn-accent-soft: #fff3ed;
-  --rn-accent-border: #ecd2c6;
-  --rn-focus-border: #bd806a;
-  --rn-focus: #bc4b2b0d;
-  --rn-sidebar: #25272c;
-  --rn-sidebar-text: #f1f2f4;
-  --rn-sidebar-muted: #afb4be;
-  --rn-sidebar-line: #454953;
-  --rn-sidebar-surface: #30333b;
-  --rn-sidebar-active: #3b302e;
-  --rn-sidebar-accent: #f6b296;
+  --rn-ink: #302c29;
+  --rn-body: #49433e;
+  --rn-muted: #6f675f;
+  --rn-quiet: #746d65;
+  --rn-line: #e5dfd7;
+  --rn-surface: #fffefd;
+  --rn-subtle: #f6f3ee;
+  --rn-neutral: #eee9e2;
+  --rn-brand: #bc4b2b;
+  --rn-accent: #a95337;
+  --rn-accent-hover: #87402a;
+  --rn-accent-soft: #f8eee7;
+  --rn-accent-border: #e7cfc0;
+  --rn-focus-border: #b89c89;
+  --rn-focus: #b89c8912;
+  --rn-sidebar: #f0ece6;
+  --rn-sidebar-text: #4b443d;
+  --rn-sidebar-muted: #6c635b;
+  --rn-sidebar-line: #dcd4c9;
+  --rn-sidebar-surface: #e9e3da;
+  --rn-sidebar-active: #fffefd;
+  --rn-sidebar-accent: var(--rn-accent);
   position: fixed;
   inset: 0;
   height: 100dvh;
@@ -43,13 +44,13 @@
 .renewal-chat button:focus-visible, .renewal-chat summary:focus-visible { outline: 3px solid var(--rn-accent); outline-offset: 4px; }
 .renewal-chat svg { flex-shrink: 0; }
 .renewal-chat .rn-header { height: 76px; flex: 0 0 76px; display: flex; align-items: center; gap: 18px; padding: 0 32px; border-bottom: 1px solid var(--rn-line); background: var(--rn-surface); z-index: 4; }
-.renewal-chat .rn-brand { display: flex; align-items: center; gap: 8px; color: var(--rn-accent); font-size: 30px; line-height: 1; font-weight: 600; letter-spacing: -.04em; white-space: nowrap; }
+.renewal-chat .rn-brand { display: flex; align-items: center; gap: 8px; color: var(--rn-brand); font-size: 30px; line-height: 1; font-weight: 600; letter-spacing: -.04em; white-space: nowrap; }
 .renewal-chat .rn-brand-logo { display: block; width: 142px; height: 35px; flex-shrink: 0; background: currentColor; mask-size: contain; mask-position: center; mask-repeat: no-repeat; -webkit-mask-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat; }
 .renewal-chat .rn-header-actions { margin-left: auto; display: flex; align-items: center; gap: 14px; }
 .renewal-chat .rn-exit { padding: 7px 11px; color: var(--rn-muted); font-size: 13px; }
 .renewal-chat .rn-exit:hover:not(:disabled) { background: var(--rn-subtle); }
 .renewal-chat .rn-workspace { flex: 1; min-height: 0; display: flex; position: relative; }
-.renewal-chat .rn-sidebar { width: 278px; flex: 0 0 278px; display: flex; flex-direction: column; padding: 36px 25px 20px; border-right: 1px solid #202227; background: var(--rn-sidebar); color: var(--rn-sidebar-text); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #505561 transparent; }
+.renewal-chat .rn-sidebar { width: 278px; flex: 0 0 278px; display: flex; flex-direction: column; padding: 36px 25px 20px; border-right: 1px solid var(--rn-sidebar-line); background: var(--rn-sidebar); color: var(--rn-sidebar-text); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #c7bfb4 transparent; }
 .renewal-chat .rn-eyebrow { display: block; font-size: 10px; font-weight: 700; letter-spacing: .14em; color: var(--rn-accent); }
 .renewal-chat .rn-progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--rn-sidebar-muted); }
 .renewal-chat .rn-progress-label span:first-child { color: var(--rn-sidebar-text); font-weight: 600; }
@@ -58,9 +59,9 @@
 .renewal-chat .rn-steps { list-style: none; padding: 0; margin: 23px -7px 26px; }
 .renewal-chat .rn-steps li { display: flex; align-items: center; gap: 13px; padding: 11px 12px; min-height: 71px; border: 1px solid transparent; border-radius: 11px; position: relative; color: var(--rn-sidebar-muted); }
 .renewal-chat .rn-steps li + li { margin-top: 3px; }
-.renewal-chat .rn-steps li.is-current { background: var(--rn-sidebar-active); border-color: #705044; box-shadow: inset 3px 0 0 var(--rn-sidebar-accent); color: var(--rn-sidebar-accent); }
+.renewal-chat .rn-steps li.is-current { background: var(--rn-sidebar-active); border-color: var(--rn-accent-border); box-shadow: inset 3px 0 0 var(--rn-sidebar-accent); color: var(--rn-sidebar-accent); }
 .renewal-chat .rn-step-number { flex: 0 0 29px; width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid var(--rn-sidebar-line); border-radius: 50%; font-size: 11px; font-weight: 650; background: var(--rn-sidebar-surface); }
-.renewal-chat .is-current .rn-step-number { background: var(--rn-sidebar-accent); color: var(--rn-sidebar); border-color: var(--rn-sidebar-accent); }
+.renewal-chat .is-current .rn-step-number { background: var(--rn-sidebar-accent); color: var(--rn-surface); border-color: var(--rn-sidebar-accent); }
 .renewal-chat .is-complete .rn-step-number { background: var(--rn-sidebar-surface); border-color: var(--rn-sidebar-line); color: var(--rn-sidebar-accent); }
 .renewal-chat .is-complete .rn-step-label { color: var(--rn-sidebar-text); }
 .renewal-chat .rn-step-label { display: block; font-size: 13px; font-weight: 650; }
@@ -72,7 +73,7 @@
 .renewal-chat .rn-eyebrow > span { color: var(--rn-quiet); margin-left: 5px; }
 .renewal-chat .rn-main-heading h1 { font-size: 27px; font-weight: 720; letter-spacing: -.05em; line-height: 1.4; margin-top: 10px; text-wrap: balance; }
 .renewal-chat .rn-main-heading p { color: var(--rn-muted); font-size: 12px; margin-top: 8px; max-width: 650px; line-height: 1.8; word-break: keep-all; }
-.renewal-chat .rn-conversation { flex: 1; min-height: 0; overflow-y: auto; overflow-anchor: none; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #c8ccd4 transparent; }
+.renewal-chat .rn-conversation { flex: 1; min-height: 0; overflow-y: auto; overflow-anchor: none; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #c7bfb4 transparent; }
 .renewal-chat .rn-conversation-inner { max-width: 900px; padding: 29px 36px 34px; margin: 0 auto; }
 .renewal-chat .rn-conversation-start { display: flex; align-items: center; justify-content: center; gap: 14px; color: var(--rn-quiet); font-size: 10px; margin: 0 0 32px; }
 .renewal-chat .rn-conversation-start > span { flex: 1; max-width: 65px; height: 1px; background: var(--rn-line); }
@@ -104,7 +105,7 @@
 .renewal-chat .rn-suggestions button:hover:not(:disabled) { background: var(--rn-accent-soft); border-color: var(--rn-accent-border); color: var(--rn-accent-hover); }
 .renewal-chat .rn-next { flex-shrink: 0; padding: 6px 2px 6px 9px; color: var(--rn-accent); font-size: 11px; font-weight: 650; }
 .renewal-chat .rn-next:hover:not(:disabled) { background: var(--rn-accent-soft); }
-.renewal-chat .rn-composer { display: flex; align-items: flex-end; gap: 12px; padding: 15px 14px 15px 20px; background: var(--rn-surface); border: 1px solid var(--rn-line); border-radius: 14px; box-shadow: 0 3px 12px #24262b08; transition: border-color .2s, box-shadow .2s; }
+.renewal-chat .rn-composer { display: flex; align-items: flex-end; gap: 12px; padding: 15px 14px 15px 20px; background: var(--rn-surface); border: 1px solid var(--rn-line); border-radius: 14px; box-shadow: 0 3px 12px #302c2908; transition: border-color .2s, box-shadow .2s; }
 .renewal-chat .rn-composer:focus-within { border-color: var(--rn-focus-border); box-shadow: 0 0 0 3px var(--rn-focus); }
 .renewal-chat .rn-composer textarea { min-width: 0; width: 100%; min-height: 44px; max-height: 132px; flex: 1; padding: 10px 0; border: none; outline: none; resize: none; background: transparent; color: var(--rn-ink); font-size: 14px; line-height: 1.65; scrollbar-width: thin; }
 .renewal-chat .rn-composer textarea::placeholder { color: var(--rn-quiet); opacity: 1; }
@@ -116,8 +117,8 @@
 .renewal-chat .rn-back { font-size: 10px; color: var(--rn-muted); }
 .renewal-chat .rn-error { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; background: #fff2ed; border: 1px solid #f0d2c2; border-radius: 10px; color: #9b4830; padding: 12px 15px; margin-bottom: 12px; }
 .renewal-chat .rn-error button { text-decoration: underline; flex-shrink: 0; font-weight: 650; padding: 5px 0; }
-.renewal-chat .rn-latest { display: flex; margin: -40px auto 12px; position: relative; font-size: 11px; background: var(--rn-surface); border-color: var(--rn-line); color: var(--rn-muted); padding: 6px 13px; border-radius: 24px; box-shadow: 0 2px 7px #24262b0d; }
-.renewal-chat .rn-complete { display: flex; align-items: center; gap: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--rn-accent-border); border-radius: 12px; background: var(--rn-accent-soft); }
+.renewal-chat .rn-latest { display: flex; margin: -40px auto 12px; position: relative; font-size: 11px; background: var(--rn-surface); border-color: var(--rn-line); color: var(--rn-muted); padding: 6px 13px; border-radius: 24px; box-shadow: 0 2px 7px #302c290d; }
+.renewal-chat .rn-complete { display: flex; align-items: center; gap: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--rn-line); border-radius: 12px; background: var(--rn-subtle); }
 .renewal-chat .rn-complete strong { font-size: 13px; color: var(--rn-accent-hover); }
 .renewal-chat .rn-complete p { font-size: 11px; color: var(--rn-muted); margin-top: 3px; }
 .renewal-chat .rn-complete-icon { display: grid; place-items: center; width: 30px; height: 30px; color: var(--rn-accent); background: var(--rn-accent-border); border-radius: 50%; flex-shrink: 0; }
@@ -126,8 +127,8 @@
 .renewal-chat .rn-complete .rn-primary { margin-left: auto; flex-shrink: 0; }
 .renewal-chat .rn-secondary { padding: 10px 15px; border-color: var(--rn-line); background: var(--rn-surface); font-size: 12px; }
 .renewal-chat .rn-secondary:hover { background: var(--rn-subtle); }
-.renewal-chat .rn-dialog { color: var(--rn-ink); background: var(--rn-surface); border: 1px solid var(--rn-line); padding: 30px; border-radius: 18px; width: min(420px, calc(100vw - 32px)); box-shadow: 0 20px 100px #181a2040; margin: auto; }
-.renewal-chat .rn-dialog::backdrop { background: #181a2070; backdrop-filter: blur(3px); }
+.renewal-chat .rn-dialog { color: var(--rn-ink); background: var(--rn-surface); border: 1px solid var(--rn-line); padding: 30px; border-radius: 18px; width: min(420px, calc(100vw - 32px)); box-shadow: 0 20px 100px #302c2933; margin: auto; }
+.renewal-chat .rn-dialog::backdrop { background: #302c2966; backdrop-filter: blur(3px); }
 .renewal-chat .rn-dialog-icon { color: var(--rn-accent); background: var(--rn-accent-soft); width: 45px; height: 45px; display: grid; place-items: center; border-radius: 13px; margin-bottom: 18px; }
 .renewal-chat .rn-dialog h2 { font-size: 21px; font-weight: 700; line-height: 1.5; }
 .renewal-chat .rn-dialog p { color: var(--rn-muted); font-size: 13px; line-height: 1.8; margin-top: 10px; word-break: keep-all; }
@@ -155,8 +156,8 @@
   .renewal-chat .rn-exit { font-size: 11px; padding: 7px 4px; }
   .renewal-chat .rn-mobile-summary { display: inline-flex; width: 36px; height: 36px; }
   .renewal-chat .rn-sidebar { display: none; }
-  .renewal-chat .rn-sidebar[data-open="true"] { display: flex; position: absolute; top: 0; bottom: 0; left: 0; z-index: 3; width: min(300px, 88vw); padding-top: 25px; box-shadow: 10px 0 25px #181a2040; }
-  .renewal-chat .rn-sidebar-backdrop { display: block; position: absolute; inset: 0; z-index: 2; border: none; border-radius: 0; background: #181a207a; width: 100%; }
+  .renewal-chat .rn-sidebar[data-open="true"] { display: flex; position: absolute; top: 0; bottom: 0; left: 0; z-index: 3; width: min(300px, 88vw); padding-top: 25px; box-shadow: 10px 0 25px #302c2933; }
+  .renewal-chat .rn-sidebar-backdrop { display: block; position: absolute; inset: 0; z-index: 2; border: none; border-radius: 0; background: #302c2966; width: 100%; }
   .renewal-chat .rn-main-heading { padding: 24px 22px 20px; }
   .renewal-chat .rn-main-heading h1 { font-size: 23px; }
   .renewal-chat .rn-main-heading p { font-size: 11px; }

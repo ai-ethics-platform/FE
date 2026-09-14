@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import logo from '../../assets/logo.svg';
 import { getRenewalSuggestions } from '../../utils/renewalSuggestions';
 import './renewal-chat.css';
 
@@ -21,7 +22,6 @@ function Icon({ name, size = 20 }) {
     spark: <><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z" /><path d="m20 2 .6 1.4L22 4l-1.4.6L20 6l-.6-1.4L18 4l1.4-.6L20 2Z" /></>,
     book: <><path d="M12 6C9 4 5 4 3 5v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1Zm0 0v14" /></>,
     list: <><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" /></>,
-    bulb: <><path d="M8 15a7 7 0 1 1 8 0v3H8v-3ZM9 21h6M9 18h6" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.spark}</svg>;
 }
@@ -38,11 +38,6 @@ function isStepReady(step, context) {
     roles: ['char1', 'char2', 'char3', 'chardes1', 'chardes2', 'chardes3'],
   };
   return (fields[step] || []).length > 0 && fields[step].every(key => hasText(context[key]));
-}
-
-function SummaryItem({ label, value }) {
-  if (!hasText(value)) return null;
-  return <div className="rn-summary-item"><dt>{label}</dt><dd>{Array.isArray(value) ? value.join('\n\n') : value}</dd></div>;
 }
 
 function ConfirmDialog({ action, onClose, onConfirm }) {
@@ -71,15 +66,32 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
   const [following, setFollowing] = useState(true);
   const scrollRef = useRef(null);
   const followRef = useRef(true);
+  const autoScrollTopRef = useRef(null);
   const blocked = loading || creating || needsInit;
   const visibleMessages = messages.filter(message => !message.hidden && message.role !== 'system');
   const ready = !blocked && isStepReady(step, context);
   const showSuggestions = !blocked && !error && (suggestions.replies.length > 0 || suggestions.offerNext);
   const progress = showTemplateButton ? 100 : stepIndex * 20;
 
-  useEffect(() => {
-    if (followRef.current && scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, loading, step]);
+  const scrollToLatestTurn = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const latest = container.querySelector('[role="log"]')?.lastElementChild;
+    if (!latest) return;
+
+    // Keep the question in view with the start of its answer. A very long user
+    // message must not push the new answer below the visible conversation.
+    const previous = latest.previousElementSibling;
+    const showQuestion = latest.classList.contains('is-assistant') &&
+      previous?.classList.contains('is-user') && previous.offsetHeight < container.clientHeight / 3;
+    const anchor = showQuestion ? previous : latest;
+    container.scrollTop += anchor.getBoundingClientRect().top - container.getBoundingClientRect().top - 24;
+    autoScrollTopRef.current = container.scrollTop;
+  }, []);
+
+  useLayoutEffect(() => {
+    if (followRef.current) scrollToLatestTurn();
+  }, [messages, loading, step, scrollToLatestTurn]);
 
   useEffect(() => {
     if (!blocked) inputRef.current?.focus({ preventScroll: true });
@@ -95,10 +107,7 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
   return (
     <div className="renewal-chat">
       <header className="rn-header">
-        <div className="rn-brand"><span className="rn-brand-mark"><Icon name="spark" size={21} /></span><span>DILEMMA<span className="rn-brand-dot">.I</span></span></div>
-        <span className="rn-header-divider" />
-        <span className="rn-workspace-name">딜레마 제작 스튜디오</span>
-        <span className="rn-beta">BETA</span>
+        <div className="rn-brand"><span className="rn-brand-logo" role="img" aria-label="DilemmA.I." style={{ maskImage: `url("${logo}")`, WebkitMaskImage: `url("${logo}")` }} /><span>Creator</span></div>
         <div className="rn-header-actions">
           <button type="button" className="rn-mobile-summary rn-icon-button" aria-label={sidebarOpen ? '제작 현황 닫기' : '제작 현황 열기'} aria-expanded={sidebarOpen} aria-controls="rn-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Icon name={sidebarOpen ? 'close' : 'list'} /></button>
           <button type="button" className="rn-exit" disabled={loading || creating} onClick={() => setConfirmAction('exit')}><Icon name="back" size={16} /><span>나가기</span></button>
@@ -108,7 +117,6 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
       <div className="rn-workspace">
         {sidebarOpen && <button type="button" className="rn-sidebar-backdrop" aria-label="제작 현황 닫기" onClick={() => setSidebarOpen(false)} />}
         <aside className="rn-sidebar" id="rn-sidebar" data-open={sidebarOpen} aria-label="게임 제작 현황">
-          <div className="rn-project-heading"><span className="rn-eyebrow">YOUR DILEMMA</span><h2>작은 질문에서,<br />새로운 생각으로.</h2><p>AI와 함께 만드는 우리 수업의 딜레마</p></div>
           <div className="rn-progress-label"><span>게임 제작 단계</span><span>{showTemplateButton ? 5 : stepIndex} / 5 완료</span></div>
           <div className="rn-progress-track" role="progressbar" aria-label="게임 제작 진행률" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress}%` }} /></div>
           <ol className="rn-steps">
@@ -122,32 +130,14 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
             })}
           </ol>
 
-          <section className="rn-summary" aria-label="만들고 있는 게임">
-            <h3><Icon name="book" size={16} />만들고 있는 게임</h3>
-            {hasText(context.topic) ? <>
-              <div className="rn-topic-label">주제</div><p className="rn-chosen-topic">{context.topic}</p>
-              <details><summary>지금까지의 내용 보기<Icon name="arrow" size={14} /></summary><dl>
-                <SummaryItem label="이야기의 시작" value={context.opening} />
-                <SummaryItem label="딜레마 상황" value={context.dilemma_situation} />
-                <SummaryItem label="핵심 질문" value={context.question} />
-                <SummaryItem label="선택 1" value={context.choice1} />
-                <SummaryItem label="선택 2" value={context.choice2} />
-                <SummaryItem label="선택 1의 예상하지 못한 결과" value={context.flips_agree_texts} />
-                <SummaryItem label="선택 2의 예상하지 못한 결과" value={context.flips_disagree_texts} />
-                {[1, 2, 3].map(index => <SummaryItem key={index} label={context[`char${index}`] || `등장인물 ${index}`} value={context[`chardes${index}`]} />)}
-                <SummaryItem label="선택 1의 결말" value={context.agreeEnding} />
-                <SummaryItem label="선택 2의 결말" value={context.disagreeEnding} />
-              </dl></details>
-            </> : <p className="rn-summary-empty">주제를 정하면 이곳에<br />게임의 내용이 하나씩 채워져요.</p>}
-          </section>
-          <div className="rn-sidebar-tip"><Icon name="bulb" size={18} /><div><strong>완벽한 시작이 아니어도 괜찮아요.</strong><p>떠오르는 생각부터 적어 보세요.<br />대화하며 함께 다듬을 수 있어요.</p></div></div>
-          <span className="rn-sidebar-footer">다른 선택, 더 넓은 생각.</span>
         </aside>
 
         <main className="rn-main">
-          <div className="rn-main-heading"><div><span className="rn-eyebrow">STEP {String(stepIndex + 1).padStart(2, '0')} <span>/ 05</span></span><h1>{current.title}</h1><p>{current.description}</p></div><span className="rn-guide-status"><span />AI 제작 가이드</span></div>
+          <div className="rn-main-heading"><div><span className="rn-eyebrow">STEP {String(stepIndex + 1).padStart(2, '0')} <span>/ 05</span></span><h1>{current.title}</h1><p>{current.description}</p></div></div>
           <div className="rn-conversation" ref={scrollRef} onScroll={event => {
             const element = event.currentTarget;
+            if (autoScrollTopRef.current !== null && Math.abs(element.scrollTop - autoScrollTopRef.current) < 1) return;
+            autoScrollTopRef.current = null;
             const nearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 90;
             followRef.current = nearBottom;
             setFollowing(nearBottom);
@@ -166,7 +156,7 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
           </div>
 
           <div className="rn-composer-area">
-            {!following && <button type="button" className="rn-latest" onClick={() => { followRef.current = true; setFollowing(true); scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }}>최근 대화 보기 ↓</button>}
+            {!following && <button type="button" className="rn-latest" onClick={() => { followRef.current = true; setFollowing(true); scrollToLatestTurn(); }}>최근 대화 보기 ↓</button>}
             {error && <div className="rn-error" role="alert"><span>{error}</span>{canRetry && <button type="button" disabled={loading || creating} onClick={onRetry}>다시 시도</button>}</div>}
             {showTemplateButton && <div className="rn-complete"><span className="rn-complete-icon"><Icon name="check" /></span><div><strong>게임 초안이 완성됐어요!</strong><p>편집 화면에서 내용을 검토하고 그림을 추가해 보세요.</p></div><button type="button" className="rn-primary" disabled={blocked} onClick={onCreate}>{creating ? '템플릿 생성 중…' : '템플릿 생성'}<Icon name="arrow" size={16} /></button></div>}
             {showSuggestions && <div className="rn-composer-toolbar">

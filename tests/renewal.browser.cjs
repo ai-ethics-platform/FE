@@ -31,6 +31,17 @@ const values = {
     await page.getByLabel('AI에게 보낼 메시지').press('Enter');
     await page.waitForFunction(() => !document.querySelector('#rn-chat-input').disabled);
   }
+  async function assertReplyStartVisible(page, withQuestion = true) {
+    const viewport = await page.locator('.rn-conversation').boundingBox();
+    const answer = await page.locator('[role="log"] > .is-assistant').last().boundingBox();
+    assert.ok(answer.y >= viewport.y && answer.y < viewport.y + 180, 'The new answer starts inside the visible conversation');
+    if (withQuestion) {
+      const question = await page.locator('[role="log"] > .is-user').last().boundingBox();
+      assert.ok(Math.abs(question.y - viewport.y - 24) < 2, 'The preceding question stays at the top');
+    } else {
+      assert.ok(Math.abs(answer.y - viewport.y - 24) < 2, 'Long questions leave room for the start of the answer');
+    }
+  }
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const errors = [];
   if (output) await fs.mkdir(output, { recursive: true });
@@ -107,6 +118,12 @@ const values = {
     await page.locator('.rn-message-content').first().waitFor();
     await assertLegacyInputCopy(page, 'opening');
     assert.equal(await page.locator('.rn-topic-starters').count(), 0, 'No newly invented topic prompts');
+    assert.equal(await page.getByRole('img', { name: 'DilemmA.I.', exact: true }).isVisible(), true);
+    assert.equal(await page.locator('.rn-brand').innerText(), 'Creator');
+    assert.equal(await page.locator('.rn-project-heading, .rn-summary, .rn-sidebar-tip, .rn-sidebar-footer, .rn-guide-status, .rn-beta, .rn-workspace-name').count(), 0);
+    assert.equal(await page.locator('.rn-sidebar').evaluate(el => el.firstElementChild.className), 'rn-progress-label');
+    assert.equal(await page.locator('.is-assistant .rn-message-author').first().evaluate(el => getComputedStyle(el).fontSize), '15px');
+    assert.notEqual(await page.locator('.rn-main-heading').evaluate(el => getComputedStyle(el).backgroundColor), await page.locator('.rn-main').evaluate(el => getComputedStyle(el).backgroundColor));
     if (output) await page.screenshot({ path: output + '/renewal-desktop.png' });
     for (const size of [{ width: 390, height: 844 }, { width: 320, height: 640 }, { width: 768, height: 1024 }]) {
       await page.setViewportSize(size);
@@ -134,7 +151,6 @@ const values = {
     await input.fill('');
     await sendInput(page, 'AI 판사로 하자');
     assert.ok(state.calls.at(-1).user_input.endsWith('user: AI 판사로 하자'));
-    assert.equal(await page.locator('.rn-chosen-topic').innerText(), values.opening.topic);
     assert.equal(await page.evaluate(() => localStorage.getItem('data')), 'legacy-game-data');
     assert.equal(await page.evaluate(() => localStorage.getItem('opening')), 'legacy-opening');
     assert.equal(await page.evaluate(() => localStorage.getItem('dilemma.flow.v1')), 'legacy-sentinel');
@@ -163,7 +179,7 @@ const values = {
     }
     await page.getByRole('button', { name: '템플릿 생성', exact: true }).waitFor();
     if (output) await page.screenshot({ path: output + '/renewal-complete.png' });
-    console.log('PASS all five stages, original placeholders and verbatim example requests, summary, completion');
+    console.log('PASS all five stages, original placeholders and verbatim example requests, completion');
     state.fail = 'game';
     await page.getByRole('button', { name: '템플릿 생성', exact: true }).click();
     await page.getByRole('alert').waitFor();
@@ -229,6 +245,15 @@ const values = {
     assert.equal(await back.page.getByRole('button', { name: '다음 단계', exact: true }).isDisabled(), true);
     back.state.longReply = true;
     await sendInput(back.page, '상황을 추천해줘');
+    await assertReplyStartVisible(back.page);
+    assert.equal(await back.page.getByRole('button', { name: '최근 대화 보기 ↓', exact: true }).count(), 0, 'Automatic positioning still follows the latest turn');
+    await sendInput(back.page, '긴 질문입니다.\n'.repeat(50));
+    await assertReplyStartVisible(back.page, false);
+    await back.page.setViewportSize({ width: 390, height: 844 });
+    await sendInput(back.page, '모바일에서도 답변을 처음부터 보여줘');
+    await assertReplyStartVisible(back.page);
+    if (output) await back.page.screenshot({ path: output + '/renewal-answer-start-mobile.png' });
+    await back.page.setViewportSize({ width: 1440, height: 1000 });
     back.state.delay = 500;
     await back.page.getByLabel('AI에게 보낼 메시지').fill('더 구체적으로 설명해줘');
     await back.page.getByLabel('AI에게 보낼 메시지').press('Enter');
@@ -236,7 +261,8 @@ const values = {
     await back.page.waitForFunction(() => !document.querySelector('#rn-chat-input').disabled);
     assert.ok(await back.page.locator('.rn-conversation').evaluate(el => el.scrollTop < 80), 'New replies do not interrupt reading older messages');
     await back.page.getByRole('button', { name: '최근 대화 보기 ↓', exact: true }).click();
-    assert.ok(await back.page.locator('.rn-conversation').evaluate(el => el.scrollHeight - el.scrollTop - el.clientHeight < 20));
+    await assertReplyStartVisible(back.page);
+    if (output) await back.page.screenshot({ path: output + '/renewal-answer-start-desktop.png' });
     await back.context.close();
     console.log('PASS backtracking clears stale aliases; long-reply scrolling respects reading position');
 

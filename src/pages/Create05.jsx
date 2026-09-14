@@ -269,7 +269,7 @@ const putTitle = async (title) => {
       const gameUrl =
         localStorage.getItem('url') ||
         (code ? `${window.location.origin}/?code=${code}` : null);
-      clearAllLocalStorageKeys();
+      clearAllLocalStorageKeys({ preserveAuth: true });
       if (gameUrl) localStorage.setItem('url', gameUrl);
 
       // 4) 이동 (새로고침 대비 localStorage, 1차는 라우터 state로 전달)

@@ -33,7 +33,7 @@ export default function Editor10() {
     const gameUrl =
       localStorage.getItem('url') ||
       (code ? `${window.location.origin}/?code=${code}` : null);
-    clearAllLocalStorageKeys();
+    clearAllLocalStorageKeys({ preserveAuth: true });
     if (gameUrl) localStorage.setItem('url', gameUrl);
     navigate('/creatorending', { state: { url: gameUrl } });
   };

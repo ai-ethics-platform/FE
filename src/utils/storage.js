@@ -1,4 +1,4 @@
-export function clearAllLocalStorageKeys() {
+export function clearAllLocalStorageKeys({ preserveAuth = false } = {}) {
     const keysToRemove = [
       'myrole_id',
       'host_id',
@@ -30,6 +30,9 @@ export function clearAllLocalStorageKeys() {
       'dilemma_image_1_default_uploaded','teacher_name','teacher_school','teacher_email',
     ];
   
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    keysToRemove.forEach((key) => {
+      // 제작 완료는 로그아웃이 아니므로 인증 토큰을 삭제하지 않는다.
+      if (preserveAuth && (key === 'access_token' || key === 'refresh_token')) return;
+      localStorage.removeItem(key);
+    });
   }
-  

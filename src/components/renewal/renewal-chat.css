@@ -1,0 +1,202 @@
+/* Every rule is scoped to the lazy-loaded renewal screen, including dialogs. */
+.renewal-chat {
+  --rn-ink: #292c2b;
+  --rn-muted: #737872;
+  --rn-line: #e9eae3;
+  --rn-accent: #ad482e;
+  --rn-peach: #fcf0e9;
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  color: var(--rn-ink);
+  color-scheme: light;
+  font: 14px/1.6 Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-align: left;
+  letter-spacing: -.025em;
+  -webkit-font-smoothing: antialiased;
+}
+.renewal-chat *, .renewal-chat *::before, .renewal-chat *::after { box-sizing: border-box; }
+.renewal-chat h1, .renewal-chat h2, .renewal-chat h3, .renewal-chat p, .renewal-chat dl, .renewal-chat dd { margin: 0; }
+.renewal-chat button, .renewal-chat textarea { font: inherit; letter-spacing: inherit; }
+.renewal-chat button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0; background: none; color: inherit; border: 1px solid transparent; border-radius: 8px; cursor: pointer; transition: background .18s, border-color .18s, color .18s; }
+.renewal-chat button:disabled { cursor: not-allowed; opacity: .45; }
+.renewal-chat button:focus-visible, .renewal-chat summary:focus-visible { outline: 3px solid #c57247; outline-offset: 4px; }
+.renewal-chat svg { flex-shrink: 0; }
+.renewal-chat .rn-header { height: 76px; flex: 0 0 76px; display: flex; align-items: center; gap: 18px; padding: 0 32px; border-bottom: 1px solid var(--rn-line); background: #fff; z-index: 4; }
+.renewal-chat .rn-brand { display: flex; align-items: center; gap: 9px; font-size: 21px; font-weight: 850; letter-spacing: -.055em; }
+.renewal-chat .rn-brand-dot { color: var(--rn-accent); }
+.renewal-chat .rn-brand-mark { width: 31px; height: 31px; display: grid; place-items: center; color: var(--rn-accent); background: var(--rn-peach); border-radius: 9px; }
+.renewal-chat .rn-header-divider { width: 1px; height: 20px; background: var(--rn-line); margin-left: 4px; }
+.renewal-chat .rn-workspace-name { font-size: 13px; font-weight: 550; color: #636962; }
+.renewal-chat .rn-beta { margin-left: -10px; font-size: 9px; font-weight: 700; letter-spacing: .065em; color: var(--rn-accent); border: 1px solid #eed8cb; padding: 1px 6px; border-radius: 4px; }
+.renewal-chat .rn-header-actions { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.renewal-chat .rn-exit { padding: 7px 11px; color: #6c716b; font-size: 13px; }
+.renewal-chat .rn-exit:hover:not(:disabled) { background: #f5f5f0; }
+.renewal-chat .rn-workspace { flex: 1; min-height: 0; display: flex; position: relative; }
+.renewal-chat .rn-sidebar { width: 278px; flex: 0 0 278px; display: flex; flex-direction: column; padding: 36px 25px 20px; border-right: 1px solid var(--rn-line); background: #f7f8f3; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #d5d9d0 transparent; }
+.renewal-chat .rn-eyebrow { display: block; font-size: 10px; font-weight: 700; letter-spacing: .14em; color: var(--rn-accent); }
+.renewal-chat .rn-project-heading h2 { margin-top: 12px; font-size: 23px; letter-spacing: -.05em; line-height: 1.5; font-weight: 720; }
+.renewal-chat .rn-project-heading p { font-size: 11px; margin-top: 9px; color: var(--rn-muted); }
+.renewal-chat .rn-progress-label { display: flex; justify-content: space-between; margin-top: 33px; font-size: 11px; color: #697064; }
+.renewal-chat .rn-progress-label span:first-child { color: #454d42; font-weight: 600; }
+.renewal-chat .rn-progress-track { height: 4px; flex-shrink: 0; border-radius: 9px; overflow: hidden; background: #e6e9df; margin-top: 10px; }
+.renewal-chat .rn-progress-track > span { display: block; height: 100%; border-radius: inherit; background: #8b9e72; transition: width .3s; }
+.renewal-chat .rn-steps { list-style: none; padding: 0; margin: 23px -7px 26px; }
+.renewal-chat .rn-steps li { display: flex; align-items: center; gap: 13px; padding: 11px 12px; min-height: 71px; border: 1px solid transparent; border-radius: 11px; position: relative; color: #898d82; }
+.renewal-chat .rn-steps li + li { margin-top: 3px; }
+.renewal-chat .rn-steps li.is-current { background: #fff; border-color: #e7d9cb; box-shadow: 0 2px 5px #4b3d2410; color: var(--rn-accent); }
+.renewal-chat .rn-step-number { flex: 0 0 29px; width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid #e1e4da; border-radius: 50%; font-size: 11px; font-weight: 650; background: #f7f8f3; }
+.renewal-chat .is-current .rn-step-number { background: var(--rn-accent); color: white; border-color: var(--rn-accent); }
+.renewal-chat .is-complete .rn-step-number { background: #e9eedf; border-color: #e0e5d8; color: #647a4d; }
+.renewal-chat .is-complete .rn-step-label { color: #535f49; }
+.renewal-chat .rn-step-label { display: block; font-size: 13px; font-weight: 650; }
+.renewal-chat .rn-step-detail { display: block; font-size: 10px; color: #858a7e; margin-top: 2px; }
+.renewal-chat .rn-current-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rn-accent); margin-left: auto; }
+.renewal-chat .rn-summary { padding: 19px 0; border-top: 1px solid #e2e5da; border-bottom: 1px solid #e2e5da; }
+.renewal-chat .rn-summary h3 { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 650; color: #4e5847; }
+.renewal-chat .rn-summary-empty { margin-top: 12px; color: #787f70; font-size: 12px; line-height: 1.9; }
+.renewal-chat .rn-topic-label { color: #808775; font-size: 10px; margin-top: 16px; }
+.renewal-chat .rn-chosen-topic { font-size: 13px; font-weight: 600; margin-top: 3px; overflow-wrap: anywhere; }
+.renewal-chat .rn-summary summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: #777e6d; font-size: 11px; padding-top: 13px; list-style: none; }
+.renewal-chat .rn-summary summary::-webkit-details-marker { display: none; }
+.renewal-chat .rn-summary details[open] summary svg { transform: rotate(90deg); }
+.renewal-chat .rn-summary-item { margin-top: 15px; font-size: 12px; }
+.renewal-chat .rn-summary-item dt { color: #727b66; font-size: 10px; margin-bottom: 4px; }
+.renewal-chat .rn-summary-item dd { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+.renewal-chat .rn-sidebar-tip { display: flex; gap: 9px; margin-top: auto; padding-top: 28px; color: #73805f; }
+.renewal-chat .rn-sidebar-tip > svg { margin-top: 2px; }
+.renewal-chat .rn-sidebar-tip strong { font-size: 10px; font-weight: 600; }
+.renewal-chat .rn-sidebar-tip p { margin-top: 5px; font-size: 11px; line-height: 1.85; color: #838b78; }
+.renewal-chat .rn-sidebar-footer { font-size: 10px; margin-top: 27px; color: #949b8a; letter-spacing: .015em; }
+.renewal-chat .rn-main { min-width: 0; flex: 1; display: flex; flex-direction: column; background: #fdfdfb; }
+.renewal-chat .rn-main-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 37px 48px 26px; border-bottom: 1px solid #edeee8; }
+.renewal-chat .rn-main-heading .rn-eyebrow { font-size: 10px; letter-spacing: .09em; }
+.renewal-chat .rn-eyebrow > span { color: #a4a99e; margin-left: 5px; }
+.renewal-chat .rn-main-heading h1 { font-size: 27px; font-weight: 720; letter-spacing: -.05em; line-height: 1.4; margin-top: 10px; text-wrap: balance; }
+.renewal-chat .rn-main-heading p { color: var(--rn-muted); font-size: 12px; margin-top: 8px; max-width: 650px; line-height: 1.8; word-break: keep-all; }
+.renewal-chat .rn-guide-status { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: #727965; font-size: 10px; border: 1px solid #e4e8dc; background: #f7f9f2; padding: 5px 10px; border-radius: 20px; margin-top: 3px; }
+.renewal-chat .rn-guide-status > span { width: 5px; height: 5px; border-radius: 50%; background: #87966f; }
+.renewal-chat .rn-conversation { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #dcded6 transparent; }
+.renewal-chat .rn-conversation-inner { max-width: 900px; padding: 29px 36px 34px; margin: 0 auto; }
+.renewal-chat .rn-conversation-start { display: flex; align-items: center; justify-content: center; gap: 14px; color: #9a9d94; font-size: 10px; margin: 0 0 32px; }
+.renewal-chat .rn-conversation-start > span { flex: 1; max-width: 65px; height: 1px; background: #e9eae3; }
+.renewal-chat .rn-message { display: flex; gap: 13px; margin-bottom: 28px; }
+.renewal-chat .rn-avatar { width: 32px; height: 32px; flex: 0 0 32px; display: grid; place-items: center; background: #f9eee7; border: 1px solid #f0e1d4; border-radius: 11px; color: var(--rn-accent); }
+.renewal-chat .rn-message-content { min-width: 0; max-width: 100%; }
+.renewal-chat .is-assistant .rn-message-content { flex: 1; }
+.renewal-chat .rn-message-author { display: flex; align-items: center; gap: 7px; color: #5a6056; font-size: 11px; font-weight: 650; height: 30px; margin-bottom: 6px; }
+.renewal-chat .rn-message-author > span { color: #9a8e81; font-size: 8px; line-height: 1.5; border: 1px solid #e9e1d6; border-radius: 3px; padding: 0 4px; font-weight: 500; }
+.renewal-chat .rn-message-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 15px; line-height: 1.95; color: #3b4039; letter-spacing: -.02em; }
+.renewal-chat .rn-message-text strong { font-weight: 680; color: #272e23; }
+.renewal-chat .rn-message-text .msg-heading { font-weight: 720; font-size: 1.08em; color: #313a2a; }
+.renewal-chat .is-user { justify-content: flex-end; margin-top: 30px; }
+.renewal-chat .is-user .rn-message-content { max-width: 84%; }
+.renewal-chat .is-user .rn-message-author { justify-content: flex-end; color: #979c91; font-size: 10px; margin-bottom: 3px; }
+.renewal-chat .is-user .rn-message-text { background: #f2f0e8; border: 1px solid #e9e6da; border-radius: 16px 3px 16px 16px; padding: 12px 19px; color: #525547; font-size: 14px; }
+.renewal-chat .rn-thinking-text { display: flex; align-items: center; gap: 13px; color: #898c7c; font-size: 13px; }
+.renewal-chat .rn-typing-dots { display: inline-flex; gap: 4px; }
+.renewal-chat .rn-typing-dots i { width: 4px; height: 4px; background: #bd8c6c; border-radius: 50%; animation: rn-pulse 1.3s ease-in-out infinite; }
+.renewal-chat .rn-typing-dots i:nth-child(2) { animation-delay: .15s; }
+.renewal-chat .rn-typing-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes rn-pulse { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
+.renewal-chat .rn-composer-area { position: relative; flex-shrink: 0; width: 100%; max-width: 900px; margin: 0 auto; padding: 17px 36px max(20px, env(safe-area-inset-bottom)); background: #fdfdfb; }
+.renewal-chat .rn-composer-toolbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.renewal-chat .rn-suggestions { display: flex; flex-wrap: wrap; gap: 7px; min-width: 0; max-height: 115px; overflow-y: auto; }
+.renewal-chat .rn-suggestions button { font-size: 11px; color: #727866; padding: 6px 10px; border: 1px solid #e7e9df; border-radius: 7px; background: #fff; min-width: 0; max-width: 100%; }
+.renewal-chat .rn-suggestion-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.renewal-chat .rn-suggestions button svg { color: #9a9c88; }
+.renewal-chat .rn-suggestions button:hover:not(:disabled) { background: #f2f4eb; border-color: #cbd1bd; }
+.renewal-chat .rn-next { flex-shrink: 0; padding: 6px 2px 6px 9px; color: var(--rn-accent); font-size: 11px; font-weight: 650; }
+.renewal-chat .rn-next:hover:not(:disabled) { background: var(--rn-peach); }
+.renewal-chat .rn-composer { display: flex; align-items: flex-end; gap: 12px; padding: 15px 14px 15px 20px; background: white; border: 1px solid #d8ddd0; border-radius: 14px; box-shadow: 0 3px 12px #48513306; transition: border-color .2s, box-shadow .2s; }
+.renewal-chat .rn-composer:focus-within { border-color: #a9b293; box-shadow: 0 0 0 3px #a9b29316; }
+.renewal-chat .rn-composer textarea { min-width: 0; width: 100%; min-height: 44px; max-height: 132px; flex: 1; padding: 10px 0; border: none; outline: none; resize: none; background: transparent; color: #383e32; font-size: 14px; line-height: 1.65; scrollbar-width: thin; }
+.renewal-chat .rn-composer textarea::placeholder { color: #a0a594; opacity: 1; }
+.renewal-chat .rn-send { width: 38px; height: 38px; flex: 0 0 38px; margin-bottom: 3px; border-radius: 10px; background: var(--rn-accent); color: #fff; }
+.renewal-chat .rn-send:hover:not(:disabled) { background: #943b26; }
+.renewal-chat .rn-send:disabled { opacity: 1; background: #e9ecdf; color: #a5ad97; }
+.renewal-chat .rn-composer-footer { display: flex; justify-content: space-between; gap: 10px; padding: 11px 2px 0; color: #979d8c; font-size: 9px; }
+.renewal-chat .rn-composer-footer > div { display: flex; align-items: center; gap: 12px; }
+.renewal-chat .rn-back { font-size: 10px; color: #777f68; }
+.renewal-chat .rn-error { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; background: #fff2ed; border: 1px solid #f0d2c2; border-radius: 10px; color: #9b4830; padding: 12px 15px; margin-bottom: 12px; }
+.renewal-chat .rn-error button { text-decoration: underline; flex-shrink: 0; font-weight: 650; padding: 5px 0; }
+.renewal-chat .rn-latest { display: flex; margin: -40px auto 12px; position: relative; font-size: 11px; background: #fff; border-color: #dadfcf; color: #626d55; padding: 6px 13px; border-radius: 24px; box-shadow: 0 2px 7px #1825000a; }
+.renewal-chat .rn-complete { display: flex; align-items: center; gap: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #dfe6d2; border-radius: 12px; background: #f4f7ed; }
+.renewal-chat .rn-complete strong { font-size: 13px; color: #4b5d37; }
+.renewal-chat .rn-complete p { font-size: 11px; color: #7b876c; margin-top: 3px; }
+.renewal-chat .rn-complete-icon { display: grid; place-items: center; width: 30px; height: 30px; color: #6d8452; background: #e7eddc; border-radius: 50%; flex-shrink: 0; }
+.renewal-chat .rn-primary { padding: 10px 15px; color: #fff; background: var(--rn-accent); font-size: 12px; font-weight: 600; }
+.renewal-chat .rn-primary:hover:not(:disabled) { background: #913b26; }
+.renewal-chat .rn-complete .rn-primary { margin-left: auto; flex-shrink: 0; }
+.renewal-chat .rn-secondary { padding: 10px 15px; border-color: #e3e5dc; background: #fff; font-size: 12px; }
+.renewal-chat .rn-secondary:hover { background: #f6f7f2; }
+.renewal-chat .rn-dialog { color: var(--rn-ink); background: #fdfdfb; border: 1px solid #e4e6dc; padding: 30px; border-radius: 18px; width: min(420px, calc(100vw - 32px)); box-shadow: 0 20px 100px #20241a26; margin: auto; }
+.renewal-chat .rn-dialog::backdrop { background: #222b2566; backdrop-filter: blur(3px); }
+.renewal-chat .rn-dialog-icon { color: var(--rn-accent); background: var(--rn-peach); width: 45px; height: 45px; display: grid; place-items: center; border-radius: 13px; margin-bottom: 18px; }
+.renewal-chat .rn-dialog h2 { font-size: 21px; font-weight: 700; line-height: 1.5; }
+.renewal-chat .rn-dialog p { color: #767e6c; font-size: 13px; line-height: 1.8; margin-top: 10px; word-break: keep-all; }
+.renewal-chat .rn-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 25px; }
+.renewal-chat .rn-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.renewal-chat .rn-mobile-summary, .renewal-chat .rn-sidebar-backdrop { display: none; }
+@media (min-width: 1600px) {
+  .renewal-chat .rn-sidebar { width: 300px; flex-basis: 300px; padding-left: 32px; padding-right: 32px; }
+  .renewal-chat .rn-main-heading { padding-left: max(56px, calc((100vw - 1128px) / 2)); padding-right: 56px; }
+}
+@media (max-width: 1100px) {
+  .renewal-chat .rn-sidebar { width: 244px; flex-basis: 244px; padding-left: 19px; padding-right: 19px; }
+  .renewal-chat .rn-main-heading { padding: 30px 30px 24px; }
+  .renewal-chat .rn-main-heading h1 { font-size: 24px; }
+  .renewal-chat .rn-guide-status { display: none; }
+  .renewal-chat .rn-conversation-inner { padding-left: 25px; padding-right: 25px; }
+  .renewal-chat .rn-composer-area { padding-left: 25px; padding-right: 25px; }
+  .renewal-chat .rn-composer-footer { font-size: 8px; }
+  .renewal-chat .rn-complete { flex-wrap: wrap; }
+}
+@media (max-width: 760px) {
+  .renewal-chat .rn-header { height: 62px; flex-basis: 62px; padding: 0 19px; gap: 12px; }
+  .renewal-chat .rn-brand { font-size: 18px; gap: 7px; }
+  .renewal-chat .rn-brand-mark { width: 27px; height: 27px; }
+  .renewal-chat .rn-workspace-name { font-size: 11px; }
+  .renewal-chat .rn-header-divider, .renewal-chat .rn-beta { display: none; }
+  .renewal-chat .rn-header-actions { gap: 5px; }
+  .renewal-chat .rn-exit { font-size: 11px; padding: 7px 4px; }
+  .renewal-chat .rn-mobile-summary { display: inline-flex; width: 36px; height: 36px; }
+  .renewal-chat .rn-sidebar { display: none; }
+  .renewal-chat .rn-sidebar[data-open="true"] { display: flex; position: absolute; top: 0; bottom: 0; left: 0; z-index: 3; width: min(300px, 88vw); padding-top: 25px; box-shadow: 10px 0 25px #252d191a; }
+  .renewal-chat .rn-sidebar-backdrop { display: block; position: absolute; inset: 0; z-index: 2; border: none; border-radius: 0; background: #26322044; width: 100%; }
+  .renewal-chat .rn-main-heading { padding: 24px 22px 20px; }
+  .renewal-chat .rn-main-heading h1 { font-size: 23px; }
+  .renewal-chat .rn-main-heading p { font-size: 11px; }
+  .renewal-chat .rn-conversation-inner { padding: 22px 22px 20px; }
+  .renewal-chat .rn-message { gap: 10px; }
+  .renewal-chat .rn-message-text { font-size: 14px; line-height: 1.9; }
+  .renewal-chat .rn-composer-area { padding: 12px 18px max(16px, env(safe-area-inset-bottom)); }
+  .renewal-chat .rn-composer-toolbar { gap: 5px; }
+  .renewal-chat .rn-suggestions { gap: 5px; }
+  .renewal-chat .rn-suggestions button { font-size: 10px; padding: 5px 7px; }
+  .renewal-chat .rn-suggestions button svg { display: none; }
+  .renewal-chat .rn-next { font-size: 10px; gap: 3px; padding-left: 5px; }
+  .renewal-chat .rn-composer { padding: 10px 10px 10px 14px; gap: 8px; border-radius: 12px; }
+  .renewal-chat .rn-composer textarea { font-size: 16px; }
+  .renewal-chat .rn-composer textarea::placeholder { font-size: 12px; }
+  .renewal-chat .rn-keyboard-hint { display: none; }
+  .renewal-chat .rn-composer-footer { font-size: 9px; padding-top: 8px; }
+  .renewal-chat .rn-complete { gap: 9px; padding: 12px; }
+  .renewal-chat .rn-complete .rn-primary { width: 100%; margin-top: 3px; }
+}
+@media (max-width: 380px) {
+  .renewal-chat .rn-workspace-name { display: none; }
+  .renewal-chat .rn-main-heading h1 { font-size: 21px; }
+}
+@media (max-height: 700px) {
+  .renewal-chat .rn-main-heading { padding-top: 17px; padding-bottom: 16px; }
+  .renewal-chat .rn-main-heading p { margin-top: 5px; }
+  .renewal-chat .rn-conversation-start { margin-bottom: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .renewal-chat *, .renewal-chat *::before, .renewal-chat *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

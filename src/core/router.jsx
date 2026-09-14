@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import {
   BrowserRouter,
   Outlet,
@@ -68,6 +69,8 @@ import AdminProtectedRoute from '../components/admin/AdminProtectedRoute';
 
 import PlayApprovalProtectedRoute from '../components/playApproval/PlayApprovalProtectedRoute';
 import PlayApprovalAuthRoute from '../components/playApproval/PlayApprovalAuthRoute';
+
+const ChatPage2Renewal = lazy(() => import('../pages/ChatPage2Renewal'));
 
 function GameProvidersLayout() {
   return (
@@ -270,6 +273,15 @@ function Router() {
           <Route
             path="/chatpage2"
             element={<ChatPage2 />}
+          />
+
+          <Route
+            path="/chatpage2/renewal"
+            element={
+              <Suspense fallback={<div role="status" style={{ padding: 32 }}>제작 스튜디오를 불러오고 있어요…</div>}>
+                <ChatPage2Renewal />
+              </Suspense>
+            }
           />
 
           <Route

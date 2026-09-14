@@ -1,7 +1,7 @@
 // 수정할 것 
 // 챗봇 완성 시 챗봇 api를 연결할 수 있는 페이지로 연결하도록 수정해야함
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
@@ -10,6 +10,7 @@ import InputBoxSmall from './InputBoxSmall';
 
 export default function CreateDilemma({ onClose }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState('');
   const [school, setSchool] = useState('');
   const [email, setEmail] = useState('');
@@ -22,7 +23,8 @@ export default function CreateDilemma({ onClose }) {
     localStorage.setItem('teacher_email', email);
 
     // 다음 페이지 이동
-    navigate('/chatpage2');
+    const isRenewal = searchParams.get('isRenewal')?.toLowerCase() === 'true';
+    navigate(isRenewal ? '/chatpage2/renewal' : '/chatpage2');
   };
 
   // 세 값 중 하나라도 없으면 true

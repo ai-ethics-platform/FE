@@ -17,7 +17,7 @@ const values = {
 };
 
 (async () => {
-  const legacySource = await fs.readFile(path.join(__dirname, '../src/pages/ChatPage2.jsx'), 'utf8');
+  const legacySource = await fs.readFile(path.join(__dirname, '../src/pages/ChatPage2Legacy.jsx'), 'utf8');
   const placeholderBlock = legacySource.slice(legacySource.lastIndexOf('  const placeholder = useMemo'));
   const legacyPlaceholders = Object.fromEntries([...placeholderBlock.matchAll(/case "(\w+)":\s*return "([^"]+)";/g)].map(match => [match[1], match[2]]));
   assert.equal(Object.keys(legacyPlaceholders).length, 5);
@@ -99,23 +99,20 @@ const values = {
       await page.getByPlaceholder('학교를 입력하세요').fill('테스트 학교');
       await page.getByPlaceholder('학교 메일을 입력하세요').fill('teacher@example.com');
       await page.getByRole('button', { name: '시작하기', exact: true }).click();
-      const renewal = /true/i.test(flag);
-      await page.waitForURL(origin + (renewal ? '/chatpage2/renewal' : '/chatpage2'));
-      await page.locator(renewal ? '.rn-message-content' : '.bubble.assistant').first().waitFor();
-      assert.equal(await page.locator('.renewal-chat').count(), renewal ? 1 : 0);
-      if (renewal) {
-        assert.equal(state.calls.length, 1, 'StrictMode must initialize the renewal chat once');
-        assert.match(state.calls[0].session_id, /^renewal-/);
-      } else {
-        assert.equal(await page.locator('link[href*="renewal"]').count(), 0);
-      }
+      await page.waitForURL(origin + '/chatpage2');
+      await page.locator('.rn-message-content').first().waitFor();
+      assert.equal(await page.locator('.renewal-chat').count(), 1);
+      assert.equal(state.calls.length, 1, 'StrictMode must initialize the renewal chat once');
+      assert.match(state.calls[0].session_id, /^renewal-/);
       await context.close();
     }
-    console.log('PASS query routing: absent, false, 1, true, True; independent initialization');
+    console.log('PASS default renewal routing regardless of query flag; single initialization');
 
     const { page, state, context } = await setup();
     await page.goto(origin + '/chatpage2/renewal');
+    await page.waitForURL(origin + '/chatpage2');
     await page.locator('.rn-message-content').first().waitFor();
+    assert.equal(state.calls.length, 1, 'The old renewal URL redirects without duplicate initialization');
     await assertLegacyInputCopy(page, 'opening');
     assert.equal(await page.locator('.rn-topic-starters').count(), 0, 'No newly invented topic prompts');
     assert.equal(await page.getByRole('img', { name: 'DilemmA.I.', exact: true }).isVisible(), true);
@@ -150,6 +147,7 @@ const values = {
     assert.equal(state.calls.length, callsBeforeComposition, 'Korean composition must not submit');
     await input.fill('');
     await sendInput(page, 'AI 판사로 하자');
+    assert.equal(await page.locator('.is-user .rn-message-author').last().evaluate(el => getComputedStyle(el).fontSize), '15px');
     assert.ok(state.calls.at(-1).user_input.endsWith('user: AI 판사로 하자'));
     assert.equal(await page.evaluate(() => localStorage.getItem('data')), 'legacy-game-data');
     assert.equal(await page.evaluate(() => localStorage.getItem('opening')), 'legacy-opening');
@@ -169,6 +167,7 @@ const values = {
     for (const stage of ['question', 'flip', 'roles', 'ending']) {
       await page.getByRole('button', { name: '다음 단계', exact: true }).click();
       await page.waitForFunction(expected => document.querySelector('.rn-steps [aria-current="step"] .rn-step-label')?.textContent === expected, { question: '딜레마 만들기', flip: '예상하지 못한 결과', roles: '등장인물 정하기', ending: '마무리하기' }[stage]);
+      if (stage === 'question') assert.equal(await page.locator('.rn-main-heading p').innerText(), '학생들이 딜레마를 느낄 수 있는 질문과 두 가지 선택지를 함께 다듬어요.');
       const initCall = state.calls.at(-1);
       assert.equal(initCall.step, stage);
       assert.ok(initCall.context.confirmation_marker, 'Next stage receives latest confirmed context');
@@ -198,7 +197,7 @@ const values = {
 
     const retry = await setup();
     retry.state.fail = 'chat';
-    await retry.page.goto(origin + '/chatpage2/renewal');
+    await retry.page.goto(origin + '/chatpage2');
     await retry.page.getByRole('alert').waitFor();
     await retry.page.getByRole('button', { name: '다시 시도' }).click();
     await retry.page.locator('.rn-message-content').first().waitFor();
@@ -208,23 +207,23 @@ const values = {
     assert.equal(await retry.page.getByRole('dialog').count(), 0);
     await retry.page.getByRole('button', { name: '나가기', exact: true }).click();
     await retry.page.getByRole('dialog').getByRole('button', { name: '나가기', exact: true }).click();
-    await retry.page.waitForURL(origin + '/selectroom?isRenewal=true');
-    // Keep the already loaded renewal CSS, then enter the legacy screen in-app.
-    await retry.page.evaluate(() => { history.pushState({}, '', '/selectroom'); dispatchEvent(new PopStateEvent('popstate')); });
+    await retry.page.waitForURL(origin + '/selectroom');
+    const previousSession = retry.state.calls.at(-1).session_id;
     await retry.page.getByText('딜레마 만들기', { exact: true }).click();
     await retry.page.getByPlaceholder('이름을 입력하세요').fill('테스트');
     await retry.page.getByPlaceholder('학교를 입력하세요').fill('테스트');
     await retry.page.getByPlaceholder('학교 메일을 입력하세요').fill('test@example.com');
     await retry.page.getByRole('button', { name: '시작하기', exact: true }).click();
-    await retry.page.locator('.bubble.assistant').first().waitFor();
-    assert.equal(await retry.page.locator('.chat-wrap').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(242, 238, 237)');
-    assert.equal(await retry.page.locator('.bubble.assistant').first().evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(232, 240, 255)');
-    if (output) await retry.page.screenshot({ path: output + '/legacy-after.png' });
+    await retry.page.waitForURL(origin + '/chatpage2');
+    await retry.page.locator('.rn-message-content').first().waitFor();
+    assert.equal(await retry.page.locator('.renewal-chat').count(), 1);
+    assert.notEqual(retry.state.calls.at(-1).session_id, previousSession, 'Re-entering starts a new chat');
+    if (output) await retry.page.screenshot({ path: output + '/renewal-after-reentry.png' });
     await retry.context.close();
-    console.log('PASS initialization retry, exit dialog, renewal flag preserved, legacy CSS after renewal exit');
+    console.log('PASS initialization retry, exit dialog and renewal re-entry without a query flag');
 
     const back = await setup();
-    await back.page.goto(origin + '/chatpage2/renewal');
+    await back.page.goto(origin + '/chatpage2');
     await back.page.locator('.rn-message-content').first().waitFor();
     await sendInput(back.page, '주제 추천해줘');
     for (const stage of ['딜레마 만들기', '예상하지 못한 결과']) {
@@ -261,13 +260,19 @@ const values = {
     await back.page.waitForFunction(() => !document.querySelector('#rn-chat-input').disabled);
     assert.ok(await back.page.locator('.rn-conversation').evaluate(el => el.scrollTop < 80), 'New replies do not interrupt reading older messages');
     await back.page.getByRole('button', { name: '최근 대화 보기 ↓', exact: true }).click();
+    await back.page.waitForFunction(() => {
+      const el = document.querySelector('.rn-conversation');
+      return el.scrollHeight - el.scrollTop - el.clientHeight < 2;
+    });
+    assert.equal(await back.page.getByRole('button', { name: '최근 대화 보기 ↓', exact: true }).count(), 0);
+    if (output) await back.page.screenshot({ path: output + '/renewal-latest-bottom-desktop.png' });
+    await sendInput(back.page, '다음 답변은 처음부터 보여줘');
     await assertReplyStartVisible(back.page);
-    if (output) await back.page.screenshot({ path: output + '/renewal-answer-start-desktop.png' });
     await back.context.close();
     console.log('PASS backtracking clears stale aliases; long-reply scrolling respects reading position');
 
     const dynamic = await setup();
-    await dynamic.page.goto(origin + '/chatpage2/renewal');
+    await dynamic.page.goto(origin + '/chatpage2');
     await dynamic.page.getByRole('button', { name: '주제 추천해줘', exact: true }).waitFor();
     assert.deepEqual(await dynamic.page.locator('.rn-suggestions button').allTextContents(), ['주제 추천해줘', '직접 입력하기']);
     dynamic.state.replyOverride = '추천 주제입니다.\n1. **AI 판사**: 판결을 지원하는 기술입니다.\n2. **자율주행차**: 스스로 운전합니다.\n3. **딥페이크 기술**: 영상을 합성합니다.\n어떤 주제로 할까요?';
@@ -307,7 +312,7 @@ const values = {
 
     const denied = await setup();
     denied.state.denied = true;
-    await denied.page.goto(origin + '/chatpage2/renewal');
+    await denied.page.goto(origin + '/chatpage2');
     await denied.page.waitForURL(origin + '/play-approval/pending');
     assert.equal(denied.state.calls.length, 0, 'Protected route must block chatbot calls');
     await denied.context.close();

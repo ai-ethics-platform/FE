@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import {
   BrowserRouter,
+  Navigate,
   Outlet,
   Route,
   Routes,
@@ -60,7 +61,6 @@ import Editor10_1 from '../pages/Editor10_1';
 import CreatorEnding from '../pages/CreatorEnding';
 import CustomRoom from '../pages/CustomRoom';
 import ChatPage from '../pages/ChatPage';
-import ChatPage2 from '../pages/ChatPage2';
 import ChatPage3 from '../pages/ChatPage3';
 
 import AdminApplications from '../pages/admin/AdminApplications';
@@ -70,7 +70,7 @@ import AdminProtectedRoute from '../components/admin/AdminProtectedRoute';
 import PlayApprovalProtectedRoute from '../components/playApproval/PlayApprovalProtectedRoute';
 import PlayApprovalAuthRoute from '../components/playApproval/PlayApprovalAuthRoute';
 
-const ChatPage2Renewal = lazy(() => import('../pages/ChatPage2Renewal'));
+const ChatPage2 = lazy(() => import('../pages/ChatPage2'));
 
 function GameProvidersLayout() {
   return (
@@ -272,16 +272,16 @@ function Router() {
 
           <Route
             path="/chatpage2"
-            element={<ChatPage2 />}
+            element={
+              <Suspense fallback={<div role="status" style={{ padding: 32 }}>제작 스튜디오를 불러오고 있어요…</div>}>
+                <ChatPage2 />
+              </Suspense>
+            }
           />
 
           <Route
             path="/chatpage2/renewal"
-            element={
-              <Suspense fallback={<div role="status" style={{ padding: 32 }}>제작 스튜디오를 불러오고 있어요…</div>}>
-                <ChatPage2Renewal />
-              </Suspense>
-            }
+            element={<Navigate to="/chatpage2" replace />}
           />
 
           <Route

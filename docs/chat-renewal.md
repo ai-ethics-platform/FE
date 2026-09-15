@@ -1,15 +1,14 @@
 # 챗봇 리뉴얼
 
-`npm run dev` 실행 후 `/selectroom?isRenewal=true` 또는
-`/selectroom?isRenewal=True`에서 **딜레마 만들기 → 시작하기**를 선택하면
-`/chatpage2/renewal`로 이동한다. 옵션이 없거나 다른 값이면 기존 `/chatpage2`로 이동한다.
-기존 플레이 승인 절차를 그대로 적용한다.
+`npm run dev` 실행 후 `/selectroom`에서 **딜레마 만들기 → 시작하기**를 선택하면
+기본 챗봇인 리뉴얼 화면(`/chatpage2`)으로 이동한다. `isRenewal` 옵션은 더 이상
+사용하지 않으며, 이전 `/chatpage2/renewal` 주소도 `/chatpage2`로 이동한다.
+나가기는 `/selectroom`으로 돌아간다. 기존 플레이 승인 절차를 그대로 적용한다.
 
-리뉴얼은 `ChatPage2Renewal.jsx`, `components/renewal/`에 독립적으로 구현했다.
-기존 `ChatPage2.jsx`, `chat.css`, 챗봇 API, 파서는 수정하지 않았다.
-리뉴얼 JavaScript와 CSS는 새 경로에서만 불러오며 모든 CSS 선택자는
-`.renewal-chat` 아래로 한정한다. 기존 흐름과 독립적으로 수정할 수 있도록
-컨트롤러와 출력 정규화 로직을 별도로 유지한다.
+리뉴얼은 `ChatPage2.jsx`, `components/renewal/`에서 구현한다.
+기존 챗봇은 `ChatPage2Legacy.jsx`로 보관하며 서비스 라우트에는 연결하지 않는다.
+기존 `chat.css`, 챗봇 API, 파서도 유지한다. 기본 챗봇 JavaScript와 CSS는
+`/chatpage2` 진입 시 불러오며 모든 CSS 선택자는 `.renewal-chat` 아래로 한정한다.
 
 작성 중 데이터는 `sessionStorage`의 `dilemma.renewal.*` 키에만 기록한다.
 새로 진입하면 새 대화를 시작하며 새로고침 시 작성 내용이 사라질 수 있어
@@ -26,18 +25,21 @@
 사이드바는 밝은 웜그레이, 제목 영역은 아이보리, 대화·입력 영역은 따뜻한 흰색으로
 구분한다. 로고의 원래 색은 유지하고, 버튼·현재 단계·진행률에는 채도를 낮춘
 테라코타색을 사용한다. 입력창 테두리와 보조 UI는 같은 계열의 중성색으로 맞춘다.
-색상은 리뉴얼 화면의 CSS 변수로 관리하며, 챗봇 이름은 15px로 표시한다.
+색상은 리뉴얼 화면의 CSS 변수로 관리하며, 챗봇 이름과 사용자 이름 ‘나’는
+모두 15px로 표시한다. 나가기에는 X 아이콘을 사용한다. 상단 헤더·단계 설명과
+입력 영역의 세로 여백을 줄여 대화를 읽을 공간을 넓혔다. 2단계 설명은
+‘학생들이 딜레마를 느낄 수 있는 질문과 두 가지 선택지를 함께 다듬어요.’로 표시한다.
 
 새 답변은 마지막 줄 대신 답변의 시작을 보여준다. 직전 사용자 질문이 짧으면 함께
 보여주고, 질문이 길면 답변부터 보여준다. 응답을 기다리며 이전 대화를 읽는 경우
-스크롤 위치를 유지한다. `최근 대화 보기`도 최신 답변의 시작으로 돌아간다.
+스크롤 위치를 유지한다. `최근 대화 보기`를 누르면 대화의 맨 아래로 이동한다.
 
 제작 완료 화면이 바로 사라지는 이슈는 `3259fdd`에서 인증 정보 보존으로 이미
 수정했다. 편집·미리보기 완료 후 링크 표시·복사·새로고침·명시적인 메인 이동을
 로컬 모의 API로 다시 검증했다. 노션의 `샘플 이미지` 항목은 오류 설명 없이
-참고 게임 링크만 제공된 항목이다.
+참고 게임 링크와 이미지가 제공된 항목이다.
 
-프롬프트와 연결된 입력 예시는 기존 `ChatPage2.jsx`의 5단계 placeholder를 그대로
+프롬프트와 연결된 입력 예시는 `ChatPage2Legacy.jsx`의 5단계 placeholder를 그대로
 유지한다. 입력창 위의 빠른 답변은 `renewalSuggestions.js`가 **최신 AI 응답**에서
 추출한다. 번호·글머리표·인용부호로 제시한 주제나 가치 갈등을 고르라는 질문이면
 원문 항목을 최대 3개 표시한다. 설명 문장과 게임 속 선택지·역할·결말은 제외한다.
@@ -53,7 +55,7 @@
 
 ```sh
 npm run build
-npx eslint src/pages/ChatPage2Renewal.jsx src/components/renewal/RenewalChat.jsx src/utils/renewalDraft.js src/utils/renewalSuggestions.js
+npx eslint src/core/router.jsx src/components/CreateDilemma.jsx src/pages/ChatPage2.jsx src/components/renewal/RenewalChat.jsx src/utils/renewalDraft.js src/utils/renewalSuggestions.js
 node --test tests/storage.test.mjs tests/renewalDraft.test.mjs tests/renewalSuggestions.test.mjs
 node tests/renewal.browser.cjs
 ```

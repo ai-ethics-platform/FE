@@ -4,9 +4,9 @@ import { getRenewalSuggestions } from '../../utils/renewalSuggestions';
 import './renewal-chat.css';
 
 const STEPS = [
-  // Keep input examples verbatim from ChatPage2: wording is part of the prompt flow.
+  // Keep input examples verbatim from ChatPage2Legacy: wording is part of the prompt flow.
   { id: 'opening', label: '주제 정하기', detail: '이야기의 출발점', title: '어떤 이야기를 만들어 볼까요?', description: '수업에서 나누고 싶은 질문을 알려주세요. AI와 함께 딜레마로 만들어 봐요.', placeholder: '예) 주제 추천해줘 / AI 판사로 하자' },
-  { id: 'question', label: '딜레마 만들기', detail: '정답 없는 두 가지 선택', title: '생각이 갈리는 순간을 만들어 봐요.', description: '예/아니오로 답할 수 있는 질문과 두 가지 선택지를 함께 다듬어요.', placeholder: '예) 그 갈등으로 예/아니오 질문 만들어줘' },
+  { id: 'question', label: '딜레마 만들기', detail: '정답 없는 두 가지 선택', title: '생각이 갈리는 순간을 만들어 봐요.', description: '학생들이 딜레마를 느낄 수 있는 질문과 두 가지 선택지를 함께 다듬어요.', placeholder: '예) 그 갈등으로 예/아니오 질문 만들어줘' },
   { id: 'flip', label: '예상하지 못한 결과', detail: '선택 뒤에 찾아오는 반전', title: '그 선택 뒤에는 어떤 일이 일어날까요?', description: '처음에는 미처 생각하지 못했던 결과로 토론을 한 단계 깊게 만들어요.', placeholder: '예) 상황 추천해줘 / 확정해줘' },
   { id: 'roles', label: '등장인물 정하기', detail: '서로 다른 입장과 시선', title: '같은 상황, 서로 다른 입장을 만나 봐요.', description: '학생들이 몰입할 수 있도록 각 인물의 관점과 역할을 구체화해요.', placeholder: '예) 역할 자동 생성해줘 / 확정해줘' },
   { id: 'ending', label: '마무리하기', detail: '이야기를 하나의 게임으로', title: '이제, 하나의 딜레마 게임으로.', description: '결말을 확인하고 초안을 제작하거나 확정해 주세요. 이후 편집 화면에서 그림과 내용을 다듬을 수 있어요.', placeholder: '예) 초안 제작해줘 / 확정' },
@@ -104,13 +104,22 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
     onSend(text);
   };
 
+  const scrollToBottom = () => {
+    const container = scrollRef.current;
+    if (!container) return;
+    followRef.current = true;
+    setFollowing(true);
+    container.scrollTop = container.scrollHeight;
+    autoScrollTopRef.current = container.scrollTop;
+  };
+
   return (
     <div className="renewal-chat">
       <header className="rn-header">
         <div className="rn-brand"><span className="rn-brand-logo" role="img" aria-label="DilemmA.I." style={{ maskImage: `url("${logo}")`, WebkitMaskImage: `url("${logo}")` }} /><span>Creator</span></div>
         <div className="rn-header-actions">
           <button type="button" className="rn-mobile-summary rn-icon-button" aria-label={sidebarOpen ? '제작 현황 닫기' : '제작 현황 열기'} aria-expanded={sidebarOpen} aria-controls="rn-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Icon name={sidebarOpen ? 'close' : 'list'} /></button>
-          <button type="button" className="rn-exit" disabled={loading || creating} onClick={() => setConfirmAction('exit')}><Icon name="back" size={16} /><span>나가기</span></button>
+          <button type="button" className="rn-exit" disabled={loading || creating} onClick={() => setConfirmAction('exit')}><Icon name="close" size={16} /><span>나가기</span></button>
         </div>
       </header>
 
@@ -156,7 +165,7 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
           </div>
 
           <div className="rn-composer-area">
-            {!following && <button type="button" className="rn-latest" onClick={() => { followRef.current = true; setFollowing(true); scrollToLatestTurn(); }}>최근 대화 보기 ↓</button>}
+            {!following && <button type="button" className="rn-latest" onClick={scrollToBottom}>최근 대화 보기 ↓</button>}
             {error && <div className="rn-error" role="alert"><span>{error}</span>{canRetry && <button type="button" disabled={loading || creating} onClick={onRetry}>다시 시도</button>}</div>}
             {showTemplateButton && <div className="rn-complete"><span className="rn-complete-icon"><Icon name="check" /></span><div><strong>게임 초안이 완성됐어요!</strong><p>편집 화면에서 내용을 검토하고 그림을 추가해 보세요.</p></div><button type="button" className="rn-primary" disabled={blocked} onClick={onCreate}>{creating ? '템플릿 생성 중…' : '템플릿 생성'}<Icon name="arrow" size={16} /></button></div>}
             {showSuggestions && <div className="rn-composer-toolbar">

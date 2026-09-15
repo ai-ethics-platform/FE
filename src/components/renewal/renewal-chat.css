@@ -43,7 +43,7 @@
 .renewal-chat button:disabled { cursor: not-allowed; opacity: .45; }
 .renewal-chat button:focus-visible, .renewal-chat summary:focus-visible { outline: 3px solid var(--rn-accent); outline-offset: 4px; }
 .renewal-chat svg { flex-shrink: 0; }
-.renewal-chat .rn-header { height: 76px; flex: 0 0 76px; display: flex; align-items: center; gap: 18px; padding: 0 32px; border-bottom: 1px solid var(--rn-line); background: var(--rn-surface); z-index: 4; }
+.renewal-chat .rn-header { height: 60px; flex: 0 0 60px; display: flex; align-items: center; gap: 18px; padding: 0 32px; border-bottom: 1px solid var(--rn-line); background: var(--rn-surface); z-index: 4; }
 .renewal-chat .rn-brand { display: flex; align-items: center; gap: 8px; color: var(--rn-brand); font-size: 30px; line-height: 1; font-weight: 600; letter-spacing: -.04em; white-space: nowrap; }
 .renewal-chat .rn-brand-logo { display: block; width: 142px; height: 35px; flex-shrink: 0; background: currentColor; mask-size: contain; mask-position: center; mask-repeat: no-repeat; -webkit-mask-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat; }
 .renewal-chat .rn-header-actions { margin-left: auto; display: flex; align-items: center; gap: 14px; }
@@ -68,11 +68,11 @@
 .renewal-chat .rn-step-detail { display: block; font-size: 10px; color: var(--rn-sidebar-muted); margin-top: 2px; }
 .renewal-chat .rn-current-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rn-sidebar-accent); margin-left: auto; }
 .renewal-chat .rn-main { min-width: 0; flex: 1; display: flex; flex-direction: column; background: var(--rn-surface); }
-.renewal-chat .rn-main-heading { display: flex; align-items: flex-start; gap: 20px; padding: 37px 48px 26px; border-bottom: 1px solid var(--rn-line); background: var(--rn-subtle); }
+.renewal-chat .rn-main-heading { display: flex; align-items: flex-start; gap: 20px; padding: 18px 48px 16px; border-bottom: 1px solid var(--rn-line); background: var(--rn-subtle); }
 .renewal-chat .rn-main-heading .rn-eyebrow { font-size: 10px; letter-spacing: .09em; }
 .renewal-chat .rn-eyebrow > span { color: var(--rn-quiet); margin-left: 5px; }
-.renewal-chat .rn-main-heading h1 { font-size: 27px; font-weight: 720; letter-spacing: -.05em; line-height: 1.4; margin-top: 10px; text-wrap: balance; }
-.renewal-chat .rn-main-heading p { color: var(--rn-muted); font-size: 12px; margin-top: 8px; max-width: 650px; line-height: 1.8; word-break: keep-all; }
+.renewal-chat .rn-main-heading h1 { font-size: 25px; font-weight: 720; letter-spacing: -.05em; line-height: 1.4; margin-top: 6px; text-wrap: balance; }
+.renewal-chat .rn-main-heading p { color: var(--rn-muted); font-size: 12px; margin-top: 4px; max-width: 650px; line-height: 1.8; word-break: keep-all; }
 .renewal-chat .rn-conversation { flex: 1; min-height: 0; overflow-y: auto; overflow-anchor: none; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #c7bfb4 transparent; }
 .renewal-chat .rn-conversation-inner { max-width: 900px; padding: 29px 36px 34px; margin: 0 auto; }
 .renewal-chat .rn-conversation-start { display: flex; align-items: center; justify-content: center; gap: 14px; color: var(--rn-quiet); font-size: 10px; margin: 0 0 32px; }
@@ -88,7 +88,7 @@
 .renewal-chat .rn-message-text .msg-heading { font-weight: 720; font-size: 1.08em; color: var(--rn-ink); }
 .renewal-chat .is-user { justify-content: flex-end; margin-top: 30px; }
 .renewal-chat .is-user .rn-message-content { max-width: 84%; }
-.renewal-chat .is-user .rn-message-author { justify-content: flex-end; color: var(--rn-quiet); font-size: 10px; margin-bottom: 3px; }
+.renewal-chat .is-user .rn-message-author { justify-content: flex-end; color: var(--rn-quiet); font-size: 15px; margin-bottom: 3px; }
 .renewal-chat .is-user .rn-message-text { background: var(--rn-subtle); border: 1px solid var(--rn-line); border-radius: 16px 3px 16px 16px; padding: 12px 19px; color: var(--rn-body); font-size: 14px; }
 .renewal-chat .rn-thinking-text { display: flex; align-items: center; gap: 13px; color: var(--rn-muted); font-size: 13px; }
 .renewal-chat .rn-typing-dots { display: inline-flex; gap: 4px; }
@@ -96,23 +96,23 @@
 .renewal-chat .rn-typing-dots i:nth-child(2) { animation-delay: .15s; }
 .renewal-chat .rn-typing-dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes rn-pulse { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
-.renewal-chat .rn-composer-area { position: relative; flex-shrink: 0; width: 100%; max-width: 900px; margin: 0 auto; padding: 17px 36px max(20px, env(safe-area-inset-bottom)); background: var(--rn-surface); }
-.renewal-chat .rn-composer-toolbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.renewal-chat .rn-suggestions { display: flex; flex-wrap: wrap; gap: 7px; min-width: 0; max-height: 115px; overflow-y: auto; }
+.renewal-chat .rn-composer-area { position: relative; flex-shrink: 0; width: 100%; max-width: 900px; margin: 0 auto; padding: 10px 36px max(12px, env(safe-area-inset-bottom)); background: var(--rn-surface); }
+.renewal-chat .rn-composer-toolbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.renewal-chat .rn-suggestions { display: flex; flex-wrap: wrap; gap: 7px; min-width: 0; max-height: 96px; overflow-y: auto; }
 .renewal-chat .rn-suggestions button { font-size: 11px; color: var(--rn-body); padding: 6px 10px; border: 1px solid var(--rn-line); border-radius: 7px; background: var(--rn-surface); min-width: 0; max-width: 100%; }
 .renewal-chat .rn-suggestion-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .renewal-chat .rn-suggestions button svg { color: var(--rn-quiet); }
 .renewal-chat .rn-suggestions button:hover:not(:disabled) { background: var(--rn-accent-soft); border-color: var(--rn-accent-border); color: var(--rn-accent-hover); }
 .renewal-chat .rn-next { flex-shrink: 0; padding: 6px 2px 6px 9px; color: var(--rn-accent); font-size: 11px; font-weight: 650; }
 .renewal-chat .rn-next:hover:not(:disabled) { background: var(--rn-accent-soft); }
-.renewal-chat .rn-composer { display: flex; align-items: flex-end; gap: 12px; padding: 15px 14px 15px 20px; background: var(--rn-surface); border: 1px solid var(--rn-line); border-radius: 14px; box-shadow: 0 3px 12px #302c2908; transition: border-color .2s, box-shadow .2s; }
+.renewal-chat .rn-composer { display: flex; align-items: flex-end; gap: 12px; padding: 9px 14px 9px 20px; background: var(--rn-surface); border: 1px solid var(--rn-line); border-radius: 14px; box-shadow: 0 3px 12px #302c2908; transition: border-color .2s, box-shadow .2s; }
 .renewal-chat .rn-composer:focus-within { border-color: var(--rn-focus-border); box-shadow: 0 0 0 3px var(--rn-focus); }
-.renewal-chat .rn-composer textarea { min-width: 0; width: 100%; min-height: 44px; max-height: 132px; flex: 1; padding: 10px 0; border: none; outline: none; resize: none; background: transparent; color: var(--rn-ink); font-size: 14px; line-height: 1.65; scrollbar-width: thin; }
+.renewal-chat .rn-composer textarea { min-width: 0; width: 100%; min-height: 40px; max-height: 132px; flex: 1; padding: 8px 0; border: none; outline: none; resize: none; background: transparent; color: var(--rn-ink); font-size: 14px; line-height: 1.65; scrollbar-width: thin; }
 .renewal-chat .rn-composer textarea::placeholder { color: var(--rn-quiet); opacity: 1; }
 .renewal-chat .rn-send { width: 38px; height: 38px; flex: 0 0 38px; margin-bottom: 3px; border-radius: 10px; background: var(--rn-accent); color: var(--rn-surface); }
 .renewal-chat .rn-send:hover:not(:disabled) { background: var(--rn-accent-hover); }
 .renewal-chat .rn-send:disabled { opacity: 1; background: var(--rn-neutral); color: var(--rn-quiet); }
-.renewal-chat .rn-composer-footer { display: flex; justify-content: space-between; gap: 10px; padding: 11px 2px 0; color: var(--rn-quiet); font-size: 9px; }
+.renewal-chat .rn-composer-footer { display: flex; justify-content: space-between; gap: 10px; padding: 8px 2px 0; color: var(--rn-quiet); font-size: 9px; }
 .renewal-chat .rn-composer-footer > div { display: flex; align-items: center; gap: 12px; }
 .renewal-chat .rn-back { font-size: 10px; color: var(--rn-muted); }
 .renewal-chat .rn-error { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; background: #fff2ed; border: 1px solid #f0d2c2; border-radius: 10px; color: #9b4830; padding: 12px 15px; margin-bottom: 12px; }
@@ -141,7 +141,7 @@
 }
 @media (max-width: 1100px) {
   .renewal-chat .rn-sidebar { width: 244px; flex-basis: 244px; padding-left: 19px; padding-right: 19px; }
-  .renewal-chat .rn-main-heading { padding: 30px 30px 24px; }
+  .renewal-chat .rn-main-heading { padding: 18px 30px 16px; }
   .renewal-chat .rn-main-heading h1 { font-size: 24px; }
   .renewal-chat .rn-conversation-inner { padding-left: 25px; padding-right: 25px; }
   .renewal-chat .rn-composer-area { padding-left: 25px; padding-right: 25px; }
@@ -149,7 +149,7 @@
   .renewal-chat .rn-complete { flex-wrap: wrap; }
 }
 @media (max-width: 760px) {
-  .renewal-chat .rn-header { height: 62px; flex-basis: 62px; padding: 0 19px; gap: 12px; }
+  .renewal-chat .rn-header { height: 56px; flex-basis: 56px; padding: 0 19px; gap: 12px; }
   .renewal-chat .rn-brand { font-size: 24px; gap: 6px; }
   .renewal-chat .rn-brand-logo { width: 104px; height: 26px; }
   .renewal-chat .rn-header-actions { gap: 5px; }
@@ -158,19 +158,19 @@
   .renewal-chat .rn-sidebar { display: none; }
   .renewal-chat .rn-sidebar[data-open="true"] { display: flex; position: absolute; top: 0; bottom: 0; left: 0; z-index: 3; width: min(300px, 88vw); padding-top: 25px; box-shadow: 10px 0 25px #302c2933; }
   .renewal-chat .rn-sidebar-backdrop { display: block; position: absolute; inset: 0; z-index: 2; border: none; border-radius: 0; background: #302c2966; width: 100%; }
-  .renewal-chat .rn-main-heading { padding: 24px 22px 20px; }
-  .renewal-chat .rn-main-heading h1 { font-size: 23px; }
+  .renewal-chat .rn-main-heading { padding: 16px 22px 12px; }
+  .renewal-chat .rn-main-heading h1 { font-size: 21px; }
   .renewal-chat .rn-main-heading p { font-size: 11px; }
   .renewal-chat .rn-conversation-inner { padding: 22px 22px 20px; }
   .renewal-chat .rn-message { gap: 10px; }
   .renewal-chat .rn-message-text { font-size: 14px; line-height: 1.9; }
-  .renewal-chat .rn-composer-area { padding: 12px 18px max(16px, env(safe-area-inset-bottom)); }
+  .renewal-chat .rn-composer-area { padding: 8px 18px max(10px, env(safe-area-inset-bottom)); }
   .renewal-chat .rn-composer-toolbar { gap: 5px; }
   .renewal-chat .rn-suggestions { gap: 5px; }
   .renewal-chat .rn-suggestions button { font-size: 10px; padding: 5px 7px; }
   .renewal-chat .rn-suggestions button svg { display: none; }
   .renewal-chat .rn-next { font-size: 10px; gap: 3px; padding-left: 5px; }
-  .renewal-chat .rn-composer { padding: 10px 10px 10px 14px; gap: 8px; border-radius: 12px; }
+  .renewal-chat .rn-composer { padding: 7px 10px 7px 14px; gap: 8px; border-radius: 12px; }
   .renewal-chat .rn-composer textarea { font-size: 16px; }
   .renewal-chat .rn-composer textarea::placeholder { font-size: 12px; }
   .renewal-chat .rn-keyboard-hint { display: none; }
@@ -182,8 +182,8 @@
   .renewal-chat .rn-main-heading h1 { font-size: 21px; }
 }
 @media (max-height: 700px) {
-  .renewal-chat .rn-main-heading { padding-top: 17px; padding-bottom: 16px; }
-  .renewal-chat .rn-main-heading p { margin-top: 5px; }
+  .renewal-chat .rn-main-heading { padding-top: 12px; padding-bottom: 10px; }
+  .renewal-chat .rn-main-heading p { margin-top: 4px; }
   .renewal-chat .rn-conversation-start { margin-bottom: 20px; }
 }
 @media (prefers-reduced-motion: reduce) {

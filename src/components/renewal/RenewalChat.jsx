@@ -57,7 +57,7 @@ function ConfirmDialog({ action, onClose, onConfirm }) {
   );
 }
 
-export default function RenewalChat({ step, context, messages, input, setInput, inputRef, loading, needsInit, creating, error, canRetry, onRetry, showTemplateButton, onSend, onBack, onCreate, onExit, renderMessage }) {
+export default function RenewalChat({ step, context, messages, input, setInput, inputRef, loading, needsInit, creating, error, canRetry, onRetry, showTemplateButton, onSend, onBack, onCreate, onDownloadTranscript, onExit, renderMessage }) {
   const stepIndex = STEPS.findIndex(item => item.id === step);
   const current = STEPS[stepIndex];
   const suggestions = useMemo(() => getRenewalSuggestions(messages, step), [messages, step]);
@@ -167,7 +167,7 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
           <div className="rn-composer-area">
             {!following && <button type="button" className="rn-latest" onClick={scrollToBottom}>최근 대화 보기 ↓</button>}
             {error && <div className="rn-error" role="alert"><span>{error}</span>{canRetry && <button type="button" disabled={loading || creating} onClick={onRetry}>다시 시도</button>}</div>}
-            {showTemplateButton && <div className="rn-complete"><span className="rn-complete-icon"><Icon name="check" /></span><div><strong>게임 초안이 완성됐어요!</strong><p>편집 화면에서 내용을 검토하고 그림을 추가해 보세요.</p></div><button type="button" className="rn-primary" disabled={blocked} onClick={onCreate}>{creating ? '템플릿 생성 중…' : '템플릿 생성'}<Icon name="arrow" size={16} /></button></div>}
+            {showTemplateButton && <div className="rn-complete"><span className="rn-complete-icon"><Icon name="check" /></span><div><strong>게임 초안이 완성됐어요!</strong><p>편집 화면에서 내용을 검토하고 그림을 추가해 보세요.</p></div><button type="button" className="rn-secondary" onClick={onDownloadTranscript}>대화기록 다운로드</button><button type="button" className="rn-primary" disabled={blocked} onClick={onCreate}>{creating ? '템플릿 생성 중…' : '템플릿 생성'}<Icon name="arrow" size={16} /></button></div>}
             {showSuggestions && <div className="rn-composer-toolbar">
               <div className="rn-suggestions" role="group" aria-label="현재 AI 질문에 대한 빠른 답변">{suggestions.replies.map(suggestion => <button key={suggestion.label} type="button" title={suggestion.label} onClick={() => {
                 if (suggestion.action === 'focus') inputRef.current?.focus({ preventScroll: true });

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { parseDilemmaText } from "../utils/templateparsing";
 import axiosInstance from "../api/axiosInstance";
 import { sendIngestEvent } from "../api/adminIngest";
+import { downloadTranscriptCsv } from "../utils/transcriptCsv";
 
 import RenewalChat from '../components/renewal/RenewalChat';
 import { renewalDraft, handoffRenewalGame } from '../utils/renewalDraft';
@@ -933,6 +934,18 @@ keys.forEach((k) => {
     navigate('/selectroom');
   };
 
+  const handleDownloadTranscript = () => {
+    downloadTranscriptCsv({
+      sessionId,
+      teacherName: renewalDraft.getItem('teacher_name') || '-',
+      teacherSchool: renewalDraft.getItem('teacher_school') || '-',
+      teacherEmail: renewalDraft.getItem('teacher_email') || '---',
+      startedAt: renewalDraft.getItem('admin_started_at'),
+      turnCount: messages.filter((message) => message.role === 'user').length,
+      messages,
+    });
+  };
+
   return (
     <RenewalChat
       step={step}
@@ -951,6 +964,7 @@ keys.forEach((k) => {
       onSend={handleSend}
       onBack={handleBackStep}
       onCreate={handleTemplateCreate}
+      onDownloadTranscript={handleDownloadTranscript}
       onExit={handleExit}
       renderMessage={text => renderMarkdownLite(renameFlipTerms(stripStageLabels(text)))}
     />

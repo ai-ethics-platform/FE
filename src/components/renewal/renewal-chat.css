@@ -124,7 +124,8 @@
 .renewal-chat .rn-complete-icon { display: grid; place-items: center; width: 30px; height: 30px; color: var(--rn-accent); background: var(--rn-accent-border); border-radius: 50%; flex-shrink: 0; }
 .renewal-chat .rn-primary { padding: 10px 15px; color: var(--rn-surface); background: var(--rn-accent); font-size: 12px; font-weight: 600; }
 .renewal-chat .rn-primary:hover:not(:disabled) { background: var(--rn-accent-hover); }
-.renewal-chat .rn-complete .rn-primary { margin-left: auto; flex-shrink: 0; }
+.renewal-chat .rn-complete .rn-primary { flex-shrink: 0; }
+.renewal-chat .rn-complete .rn-secondary { margin-left: auto; flex-shrink: 0; }
 .renewal-chat .rn-secondary { padding: 10px 15px; border-color: var(--rn-line); background: var(--rn-surface); font-size: 12px; }
 .renewal-chat .rn-secondary:hover { background: var(--rn-subtle); }
 .renewal-chat .rn-dialog { color: var(--rn-ink); background: var(--rn-surface); border: 1px solid var(--rn-line); padding: 30px; border-radius: 18px; width: min(420px, calc(100vw - 32px)); box-shadow: 0 20px 100px #302c2933; margin: auto; }
@@ -176,6 +177,7 @@
   .renewal-chat .rn-keyboard-hint { display: none; }
   .renewal-chat .rn-composer-footer { font-size: 9px; padding-top: 8px; }
   .renewal-chat .rn-complete { gap: 9px; padding: 12px; }
+  .renewal-chat .rn-complete .rn-secondary { width: 100%; margin-top: 3px; margin-left: 0; }
   .renewal-chat .rn-complete .rn-primary { width: 100%; margin-top: 3px; }
 }
 @media (max-width: 380px) {

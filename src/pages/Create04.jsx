@@ -699,7 +699,7 @@ async function putRepresentativeImageFile(code, slot, file) {
     const res = await axiosInstance.put(
       `/custom-games/${code}/dilemma-images/${slot}`,
       form,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 20000 }
     );
     const url = res?.data?.url || res?.data?.image_url;
     if (url) localStorage.setItem(slot, url);
@@ -716,7 +716,7 @@ async function putRepresentativeImageFile(code, slot, file) {
       const retry = await axiosInstance.put(
         `/custom-games/${code}/dilemma-images/${slot}`,
         form2,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 20000 }
       );
       const url2 = retry?.data?.url || retry?.data?.image_url;
       if (url2) localStorage.setItem(slot, url2);
@@ -814,6 +814,8 @@ export default function Create04() {
   const [disagreeUrl, setDisagreeUrl] = useState(() => resolveImageUrl(localStorage.getItem('dilemma_image_4_2')));
   const [agreeFallback, setAgreeFallback] = useState(() => !resolveImageUrl(localStorage.getItem('dilemma_image_4_1')));
   const [disagreeFallback, setDisagreeFallback] = useState(() => !resolveImageUrl(localStorage.getItem('dilemma_image_4_2')));
+  // 이미지 업로드 진행 중 여부 (재진입/중복 업로드 방지, 두 슬롯 공통 잠금)
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // 입력 빌더
   const buildInputsFromArray = (arr, firstPlaceholder) =>
@@ -827,12 +829,15 @@ export default function Create04() {
 
   // ── 이미지 선택 핸들러(동의/비동의 슬롯별)
   const handleImageChange = async (slot /* 1=agree, 2=disagree */) => {
+    if (isUploadingImage) return;
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
     input.onchange = async (e) => {
+      if (isUploadingImage) return;
       const file = e.target.files?.[0];
       if (!file) return;
+      setIsUploadingImage(true);
       try {
         const code = localStorage.getItem('code');
         if (!code) { alert('게임 코드가 없습니다.'); return; }
@@ -849,6 +854,8 @@ export default function Create04() {
         alert('이미지 업로드에 실패했습니다.');
         if (slot === 1) setAgreeFallback(true);
         else setDisagreeFallback(true);
+      } finally {
+        setIsUploadingImage(false);
       }
     };
     input.click();
@@ -1089,7 +1096,7 @@ export default function Create04() {
     await axiosInstance.put(
       `/custom-games/${code}/flips`,
       { agree_texts, disagree_texts },
-      { headers: { 'Content-Type': 'application/json' } }
+      { headers: { 'Content-Type': 'application/json' }, timeout: 20000 }
     );
   };
 

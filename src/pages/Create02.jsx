@@ -90,7 +90,7 @@ async function uploadRoleImage(slot, file) {
     const res = await axiosInstance.put(
       `/custom-games/${code}/role-images/${slot}`,
       form,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 20000 }
     );
     const url = res?.data?.url || res?.data?.image_url;
     if (!url) throw new Error('업로드 응답에 url이 없습니다.');
@@ -107,7 +107,7 @@ async function uploadRoleImage(slot, file) {
       const retry = await axiosInstance.put(
         `/custom-games/${code}/role-images/${slot}`,
         form2,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 20000 }
       );
       const url2 = retry?.data?.url || retry?.data?.image_url;
       if (!url2) throw new Error('업로드 응답에 url이 없습니다.(retry)');
@@ -142,6 +142,8 @@ async function uploadDefaultForSlot(slot, {
 export default function Create02() {
   const navigate = useNavigate();
   const [title, setTitle] = useState(localStorage.getItem("creatorTitle") || "");
+  // 이미지 업로드 진행 중 여부 (재진입/중복 업로드 방지, 슬롯 공통 잠금)
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // 텍스트(역할/설명/배경)
   const [back, setBack] = useState('');
@@ -286,12 +288,15 @@ export default function Create02() {
 
   // 사용자가 직접 이미지 변경
   const changeSlotImage = (slot) => {
+    if (isUploadingImage) return;
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.onchange = async (e) => {
+      if (isUploadingImage) return;
       const file = e.target.files?.[0];
       if (!file) return;
+      setIsUploadingImage(true);
       try {
         const rawUrl = await uploadRoleImage(slot, file);
         localStorage.setItem(ROLE_IMG_KEYS[slot - 1], rawUrl);
@@ -305,6 +310,8 @@ export default function Create02() {
         if (slot === 1) setFallback1(true);
         if (slot === 2) setFallback2(true);
         if (slot === 3) setFallback3(true);
+      } finally {
+        setIsUploadingImage(false);
       }
     };
     input.click();
@@ -317,7 +324,7 @@ export default function Create02() {
     await axiosInstance.put(
       `/custom-games/${code}/roles`,
       { roles, background },
-      { headers: { 'Content-Type': 'application/json' } }
+      { headers: { 'Content-Type': 'application/json' }, timeout: 20000 }
     );
   };
 

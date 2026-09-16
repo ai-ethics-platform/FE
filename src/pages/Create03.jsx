@@ -693,7 +693,7 @@ async function putRepresentativeImageFile(code, slot, file) {
     const res = await axiosInstance.put(
       `/custom-games/${code}/dilemma-images/${slot}`,
       form,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 20000 }
     );
     const url = res?.data?.url || res?.data?.image_url;
     if (url) localStorage.setItem(slot, url);
@@ -710,7 +710,7 @@ async function putRepresentativeImageFile(code, slot, file) {
       const retry = await axiosInstance.put(
         `/custom-games/${code}/dilemma-images/${slot}`,
         form2,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 20000 }
       );
       const url2 = retry?.data?.url || retry?.data?.image_url;
       if (url2) localStorage.setItem(slot, url2);
@@ -806,6 +806,8 @@ export default function Create03() {
   // 대표 이미지(URL + 폴백)
   const [imageUrl, setImageUrl] = useState(() => resolveImageUrl(localStorage.getItem('dilemma_image_3')));
   const [useFallback, setUseFallback] = useState(() => !resolveImageUrl(localStorage.getItem('dilemma_image_3')));
+  // 이미지 업로드 진행 중 여부 (재진입/중복 업로드 방지)
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // 질문/선택지
   const [dilemmaQuestion, setDilemmaQuestion] = useState(localStorage.getItem('question') || "");
@@ -1049,10 +1051,12 @@ export default function Create03() {
 
   // --- 이미지 변경 ---
   const handleImageChange = () => {
+    if (isUploadingImage) return;
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.onchange = async (e) => {
+      if (isUploadingImage) return;
       const file = e.target.files?.[0];
       if (!file) return;
 
@@ -1062,6 +1066,7 @@ export default function Create03() {
         return;
       }
 
+      setIsUploadingImage(true);
       try {
         setUseFallback(false);
         const url = await putRepresentativeImageFile(code, 'dilemma_image_3', file);
@@ -1073,6 +1078,8 @@ export default function Create03() {
         console.error(err);
         alert('이미지 업로드/저장에 실패했습니다.');
         setUseFallback(true);
+      } finally {
+        setIsUploadingImage(false);
       }
     };
     input.click();
@@ -1085,7 +1092,7 @@ export default function Create03() {
     await axiosInstance.put(
       `/custom-games/${code}/dilemma`,
       { situation, question, options },
-      { headers: { 'Content-Type': 'application/json' } }
+      { headers: { 'Content-Type': 'application/json' }, timeout: 20000 }
     );
   };
 

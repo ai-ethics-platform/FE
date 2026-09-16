@@ -202,7 +202,7 @@ const putTitle = async (title) => {
   await axiosInstance.put(
     `/custom-games/${code}/title`,
     { title },
-    { headers: { 'Content-Type': 'application/json' } }
+    { headers: { 'Content-Type': 'application/json' }, timeout: 20000 }
   );
 };
 
@@ -216,7 +216,7 @@ const putTitle = async (title) => {
     await axiosInstance.put(
       `/custom-games/${code}/ending`,
       { agree, disagree },
-      { headers: { 'Content-Type': 'application/json' } }
+      { headers: { 'Content-Type': 'application/json' }, timeout: 20000 }
     );
   };
   // 현재 단계(최종 멘트)를 서버에 저장만 한다. 로컬 정리/이동은 하지 않는다.

@@ -828,7 +828,7 @@ async function putRepresentativeImageFile(code, slot, file) {
     const res = await axiosInstance.put(
       `/custom-games/${code}/dilemma-images/${slot}`,
       form,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { "Content-Type": "multipart/form-data" }, timeout: 20000 }
     );
     const url = res?.data?.url || res?.data?.image_url;
     if (url) localStorage.setItem(slot, url);
@@ -845,7 +845,7 @@ async function putRepresentativeImageFile(code, slot, file) {
       const retry = await axiosInstance.put(
         `/custom-games/${code}/dilemma-images/${slot}`,
         form2,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        { headers: { "Content-Type": "multipart/form-data" }, timeout: 20000 }
       );
       const url2 = retry?.data?.url || retry?.data?.image_url;
       if (url2) localStorage.setItem(slot, url2);
@@ -920,7 +920,7 @@ async function putOpening(inputs) {
   await axiosInstance.put(
     `/custom-games/${code}/opening`,
     { opening },
-    { headers: { 'Content-Type': 'application/json' } }
+    { headers: { 'Content-Type': 'application/json' }, timeout: 20000 }
   );
 }
 
@@ -992,6 +992,8 @@ export default function Create01() {
   // 대표 이미지 상태
   const [imageUrl, setImageUrl] = useState(() => resolveImageUrl(localStorage.getItem('dilemma_image_1')));
   const [useFallback, setUseFallback] = useState(() => !resolveImageUrl(localStorage.getItem('dilemma_image_1')));
+  // 이미지 업로드 진행 중 여부 (재진입/중복 업로드 방지)
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // opening 입력 상태
   const [inputs, setInputs] = useState([
@@ -1160,10 +1162,12 @@ export default function Create01() {
 
   // 이미지 수동 변경
   const handleImageChange = () => {
+    if (isUploadingImage) return;
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
     input.onchange = async (e) => {
+      if (isUploadingImage) return;
       const file = e.target.files?.[0];
       if (!file) return;
 
@@ -1173,6 +1177,7 @@ export default function Create01() {
         return;
       }
 
+      setIsUploadingImage(true);
       try {
         const preCompressed = await twoStepCompress(file);
         const url = await putRepresentativeImageFile(code, "dilemma_image_1", preCompressed);
@@ -1184,6 +1189,8 @@ export default function Create01() {
       } catch (err) {
         console.error(err);
         alert("이미지 업로드 실패");
+      } finally {
+        setIsUploadingImage(false);
       }
     };
     input.click();

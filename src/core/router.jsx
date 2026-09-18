@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import { flushPendingIngest } from '../api/adminIngest';
 import {
   BrowserRouter,
   Navigate,
@@ -83,6 +84,12 @@ function GameProvidersLayout() {
 }
 
 function Router() {
+  useEffect(() => {
+    flushPendingIngest();
+    window.addEventListener('online', flushPendingIngest);
+    return () => window.removeEventListener('online', flushPendingIngest);
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

@@ -814,6 +814,9 @@ export default function Create03() {
   const [option1, setOption1] = useState(localStorage.getItem('agree_label') || "");
   const [option2, setOption2] = useState(localStorage.getItem('disagree_label') || "");
   const didInit = useRef(false);
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const code = localStorage.getItem('code');
 
   // 유틸
@@ -1099,6 +1102,10 @@ export default function Create03() {
   // 현재 단계(딜레마 상황·질문)를 서버에 저장만 한다. 이동은 호출자가 판단.
   // 헤더 브레드크럼/모드 토글로 빠져나갈 때도 이 함수를 태워 편집분 유실을 막는다.
   const saveDilemmaStep = async () => {
+    if (savingRef.current) return false;
+    savingRef.current = true;
+    setSaving(true);
+    setSaveError('');
     try {
       const situationRaw = toSituationArray(inputs);
       const safe = s => (s && s.length > 0 ? s : '-');
@@ -1121,8 +1128,11 @@ export default function Create03() {
       return true;
     } catch (e) {
       console.error(e);
-      alert('딜레마 저장 중 오류가 발생했습니다.');
+      setSaveError('저장하지 못했어요. 입력한 내용은 유지됩니다. 다시 시도해 주세요.');
       return false;
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   };
 
@@ -1243,11 +1253,12 @@ export default function Create03() {
       </div>
 
       {/* 하단 버튼 */}
+      {(saving || saveError) && <div role={saveError ? 'alert' : 'status'} style={{ position: 'absolute', bottom: 120, right: 30, maxWidth: 320, padding: 12, background: '#fff' }}>{saveError || '저장하고 있어요…'}</div>}
       <div style={{ position: 'absolute', bottom: '30px', right: '30px' }}>
-        <NextGreen onClick={handleNext} />
+        <NextGreen onClick={handleNext} visuallyDisabled={saving} />
       </div>
       <div style={{ position: 'absolute', bottom: '30px', left: '30px' }}>
-        <BackOrange onClick={() => navigate('/create02')} />
+        <BackOrange onClick={() => navigate('/create02')} visuallyDisabled={saving} />
       </div>
     </CreatorLayout>
   );

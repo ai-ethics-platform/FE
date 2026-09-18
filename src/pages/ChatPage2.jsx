@@ -7,7 +7,7 @@ import { sendIngestEvent } from "../api/adminIngest";
 import { downloadTranscriptCsv } from "../utils/transcriptCsv";
 
 import RenewalChat from '../components/renewal/RenewalChat';
-import { renewalDraft, handoffRenewalGame } from '../utils/renewalDraft';
+import { renewalDraft, handoffRenewalGame, loadRenewalSession, saveRenewalSession, clearRenewalSession } from '../utils/renewalDraft';
 
 // Legacy implementation is archived in ChatPage2Legacy.jsx.
 const STORAGE_KEY = 'flow';
@@ -267,25 +267,28 @@ function renderMarkdownLite(text) {
 export default function ChatPage2() {
   const navigate = useNavigate();
 
-  const [sessionId] = useState(() => `renewal-${crypto.randomUUID()}`);
+  const [restored] = useState(loadRenewalSession);
+  const [sessionId] = useState(() => restored?.sessionId || `renewal-${crypto.randomUUID()}`);
   const initializedRef = useRef(false);
   const busyRef = useRef(false);
   const retryActionRef = useRef(null);
-  const [needsInit, setNeedsInit] = useState(true);
+  const [needsInit, setNeedsInit] = useState(!restored);
   const [creating, setCreating] = useState(false);
   const creatingRef = useRef(false);
-  const [step, setStep] = useState("opening");
-  const [context, setContext] = useState({});
-  const [messages, setMessages] = useState([{ role: "system", content: "세션 시작" }]);
-  const [input, setInput] = useState("");
+  const [step, setStep] = useState(restored?.step || "opening");
+  const [context, setContext] = useState(restored?.context || {});
+  const [messages, setMessages] = useState(restored?.messages || [{ role: "system", content: "세션 시작" }]);
+  const [input, setInput] = useState(restored?.input || "");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [storageWarning, setStorageWarning] = useState('');
 
   const messagesRef = useRef(messages);
-  const stepBoundariesRef = useRef({}); // step 진입 시점의 messages 길이(=해당 step 시작 경계)
+  const stepBoundariesRef = useRef(restored?.stepBoundaries || {}); // step 진입 시점의 messages 길이
   const inputRef = useRef(null);
-  const [showTemplateButton, setShowTemplateButton] = useState(false);
+  const [showTemplateButton, setShowTemplateButton] = useState(!!restored?.showTemplateButton);
+  const finishedRef = useRef(false);
 
   useEffect(() => {
     const el = inputRef.current;
@@ -361,8 +364,10 @@ export default function ChatPage2() {
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
+    if (restored) return;
     const keysToClear = [
       STORAGE_KEY,
+      'pending_input',
       "final_dilemma_payload",
       "opening",
       "char1", "char2", "char3",
@@ -383,15 +388,18 @@ export default function ChatPage2() {
       "dilemma_image_1_default_uploaded"
     ];
 
-    keysToClear.forEach((k) => renewalDraft.removeItem(k));
-    renewalDraft.setItem('chat_session_id', sessionId);
+    try {
+      keysToClear.forEach((k) => renewalDraft.removeItem(k));
+      renewalDraft.setItem('chat_session_id', sessionId);
+    } catch { setStorageWarning('대화를 임시 저장하지 못했어요. 새로고침 전에 대화기록을 다운로드해 주세요.'); }
 
     setContext({});
 
     handleInit();
 
     const startedAt = new Date().toISOString();
-    renewalDraft.setItem('admin_started_at', startedAt);
+    try { renewalDraft.setItem('admin_started_at', startedAt); }
+    catch { setStorageWarning('대화를 임시 저장하지 못했어요. 새로고침 전에 대화기록을 다운로드해 주세요.'); }
     const teacher_name = renewalDraft.getItem("teacher_name") || "-";
     const teacher_school = renewalDraft.getItem("teacher_school") || "-";
     const teacher_email = renewalDraft.getItem("teacher_email") || "---";
@@ -511,9 +519,27 @@ export default function ChatPage2() {
     return () => window.removeEventListener('beforeunload', warnOnReload);
   }, []);
 
+  // Keep the last completed response. Never replay an interrupted request on reload.
   useEffect(() => {
-    renewalDraft.setItem(STORAGE_KEY, JSON.stringify({ step, context, messages }));
-  }, [step, context, messages]);
+    if (loading || creating || needsInit || finishedRef.current) return;
+    const saved = saveRenewalSession({ sessionId, step, context, messages, showTemplateButton, stepBoundaries: stepBoundariesRef.current });
+    setStorageWarning(saved ? '' : '대화를 임시 저장하지 못했어요. 새로고침 전에 대화기록을 다운로드해 주세요.');
+    sendIngestEvent('progress', {
+      session_id: sessionId,
+      teacher_name: renewalDraft.getItem('teacher_name') || '-',
+      teacher_school: renewalDraft.getItem('teacher_school') || '-',
+      teacher_email: renewalDraft.getItem('teacher_email') || '---',
+      started_at: renewalDraft.getItem('admin_started_at'),
+      turn_count: messages.filter(message => message.role === 'user').length,
+      messages,
+    });
+  }, [sessionId, step, context, messages, showTemplateButton, loading, creating, needsInit]);
+
+  useEffect(() => {
+    if (loading || creating || finishedRef.current) return;
+    try { renewalDraft.setItem('pending_input', input); }
+    catch { setStorageWarning('입력을 임시 저장하지 못했어요. 새로고침 전에 대화기록을 다운로드해 주세요.'); }
+  }, [input, loading, creating]);
 
   const handleSend = async (userText) => {
     if (busyRef.current || creatingRef.current || needsInit) return;
@@ -522,6 +548,8 @@ export default function ChatPage2() {
 
     const raw = (userText ?? input).trim();
     if (!raw) return;
+    try { renewalDraft.setItem('pending_input', raw); }
+    catch { setStorageWarning('입력을 임시 저장하지 못했어요. 새로고침 전에 대화기록을 다운로드해 주세요.'); }
 
     const wantsNextStep =
       raw.replace(/\s+/g, "").includes("다음단계") ||
@@ -724,7 +752,9 @@ keys.forEach((k) => {
       preserveInput = true;
       setError('메시지를 보내지 못했어요. 입력한 내용은 그대로 보관했어요.');
       retryActionRef.current = () => handleSend(userMsg);
-      setMessages(previous => previous.slice(0, -1));
+      setMessages(messages);
+      setContext(context);
+      setShowTemplateButton(showTemplateButton);
     } finally {
       busyRef.current = false;
       setLoading(false);
@@ -751,6 +781,7 @@ keys.forEach((k) => {
     setInput("");
 
     const boundary = stepBoundariesRef.current[targetStep];
+    STEP_ORDER.slice(targetIdx).forEach(stage => { delete stepBoundariesRef.current[stage]; });
     const trimmed =
       typeof boundary === "number"
         ? messagesRef.current.slice(0, boundary)
@@ -782,7 +813,7 @@ keys.forEach((k) => {
     const teacher_school = renewalDraft.getItem("teacher_school") || "-";
     const teacher_email = renewalDraft.getItem("teacher_email") || "---";
 
-    const finalPayloadString = renewalDraft.getItem("final_dilemma_payload");
+    const finalPayloadString = renewalDraft.getItem("final_dilemma_payload") || JSON.stringify(context);
     if (!finalPayloadString) {
       throw new Error("Missing final dilemma payload");
     }
@@ -904,6 +935,8 @@ keys.forEach((k) => {
     });
 
     handoffRenewalGame({ code, url: gameUrl, data, title: payload.title });
+    clearRenewalSession();
+    finishedRef.current = true;
 
     navigate("/create00");
     setShowTemplateButton(false);
@@ -931,6 +964,8 @@ keys.forEach((k) => {
       turn_count: messages.filter(message => message.role === 'user').length,
       messages,
     });
+    clearRenewalSession();
+    finishedRef.current = true;
     navigate('/selectroom');
   };
 
@@ -958,6 +993,7 @@ keys.forEach((k) => {
       needsInit={needsInit}
       creating={creating}
       error={error}
+      storageWarning={storageWarning}
       canRetry={!!retryActionRef.current}
       onRetry={() => retryActionRef.current?.()}
       showTemplateButton={showTemplateButton}

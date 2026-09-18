@@ -63,6 +63,7 @@ const refreshAccessToken = async () => {
         refresh_token: refreshToken,
       },
       {                            // 3. config (headers)
+        timeout: 20000,
         headers: {
           'Content-Type': 'application/json'
         }
@@ -121,6 +122,10 @@ export async function ensureFreshAccessToken({ skewSeconds = 30 } = {}) {
 // 요청 인터셉터: 액세스 토큰 자동 추가
 instance.interceptors.request.use(
   (config) => {
+    // Bound editor/preview loads and saves as well as the approval gate.
+    if (!config.timeout && /(?:\/custom-games(?:\/|$)|\/play-applications\/me(?:\?|$))/.test(config.url || '')) {
+      config.timeout = 20000;
+    }
     const accessToken = localStorage.getItem('access_token');
     if (accessToken) {
       const tokenType = localStorage.getItem('token_type') || 'Bearer';
@@ -210,6 +215,7 @@ export async function callChatbot({ session_id, user_input, step, variable, cont
     "/chat/multi-step",
     payload,
     {
+      timeout: 90000,
       headers: { "Content-Type": "application/json" }
     }
   );

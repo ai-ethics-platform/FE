@@ -1,4 +1,3 @@
-import React from 'react';
 import contentbox from '../../assets/createcontentbox.svg';
 import paginationBothL from '../../assets/paginationBothL.svg';
 import paginationBothR from '../../assets/paginationBothR.svg';
@@ -115,15 +114,9 @@ export default function ContentTextBox2({
           whiteSpace: 'normal',
         }}
       >
-        <div style={{ ...FontStyles.bodyBold, marginBottom: 3 }}>
-          {String(currentParagraph.main || '')
-            .split('\n')
-            .map((line, idx) => (
-              <React.Fragment key={idx}>
-                {line}
-                <br />
-              </React.Fragment>
-            ))}
+        {/* Keep one text child: browser translation can replace individual text nodes. */}
+        <div style={{ ...FontStyles.bodyBold, marginBottom: 3, whiteSpace: 'pre-wrap' }}>
+          {String(currentParagraph.main || '')}
         </div>
 
         <div style={{ ...FontStyles.bodyBold, color: Colors.grey04 }}>

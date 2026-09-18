@@ -153,6 +153,7 @@
   .renewal-chat .rn-header { height: 56px; flex-basis: 56px; padding: 0 19px; gap: 12px; }
   .renewal-chat .rn-brand { font-size: 24px; gap: 6px; }
   .renewal-chat .rn-brand-logo { width: 104px; height: 26px; }
+  .renewal-chat .rn-brand > span:last-child { display: none; }
   .renewal-chat .rn-header-actions { gap: 5px; }
   .renewal-chat .rn-exit { font-size: 11px; padding: 7px 4px; }
   .renewal-chat .rn-mobile-summary { display: inline-flex; width: 36px; height: 36px; }

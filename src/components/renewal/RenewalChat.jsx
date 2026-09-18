@@ -33,7 +33,7 @@ function hasText(value) {
 function isStepReady(step, context) {
   const fields = {
     opening: ['topic'],
-    question: ['question', 'choice1', 'choice2', 'dilemma_situation'],
+    question: ['question', 'choice1', 'choice2'],
     flip: ['flips_agree_texts', 'flips_disagree_texts'],
     roles: ['char1', 'char2', 'char3', 'chardes1', 'chardes2', 'chardes3'],
   };
@@ -57,7 +57,7 @@ function ConfirmDialog({ action, onClose, onConfirm }) {
   );
 }
 
-export default function RenewalChat({ step, context, messages, input, setInput, inputRef, loading, needsInit, creating, error, canRetry, onRetry, showTemplateButton, onSend, onBack, onCreate, onDownloadTranscript, onExit, renderMessage }) {
+export default function RenewalChat({ step, context, messages, input, setInput, inputRef, loading, needsInit, creating, error, storageWarning, canRetry, onRetry, showTemplateButton, onSend, onBack, onCreate, onDownloadTranscript, onExit, renderMessage }) {
   const stepIndex = STEPS.findIndex(item => item.id === step);
   const current = STEPS[stepIndex];
   const suggestions = useMemo(() => getRenewalSuggestions(messages, step), [messages, step]);
@@ -118,6 +118,7 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
       <header className="rn-header">
         <div className="rn-brand"><span className="rn-brand-logo" role="img" aria-label="DilemmA.I." style={{ maskImage: `url("${logo}")`, WebkitMaskImage: `url("${logo}")` }} /><span>Creator</span></div>
         <div className="rn-header-actions">
+          {!showTemplateButton && <button type="button" className="rn-exit" onClick={onDownloadTranscript}>대화 저장</button>}
           <button type="button" className="rn-mobile-summary rn-icon-button" aria-label={sidebarOpen ? '제작 현황 닫기' : '제작 현황 열기'} aria-expanded={sidebarOpen} aria-controls="rn-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Icon name={sidebarOpen ? 'close' : 'list'} /></button>
           <button type="button" className="rn-exit" disabled={loading || creating} onClick={() => setConfirmAction('exit')}><Icon name="close" size={16} /><span>나가기</span></button>
         </div>
@@ -126,7 +127,7 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
       <div className="rn-workspace">
         {sidebarOpen && <button type="button" className="rn-sidebar-backdrop" aria-label="제작 현황 닫기" onClick={() => setSidebarOpen(false)} />}
         <aside className="rn-sidebar" id="rn-sidebar" data-open={sidebarOpen} aria-label="게임 제작 현황">
-          <div className="rn-progress-label"><span>게임 제작 단계</span><span>{showTemplateButton ? 5 : stepIndex} / 5 완료</span></div>
+          <div className="rn-progress-label"><span>게임 제작 단계</span><span>{`${showTemplateButton ? 5 : stepIndex} / 5 완료`}</span></div>
           <div className="rn-progress-track" role="progressbar" aria-label="게임 제작 진행률" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress}%` }} /></div>
           <ol className="rn-steps">
             {STEPS.map((item, index) => {
@@ -142,7 +143,7 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
         </aside>
 
         <main className="rn-main">
-          <div className="rn-main-heading"><div><span className="rn-eyebrow">STEP {String(stepIndex + 1).padStart(2, '0')} <span>/ 05</span></span><h1>{current.title}</h1><p>{current.description}</p></div></div>
+          <div className="rn-main-heading"><div><span className="rn-eyebrow" key={step}>{`STEP ${String(stepIndex + 1).padStart(2, '0')} `}<span>/ 05</span></span><h1>{current.title}</h1><p>{current.description}</p></div></div>
           <div className="rn-conversation" ref={scrollRef} onScroll={event => {
             const element = event.currentTarget;
             if (autoScrollTopRef.current !== null && Math.abs(element.scrollTop - autoScrollTopRef.current) < 1) return;
@@ -165,6 +166,8 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
           </div>
 
           <div className="rn-composer-area">
+            {(loading || creating) && <div className="rn-thinking-text" role="status">{creating ? '게임을 저장하고 있어요…' : 'AI가 답변을 만들고 있어요…'}<span>연결이 지연되면 다시 시도할 수 있어요.</span></div>}
+            {storageWarning && <div className="rn-error" role="alert"><span>{storageWarning}</span><button type="button" onClick={onDownloadTranscript}>대화기록 다운로드</button></div>}
             {!following && <button type="button" className="rn-latest" onClick={scrollToBottom}>최근 대화 보기 ↓</button>}
             {error && <div className="rn-error" role="alert"><span>{error}</span>{canRetry && <button type="button" disabled={loading || creating} onClick={onRetry}>다시 시도</button>}</div>}
             {showTemplateButton && <div className="rn-complete"><span className="rn-complete-icon"><Icon name="check" /></span><div><strong>게임 초안이 완성됐어요!</strong><p>편집 화면에서 내용을 검토하고 그림을 추가해 보세요.</p></div><button type="button" className="rn-secondary" onClick={onDownloadTranscript}>대화기록 다운로드</button><button type="button" className="rn-primary" disabled={blocked} onClick={onCreate}>{creating ? '템플릿 생성 중…' : '템플릿 생성'}<Icon name="arrow" size={16} /></button></div>}

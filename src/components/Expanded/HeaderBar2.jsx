@@ -182,6 +182,7 @@ export default function HeaderBar({
         </nav>
 
         {/* 오른쪽 next 버튼 */}
+        {navBusy && <span role="status" style={{ marginLeft: 'auto', fontSize: 12, color: '#BB4E2D' }}>저장하고 있어요…</span>}
         <button
           type="button"
           disabled={nextDisabled}

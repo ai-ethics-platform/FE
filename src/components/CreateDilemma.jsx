@@ -6,6 +6,7 @@ import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import InputBoxSmall from './InputBoxSmall'; 
+import { clearRenewalSession } from '../utils/renewalDraft';
 
 export default function CreateDilemma({ onClose }) {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function CreateDilemma({ onClose }) {
     localStorage.setItem('teacher_name', name);
     localStorage.setItem('teacher_school', school);
     localStorage.setItem('teacher_email', email);
+    clearRenewalSession();
 
     // 다음 페이지 이동
     navigate('/chatpage2');

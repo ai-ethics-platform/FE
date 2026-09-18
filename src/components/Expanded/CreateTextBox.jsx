@@ -1,4 +1,6 @@
 import contentbox from '../../assets/createcontentbox.svg';
+import { useEffect } from 'react';
+import { diagnosticEvent } from '../../utils/creatorDiagnostics';
 import paginationBothL from '../../assets/paginationBothL.svg';
 import paginationBothR from '../../assets/paginationBothR.svg';
 import { Colors, FontStyles } from '../styleConstants';
@@ -42,8 +44,17 @@ export default function ContentTextBox2({
 }) {
   const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };
 
-  const handlePrev = () => { if (currentIndex > 0) setCurrentIndex(currentIndex - 1); };
-  const handleNext = () => { if (currentIndex < paragraphs.length - 1) setCurrentIndex(currentIndex + 1); };
+  useEffect(() => {
+    diagnosticEvent('state', { action: 'preview_paragraph', count: currentIndex, disabled });
+  }, [currentIndex, disabled]);
+  const handlePrev = () => {
+    diagnosticEvent('action', { action: 'preview_previous', count: currentIndex, blocked: currentIndex <= 0 });
+    if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
+  };
+  const handleNext = () => {
+    diagnosticEvent('action', { action: 'preview_next', count: currentIndex, blocked: currentIndex >= paragraphs.length - 1 });
+    if (currentIndex < paragraphs.length - 1) setCurrentIndex(currentIndex + 1);
+  };
 
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === paragraphs.length - 1;

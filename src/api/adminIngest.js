@@ -1,3 +1,5 @@
+import { diagnosticEvent, diagnosticState } from '../utils/creatorDiagnostics';
+
 // Latest unsent snapshot per session. Router navigation keeps this sender alive;
 // sessionStorage also preserves it across a reload in the same tab.
 const STORAGE_KEY = 'dilemma.admin.pending';
@@ -25,6 +27,7 @@ export function flushPendingIngest() {
       const record = pending[id];
       let sent = false;
       for (let attempt = 0; attempt < 2 && !sent; attempt++) {
+        diagnosticEvent('ingest_start', { event: record.event, attempt });
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 20000);
         try {
@@ -36,7 +39,9 @@ export function flushPendingIngest() {
           });
           if (!response.ok) throw new Error(`Admin ingest HTTP ${response.status}`);
           sent = true;
+          diagnosticEvent('ingest_end', { event: record.event, status: response.status });
         } catch (error) {
+          diagnosticEvent('ingest_error', { event: record.event, name: error.name, attempt });
           console.warn('sendIngestEvent failed:', error);
         } finally { clearTimeout(timer); }
       }
@@ -56,6 +61,7 @@ export function flushPendingIngest() {
 export function sendIngestEvent(event, payload) {
   try {
     if (!import.meta.env.VITE_ADMIN_INGEST_URL || !payload.session_id) return Promise.resolve();
+    diagnosticState({ session_id: payload.session_id, ...(payload.game_code ? { game_code: payload.game_code } : {}) });
     const previous = pending[payload.session_id];
     if (previous?.event === 'complete' && event !== 'complete') return flushPendingIngest();
     if (!previous || !['complete', 'abandon'].includes(previous.event) || ['complete', 'abandon'].includes(event)) {

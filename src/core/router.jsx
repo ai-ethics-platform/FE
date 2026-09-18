@@ -1,11 +1,13 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect } from 'react';
 import { flushPendingIngest } from '../api/adminIngest';
+import { diagnosticRoute } from '../utils/creatorDiagnostics';
 import {
   BrowserRouter,
   Navigate,
   Outlet,
   Route,
   Routes,
+  useLocation,
 } from 'react-router-dom';
 
 import Login from '../pages/Login';
@@ -73,6 +75,12 @@ import PlayApprovalAuthRoute from '../components/playApproval/PlayApprovalAuthRo
 
 const ChatPage2 = lazy(() => import('../pages/ChatPage2'));
 
+function DiagnosticRoute() {
+  const { pathname } = useLocation();
+  useLayoutEffect(() => { diagnosticRoute(pathname); }, [pathname]);
+  return null;
+}
+
 function GameProvidersLayout() {
   return (
     <WebSocketProvider>
@@ -92,6 +100,7 @@ function Router() {
 
   return (
     <BrowserRouter>
+      <DiagnosticRoute />
       <Routes>
         {/* 로그인 */}
         <Route path="/" element={<Login />} />

@@ -613,6 +613,7 @@ import create02Image from '../assets/images/default.png';
 import NextGreen from "../components/NextOrange";
 import BackOrange from "../components/Expanded/BackOrange";
 import axiosInstance from '../api/axiosInstance';
+import { diagnosticEvent, diagnosticState } from '../utils/creatorDiagnostics';
 
 /* =========================
    이미지 축소 유틸
@@ -1102,8 +1103,10 @@ export default function Create03() {
   // 현재 단계(딜레마 상황·질문)를 서버에 저장만 한다. 이동은 호출자가 판단.
   // 헤더 브레드크럼/모드 토글로 빠져나갈 때도 이 함수를 태워 편집분 유실을 막는다.
   const saveDilemmaStep = async () => {
+    diagnosticEvent('action', { action: 'save_dilemma', blocked: savingRef.current });
     if (savingRef.current) return false;
     savingRef.current = true;
+    diagnosticState({ phase: 'save_dilemma', busy: true });
     setSaving(true);
     setSaveError('');
     try {
@@ -1133,6 +1136,7 @@ export default function Create03() {
     } finally {
       savingRef.current = false;
       setSaving(false);
+      diagnosticState({ phase: 'dilemma', busy: false });
     }
   };
 

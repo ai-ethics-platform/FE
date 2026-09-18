@@ -5,6 +5,7 @@ import { parseDilemmaText } from "../utils/templateparsing";
 import axiosInstance from "../api/axiosInstance";
 import { sendIngestEvent } from "../api/adminIngest";
 import { downloadTranscriptCsv } from "../utils/transcriptCsv";
+import { diagnosticEvent, diagnosticState } from '../utils/creatorDiagnostics';
 
 import RenewalChat from '../components/renewal/RenewalChat';
 import { renewalDraft, handoffRenewalGame, loadRenewalSession, saveRenewalSession, clearRenewalSession } from '../utils/renewalDraft';
@@ -291,6 +292,11 @@ export default function ChatPage2() {
   const finishedRef = useRef(false);
 
   useEffect(() => {
+    diagnosticState({ session_id: sessionId, phase: step, busy: loading || creating || needsInit });
+    diagnosticEvent('state', { message_count: messages.length, restored: !!restored, storage_ok: !storageWarning });
+  }, [sessionId, step, loading, creating, needsInit, messages.length, restored, storageWarning]);
+
+  useEffect(() => {
     const el = inputRef.current;
     if (!el) return;
     el.style.height = "auto";
@@ -443,6 +449,7 @@ export default function ChatPage2() {
   }
 
   async function handleInit(targetStep = step, options = {}) {
+    diagnosticEvent('action', { action: 'chat_init', blocked: busyRef.current });
     busyRef.current = true;
     setNeedsInit(true);
     setError('');
@@ -542,6 +549,7 @@ export default function ChatPage2() {
   }, [input, loading, creating]);
 
   const handleSend = async (userText) => {
+    diagnosticEvent('action', { action: 'chat_send', blocked: busyRef.current || creatingRef.current || needsInit });
     if (busyRef.current || creatingRef.current || needsInit) return;
     retryActionRef.current = null;
     setError("");
@@ -763,6 +771,7 @@ keys.forEach((k) => {
   };
 
   const handleBackStep = () => {
+    diagnosticEvent('action', { action: 'chat_back', blocked: busyRef.current || creatingRef.current });
     if (busyRef.current || creatingRef.current) return;
 
     const idx = STEP_ORDER.indexOf(step);
@@ -803,6 +812,7 @@ keys.forEach((k) => {
   };
 
   const handleTemplateCreate = async () => {
+    diagnosticEvent('action', { action: 'create_game', blocked: busyRef.current || creatingRef.current });
   if (busyRef.current || creatingRef.current || !showTemplateButton) return;
   creatingRef.current = true;
   setCreating(true);

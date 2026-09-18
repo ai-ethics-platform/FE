@@ -8,6 +8,7 @@ import nextHoverIcon from '../../assets/completedhover.svg';
 import nextDisabledIcon from '../../assets/completeddisabled.svg';
 import arrowIcon from '../../assets/arrow.svg';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { diagnosticEvent } from '../../utils/creatorDiagnostics';
 
 const EDIT_GROUPS = [['/create01'], ['/create02'], ['/create03'], ['/create04'], ['/create05']];
 const PREVIEW_GROUPS = [
@@ -74,6 +75,7 @@ export default function HeaderBar({
   };
 
   const selectCrumb = async (idx) => {
+    diagnosticEvent('action', { action: 'header_step', count: idx, blocked: navBusy });
     if (navBusy) return;
     const route = routeOf(mode, idx);
     if (!route) return;
@@ -91,6 +93,7 @@ export default function HeaderBar({
   const handleLeftClick = () => navigate('/selectroom');
 
   const handleModeChange = async (newMode) => {
+    diagnosticEvent('action', { action: `header_${newMode}`, blocked: navBusy });
     if (navBusy) return;
     const target = routeOf(newMode, currentCrumb);
     if (!target) return;

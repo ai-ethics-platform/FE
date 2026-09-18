@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { diagnosticRequestStart, diagnosticRequestEnd } from '../utils/creatorDiagnostics';
 
 /**
  * 하드코딩된 주소를 환경변수로 분리
@@ -54,6 +55,7 @@ function parseJwtExpSec(token) {
 const refreshAccessToken = async () => {
   const refreshToken = localStorage.getItem('refresh_token');
   if (!refreshToken) throw new Error('No refresh token available');
+  const diagnostic = diagnosticRequestStart('POST', '/auth/refresh', 20000);
 
   try {
     //  하드코딩된 문자열 대신 변수화된 API_BASE 사용
@@ -69,7 +71,7 @@ const refreshAccessToken = async () => {
         }
       }
     );
-    console.log("✅ Refresh 성공:", data);
+    diagnosticRequestEnd(diagnostic, 200);
 
     // data: { access_token, refresh_token?, token_type? }
 
@@ -91,6 +93,7 @@ const refreshAccessToken = async () => {
     // 3) 새 access_token 문자열만 반환
     return data.access_token;
   } catch (error) {
+    diagnosticRequestEnd(diagnostic, error.response?.status, error.code || 'refresh_failed');
     //clearAllLocalStorageKeys();
     console.error('리프레시 토큰으로 토큰 재발급 실패:', error);
     throw error;
@@ -132,6 +135,7 @@ instance.interceptors.request.use(
       config.headers = config.headers || {};
       config.headers.Authorization = `${tokenType} ${accessToken}`;
     }
+    config.creatorDiagnostic = diagnosticRequestStart(config.method || 'GET', config.url, config.timeout);
     return config;
   },
   (error) => Promise.reject(error)
@@ -140,12 +144,14 @@ instance.interceptors.request.use(
 // 응답 인터셉터 교체
 instance.interceptors.response.use(
   (response) => {
+    diagnosticRequestEnd(response.config.creatorDiagnostic, response.status);
     console.log('⬅️ Response:', response.config.url, response.status, response.data);
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;
+    diagnosticRequestEnd(originalRequest?.creatorDiagnostic, status, error.code || 'request_failed');
 
     // refresh 호출 자체에서 에러난 경우는 그대로 실패 처리 (루프 방지)
     if (isAuthRefreshRequest(originalRequest)) {

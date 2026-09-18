@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { diagnosticError } from '../utils/creatorDiagnostics';
 
 export default class CreatorRecoveryBoundary extends Component {
   state = { failed: false };
@@ -6,6 +7,7 @@ export default class CreatorRecoveryBoundary extends Component {
   static getDerivedStateFromError() { return { failed: true }; }
 
   componentDidCatch(error, info) {
+    diagnosticError('react_error', error, info.componentStack);
     console.error('제작 화면 오류:', error, info);
     try {
       sessionStorage.setItem('dilemma.creator.lastError', JSON.stringify({

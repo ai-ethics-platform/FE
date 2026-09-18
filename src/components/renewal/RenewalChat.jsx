@@ -118,7 +118,6 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
       <header className="rn-header">
         <div className="rn-brand"><span className="rn-brand-logo" role="img" aria-label="DilemmA.I." style={{ maskImage: `url("${logo}")`, WebkitMaskImage: `url("${logo}")` }} /><span>Creator</span></div>
         <div className="rn-header-actions">
-          {!showTemplateButton && <button type="button" className="rn-exit" onClick={onDownloadTranscript}>대화 저장</button>}
           <button type="button" className="rn-mobile-summary rn-icon-button" aria-label={sidebarOpen ? '제작 현황 닫기' : '제작 현황 열기'} aria-expanded={sidebarOpen} aria-controls="rn-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><Icon name={sidebarOpen ? 'close' : 'list'} /></button>
           <button type="button" className="rn-exit" disabled={loading || creating} onClick={() => setConfirmAction('exit')}><Icon name="close" size={16} /><span>나가기</span></button>
         </div>
@@ -166,7 +165,6 @@ export default function RenewalChat({ step, context, messages, input, setInput, 
           </div>
 
           <div className="rn-composer-area">
-            {(loading || creating) && <div className="rn-thinking-text" role="status">{creating ? '게임을 저장하고 있어요…' : 'AI가 답변을 만들고 있어요…'}<span>연결이 지연되면 다시 시도할 수 있어요.</span></div>}
             {storageWarning && <div className="rn-error" role="alert"><span>{storageWarning}</span><button type="button" onClick={onDownloadTranscript}>대화기록 다운로드</button></div>}
             {!following && <button type="button" className="rn-latest" onClick={scrollToBottom}>최근 대화 보기 ↓</button>}
             {error && <div className="rn-error" role="alert"><span>{error}</span>{canRetry && <button type="button" disabled={loading || creating} onClick={onRetry}>다시 시도</button>}</div>}

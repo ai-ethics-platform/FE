@@ -25,3 +25,6 @@ dist-ssr
 
 .env
 .env.local
+
+# Generated Graft cache; graph cards are versioned.
+/graft/.cache/

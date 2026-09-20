@@ -293,7 +293,8 @@ export default function ChatPage2() {
 
   useEffect(() => {
     diagnosticState({ session_id: sessionId, phase: step, busy: loading || creating || needsInit });
-    diagnosticEvent('state', { message_count: messages.length, restored: !!restored, storage_ok: !storageWarning });
+    diagnosticEvent('state', { message_count: messages.length, restored: !!restored, storage_ok: !storageWarning,
+      loading, creating, needs_init: needsInit, busy_ref: busyRef.current, creating_ref: creatingRef.current });
   }, [sessionId, step, loading, creating, needsInit, messages.length, restored, storageWarning]);
 
   useEffect(() => {
@@ -449,7 +450,8 @@ export default function ChatPage2() {
   }
 
   async function handleInit(targetStep = step, options = {}) {
-    diagnosticEvent('action', { action: 'chat_init', blocked: busyRef.current });
+    diagnosticEvent('action', { action: 'chat_init', blocked: busyRef.current,
+      loading, creating, needs_init: needsInit, busy_ref: busyRef.current, creating_ref: creatingRef.current });
     busyRef.current = true;
     setNeedsInit(true);
     setError('');
@@ -549,7 +551,8 @@ export default function ChatPage2() {
   }, [input, loading, creating]);
 
   const handleSend = async (userText) => {
-    diagnosticEvent('action', { action: 'chat_send', blocked: busyRef.current || creatingRef.current || needsInit });
+    diagnosticEvent('action', { action: 'chat_send', blocked: busyRef.current || creatingRef.current || needsInit,
+      loading, creating, needs_init: needsInit, busy_ref: busyRef.current, creating_ref: creatingRef.current });
     if (busyRef.current || creatingRef.current || needsInit) return;
     retryActionRef.current = null;
     setError("");
@@ -771,7 +774,8 @@ keys.forEach((k) => {
   };
 
   const handleBackStep = () => {
-    diagnosticEvent('action', { action: 'chat_back', blocked: busyRef.current || creatingRef.current });
+    diagnosticEvent('action', { action: 'chat_back', blocked: busyRef.current || creatingRef.current,
+      loading, creating, needs_init: needsInit, busy_ref: busyRef.current, creating_ref: creatingRef.current });
     if (busyRef.current || creatingRef.current) return;
 
     const idx = STEP_ORDER.indexOf(step);
@@ -812,7 +816,9 @@ keys.forEach((k) => {
   };
 
   const handleTemplateCreate = async () => {
-    diagnosticEvent('action', { action: 'create_game', blocked: busyRef.current || creatingRef.current });
+    diagnosticEvent('action', { action: 'create_game', blocked: busyRef.current || creatingRef.current || !showTemplateButton,
+      loading, creating, needs_init: needsInit, busy_ref: busyRef.current, creating_ref: creatingRef.current,
+      template_ready: showTemplateButton });
   if (busyRef.current || creatingRef.current || !showTemplateButton) return;
   creatingRef.current = true;
   setCreating(true);

@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'dilemma.creator.diagnostics.v1';
-const BUILD_ID = import.meta.env?.VITE_BUILD_ID || 'creator-diag-20260918-v1';
+const BUILD_ID = import.meta.env?.VITE_BUILD_ID || 'creator-diag-20260920-v2';
 const isCreatorPath = path => /^\/(?:chatpage[23]?(?:\/renewal)?|create\d+|editor[\d_]+|creatorending)\/?$/.test(path);
 const cleanId = value => String(value || '').replace(/[^\w-]/g, '').slice(0, 80);
 let started = false;
@@ -12,8 +12,25 @@ let traceId;
 let pageId;
 let config;
 let lastPointer;
-let context = { path: '/', session_id: '', game_code: '', phase: '', busy: false };
+let context = { path: '/', session_id: '', game_code: '', phase: '', busy: false,
+  browser_versions: [], browser_version_status: 'pending' };
 const pendingRequests = new Map();
+
+export async function readBrowserVersions(userAgentData) {
+  if (typeof userAgentData?.getHighEntropyValues !== 'function') {
+    return { browser_versions: [], browser_version_status: 'unsupported' };
+  }
+  try {
+    const { fullVersionList = [] } = await userAgentData.getHighEntropyValues(['fullVersionList']);
+    const browser_versions = fullVersionList
+      .filter(item => typeof item?.brand === 'string' && item.brand.length > 0 && item.brand.length <= 80 &&
+        typeof item.version === 'string' && /^\d+(?:\.\d+){1,3}$/.test(item.version) && item.version.length <= 40)
+      .slice(0, 8).map(({ brand, version }) => ({ brand, version }));
+    return { browser_versions, browser_version_status: browser_versions.length ? 'available' : 'unavailable' };
+  } catch {
+    return { browser_versions: [], browser_version_status: 'error' };
+  }
+}
 
 function persist() {
   try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ traceId, queue, context })); return true; }
@@ -161,6 +178,12 @@ export function startCreatorDiagnostics() {
     diagnosticRoute(location.pathname);
     diagnosticEvent('page_start', { worker: !!worker, storage_ok: persist(),
       build_asset: [...document.scripts].find(s => s.type === 'module')?.src.split(/[?#]/)[0].slice(0, 300) || '' });
+    // Do not delay app startup. Keep versions on each event so replayed events retain their original browser.
+    void readBrowserVersions(navigator.userAgentData).then(browserInfo => {
+      context = { ...context, ...browserInfo };
+      diagnosticEvent('diagnostic_status', { event: 'browser_version' });
+      publish();
+    });
 
     const throttledAt = new Map();
     for (const type of ['pointerdown', 'pointerup', 'click', 'keydown', 'input', 'dragstart', 'dragend', 'drop', 'pointercancel']) {

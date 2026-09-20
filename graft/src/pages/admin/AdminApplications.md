@@ -1,0 +1,18 @@
+# src/pages/admin/AdminApplications.jsx
+
+- getApiErrorMessage · function · L26-L43 — function getApiErrorMessage(error, fallbackMessage)
+- normalizeApplication · function · L45-L59 — function normalizeApplication(application)
+- AdminApplications · function · L61-L1109 — function AdminApplications()
+- openStatusConfirm · function · L226-L229 — openStatusConfirm = (type, application)
+- openAdminPermissionConfirm · function · L231-L242 — openAdminPermissionConfirm = ()
+- closeConfirmModal · function · L244-L249 — closeConfirmModal = ()
+- handleConfirmAction · function · L251-L327 — handleConfirmAction = async ()
+- openMessageModal · function · L329-L331 — openMessageModal = (application)
+- closeMessageModal · function · L333-L335 — closeMessageModal = ()
+- openAdminModal · function · L337-L345 — openAdminModal = ()
+- closeAdminModal · function · L347-L357 — closeAdminModal = ()
+- handleSearchUser · function · L359-L409 — handleSearchUser = async (event)
+- handleLogout · function · L411-L414 — handleLogout = ()
+- getStatusLabel · function · L416-L427 — getStatusLabel = (status)
+- getFilterTitle · function · L429-L440 — getFilterTitle = ()
+- getConfirmContent · function · L442-L499 — getConfirmContent = ()

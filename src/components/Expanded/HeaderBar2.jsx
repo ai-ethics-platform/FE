@@ -65,10 +65,16 @@ export default function HeaderBar({
   // (저장 없이 navigate 하면 편집 내용이 서버에 반영되지 않고 통째로 유실됨)
   const runBeforeNavigate = async () => {
     if (typeof onBeforeNavigate !== 'function') return true;
+    const startedAt = Date.now();
+    diagnosticEvent('action', { action: 'navigation_save', event: 'start' });
     try {
       const result = await onBeforeNavigate();
+      diagnosticEvent('action', { action: 'navigation_save', event: 'end',
+        blocked: result === false, duration_ms: Date.now() - startedAt });
       return result !== false;
     } catch (e) {
+      diagnosticEvent('action', { action: 'navigation_save', event: 'error', blocked: true,
+        duration_ms: Date.now() - startedAt });
       console.error('이동 전 저장 실패:', e);
       return false;
     }

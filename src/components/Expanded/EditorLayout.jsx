@@ -10,6 +10,7 @@ import bg2Default from '../../assets/images/bg2.png';
 import NextGreen from "../NextOrange";
 import BackOrange from "./BackOrange";
 import DilemmaOutPopup from '../DilemmaOutPopup'; 
+import { diagnosticEvent } from '../../utils/creatorDiagnostics';
 
 const HEADER_H = 56;
 
@@ -83,10 +84,12 @@ export default function EditorLayout({
   const leftInset = bg2InsetLeft ?? bg2Inset;
 
   const handleNext = () => {
+    diagnosticEvent('action', { action: 'screen_next' });
     if (nextPath) navigate(nextPath);
     else onHeaderNextClick?.();
   };
   const handleBack = () => {
+    diagnosticEvent('action', { action: 'screen_back' });
     if (backPath) navigate(backPath);
     else (onHeaderLeftClick || (() => setShowOutPopup(true)))(); // ⬅️ back 버튼에도 동일 로직 원하면 유지
   };

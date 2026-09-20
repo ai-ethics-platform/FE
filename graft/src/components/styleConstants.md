@@ -1,0 +1,3 @@
+# src/components/styleConstants.js
+
+_No extracted symbols in this file._

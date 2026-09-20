@@ -23,6 +23,7 @@ export default function CustomInput({
       style={{
         position: 'relative',
         width,
+        maxWidth: '100%',
         height,
         //borderRadius: 8,
         overflow: "hidden",

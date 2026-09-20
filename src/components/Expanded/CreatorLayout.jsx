@@ -28,6 +28,7 @@ export default function CreatorLayout({
 
   return (
     <div
+      className={headerbar === 2 ? 'creator-layout' : undefined}
       style={{
         position: 'fixed',
         inset: 0,
@@ -47,14 +48,15 @@ export default function CreatorLayout({
 
       <div
         style={{
-          height: `calc(100% - ${HEADER_H}px)`,
+          height: `calc(100% - var(--creator-header-height, ${HEADER_H}px) - ${headerbar === 2 ? 120 : 0}px)`,
+          boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: frame ? 'flex-start' : 'center',
           overflowY: 'auto',
           overflowX: 'hidden',
-          padding: frame ? '26px 16px 30px' : '0 16px',
+          padding: frame ? '26px 24px 30px' : '0 16px',
           gap: frame ? 26 : 0,
         }}
       >

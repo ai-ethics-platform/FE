@@ -1161,7 +1161,7 @@ export default function Create03() {
       }}
     >
       {/* A 영역 - 타이틀 */}
-      <div style={{ marginTop: -50, marginBottom: '30px' }}>
+      <div style={{ marginTop: 0, marginBottom: '30px' }}>
         <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '16px', color: Colors.grey07 }}>상황</h2>
         <p style={{ ...FontStyles.title, color: Colors.grey05, lineHeight: 1.5, marginBottom: '32px' }}>
           딜레마 상황에 대해서 설명해주세요.
@@ -1169,7 +1169,7 @@ export default function Create03() {
       </div>
 
       {/* B + C */}
-      <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', marginBottom: '10px' }}>
+      <div className="creator-media-fields" style={{ marginBottom: '10px' }}>
         {/* B: 대표 이미지 */}
         <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{
@@ -1233,6 +1233,7 @@ export default function Create03() {
         <CreateInput
           width={900}
           label="딜레마 질문*"
+          height={112}
           value={dilemmaQuestion}
           onChange={(e) => { const v = e.target.value ?? ''; setDilemmaQuestion(v); persistQuestion(v); }}
           placeholder="예: Homemate 사용자 최적화 시스템 업그레이드 공지"
@@ -1241,6 +1242,7 @@ export default function Create03() {
         <CreateInput
           width={900}
           label="선택지1"
+          height={96}
           value={option1}
           onChange={(e) => { const v = e.target.value ?? ''; setOption1(v); persistAgreeLabel(v); }}
           placeholder="예: 동의"
@@ -1249,6 +1251,7 @@ export default function Create03() {
         <CreateInput
           width={900}
           label="선택지2"
+          height={96}
           value={option2}
           onChange={(e) => { const v = e.target.value ?? ''; setOption2(v); persistDisagreeLabel(v); }}
           placeholder="예: 비동의"

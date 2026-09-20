@@ -10,10 +10,9 @@ export default function CreateInput({
   placeholder = '플레이스 홀더 텍스트를 입력해 주세요.',
   errorMessage = '',
   width = 580,
-  height = 65,
+  height = 144,
   value = '',
   onChange = () => {},
-  onEnter = () => {},
   onDelete = null, // 삭제 콜백 (null이면 삭제 버튼 안 보임)
   maxLength = undefined,
 }) {
@@ -43,11 +42,12 @@ export default function CreateInput({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: rowGap }}>
       {/* 라벨 + 입력박스 한 줄 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
         {/* 라벨 */}
         <div
           style={{
             width: toSize(labelWidth),
+            flexShrink: 0,
             textAlign: 'left',
             ...FontStyles.title,
             color: Colors.grey06,
@@ -63,6 +63,9 @@ export default function CreateInput({
             display: 'flex',
             alignItems: 'center',
             width: boxWidth,
+            maxWidth: '100%',
+            minWidth: 0,
+            flex: '1 1 auto',
             height: boxHeight,
             padding: '0 16px',
             backgroundColor: Colors.componentBackground,
@@ -83,28 +86,29 @@ export default function CreateInput({
             style={{ width: 18, height: 18, display: 'block', pointerEvents: 'none' }}
           /> */}
 
-          <input
-            type="text"
+          <textarea
+            aria-label={label}
+            rows={2}
             value={value}
             onChange={onChange}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.target.blur(); // 포커스 해제
-                onEnter(value); // 엔터 콜백 호출
-              }
-            }}
             placeholder="" // 기본 placeholder 제거
             maxLength={maxLength}
             style={{
               flex: 1,
+              minWidth: 0,
               height: '100%',
               textAlign: 'left',
               border: 'none',
               outline: 'none',
               background: 'transparent',
               ...FontStyles.body,
+              lineHeight: 1.5,
+              padding: '10px 0',
+              boxSizing: 'border-box',
+              resize: 'none',
+              overflowWrap: 'anywhere',
               color: isTyping ? Colors.CreatorPrimary : (isCompleted ? Colors.grey06 : Colors.grey05),
             }}
           />
@@ -143,6 +147,11 @@ export default function CreateInput({
             <div
               style={{
                 position: 'absolute',
+                right: 20,
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
                 left: '20px', // 아이콘(18px) + 패딩(16px) + 간격(5px) + 약간의 여백
                 top: '50%',
                 transform: 'translateY(-50%)',

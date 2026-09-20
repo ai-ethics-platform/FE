@@ -19,14 +19,6 @@ export default function Create05() {
   const [selectedMode, setSelectedMode] = useState(() => localStorage.getItem('mode') ?? null);
   const [secsLeft, setSecsLeft] = useState(300);
 
-  //  표지 크기 80%로 축소
-  const BOX_W = 360;
-  const BOX_H = 391;
-  const SCALE = 0.8;
-  const SCALED_W = Math.round(BOX_W * SCALE);   // 288
-  const SCALED_H = Math.round(BOX_H * SCALE);   // 313
-  const GAP = Math.round(48 * SCALE);           // 간격도 살짝 축소 (옵션)
-
   const agree_label =localStorage.getItem('agree_label');
   const disagree_label =localStorage.getItem('disagree_label');
   useEffect(() => {
@@ -59,13 +51,11 @@ export default function Create05() {
       showNext
       showBack
     >
-    <div style={{ position: 'relative', paddingTop: 8 }}>
-        {/* 타이머: 오른쪽 위 absolute */}
+    <div style={{ width: 614, marginInline: 'auto', paddingTop: 8 }}>
         <div
           style={{
-            position: 'absolute',
-            top: -100,
-            right: 0,
+            marginLeft: 'auto',
+            marginBottom: 16,
             width: 100,
             minHeight: 40,
             ...FontStyles.headlineNormal,
@@ -84,21 +74,19 @@ export default function Create05() {
         </div>
 
         {/* 동의 / 비동의 표지들 */}
-        <div style={{ marginTop: -20, display: 'flex', gap: GAP, justifyContent: 'center' }}>
+        <div className="creator-preview-options">
           {[
             { list: agreedList, key: 'agree', icon: agreeIcon },
             { list: disagreedList, key: 'disagree', icon: disagreeIcon },
           ].map(({ list, key, icon }) => (
-            <div key={key} style={{ position: 'relative', width: SCALED_W, height: SCALED_H }}>
-              <img
-                src={key === selectedMode ? boxSelected : boxUnselect}
-                alt={`${key} 표지`}
+            <div key={key} style={{ position: 'relative', minHeight: 313, display: 'flex' }}>
+              <div
+                aria-hidden="true"
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'fill',
+                  border: '12px solid transparent',
+                  borderImage: `url(${key === selectedMode ? boxSelected : boxUnselect}) 16 fill / 12px / 0 stretch`,
                 }}
               />
 
@@ -106,10 +94,11 @@ export default function Create05() {
                 style={{
                   position: 'relative',
                   zIndex: 1,
-                  height: '100%',
+                  width: '100%',
+                  padding: '24px 20px',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'center',
+                  gap: 16,
                   alignItems: 'center',
                   textAlign: 'center',
                 }}
@@ -117,12 +106,12 @@ export default function Create05() {
                 <img
                   src={icon}
                   alt=""
-                  style={{ width: 160, height: 160, marginTop: 40, marginBottom: -10 }}
+                  style={{ width: 160, height: 160, maxWidth: '100%', objectFit: 'contain', flexShrink: 0 }}
                 />
-                <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary, paddingInline: 20, boxSizing: 'border-box', maxWidth: '100%' }}>
+                <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary, margin: 0, width: '100%', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>
                   {key === 'agree' ?  agree_label : disagree_label}
                 </p>
-                <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, marginTop: -10 }}>
+                <p style={{ ...FontStyles.headlineLarge, color: Colors.grey06, margin: 'auto 0 0' }}>
                   {list.length}명
                 </p>
               </div>
@@ -131,7 +120,7 @@ export default function Create05() {
         </div>
 
         {/* 하단 안내 + 버튼 */}
-        <div style={{ textAlign: 'center', marginTop: 0 }}>
+        <div style={{ textAlign: 'center', marginTop: 24 }}>
           <p style={{ ...FontStyles.headlineSmall, color: Colors.grey05 }}>
             {secsLeft <= 0 ? '마무리하고 다음으로 넘어가 주세요' : '선택의 이유를 자유롭게 공유해주세요'}
           </p>
@@ -140,7 +129,6 @@ export default function Create05() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              marginTop: -10,
             }}
           >
             <Continue width={230} height={60} onClick={handleContinue} />

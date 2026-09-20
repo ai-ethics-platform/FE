@@ -9,6 +9,7 @@ import nextDisabledIcon from '../../assets/completeddisabled.svg';
 import arrowIcon from '../../assets/arrow.svg';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { diagnosticEvent } from '../../utils/creatorDiagnostics';
+import './CreatorLayout.css';
 
 const EDIT_GROUPS = [['/create01'], ['/create02'], ['/create03'], ['/create04'], ['/create05']];
 const PREVIEW_GROUPS = [
@@ -114,7 +115,7 @@ export default function HeaderBar({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: h, overflow: 'hidden', ...style }} role="banner">
+    <div style={{ position: 'relative', width: '100%', height: `var(--creator-header-height, ${h})`, flexShrink: 0, overflow: 'hidden', ...style }} role="banner">
       <img
         src={headerBg}
         alt=""
@@ -123,15 +124,14 @@ export default function HeaderBar({
       />
 
       <div
+        className="creator-header-controls"
         style={{
           position: 'relative',
           zIndex: 1,
-          height: '100%',
+          minHeight: h,
           display: 'flex',
           alignItems: 'center',
-          paddingInline: 12,
           boxSizing: 'border-box',
-          gap: 12,
         }}
       >
         {/* 왼쪽 홈 버튼 */}
@@ -139,24 +139,21 @@ export default function HeaderBar({
           type="button"
           onClick={onLeftClick || handleLeftClick}
           aria-label="home"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 32, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: 36, height: 32, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
         >
           <img src={leftImg} alt="" draggable={false} style={{ width: 60, height: 60 }} />
         </button>
 
         {/* 모드 토글 */}
-        <div style={{ padding: '0px 20px' }}>
+        <div className="creator-header-mode" style={{ flexShrink: 0 }}>
           <ModeToggle value={mode} onChange={handleModeChange} height={38} padding={2} editRoute="" previewRoute="" />
         </div>
 
         {/* 브레드크럼 */}
         <nav
+          className="creator-header-nav"
           aria-label="단계 네비게이션"
           style={{
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
             display: 'flex',
             alignItems: 'center',
             gap: 10,
@@ -194,7 +191,9 @@ export default function HeaderBar({
         {navBusy && <span role="status" style={{ marginLeft: 'auto', fontSize: 12, color: '#BB4E2D' }}>저장하고 있어요…</span>}
         <button
           type="button"
+          className="creator-header-complete"
           disabled={nextDisabled}
+          aria-label="완료하기"
           onClick={nextDisabled ? undefined : onNextClick} 
           onMouseEnter={() => !nextDisabled && setRightHover(true)}
           onMouseLeave={() => setRightHover(false)}
@@ -203,15 +202,16 @@ export default function HeaderBar({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: 102,
-            height: '100%',
+            flexShrink: 0,
+            height: h,
             border: 'none',
             background: 'transparent',
             cursor: nextDisabled ? 'not-allowed' : 'pointer',
             padding: 0,
           }}
         >
-          <img src={rightImg} alt="" draggable={false} style={{ width: 200, height: 60 }} />
+          <img src={rightImg} alt="" draggable={false} style={{ height: 60 }} />
+          <span className="creator-header-complete-label">완료하기</span>
         </button>
       </div>
     </div>

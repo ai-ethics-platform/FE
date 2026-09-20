@@ -5,7 +5,6 @@ import create02Image from '../assets/images/default.png';
 import { Colors, FontStyles } from '../components/styleConstants';
 
 import contentBoxFrame from '../assets/contentBox4.svg';
-import SelectCardToggle from '../components/SelectButton';
 import Continue from '../components/Continue';
 import axiosInstance from '../api/axiosInstance';
 
@@ -113,55 +112,13 @@ export default function Editor08() {
             {/* 중앙 흰 박스 (질문) */}
             <div style={labelBoxStyle}>{question}</div>
 
-            {/* 동의 / 비동의 */}
-            <div style={{ display: 'flex', gap: 24 }}>
-              {/* 동의 */}
-              <div style={{ position: 'relative', width: 260, height: 45 }}>
-                <div
-                  style={{
-                    ...labelBoxStyle,
-                    position: 'absolute',
-                    left: '50%',
-                    top: 4,
-                    transform: 'translateX(-50%)',
-                    width: 'max-content',
-                    maxWidth: 360,
-                  }}
-                >
-                  {agree_label}
-                </div>
-                <SelectCardToggle
-                  label={''}
-                  selected={agree === 'agree'}
-                  onClick={() => setAgree('agree')}
-                  width={260}
-                  height={45}
-                />
-              </div>
-
-              {/* 비동의 */}
-              <div style={{ position: 'relative', width: 260, height: 45 }}>
-                <div
-                  style={{
-                    ...labelBoxStyle,
-                    position: 'absolute',
-                    left: '50%',
-                    top: 4,
-                    transform: 'translateX(-50%)',
-                    width: 'max-content',
-                    maxWidth: 360,
-                  }}
-                >
-                  {disagree_label}
-                </div>
-                <SelectCardToggle
-                  label={''}
-                  selected={agree === 'disagree'}
-                  onClick={() => setAgree('disagree')}
-                  width={260}
-                  height={45}
-                />
-              </div>
+            <div className="creator-preview-options">
+              <button type="button" className="creator-preview-choice" aria-pressed={agree === 'agree'} onClick={() => setAgree('agree')}>
+                {agree_label}
+              </button>
+              <button type="button" className="creator-preview-choice" aria-pressed={agree === 'disagree'} onClick={() => setAgree('disagree')}>
+                {disagree_label}
+              </button>
             </div>
           </Card>
 
@@ -177,18 +134,17 @@ export default function Editor08() {
 
 function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style = {} }) {
   return (
-    <div style={{ width, height, marginTop: extraTop, position: 'relative', ...style }}>
-      <img src={contentBoxFrame} alt="" style={{ width: '100%', height: '100%', objectFit: 'fill' }} />
+    <div style={{ width, maxWidth: '100%', minHeight: height, marginTop: extraTop, position: 'relative', ...style }}>
+      <div aria-hidden="true" style={{ position: 'absolute', inset: 0, border: '12px solid transparent', borderImage: `url(${contentBoxFrame}) 16 fill / 12px / 0 stretch`, pointerEvents: 'none' }} />
       <div
         style={{
-          position: 'absolute',
-          inset: 0,
+          position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
           gap: 24,
-          padding: '0 24px',
+          padding: '24px',
         }}
       >
         {children}

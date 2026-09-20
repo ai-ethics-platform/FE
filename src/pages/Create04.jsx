@@ -1150,7 +1150,7 @@ export default function Create04() {
       }}
     >
       {/* A */}
-      <div style={{ marginTop: -30, marginBottom: '30px' }}>
+      <div style={{ marginTop: 0, marginBottom: '30px' }}>
         <h2 style={{ ...FontStyles.headlineSmall, marginBottom: '16px', color: Colors.grey07 }}>플립 단계</h2>
         <p style={{ ...FontStyles.title, color: Colors.grey05, lineHeight: 1.5, marginBottom: '32px' }}>
           딜레마 상황과 그에 맞는 질문을 설정해주세요. 게임에 참여하는 3명의 플레이 단계에서는 플레이어의 다수결 선택 결과에 따라 다른 내용이 보여집니다. 
@@ -1164,7 +1164,7 @@ export default function Create04() {
           [선택지 1]을 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
         </p>
       </div>
-      <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', marginBottom: '20px' }}>
+      <div className="creator-media-fields" style={{ marginBottom: '20px' }}>
         {/* B: 이미지(동의) */}
         <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ width: '100%', height: '180px', border: '2px solid #ddd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', overflow: 'hidden' }}>
@@ -1221,7 +1221,7 @@ export default function Create04() {
           [선택지 2]를 선택했을 때 일어날 수 있는 예상치 못한 상황에 대해 설명해주세요.
         </p>
       </div>
-      <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', paddingBottom: 40 }}>
+      <div className="creator-media-fields" style={{ paddingBottom: 40 }}>
         {/* B: 이미지(비동의) */}
         <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ width: '100%', height: '180px', border: '2px solid #ddd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', overflow: 'hidden' }}>

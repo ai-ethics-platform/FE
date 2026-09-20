@@ -11,6 +11,7 @@ import NextGreen from "../NextOrange";
 import BackOrange from "./BackOrange";
 import DilemmaOutPopup from '../DilemmaOutPopup'; 
 import { diagnosticEvent } from '../../utils/creatorDiagnostics';
+import './CreatorLayout.css';
 
 const HEADER_H = 56;
 
@@ -99,7 +100,10 @@ export default function EditorLayout({
 
   return (
     <div
+      className="creator-layout"
       style={{
+        display: 'flex',
+        flexDirection: 'column',
         position: 'fixed',
         inset: 0,
         backgroundColor: Colors.creatorgrey01,
@@ -116,112 +120,49 @@ export default function EditorLayout({
       />
 
       <div
+        className="creator-preview-scroll"
         style={{
-          position: 'absolute',
-          top: HEADER_H,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          overflow: 'auto', /* 스크롤 허용 */
+          paddingTop: topInset,
+          paddingLeft: `clamp(16px, calc((100vw - 1024px) / 2), ${leftInset}px)`,
+          paddingRight: `clamp(16px, calc((100vw - 1024px) / 2), ${rightInset}px)`,
+          paddingBottom: bottomInset,
         }}
       >
-        {/* 흰색 테두리 프레임 */}
         <div
+          className="creator-preview-panel"
           style={{
-            position: 'absolute',
-            top: topInset,
-            right: rightInset,
-            bottom: bottomInset,
-            left: leftInset,
-            backgroundColor: '#fff',
-            boxShadow: frameShadow,
+            border: `${frameBorder}px solid #fff`,
             borderRadius: bg2Radius,
-            overflow: 'hidden',
+            boxShadow: frameShadow,
           }}
         >
-          {/* 좌측 프로필 - 흰색 박스 내부로 이동 */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '37.5%',
-              left: frameBorder + 20,
-              transform: 'translateY(-50%) scale(0.7)',
-              transformOrigin: 'left center',
-              width: 220,
-              padding: '20px 0',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 24,
-              alignItems: 'flex-start',
-              zIndex: 10,
-            }}
-          >
+          <img
+            src={bg2Src}
+            alt=""
+            draggable={false}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: bg2ObjectFit, borderRadius: Math.max(0, bg2Radius - frameBorder), pointerEvents: 'none' }}
+          />
+          <div className="creator-preview-profiles">
             <UserProfile isLeader player="1P" create description={roleDescs[0]} />
             <UserProfile player="2P" create description={roleDescs[1]} />
             <UserProfile player="3P" create description={roleDescs[2]} />
           </div>
-          {/* 내부 프레임 */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: frameBorder,
-              borderRadius: Math.max(0, bg2Radius - frameBorder),
-              overflow: 'hidden',
-            }}
-          >
-            <img
-              src={bg2Src}
-              alt=""
-              draggable={false}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: bg2ObjectFit,
-                zIndex: 0,
-                pointerEvents: 'none',
-              }}
-            />
-
-            <div
-              style={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                zIndex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center', // 세로 중앙 정렬 추가
-                padding: '26px 20px',
-              }}
-            >
-              {frame && (
-                <div style={{ width: '100%', maxWidth: 440, marginBottom: 26 }}>
-                  <MakeFrame {...mergedFrameProps} />
-                </div>
-              )}
-
-              <div style={{ width: '100%', maxWidth: 1060 }}>
-                {children}
+          <div className="creator-preview-content">
+            {frame && (
+              <div style={{ width: '100%', maxWidth: 440, marginBottom: 26 }}>
+                <MakeFrame {...mergedFrameProps} />
               </div>
-            </div>
+            )}
+            <div style={{ width: '100%', maxWidth: 1060 }}>{children}</div>
           </div>
         </div>
-
-        {/* 하단 내비 버튼 */}
-        {showNext && (
-          <div style={{ position: 'absolute', bottom: 30, right: 30, zIndex: 5 }}>
-            <NextGreen onClick={handleNext} />
-          </div>
-        )}
-        {showBack && (
-          <div style={{ position: 'absolute', bottom: 30, left: 30, zIndex: 5 }}>
-            <BackOrange onClick={handleBack} />
-          </div>
-        )}
       </div>
+      {(showNext || showBack) && (
+        <div className="creator-preview-footer">
+          <div>{showBack && <BackOrange onClick={handleBack} />}</div>
+          <div>{showNext && <NextGreen onClick={handleNext} />}</div>
+        </div>
+      )}
 
       {/* 나가기 확인 팝업 오버레이 */}
       {showOutPopup && (

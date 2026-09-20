@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>편집도구 · 더미 콘텐츠 점검</title>
+<style>body { margin: 0; font-family: sans-serif; }</style>
+<div id="root"></div>
+<script type="module">
+// npm run dev → /tests/editor-layout.html#/editor01
+// Dedicated local origin only: real page components, dummy content, no server writes.
+import React, { lazy, Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import api from '../src/api/axiosInstance.js';
+
+if (!import.meta.env.DEV || (localStorage.getItem('code') && localStorage.getItem('code') !== 'layout-review') || localStorage.getItem('access_token')) {
+  throw new Error('Use a fresh local development origin for this fixture.');
+}
+
+const scene = '2032년 가을, 시민들은 자율주행차 체험 행사에 참여했습니다. 차량은 갑자기 나타난 장애물과 횡단보도 앞 보행자를 발견합니다.\n\n탑승자의 안전과 보행자의 안전이 충돌할 때, 누가 어떤 기준으로 판단해야 할까요? 각자의 역할에서 생각을 나누어 봅시다. ';
+const portrait = (w, h, color, label) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="100%" height="100%" fill="${color}"/><path d="M0 ${h} L${w/2} ${h/3} L${w} ${h}" fill="#cadbd5"/><circle cx="${w/2}" cy="${h/3}" r="${Math.min(w,h)/8}" fill="#b75a3d"/><rect x="8" y="8" width="${w-16}" height="${h-16}" fill="none" stroke="#30575c" stroke-width="8"/><text x="50%" y="58%" text-anchor="middle" font-size="${Math.min(w,h)/14}" fill="#20383b">${label}</text></svg>`);
+const fields = {
+  creatorTitle: '자율주행차의 선택과 우리 사회의 안전 기준',
+  opening: JSON.stringify([scene, scene.repeat(2), '짧은 마지막 문장입니다.']),
+  dilemma_situation: JSON.stringify([scene.repeat(2), scene]),
+  rolesBackground: scene,
+  char1: '자율주행차 안전 책임 연구원', char2: '횡단보도 앞 어린이의 보호자', char3: '차량에 탑승한 지역 주민 대표',
+  charDes1: scene, charDes2: scene.repeat(2), charDes3: scene,
+  question: '갑작스러운 장애물 때문에 사고를 완전히 피할 수 없는 상황이라면, 자율주행차는 탑승자의 안전을 우선하기 위해 횡단보도를 건너는 보행자에게 추가적인 위험을 줄 수도 있는 방향 전환을 허용해야 할까요? 판단의 책임은 누구에게 있는지도 함께 생각해 주세요.',
+  agree_label: '탑승자를 보호하기 위해 긴급한 방향 전환을 허용한다. 다만 보행자의 피해를 최소화하도록 속도를 줄이고, 사고 이후에는 판단 과정과 책임 소재를 시민에게 공개해야 한다. 같은 상황이 반복되지 않도록 안전 기준을 다시 검토하는 조건에도 동의한다.',
+  disagree_label: '보행자에게 새로운 위험을 떠넘길 수 있으므로 방향 전환을 허용하지 않는다. 탑승자에게 위험이 남더라도 급제동과 경고를 우선하며, 누구의 생명이 더 중요한지를 차량이 임의로 결정해서는 안 된다. 제조사는 사고의 원인과 피해 보상 절차를 설명하고, 어린이와 고령자 등 취약한 보행자를 위한 예방 대책까지 마련해야 한다. 모든 당사자가 납득할 수 있는 원칙을 먼저 합의하는 것이 필요하다.',
+  flips_agree_texts: JSON.stringify([scene.repeat(2), scene]),
+  flips_disagree_texts: JSON.stringify([scene, scene.repeat(2)]),
+  agreeEnding: scene.repeat(4), disagreeEnding: scene.repeat(4),
+  dilemma_image_1: portrait(1200, 600, '#e1e8e1', '가로 이미지 · 2:1'),
+  dilemma_image_3: portrait(600, 900, '#eadbc9', '세로 이미지 · 2:3'),
+  dilemma_image_4_1: portrait(1200, 600, '#dde4ed', '선택지 1'),
+  dilemma_image_4_2: portrait(600, 900, '#e4dce8', '선택지 2'),
+  role_image_1: portrait(400, 400, '#e1e8e1', '연구원'),
+  role_image_2: portrait(400, 600, '#eadbc9', '보호자'),
+  role_image_3: portrait(600, 400, '#dde4ed', '주민 대표'),
+};
+for (const [key, value] of Object.entries(fields)) localStorage.setItem(key, value);
+const gameData = {
+  opening: JSON.parse(fields.opening),
+  rolesBackground: scene,
+  roles: [1, 2, 3].map(n => ({ name: fields['char' + n], description: fields['charDes' + n] })),
+  dilemma: {
+    situation: JSON.parse(fields.dilemma_situation), question: fields.question,
+    options: { agree_label: fields.agree_label, disagree_label: fields.disagree_label },
+  },
+  flips: { agree_texts: JSON.parse(fields.flips_agree_texts), disagree_texts: JSON.parse(fields.flips_disagree_texts) },
+  finalMessages: { agree: fields.agreeEnding, disagree: fields.disagreeEnding },
+};
+localStorage.setItem('data', JSON.stringify(gameData));
+localStorage.setItem('code', 'layout-review');
+api.defaults.adapter = async config => ({
+  data: {
+    title: fields.creatorTitle, data: gameData,
+    representative_images: Object.fromEntries(Object.entries(fields).filter(([key]) => key.startsWith('dilemma_image_'))),
+    urls: Object.fromEntries([1, 2, 3].map(n => [n, fields['role_image_' + n]])),
+  },
+  status: 200, statusText: 'OK', headers: {}, config,
+});
+
+const pages = import.meta.glob('../src/pages/{Editor*,Create0[1-5]}.jsx');
+const routes = Object.entries(pages).map(([path, load]) => {
+  const name = path.split('/').pop().replace('.jsx', '').toLowerCase();
+  return React.createElement(Route, { key: name, path: '/' + name, element: React.createElement(lazy(load)) });
+});
+createRoot(document.getElementById('root')).render(
+  React.createElement(HashRouter, null,
+    React.createElement(Suspense, { fallback: '미리보기를 불러오고 있어요…' },
+      React.createElement(Routes, null, routes)))
+);
+</script>
+</html>

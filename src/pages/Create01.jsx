@@ -1302,7 +1302,7 @@ export default function Create01() {
         </div>
 
         {/* B, C 영역 */}
-        <div style={{ display: 'flex', gap: 100, alignItems: 'flex-start', marginBottom: '20px' }}>
+        <div className="creator-media-fields" style={{ marginBottom: '20px' }}>
           {/* B: 이미지 */}
           <div style={{ flex: '0 0 360px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div

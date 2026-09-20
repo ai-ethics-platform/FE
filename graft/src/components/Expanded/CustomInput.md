@@ -1,3 +1,3 @@
 # src/components/Expanded/CustomInput.jsx
 
-- CustomInput · function · L5-L85 — function CustomInput({ width = 400, height = 120, placeholder = "여기에 입력하세요", backgroundColor = Colors.grey00, useSvgBackground = true, value, onChange, padding = "20px 24px", maxLength = undefined, })
+- CustomInput · function · L5-L86 — function CustomInput({ width = 400, height = 120, placeholder = "여기에 입력하세요", backgroundColor = Colors.grey00, useSvgBackground = true, value, onChange, padding = "20px 24px", maxLength = undefined, })

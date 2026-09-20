@@ -11,7 +11,7 @@
 - pickArrayFrom · function · L735-L742 — pickArrayFrom = (game, key)
 - fetchRepresentativeImages · function · L744-L757 — async function fetchRepresentativeImages(code)
 - uploadDefaultDilemmaImage3 · function · L764-L791 — async function uploadDefaultDilemmaImage3(onApplied)
-- Create03 · function · L796-L1269 — function Create03()
+- Create03 · function · L796-L1272 — function Create03()
 - toSituationArray · function · L824-L825 — toSituationArray = (list)
 - persistSituation · function · L826-L829 — persistSituation = (list)
 - persistAll · function · L830-L835 — persistAll = ({ situationInputs, question, agree, disagree })

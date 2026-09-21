@@ -1185,12 +1185,14 @@ export default function Create03() {
             />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <span
+            <button
+              type="button"
+              className="creator-image-change"
               onClick={handleImageChange}
               style={{ color: '#333', fontSize: '14px', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px' }}
             >
               이미지 변경
-            </span>
+            </button>
           </div>
           <div style={{ textAlign: 'center' }}>
             <p style={{ color: Colors.systemRed, ...FontStyles.bodyBold, margin: 0, lineHeight: 1.4 }}>(*권장 이미지 비율 2:1)</p>

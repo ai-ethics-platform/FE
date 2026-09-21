@@ -27,7 +27,9 @@ export default function Continue({
   const textColor = interactive ? Colors.brandPrimary : Colors.grey04;
 
   return (
-    <div
+    <button
+      type="button"
+      disabled={disabled}
       onClick={interactive ? onClick : undefined}
 
       onMouseEnter={interactive ? () => setIsHovered(true)  : undefined}
@@ -36,6 +38,7 @@ export default function Continue({
       onMouseUp  ={interactive ? () => setIsActive(false)  : undefined}
 
       style={{
+        padding: 0, border: 0, background: 'transparent', display: 'block', maxWidth: '100%',
         width,
         height,
         position: 'relative',
@@ -75,6 +78,6 @@ export default function Continue({
         </span>
       
       </div>
-    </div>
+    </button>
   );
 }

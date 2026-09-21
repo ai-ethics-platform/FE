@@ -38,13 +38,16 @@ export default function Continue({
     })
   };
   return (
-    <div
+    <button
+      type="button"
+      disabled={disabled}
       onClick={interactive ? onClick : undefined}
       onMouseEnter={interactive ? () => setIsHovered(true) : undefined}
       onMouseLeave={interactive ? () => { setIsHovered(false); setIsActive(false); } : undefined}
       onMouseDown={interactive ? () => setIsActive(true) : undefined}
       onMouseUp={interactive ? () => setIsActive(false) : undefined}
       style={{
+        padding: 0, border: 0, background: 'transparent', display: 'block', maxWidth: '100%',
         width, height, position: 'relative', cursor: interactive ? 'pointer' : 'default',
         userSelect: 'none', transform: `scale(${scale})`, transition: 'transform 0.15s ease-out',
         opacity: interactive ? 1 : 0.4,            
@@ -54,6 +57,6 @@ export default function Continue({
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <span style={textStyle}>{finalLabel}</span>
       </div>
-    </div>
+    </button>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Colors, FontStyles } from '../styleConstants';
 import ModeToggle from './ModeToggle';
 import headerBg from '../../assets/header2.svg';
@@ -60,6 +60,8 @@ export default function HeaderBar({
   }, [location.pathname]);
 
   const currentCrumb = typeof activeCrumb === 'number' ? activeCrumb : internalCrumb;
+  const activeStepRef = useRef(null);
+  useEffect(() => { activeStepRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }, [currentCrumb]);
   const routeOf = (m, idx) => (m === 'preview' ? PREVIEW_GROUPS[idx]?.[0] : EDIT_GROUPS[idx]?.[0]);
 
   // 브레드크럼/모드 토글로 이동할 때도 현재 단계 편집분을 먼저 저장한다.
@@ -139,14 +141,14 @@ export default function HeaderBar({
           type="button"
           onClick={onLeftClick || handleLeftClick}
           aria-label="home"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: 36, height: 32, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: 44, height: 44, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
         >
-          <img src={leftImg} alt="" draggable={false} style={{ width: 60, height: 60 }} />
+          <img src={leftImg} alt="" draggable={false} style={{ width: 44, height: 44 }} />
         </button>
 
         {/* 모드 토글 */}
         <div className="creator-header-mode" style={{ flexShrink: 0 }}>
-          <ModeToggle value={mode} onChange={handleModeChange} height={38} padding={2} editRoute="" previewRoute="" />
+          <ModeToggle disabled={navBusy} value={mode} onChange={handleModeChange} height={38} padding={2} editRoute="" previewRoute="" />
         </div>
 
         {/* 브레드크럼 */}
@@ -169,6 +171,8 @@ export default function HeaderBar({
                   type="button"
                   onClick={() => selectCrumb(idx)}
                   disabled={navBusy}
+                  aria-current={active ? "step" : undefined}
+                  ref={active ? activeStepRef : null}
                   style={{
                     background: 'transparent',
                     border: 'none',
@@ -188,11 +192,11 @@ export default function HeaderBar({
         </nav>
 
         {/* 오른쪽 next 버튼 */}
-        {navBusy && <span role="status" style={{ marginLeft: 'auto', fontSize: 12, color: '#BB4E2D' }}>저장하고 있어요…</span>}
         <button
           type="button"
           className="creator-header-complete"
-          disabled={nextDisabled}
+          disabled={nextDisabled || navBusy}
+          aria-busy={navBusy}
           aria-label="완료하기"
           onClick={nextDisabled ? undefined : onNextClick} 
           onMouseEnter={() => !nextDisabled && setRightHover(true)}
@@ -211,7 +215,7 @@ export default function HeaderBar({
           }}
         >
           <img src={rightImg} alt="" draggable={false} style={{ height: 60 }} />
-          <span className="creator-header-complete-label">완료하기</span>
+          <span className="creator-header-complete-label" role="status">{navBusy ? "저장 중…" : "완료하기"}</span>
         </button>
       </div>
     </div>

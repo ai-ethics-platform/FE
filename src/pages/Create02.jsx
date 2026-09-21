@@ -422,12 +422,14 @@ export default function Create02() {
                     onError={() => setFallback1(true)}
                   />
                 </div>
-                <span
+                <button
+                  type="button"
+                  className="creator-image-change"
                   onClick={() => changeSlotImage(1)}
                   style={{ color: Colors.grey06, ...FontStyles.body, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px", marginTop: 8 }}
                 >
                   이미지 변경
-                </span>
+                </button>
               </div>
 
               <h2 style={{ marginTop: 16, ...FontStyles.title, color: Colors.grey07, textAlign: "left", width: "100%" }}>역할 이름</h2>
@@ -435,6 +437,7 @@ export default function Create02() {
                 width={340}
                 height={72}
                 placeholder="예: 요양 보호사 K"
+                label="역할 1 이름"
                 value={char1}
                 onChange={(e) => {
                   const v = e.target.value || '';
@@ -448,6 +451,7 @@ export default function Create02() {
                 width={340}
                 height={320}
                 placeholder="예: 당신은 어머니를 10년 이상 돌본 요양 보호사 K입니다."
+                label="역할 1 설명"
                 value={charDes1}
                 onChange={(e) => {
                   const v = e.target.value || '';
@@ -472,12 +476,14 @@ export default function Create02() {
                     onError={() => setFallback2(true)}
                   />
                 </div>
-                <span
+                <button
+                  type="button"
+                  className="creator-image-change"
                   onClick={() => changeSlotImage(2)}
                   style={{ color: Colors.grey06, ...FontStyles.body, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px", marginTop: 8 }}
                 >
                   이미지 변경
-                </span>
+                </button>
               </div>
 
               <h2 style={{ marginTop: 16, ...FontStyles.title, color: Colors.grey07, textAlign: "left", width: "100%" }}>역할 이름</h2>
@@ -485,6 +491,7 @@ export default function Create02() {
                 width={340}
                 height={72}
                 placeholder="예: 노모 L"
+                label="역할 2 이름"
                 value={char2}
                 onChange={(e) => {
                   const v = e.target.value || '';
@@ -498,6 +505,7 @@ export default function Create02() {
                 width={340}
                 height={320}
                 placeholder="예: 당신은 자녀J씨의 노모입니다. 가사도우미의 도움을..."
+                label="역할 2 설명"
                 value={charDes2}
                 onChange={(e) => {
                   const v = e.target.value || '';
@@ -522,12 +530,14 @@ export default function Create02() {
                     onError={() => setFallback3(true)}
                   />
                 </div>
-                <span
+                <button
+                  type="button"
+                  className="creator-image-change"
                   onClick={() => changeSlotImage(3)}
                   style={{ color: Colors.grey06, ...FontStyles.body, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px", marginTop: 8 }}
                 >
                   이미지 변경
-                </span>
+                </button>
               </div>
 
               <h2 style={{ marginTop: 16, ...FontStyles.title, color: Colors.grey07, textAlign: "left", width: "100%" }}>역할 이름</h2>
@@ -535,6 +545,7 @@ export default function Create02() {
                 width={340}
                 height={72}
                 placeholder="예: 자녀 J"
+                label="역할 3 이름"
                 value={char3}
                 onChange={(e) => {
                   const v = e.target.value || '';
@@ -548,6 +559,7 @@ export default function Create02() {
                 width={340}
                 height={320}
                 placeholder="예: 당신은 자녀J씨입니다. 노쇠하신 어머니가 걱정되어..."
+                label="역할 3 설명"
                 value={charDes3}
                 onChange={(e) => {
                   const v = e.target.value || '';

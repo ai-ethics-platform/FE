@@ -42,7 +42,7 @@ export default function CreateInput({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: rowGap }}>
       {/* 라벨 + 입력박스 한 줄 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
+      <div className="creator-input-row" style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
         {/* 라벨 */}
         <div
           style={{
@@ -67,7 +67,7 @@ export default function CreateInput({
             minWidth: 0,
             flex: '1 1 auto',
             height: boxHeight,
-            padding: '0 16px',
+            padding: onDelete ? '0 48px 0 16px' : '0 16px',
             backgroundColor: Colors.componentBackground,
             border: getBorderStyle(),
             transition: 'border 0.2s ease',
@@ -118,13 +118,14 @@ export default function CreateInput({
             <button
               type="button"
               onClick={onDelete}
+              aria-label={`${label} 삭제`}
               style={{
                 position: 'absolute',
-                right: -10, // 오른쪽에서 8px 떨어진 위치
+                right: 0,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                width: 24,
-                height: 24,
+                width: 40,
+                height: 40,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -147,7 +148,7 @@ export default function CreateInput({
             <div
               style={{
                 position: 'absolute',
-                right: 20,
+                right: onDelete ? 48 : 20,
                 overflow: 'hidden',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,

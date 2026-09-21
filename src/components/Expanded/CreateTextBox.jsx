@@ -1,5 +1,5 @@
 import contentbox from '../../assets/createcontentbox.svg';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { diagnosticEvent } from '../../utils/creatorDiagnostics';
 import paginationBothL from '../../assets/paginationBothL.svg';
 import paginationBothR from '../../assets/paginationBothR.svg';
@@ -17,21 +17,6 @@ const WHITE_PANEL = {
   bottom: (212 - (16.7969 + 137.6)) / 212,
 };
 
-// macOS 기본 오버레이 스크롤바는 스크롤하기 전까지 보이지 않아
-// 흰 칸 안에 내용이 더 있다는 걸 알 수 없다. 항상 보이는 얇은 스크롤바로 대체한다.
-// (이 프로젝트는 전역 스타일시트를 로드하지 않으므로 컴포넌트에서 직접 주입한다.)
-const SCROLLBAR_CSS = `
-.preview-text-scroll::-webkit-scrollbar { width: 6px; }
-.preview-text-scroll::-webkit-scrollbar-track { background: transparent; }
-.preview-text-scroll::-webkit-scrollbar-thumb { background: #AAB2B8; border-radius: 3px; }
-.preview-text-scroll::-webkit-scrollbar-thumb:hover { background: #8A949B; }
-/* 표준 scrollbar-width 를 같이 주면 크롬이 그쪽을 우선해 다시 오버레이(자동 숨김)로 돌아간다.
-   ::-webkit-scrollbar 를 모르는 브라우저(파이어폭스)에서만 적용한다. */
-@supports not selector(::-webkit-scrollbar) {
-  .preview-text-scroll { scrollbar-width: thin; scrollbar-color: #AAB2B8 transparent; }
-}
-`;
-
 export default function ContentTextBox2({
   paragraphs = [],
   currentIndex = 0,
@@ -42,6 +27,8 @@ export default function ContentTextBox2({
   maxWidth = 700,
   framePadding = 12,       //  프레임 안쪽 여백(=축소 효과)
 }) {
+  const scrollRef = useRef(null);
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [currentIndex]);
   const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };
 
   useEffect(() => {
@@ -63,8 +50,6 @@ export default function ContentTextBox2({
   const rightArrowImage = isLast  ? arrowRdisabled : paginationBothR;
 
   const handleContinueClick = () => { if (isLast) onContinue?.(); };
-  const arrowOffsetY = -5;
-  const arrowOffsetX = -10; 
   return (
     <div
       style={{
@@ -102,8 +87,6 @@ export default function ContentTextBox2({
         />
       </div>
 
-      <style>{SCROLLBAR_CSS}</style>
-
       {/* 내용: 프레임 SVG 안쪽 흰 사각형에 정확히 맞춘다.
           고정 px inset(top 38 / bottom 24)은 흰 사각형(SVG 기준 y 16.8~154.4)보다 아래로 내려가 있어
           텍스트가 흰 칸 밖으로 넘치고 스크롤도 흰 칸과 어긋나 있었다.
@@ -111,6 +94,10 @@ export default function ContentTextBox2({
           컨테이너 대비 % 로 잡으면 폭이 줄어도 흰 사각형과 계속 일치한다. */}
       <div
         className="preview-text-scroll"
+        ref={scrollRef}
+        tabIndex={0}
+        role="region"
+        aria-label={`본문 ${currentIndex + 1} / ${Math.max(1, paragraphs.length)}`}
         style={{
           position: 'absolute',
           top: `${WHITE_PANEL.top * 100}%`,
@@ -135,40 +122,15 @@ export default function ContentTextBox2({
         </div>
       </div>
 
-      {/* 페이지네이션: 흰 사각형 아래 여백 띠 */}
       {paragraphs.length > 1 && (
-        <div
-          style={{
-            position: 'absolute',
-            left: 30,
-            right: 40,
-            bottom: 24,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            zIndex: 1,
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              gap: 10,
-              transform: `translate(${arrowOffsetX}px, ${arrowOffsetY}px)`, // ✅ X/Y 동시 조절
-            }}
-          >
-            <img
-              src={leftArrowImage}
-              alt="prev"
-              style={{ height: 20, cursor: !isFirst ? 'pointer' : 'default' }}
-              onClick={handlePrev}
-            />
-            <img
-              src={rightArrowImage}
-              alt="next"
-              style={{ height: 20, cursor: !isLast ? 'pointer' : 'default' }}
-              onClick={handleNext}
-            />
-          </div>
+        <div className="creator-pagination" style={{ position: 'absolute', left: '3%', right: '3%', bottom: 4, display: 'flex', alignItems: 'center', zIndex: 1 }}>
+          <button type="button" aria-label="이전 문단" disabled={isFirst} onClick={handlePrev}>
+            <img src={leftArrowImage} alt="prev" />
+          </button>
+          <button type="button" aria-label="다음 문단" disabled={isLast} onClick={handleNext}>
+            <img src={rightArrowImage} alt="next" />
+          </button>
+          <span className="creator-pagination-count" aria-live="polite">{`${currentIndex + 1} / ${paragraphs.length}`}</span>
         </div>
       )}
     </div>

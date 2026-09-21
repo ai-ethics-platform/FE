@@ -6,7 +6,8 @@ import { Colors, FontStyles } from "../styleConstants";
 export default function ModeToggle({
   value,                 
   defaultValue = "edit", 
-  onChange,              
+  onChange,
+  disabled = false,
   width = 202,
   height,
   padding,
@@ -90,7 +91,7 @@ export default function ModeToggle({
         type="button"
         aria-pressed={editActive}
         onClick={() => handleGo("edit")}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleGo("edit")}
+        disabled={disabled}
         style={{
           ...commonBtn,
           background: editActive ? ACTIVE_BG : INACTIVE_BG,
@@ -104,7 +105,7 @@ export default function ModeToggle({
         type="button"
         aria-pressed={previewActive}
         onClick={() => handleGo("preview")}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleGo("preview")}
+        disabled={disabled}
         style={{
           ...commonBtn,
           background: previewActive ? ACTIVE_BG : INACTIVE_BG,

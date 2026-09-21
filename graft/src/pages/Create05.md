@@ -1,6 +1,6 @@
 # src/pages/Create05.jsx
 
-- Create05 · function · L150-L375 — function Create05()
+- Create05 · function · L150-L377 — function Create05()
 - putTitle · function · L199-L207 — putTitle = async (title)
 - handleBack · function · L209-L209 — handleBack = ()
 - putEnding · function · L212-L221 — putEnding = async ({ agree, disagree })

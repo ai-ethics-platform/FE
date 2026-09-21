@@ -7,17 +7,9 @@ export default function Next2({ onClick, disabled = false, visuallyDisabled = fa
     const imageSrc = visuallyDisabled ? next2disable : next2;
 
   return (
-    <img
-      src={imageSrc}
-      alt="next"
-      onClick={visuallyDisabled ? undefined : onClick} // 클릭 막기
-      style={{
-        width: 80, // 필요에 따라 크기 조정
-        height: 80,
-        cursor: disabled ? 'default' : 'pointer',
-        opacity: disabled ? 0.4 : 1,
-        transition: 'opacity 0.3s ease',
-      }}
-    />
+    <button type="button" aria-label="이전 화면" disabled={disabled || visuallyDisabled} onClick={onClick}
+      style={{ display: 'block', width: 80, height: 80, padding: 0, border: 0, background: 'transparent', cursor: disabled || visuallyDisabled ? 'default' : 'pointer', opacity: disabled ? 0.4 : 1 }}>
+      <img src={imageSrc} alt="" style={{ display: 'block', width: '100%', height: '100%' }} />
+    </button>
   );
 }

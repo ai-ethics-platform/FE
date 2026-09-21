@@ -121,8 +121,8 @@ export default function Editor10() {
               <div
                 style={{
                   position: 'absolute',
-                  left: 80,
-                  right: 70,
+                  left: '8%',
+                  right: '8%',
                   top: '50%',
                   height: 200,
                   transform: 'translateY(-50%)',
@@ -131,7 +131,7 @@ export default function Editor10() {
                   justifyContent: 'center',
                 }}
               >
-                <div style={{ ...labelBoxStyle, width: '100%', height: '100%', padding: '12px 16px', boxSizing: 'border-box', overflowY: 'auto' }}>{endingText}</div>
+                <div className="creator-ending-scroll" tabIndex={0} role="region" aria-label="엔딩 본문" style={{ ...labelBoxStyle, width: '100%', height: '100%', padding: '12px 16px', boxSizing: 'border-box', overflowY: 'auto' }}>{endingText}</div>
               </div>
             </div>
 

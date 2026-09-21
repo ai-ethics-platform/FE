@@ -49,14 +49,14 @@ export default function Create05() {
     <Card width={740} height={200} extraTop={10} style={{ marginInline: 'auto' }}>
         <p style={{...FontStyles.body, marginBottom: 5}}>당신의 선택에 얼마나 확신을 가지고 있나요?</p>
 
-        <div style={{ position: 'relative', width: '80%', minWidth: 300 }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: 480, minWidth: 0 }}>
           {/* 회색 베이스 라인 */}
           <div
             style={{
               position: 'absolute',
-              top: 8,
-              left: 0,
-              right: 0,
+              top: 22,
+              left: 22,
+              right: 22,
               height: LINE,
               background: Colors.grey03,
               zIndex: 0, // 가장 아래
@@ -67,9 +67,9 @@ export default function Create05() {
           <div
             style={{
               position: 'absolute',
-              top: 8,
-              left: 0,
-              width: `${pct}%`,
+              top: 22,
+              left: 22,
+              width: `calc((100% - 44px) * ${pct / 100})`,
               height: LINE,
               background: Colors.brandPrimary,
               zIndex: 1, // 중간
@@ -88,16 +88,15 @@ export default function Create05() {
             {[1, 2, 3, 4, 5].map((n) => {
               const isFilled = n <= conf;
               return (
-                <div key={n} style={{ textAlign: 'center' }}>
+                <button key={n} type="button" aria-label={`확신도 ${n}점`} aria-pressed={conf === n} onClick={() => setConf(n)} style={{ textAlign: 'center', width: 44, padding: 0, border: 0, background: 'transparent', cursor: 'pointer', flexShrink: 0 }}>
                   <div
-                    onClick={() => setConf(n)}
                     style={{
                       width: CIRCLE,
                       height: CIRCLE,
                       borderRadius: '50%',
                       background: isFilled ? Colors.brandPrimary : Colors.grey03,
                       cursor: 'pointer',
-                      margin: '0 auto',
+                      margin: '16px auto 8px',
                     }}
                   />
                   <span
@@ -110,7 +109,7 @@ export default function Create05() {
                   >
                     {n}
                   </span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -141,7 +140,7 @@ function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style =
           justifyContent: 'center',
           alignItems: 'center',
           gap: 24,
-          padding: '0 24px',
+          padding: '0 12px',
         }}
       >
         {children}

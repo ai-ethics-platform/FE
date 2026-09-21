@@ -61,22 +61,40 @@
 //   );
 // }
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import closeIcon from '../assets/close.svg';
 import SecondaryButton from './SecondaryButton';
 import { Colors, FontStyles } from './styleConstants';
 
 export default function DilemmaOutPopup({ onClose, onLogout }) {
+  const dialogRef = useRef(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
+
   return (
-    <div
+    <dialog
+      ref={dialogRef}
+      aria-label="딜레마 만들기 나가기"
+      onCancel={(event) => { event.preventDefault(); onClose(); }}
+      onClick={(event) => {
+        if (event.target !== event.currentTarget) return;
+        const { left, right, top, bottom } = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom) onClose();
+      }}
       style={{
-        width: 552,
-        height: 432,
-        justifyContent: 'center',
+        width: 'min(552px, calc(100vw - 32px))',
+        maxHeight: 'calc(100dvh - 32px)',
+        boxSizing: 'border-box',
+        border: 0,
+        overflowY: 'auto',
+        justifyContent: 'flex-start',
         backgroundColor: Colors.componentBackgroundFloat,
         borderRadius: 12,
-        padding: 32,
-        position: 'relative',
+        padding: '64px 24px 24px',
+        position: 'fixed',
         ...FontStyles.body,
         display: 'flex',
         flexDirection: 'column',
@@ -84,23 +102,15 @@ export default function DilemmaOutPopup({ onClose, onLogout }) {
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
       }}
     >
-      <img
-        src={closeIcon}
-        alt="close"
-        onClick={onClose}
-        style={{
-          position: 'absolute',
-          top: 24,
-          right: 24,
-          width: 40,
-          height: 40,
-          cursor: 'pointer',
-        }}
-      />
+      <button type="button" aria-label="닫기" onClick={onClose} autoFocus style={{ position: 'absolute', top: 12, right: 12, width: 44, height: 44, padding: 2, background: 'transparent', border: 0, cursor: 'pointer' }}>
+        <img src={closeIcon} alt="" style={{ width: '100%', height: '100%' }} />
+      </button>
 
       <div
         style={{
           ...FontStyles.headlineNormal,
+          textAlign: 'center',
+          overflowWrap: 'anywhere',
           color: Colors.brandPrimary,
           marginBottom: 8,
         }}
@@ -140,6 +150,6 @@ export default function DilemmaOutPopup({ onClose, onLogout }) {
       >
         *지금까지의 진행 상황을 복구할 수 없습니다.
       </div>
-    </div>
+    </dialog>
   );
 }

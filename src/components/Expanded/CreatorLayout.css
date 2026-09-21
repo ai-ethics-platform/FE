@@ -13,7 +13,7 @@
 .creator-header-complete { width: 102px; }
 .creator-header-complete img { width: 200px; }
 .creator-header-complete-label { display: none; }
-.creator-header-mode { padding: 0 20px; }
+.creator-header-mode { padding: 0 20px; min-width: 0; }
 .creator-header-nav > * { flex-shrink: 0; }
 
 .creator-preview-scroll {
@@ -152,4 +152,42 @@
   .creator-header-complete:disabled .creator-header-complete-label { color: #999; }
   .creator-preview-panel { padding: 16px 8px; }
   .creator-preview-options { grid-template-columns: minmax(0, 1fr); }
+}
+
+.creator-layout *, .creator-title * { box-sizing: border-box; }
+.creator-layout :is(h2, p) { overflow-wrap: anywhere; }
+.creator-layout :is(button, input, textarea, [tabindex]):focus-visible,
+.creator-title :is(button, input):focus-visible {
+  outline: 2px solid #0d575c !important;
+  outline-offset: 2px;
+}
+.creator-image-change { background: transparent; border: 0; min-height: 44px; font: inherit; }
+.creator-header-complete { overflow: hidden; }
+.creator-header-complete[aria-busy="true"] img { display: none; }
+.creator-header-complete[aria-busy="true"] .creator-header-complete-label { display: inline; }
+.creator-header-nav button { min-height: 40px; }
+.creator-pagination button { width: 44px; height: 44px; padding: 12px; border: 0; background: transparent; cursor: pointer; }
+.creator-pagination button:disabled { cursor: default; }
+.creator-pagination img { display: block; width: 20px; height: 20px; }
+.creator-pagination-count { margin-left: auto; color: #526166; font-size: 14px; }
+@media (max-width: 600px) {
+  .creator-header-mode { flex: 1; max-width: 202px; }
+  .creator-header-mode > div { width: 100% !important; }
+  .creator-header-mode button { font-size: 13px !important; }
+  .creator-input-row { flex-direction: column; align-items: stretch !important; gap: 8px !important; }
+  .creator-input-row > div:first-child { width: auto !important; }
+}
+
+.creator-preview-profiles > div { height: auto !important; min-height: 96px; cursor: default !important; }
+.creator-preview-profiles > div > div:last-child { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+
+
+:is(.preview-text-scroll, .creator-ending-scroll)::-webkit-scrollbar { width: 6px; }
+:is(.preview-text-scroll, .creator-ending-scroll)::-webkit-scrollbar-track { background: transparent; }
+:is(.preview-text-scroll, .creator-ending-scroll)::-webkit-scrollbar-thumb { background: #AAB2B8; border-radius: 3px; }
+:is(.preview-text-scroll, .creator-ending-scroll)::-webkit-scrollbar-thumb:hover { background: #8A949B; }
+/* 표준 scrollbar-width 를 같이 주면 크롬이 그쪽을 우선해 다시 오버레이(자동 숨김)로 돌아간다.
+   ::-webkit-scrollbar 를 모르는 브라우저(파이어폭스)에서만 적용한다. */
+@supports not selector(::-webkit-scrollbar) {
+  :is(.preview-text-scroll, .creator-ending-scroll) { scrollbar-width: thin; scrollbar-color: #AAB2B8 transparent; }
 }

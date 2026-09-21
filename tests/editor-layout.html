@@ -40,6 +40,12 @@ const fields = {
   role_image_2: portrait(400, 600, '#eadbc9', '보호자'),
   role_image_3: portrait(600, 400, '#dde4ed', '주민 대표'),
 };
+if (new URLSearchParams(location.search).has('unbroken')) {
+  for (const key of ['creatorTitle', 'question', 'agree_label', 'disagree_label', 'agreeEnding', 'disagreeEnding', 'char1', 'char2', 'char3']) {
+    fields[key] = 'W'.repeat(key === 'creatorTitle' ? 30 : key.startsWith('char') ? 15 : 200);
+  }
+  fields.opening = JSON.stringify(['W'.repeat(200), '가'.repeat(200)]);
+}
 for (const [key, value] of Object.entries(fields)) localStorage.setItem(key, value);
 const gameData = {
   opening: JSON.parse(fields.opening),
@@ -54,14 +60,19 @@ const gameData = {
 };
 localStorage.setItem('data', JSON.stringify(gameData));
 localStorage.setItem('code', 'layout-review');
-api.defaults.adapter = async config => ({
+window.layoutRequests = [];
+api.defaults.adapter = async config => {
+  window.layoutRequests.push({ method: config.method, url: config.url });
+  if (config.method === 'put' && window.layoutSaveDelay) await new Promise(resolve => setTimeout(resolve, window.layoutSaveDelay));
+  return ({
   data: {
     title: fields.creatorTitle, data: gameData,
     representative_images: Object.fromEntries(Object.entries(fields).filter(([key]) => key.startsWith('dilemma_image_'))),
     urls: Object.fromEntries([1, 2, 3].map(n => [n, fields['role_image_' + n]])),
   },
   status: 200, statusText: 'OK', headers: {}, config,
-});
+  });
+};
 
 const pages = import.meta.glob('../src/pages/{Editor*,Create0[1-5]}.jsx');
 const routes = Object.entries(pages).map(([path, load]) => {

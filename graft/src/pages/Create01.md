@@ -13,7 +13,7 @@
 - saveOpeningToLocal · function · L927-L937 — function saveOpeningToLocal(nextInputs)
 - fetchRepresentativeImages · function · L940-L951 — async function fetchRepresentativeImages(code)
 - uploadDefaultDilemmaImage1 · function · L958-L981 — async function uploadDefaultDilemmaImage1(onApplied)
-- Create01 · function · L986-L1394 — function Create01()
+- Create01 · function · L986-L1396 — function Create01()
 - fetchOnce · function · L1013-L1054 — fetchOnce = async ()
 - handleImageChange · function · L1164-L1197 — handleImageChange = ()
 - handleAddInput · function · L1200-L1211 — handleAddInput = ()

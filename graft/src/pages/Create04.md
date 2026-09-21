@@ -12,7 +12,7 @@
 - isNonEmptyStringArray · function · L756-L757 — isNonEmptyStringArray = (arr)
 - readLocalFlipArray · function · L760-L770 — readLocalFlipArray = (keys)
 - uploadDefaultFlipImage · function · L776-L804 — async function uploadDefaultFlipImage(slot /* 1 or 2 */, onApplied)
-- Create04 · function · L806-L1283 — function Create04()
+- Create04 · function · L806-L1287 — function Create04()
 - buildInputsFromArray · function · L821-L828 — buildInputsFromArray = (arr, firstPlaceholder)
 - handleImageChange · function · L831-L862 — handleImageChange = async (slot /* 1=agree, 2=disagree */)
 - handleAgreeInputChange · function · L1029-L1036 — handleAgreeInputChange = (id, newValue)

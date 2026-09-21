@@ -56,7 +56,7 @@ export default function MakeFrame({
 
   return (
     <div
-      className={className}
+      className={`creator-title ${className || ""}`}
       style={{
         position: "relative",
         width: "100%",
@@ -66,16 +66,17 @@ export default function MakeFrame({
       }}
     >
       {/* 프레임 */}
-      <img src={frame2} alt="" style={{ width: "100%", display: "block" }} />
+      <img src={frame2} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "fill" }} />
 
       {/* 콘텐츠 레이어 */}
       <div
         style={{
-          position: "absolute",
-          inset: 0,
+          position: "relative",
+          minHeight: 64,
+          boxSizing: "border-box",
           display: "grid",
           placeItems: "center",
-          paddingInline: 32,
+          padding: "14px 56px 14px 24px",
         }}
       >
         {/* 중앙 텍스트/입력 */}
@@ -87,15 +88,17 @@ export default function MakeFrame({
               textAlign: "center",
               lineHeight: 1.2,
               wordBreak: "keep-all",
-              paddingInline: 16,
+              minWidth: 0,
+              overflowWrap: "anywhere",
             }}
           >
             {text?.length ? text : <span style={{ opacity: 0.6 }}>{placeholder}</span>}
           </div>
         ) : (
-          <div style={{ position: "relative", width: "80%" }}>
+          <div style={{ position: "relative", width: "100%", minWidth: 0 }}>
             <input
               ref={inputRef}
+              aria-label="게임 제목"
               value={draft}
               onChange={(e) => setDraft(e.target.value.slice(0, maxLength))}
               onBlur={apply}
@@ -144,12 +147,14 @@ export default function MakeFrame({
           <button
             type="button"
             onClick={startEdit}
+            aria-label="제목 수정"
             style={{
               position: "absolute",
-              right: 36,
-              top: 18,
-              width: 28,
-              height: 28,
+              right: 8,
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: 44,
+              height: 44,
               display: "grid",
               placeItems: "center",
               background: "transparent",

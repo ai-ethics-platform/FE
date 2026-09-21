@@ -1327,7 +1327,9 @@ export default function Create01() {
             </div>
 
             <div style={{ textAlign: 'center' }}>
-              <span
+              <button
+                type="button"
+                className="creator-image-change"
                 onClick={handleImageChange}
                 style={{
                   color: '#333',
@@ -1338,7 +1340,7 @@ export default function Create01() {
                 }}
               >
                 이미지 변경
-              </span>
+              </button>
             </div>
 
             <div style={{ textAlign: 'center' }}>

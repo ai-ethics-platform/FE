@@ -26,13 +26,16 @@ export default function Continue2({
   const textColor = interactive ? Colors.grey01 : Colors.grey04;
 
   return (
-    <div
+    <button
+      type="button"
+      disabled={disabled}
       onClick={interactive ? onClick : undefined}
       onMouseEnter={interactive ? () => setIsHovered(true)  : undefined}
       onMouseLeave={interactive ? () => { setIsHovered(false); setIsActive(false); } : undefined}
       onMouseDown={interactive ? () => setIsActive(true)   : undefined}
       onMouseUp  ={interactive ? () => setIsActive(false)  : undefined}
       style={{
+        padding: 0, border: 0, background: 'transparent', display: 'block', maxWidth: '100%',
         width,
         height,
         position: 'relative',
@@ -73,6 +76,6 @@ export default function Continue2({
         </span>
         
       </div>
-    </div>
+    </button>
   );
 }

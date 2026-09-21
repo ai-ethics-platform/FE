@@ -9,7 +9,7 @@
 - writeLocal · function · L77-L79 — writeLocal = (k, v)
 - uploadRoleImage · function · L81-L118 — async function uploadRoleImage(slot, file)
 - uploadDefaultForSlot · function · L121-L140 — async function uploadDefaultForSlot(slot, { onApplied } = {})
-- Create02 · function · L142-L575 — function Create02()
+- Create02 · function · L142-L587 — function Create02()
 - isValid · function · L185-L185 — isValid = (v)
 - promote · function · L211-L211 — promote = (k, v)
 - initImages · function · L226-L284 — initImages = async ()

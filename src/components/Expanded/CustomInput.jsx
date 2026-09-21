@@ -3,6 +3,7 @@ import { Colors, FontStyles } from '../styleConstants';
 import inputBg from '../../assets/input.svg'; 
 
 export default function CustomInput({
+  label,
   width = 400,
   height = 120,
   placeholder = "여기에 입력하세요",
@@ -47,6 +48,7 @@ export default function CustomInput({
       )}
 
       <textarea
+        aria-label={label || formattedPlaceholder}
         value={value}
         onChange={onChange}
         placeholder={formattedPlaceholder}

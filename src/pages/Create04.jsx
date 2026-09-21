@@ -1176,12 +1176,14 @@ export default function Create04() {
             />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <span
+            <button
+              type="button"
+              className="creator-image-change"
               onClick={() => handleImageChange(1)}
               style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
             >
               이미지 변경
-            </span>
+            </button>
           </div>
           <div style={{ textAlign: 'center' }}>
             <p style={{ color: Colors.systemRed, ...FontStyles.bodyBold, margin: 0, lineHeight: 1.4 }}>(*권장 이미지 비율 2:1)</p>
@@ -1233,12 +1235,14 @@ export default function Create04() {
             />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <span
+            <button
+              type="button"
+              className="creator-image-change"
               onClick={() => handleImageChange(2)}
               style={{ color: '#333', fontSize: 14, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}
             >
               이미지 변경
-            </span>
+            </button>
           </div>
           <div style={{ textAlign: 'center' }}>
             <p style={{ color: Colors.systemRed, ...FontStyles.bodyBold, margin: 0, lineHeight: 1.4 }}>(*권장 이미지 비율 2:1)</p>

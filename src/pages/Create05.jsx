@@ -315,7 +315,8 @@ const putTitle = async (title) => {
               width={1060}
               height={240}
               placeholder={` 예: 우리 가족은 최종적으로 개인정보 제공에 동의하였고, 사생활 관련한 약간의 불편함을 감수하며...`}
-              value={agreeEnding}
+              label="선택지 1 엔딩"
+                value={agreeEnding}
               onChange={(e) => {
                 const v = e.target.value;
                 setAgreeEnding(v);
@@ -329,7 +330,8 @@ const putTitle = async (title) => {
               width={1060}
               height={240}
               placeholder={` 예: 우리 가족은 최종적으로 개인정보 제공에 동의하지 않았고, 사생활 관련한 약간의 불편함은 있으나...`}
-              value={disagreeEnding}
+              label="선택지 2 엔딩"
+                value={disagreeEnding}
               onChange={(e) => {
                 const v = e.target.value;
                 setDisagreeEnding(v);

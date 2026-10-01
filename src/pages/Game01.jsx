@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 // import React, { useState, useEffect, useRef } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import Layout from '../components/Layout';
@@ -362,8 +363,8 @@ export default function Game01() {
   const mateName = localStorage.getItem('mateName') || 'HomeMate';
 
   const [round, setRound] = useState(1);
-  const isCustomMode = !!localStorage.getItem('code');
-  const subtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || '') : (localStorage.getItem('subtopic') || '');
+  const isCustomMode = !!customGameStorage.getItem('code');
+  const subtopic = isCustomMode ? (customGameStorage.getItem('creatorTitle') || '') : (localStorage.getItem('subtopic') || '');
 
   //  Game01은 인물 실루엣을 고정으로 사용
   const silhouetteImages = [charSilhouette1, charSilhouette2, charSilhouette3];
@@ -417,14 +418,14 @@ export default function Game01() {
     return `${base}${u.startsWith('/') ? '' : '/'}${u}`;
   };
 
-  const rawCustomImg1 = localStorage.getItem('dilemma_image_1') || '';
+  const rawCustomImg1 = customGameStorage.getItem('dilemma_image_1') || '';
   const customImg1 = resolveImageUrl(rawCustomImg1) || defaultImg;
 
   // 편집 도구의 '오프닝 멘트'는 화면별 설명 배열(opening)이다.
   // 한 화면에 몰아 붙이지 말고, 화면당 한 장씩 넘겨 보여준다.
   const readOpeningParagraphs = () => {
     try {
-      const raw = localStorage.getItem('opening');
+      const raw = customGameStorage.getItem('opening');
       const parsed = raw ? JSON.parse(raw) : [];
       if (!Array.isArray(parsed)) return [];
       return parsed
@@ -439,7 +440,7 @@ export default function Game01() {
 
   const defaultMain = getDefaultMain();
   const openingParagraphs = isCustomMode ? readOpeningParagraphs() : [];
-  const rolesBg = (localStorage.getItem('rolesBackground') || '').trim();
+  const rolesBg = (customGameStorage.getItem('rolesBackground') || '').trim();
   const customFallbackMain = rolesBg && rolesBg !== '-' ? rolesBg : defaultMain;
   const paragraphs = openingParagraphs.length > 0
     ? openingParagraphs

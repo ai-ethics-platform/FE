@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 // // pages/Game03.jsx
 // import React, { useState, useEffect, useRef } from 'react';
 // import { useNavigate } from 'react-router-dom';
@@ -477,9 +478,9 @@ export default function Game03() {
     : 'HomeMate';
   const selectedIndex = Number(localStorage.getItem('selectedCharacterIndex') ?? 0);
   
-  const isCustomMode = !!localStorage.getItem('code');
+  const isCustomMode = !!customGameStorage.getItem('code');
   const rawSubtopic = localStorage.getItem('subtopic') || '';
-  const creatorTitle = localStorage.getItem('creatorTitle') || '';
+  const creatorTitle = customGameStorage.getItem('creatorTitle') || '';
   const subtopic = isCustomMode ? creatorTitle : rawSubtopic;
 
   // 2. Stable Key 로직 (영문 주제명이라도 한국어 키를 찾아 데이터 매칭)
@@ -495,7 +496,7 @@ export default function Game03() {
   // 3. 역할명 및 질문 데이터 로딩
   const getRoleName = () => {
     if (isCustomMode) {
-      const char = localStorage.getItem(`char${roleId}`) || '';
+      const char = customGameStorage.getItem(`char${roleId}`) || '';
       return char.trim() || (lang === 'ko' ? '참여자' : 'Participant');
     }
     const roleList = t.roles[stableKey] || [];
@@ -505,10 +506,10 @@ export default function Game03() {
   const getQuestionData = () => {
     if (isCustomMode) {
       return {
-        question: localStorage.getItem('question') || '',
+        question: customGameStorage.getItem('question') || '',
         labels: {
-          agree: localStorage.getItem('agree_label') || (lang === 'ko' ? '동의' : 'Agree'),
-          disagree: localStorage.getItem('disagree_label') || (lang === 'ko' ? '비동의' : 'Disagree')
+          agree: customGameStorage.getItem('agree_label') || (lang === 'ko' ? '동의' : 'Agree'),
+          disagree: customGameStorage.getItem('disagree_label') || (lang === 'ko' ? '비동의' : 'Disagree')
         }
       };
     }
@@ -530,7 +531,7 @@ export default function Game03() {
     const base = axiosInstance?.defaults?.baseURL?.replace(/\/+$/, '');
     return base ? `${base}${u.startsWith('/') ? '' : '/'}${u}` : u;
   };
-  const customImage = resolveImageUrl(localStorage.getItem('dilemma_image_3') || '');
+  const customImage = resolveImageUrl(customGameStorage.getItem('dilemma_image_3') || '');
   const displayImages = isCustomMode ? [customImage || defaultImg] : comicImages;
 
   // 상태 관리

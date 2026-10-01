@@ -1,4 +1,4 @@
 # src/components/OutPopup.jsx
 
-- OutPopup · function · L11-L134 — function OutPopup({ onClose })
-- handleLeaveRoom · function · L22-L89 — handleLeaveRoom = async ()
+- OutPopup · function · L12-L135 — function OutPopup({ onClose })
+- handleLeaveRoom · function · L23-L90 — handleLeaveRoom = async ()

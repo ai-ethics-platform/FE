@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
@@ -85,7 +86,7 @@ export default function GuestLogin({ onClose }) {
 
       console.log('로그인 성공:', data);
       // 게임 링크(?code=...)로 들어온 경우 커스텀 게임 방으로 이동
-      const inviteCode = localStorage.getItem('code');
+      const inviteCode = customGameStorage.getItem('code');
       navigate(inviteCode ? '/customroom' : '/selectroom');
     } catch (err) {
       console.error('게스트 로그인 실패:', err?.response?.data || err);

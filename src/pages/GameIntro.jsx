@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 // 커스텀 모드일 때 opening 부분 수정
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -68,7 +69,7 @@ export default function GameIntro() {
   '여러분은 이제 AI 기술과 관련된 가상 상황에 \n 놓여집니다. 그리고 자신에게 주어진 역할의 인물이 \n 되어 어떤 선택을 할지 결정한 뒤, 친구들과 의견을 \n 나누며 최선의 결론을 합의하게 됩니다.\n\n' 
   +'자, 이제 시작해볼까요? '
   
-  const isCustomMode = !!localStorage.getItem('code');
+  const isCustomMode = !!customGameStorage.getItem('code');
 
   // 인트로는 '게임 시작 안내 문구' 자리다.
   // opening(화면별 설명 배열)은 여기가 아니라 Game01에서 화면당 한 장씩 보여준다.
@@ -81,7 +82,7 @@ export default function GameIntro() {
   const { isHost, sendNextPage } = useHostActions();
   
   useWebSocketNavigation(navigate, {
-    nextPagePath: '/selecthomemate'
+    nextPagePath: isCustomMode ? '/game01' : '/selecthomemate'
   });
   
   useEffect(() => {

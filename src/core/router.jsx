@@ -1,3 +1,4 @@
+import { customGameStorage, isCustomGameReady } from '../utils/customGameStorage';
 import { lazy, Suspense, useEffect, useLayoutEffect } from 'react';
 import { flushPendingIngest } from '../api/adminIngest';
 import { diagnosticRoute } from '../utils/creatorDiagnostics';
@@ -82,6 +83,10 @@ function DiagnosticRoute() {
 }
 
 function GameProvidersLayout() {
+  useLocation();
+  if (customGameStorage.getItem('code') && !isCustomGameReady()) {
+    return <Navigate to="/customroom" replace />;
+  }
   return (
     <WebSocketProvider>
       <WebRTCProvider>

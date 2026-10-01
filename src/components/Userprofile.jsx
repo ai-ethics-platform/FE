@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 import React from 'react';
 import { Colors, FontStyles } from './styleConstants';
 // 아이콘 임포트 생략 (기존과 동일)
@@ -40,7 +41,7 @@ export default function UserProfile({
   description = '',
   ...rest
 }) {
-  const isCustomMode = !!localStorage.getItem('code');
+  const isCustomMode = !!(create ? localStorage : customGameStorage).getItem('code');
   const roleNum = parseInt(player.replace('P', ''), 10);
 
   // 1. 현재 언어팩 로드 (자동 감지)
@@ -57,7 +58,7 @@ export default function UserProfile({
   } else if (!nodescription && isCustomMode) {
     // [우선순위 2] 커스텀 모드
     const customKey = player === '1P' ? 'char1' : player === '2P' ? 'char2' : 'char3';
-    mappedDesc = (localStorage.getItem(customKey) || '').trim();
+    mappedDesc = ((create ? localStorage : customGameStorage).getItem(customKey) || '').trim();
   } else if (!nodescription) {
     // [우선순위 3] 자동 감지 폴백 (MateName 등에서 유용)
     const subtopic = (localStorage.getItem('subtopic') || '').trim();
@@ -100,7 +101,7 @@ export default function UserProfile({
   };
 
   const readLocalUrl = (key) => {
-    const raw = localStorage.getItem(key);
+    const raw = (create ? localStorage : customGameStorage).getItem(key);
     if (!raw) return null;
     let val = raw.trim();
     try {

@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 // // pages/Game05.jsx
 // import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
@@ -258,8 +259,8 @@ export default function Game05() {
   const roomCode       = localStorage.getItem('room_code');
 
   // 커스텀 모드 판별 + 커스텀 제목
-  const isCustomMode  = !!localStorage.getItem('code');
-  const creatorTitle  = localStorage.getItem('creatorTitle') || '';
+  const isCustomMode  = !!customGameStorage.getItem('code');
+  const creatorTitle  = customGameStorage.getItem('creatorTitle') || '';
   const subtopic      = isCustomMode ? (creatorTitle || rawSubtopic) : rawSubtopic;
 
   // 이미지 리소스 로딩
@@ -317,7 +318,7 @@ export default function Game05() {
       const keyTexts = mode === 'agree' ? 'flips_agree_texts' : 'flips_disagree_texts';
       let arr = [];
       try {
-        const raw = localStorage.getItem(keyTexts);
+        const raw = customGameStorage.getItem(keyTexts);
         const parsed = raw ? JSON.parse(raw) : [];
         arr = Array.isArray(parsed) ? parsed.filter(Boolean).map(String) : [];
       } catch (e) {
@@ -357,7 +358,7 @@ export default function Game05() {
   };
 
   const customImgKey = mode === 'agree' ? 'dilemma_image_4_1' : 'dilemma_image_4_2';
-  const rawCustomImg = localStorage.getItem(customImgKey) || '';
+  const rawCustomImg = customGameStorage.getItem(customImgKey) || '';
   const customImgUrl = resolveImageUrl(rawCustomImg);
   
   const imageSrc = isCustomMode

@@ -1,8 +1,8 @@
 # src/pages/Game05.jsx
 
-- Game05 · function · L220-L395 — function Game05()
-- resolveImageUrl · function · L269-L276 — resolveImageUrl = (raw)
-- findStableCategory · function · L334-L337 — findStableCategory = ()
-- findStableSubtopic · function · L339-L343 — findStableSubtopic = ()
-- handleContinue · function · L353-L357 — handleContinue = ()
-- handleBackClick · function · L367-L371 — handleBackClick = ()
+- Game05 · function · L221-L396 — function Game05()
+- resolveImageUrl · function · L270-L277 — resolveImageUrl = (raw)
+- findStableCategory · function · L335-L338 — findStableCategory = ()
+- findStableSubtopic · function · L340-L344 — findStableSubtopic = ()
+- handleContinue · function · L354-L358 — handleContinue = ()
+- handleBackClick · function · L368-L372 — handleBackClick = ()

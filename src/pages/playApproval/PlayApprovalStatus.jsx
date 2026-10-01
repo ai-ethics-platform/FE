@@ -1,3 +1,4 @@
+import { customGameStorage } from '../../utils/customGameStorage';
 import React, {
   useCallback,
   useEffect,
@@ -213,7 +214,7 @@ export default function PlayApprovalStatus() {
   const handleAction = async () => {
     if (isApproved) {
       const inviteCode =
-        localStorage.getItem('code');
+        customGameStorage.getItem('code');
 
       navigate(
         inviteCode

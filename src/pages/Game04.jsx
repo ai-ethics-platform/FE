@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 // useEffect(() => {
   //       let cancelled = false;
   //       const isReloadingGraceLocal = () => {
@@ -148,10 +149,10 @@ export default function Game04() {
   const isAWS       = category === '자율 무기 시스템';
 
   // ✅ 커스텀 모드 판별 및 커스텀 값 로드
-  const isCustomMode      = !!localStorage.getItem('code');
-  const creatorTitle      = localStorage.getItem('creatorTitle') || '';
-  const customAgreeLabel  = localStorage.getItem('agree_label') || (lang === 'ko' ? '동의' : 'Agree');
-  const customDisagreeLbl = localStorage.getItem('disagree_label') || (lang === 'ko' ? '비동의' : 'Disagree');
+  const isCustomMode      = !!customGameStorage.getItem('code');
+  const creatorTitle      = customGameStorage.getItem('creatorTitle') || '';
+  const customAgreeLabel  = customGameStorage.getItem('agree_label') || (lang === 'ko' ? '동의' : 'Agree');
+  const customDisagreeLbl = customGameStorage.getItem('disagree_label') || (lang === 'ko' ? '비동의' : 'Disagree');
 
   // 2. Stable Key 로직 (영문 주제명이라도 한국어 키를 찾아 데이터 매칭)
   const getStableSubtopicKey = () => {

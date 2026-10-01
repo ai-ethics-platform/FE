@@ -1,6 +1,6 @@
 # src/pages/Game07.jsx
 
-- Game07 · function · L17-L147 — function Game07()
-- handleNextRound · function · L87-L91 — handleNextRound = ()
-- handleViewResult · function · L93-L100 — handleViewResult = ()
-- handleExit · function · L108-L117 — handleExit = async ()
+- Game07 · function · L18-L148 — function Game07()
+- handleNextRound · function · L88-L92 — handleNextRound = ()
+- handleViewResult · function · L94-L101 — handleViewResult = ()
+- handleExit · function · L109-L118 — handleExit = async ()

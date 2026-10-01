@@ -1,3 +1,4 @@
+import { customGameStorage, isCustomGameReady } from '../../utils/customGameStorage';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import closeIcon from '../../assets/close.svg';
@@ -13,7 +14,7 @@ import axiosInstance from '../../api/axiosInstance';
 
 export default function CreateDilemmaRoom({ onClose }) {
   const [isPublic, setIsPublic] = useState(false); 
-  const [title, setTitle] = useState(localStorage.getItem('creatorTitle') || '');
+  const [title, setTitle] = useState(customGameStorage.getItem('creatorTitle') || '');
   const topics = title;
 
   const [selectedTopic, setSelectedTopic] = useState(null);
@@ -22,7 +23,7 @@ export default function CreateDilemmaRoom({ onClose }) {
   const navigate = useNavigate();
 
   const handleCreateRoom = async () => {
-    if (!selectedTopic) return;
+    if (!selectedTopic || !isCustomGameReady()) return;
   
     const title = `${selectedTopic}`;
     const description = `AI 윤리 주제 중 '${selectedTopic}'에 대한 토론`;

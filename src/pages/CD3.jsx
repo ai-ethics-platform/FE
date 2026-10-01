@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -43,9 +44,9 @@ export default function CD3() {
 
   const category = localStorage.getItem('category') || '';
   const isAWS = category === '자율 무기 시스템';
-  const isCustomMode = !!localStorage.getItem('code');
+  const isCustomMode = !!customGameStorage.getItem('code');
   const rawSubtopic = localStorage.getItem('subtopic') || '';
-  const subtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || '') : rawSubtopic;
+  const subtopic = isCustomMode ? (customGameStorage.getItem('creatorTitle') || '') : rawSubtopic;
 
   const [round, setRound] = useState();
   const [voiceInitialized, setVoiceInitialized] = useState(false);
@@ -110,9 +111,9 @@ export default function CD3() {
   let mainText = t[mainTextKey] || '';
 
   if (isCustomMode) {
-    const charDes3 = (localStorage.getItem('charDes3') || '').trim();
+    const charDes3 = (customGameStorage.getItem('charDes3') || '').trim();
     if (charDes3) mainText = charDes3;
-    const rawRoleImg = localStorage.getItem('role_image_3') || '';
+    const rawRoleImg = customGameStorage.getItem('role_image_3') || '';
     descImg = resolveImageUrl(rawRoleImg) || defaultimg;
   }
 

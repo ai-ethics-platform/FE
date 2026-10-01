@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -84,8 +85,8 @@ export default function CD_all() {
   const [showSidebarGuide, setShowSidebarGuide] = useState(true);
   const [voiceInitialized, setVoiceInitialized] = useState(false);
 
-  const isCustomMode = !!localStorage.getItem('code');
-  const creatorTitle = localStorage.getItem('creatorTitle') || '';
+  const isCustomMode = !!customGameStorage.getItem('code');
+  const creatorTitle = customGameStorage.getItem('creatorTitle') || '';
   const { isConnected } = useWebSocket();
 
   useEffect(() => {
@@ -104,9 +105,9 @@ export default function CD_all() {
   useEffect(() => {
     if (isCustomMode) {
       setImages([
-        resolveImageUrl(localStorage.getItem('role_image_1')),
-        resolveImageUrl(localStorage.getItem('role_image_2')),
-        resolveImageUrl(localStorage.getItem('role_image_3'))
+        resolveImageUrl(customGameStorage.getItem('role_image_1')),
+        resolveImageUrl(customGameStorage.getItem('role_image_2')),
+        resolveImageUrl(customGameStorage.getItem('role_image_3'))
       ]);
       return;
     }

@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 import React from 'react';
 import char1 from '../assets/CharacterPopUp1.svg';
 import char2 from '../assets/CharacterPopUp2.svg';
@@ -99,17 +100,17 @@ export default function CharacterPopup({ subtopic, roleId, mateName, onClose }) 
   }
 
   // 커스텀 모드 오버라이드
-  const isCustomMode = !!localStorage.getItem('code');
+  const isCustomMode = !!customGameStorage.getItem('code');
   if (isCustomMode) {
     const titleMap = {
-      1: (localStorage.getItem('char1') || '').trim(),
-      2: (localStorage.getItem('char2') || '').trim(),
-      3: (localStorage.getItem('char3') || '').trim(),
+      1: (customGameStorage.getItem('char1') || '').trim(),
+      2: (customGameStorage.getItem('char2') || '').trim(),
+      3: (customGameStorage.getItem('char3') || '').trim(),
     };
     const descMap = {
-      1: (localStorage.getItem('charDes1') || '').trim(),
-      2: (localStorage.getItem('charDes2') || '').trim(),
-      3: (localStorage.getItem('charDes3') || '').trim(),
+      1: (customGameStorage.getItem('charDes1') || '').trim(),
+      2: (customGameStorage.getItem('charDes2') || '').trim(),
+      3: (customGameStorage.getItem('charDes3') || '').trim(),
     };
     titleText = titleMap[roleId] ?? titleText;
     mainText = descMap[roleId] ?? mainText;

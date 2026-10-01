@@ -1,3 +1,4 @@
+import { customGameStorage, setCustomGameCode } from '../utils/customGameStorage';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Background from '../components/Background';
@@ -44,8 +45,8 @@ export default function Login() {
   const [showFindPw, setShowFindPw] = useState(false);
   const [toast, setToast] = useState('');
 
-  // 쿼리에서 code를 상태로 보관(초기값은 로컬스토리지)
-  const [inviteCode, setInviteCode] = useState(() => localStorage.getItem('code') || '');
+  // 공유 링크와 현재 탭의 게임 코드 유지
+  const [inviteCode, setInviteCode] = useState(() => new URLSearchParams(location.search).get('code') || customGameStorage.getItem('code') || '');
 
   // 언어 변경 핸들러 (호환성 확보를 위해 이중 키값 저장)
   const handleLanguageChange = (e) => {
@@ -65,23 +66,26 @@ export default function Login() {
     };
   }, []);
   
-  // URL 쿼리에서 code 읽어 상태/로컬스토리지에 저장
+  // URL 쿼리에서 code 읽어 상태/세션스토리지에 저장
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const codeFromQuery = params.get('code');
     if (codeFromQuery) {
       setInviteCode(codeFromQuery);
-      localStorage.setItem('code', codeFromQuery);
+      try {
+        setCustomGameCode(codeFromQuery);
+      } catch {
+        setToast('게임 데이터를 저장할 수 없습니다. 브라우저의 저장소 설정을 확인해주세요.');
+      }
     }
   }, [location.search]);
 
   const navigateApprovedUser = () => {
-    // 상태값 우선, 없으면 로컬스토리지 fallback
-    const codeToUse = inviteCode || localStorage.getItem('code');
+    // 상태값 우선, 없으면 현재 탭의 게임 코드 사용
+    const codeToUse = inviteCode || customGameStorage.getItem('code');
 
     if (codeToUse) {
-      // 필요하다면 code를 쿼리로 넘길 수도 있음: `/customroom?code=${encodeURIComponent(codeToUse)}`
-      navigate('/customroom', { replace: true });
+      navigate(`/customroom?code=${encodeURIComponent(codeToUse)}`, { replace: true });
     } else {
       navigate('/selectroom', { replace: true });
     }

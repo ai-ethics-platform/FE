@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -30,10 +31,10 @@ export default function Game06() {
     return raw.Paragraphs || raw;
   }, [currentLangData]);
 
-  const isCustomMode = !!localStorage.getItem('code');
+  const isCustomMode = !!customGameStorage.getItem('code');
   const rawCategory = localStorage.getItem('category') || '안드로이드';
   const rawSubtopic = localStorage.getItem('subtopic') || ''; // 한글값 유지됨
-  const headerSubtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || rawSubtopic) : rawSubtopic;
+  const headerSubtopic = isCustomMode ? (customGameStorage.getItem('creatorTitle') || rawSubtopic) : rawSubtopic;
   const mateName = localStorage.getItem('mateName') || 'HomeMate';
 
   const [displayText, setDisplayText] = useState(''); 
@@ -59,7 +60,7 @@ export default function Game06() {
 
   useEffect(() => {
     if (isCustomMode) {
-      const raw = localStorage.getItem('agreeEnding');
+      const raw = customGameStorage.getItem('agreeEnding');
       if (raw) setDisplayText(String(raw));
       return;
     }

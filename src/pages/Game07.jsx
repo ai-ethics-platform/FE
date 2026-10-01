@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,8 +22,8 @@ export default function Game07() {
   const { isHost } = useHostActions();
 
   const lang = localStorage.getItem('app_lang') || 'ko';
-  const isCustomMode   = !!localStorage.getItem('code');
-  const creatorTitle   = localStorage.getItem('creatorTitle') || '';
+  const isCustomMode   = !!customGameStorage.getItem('code');
+  const creatorTitle   = customGameStorage.getItem('creatorTitle') || '';
   const baseSubtopic   = localStorage.getItem('subtopic') || '';
   const headerSubtopic = isCustomMode ? (creatorTitle || baseSubtopic) : baseSubtopic;
 
@@ -63,7 +64,7 @@ export default function Game07() {
 
   useEffect(() => {
     if (isCustomMode) {
-      const raw = localStorage.getItem('disagreeEnding');
+      const raw = customGameStorage.getItem('disagreeEnding');
       if (raw) {
         try {
           const parsed = JSON.parse(raw);

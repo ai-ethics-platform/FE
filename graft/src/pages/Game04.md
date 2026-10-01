@@ -1,7 +1,7 @@
 # src/pages/Game04.jsx
 
-- Game04 · function · L69-L359 — function Game04()
-- getStableSubtopicKey · function · L157-L162 — getStableSubtopicKey = ()
-- fetchAgreementStatus · function · L189-L238 — fetchAgreementStatus = async ()
-- handleContinue · function · L264-L266 — handleContinue = ()
-- handleBackClick · function · L268-L272 — handleBackClick = ()
+- Game04 · function · L70-L360 — function Game04()
+- getStableSubtopicKey · function · L158-L163 — getStableSubtopicKey = ()
+- fetchAgreementStatus · function · L190-L239 — fetchAgreementStatus = async ()
+- handleContinue · function · L265-L267 — handleContinue = ()
+- handleBackClick · function · L269-L273 — handleBackClick = ()

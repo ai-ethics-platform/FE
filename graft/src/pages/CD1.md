@@ -1,8 +1,8 @@
 # src/pages/CD1.jsx
 
-- CD1 · function · L34-L191 — function CD1()
-- resolveImageUrl · function · L58-L64 — resolveImageUrl = (raw)
-- getImg · function · L94-L94 — getImg = (ko, en)
-- hasBatchim · function · L143-L148 — hasBatchim = (word)
-- handleContinue · function · L159-L161 — handleContinue = ()
-- handleBackClick · function · L163-L165 — handleBackClick = ()
+- CD1 · function · L35-L192 — function CD1()
+- resolveImageUrl · function · L59-L65 — resolveImageUrl = (raw)
+- getImg · function · L95-L95 — getImg = (ko, en)
+- hasBatchim · function · L144-L149 — hasBatchim = (word)
+- handleContinue · function · L160-L162 — handleContinue = ()
+- handleBackClick · function · L164-L166 — handleBackClick = ()

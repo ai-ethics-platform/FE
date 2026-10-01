@@ -1,3 +1,4 @@
+import { customGameStorage, clearCustomGame, setCustomGameCode, saveCustomGame, isCustomGameReady } from '../utils/customGameStorage';
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -18,88 +19,16 @@ export default function SelectRoom() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [title, setTitle] = useState(localStorage.getItem('creatorTitle') || '');
+  const [title, setTitle] = useState(customGameStorage.getItem('creatorTitle') || '');
   const [isLogoutPopupOpen, setIsLogoutPopupOpen] = useState(false);
   const [isJoinRoomOpen, setIsJoinRoomOpen] = useState(false);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
 
-  // ---------- utils: 로컬 저장 헬퍼 ----------
-  const setStr = (key, val) =>
-    localStorage.setItem(key, typeof val === 'string' ? val : (val ?? ''));
-
-  const setArr = (key, arr) =>
-    localStorage.setItem(key, JSON.stringify(Array.isArray(arr) ? arr : []));
-
-  // 서버 데이터 -> localStorage 저장
-  const persistCustomGame = (payload) => {
-    if (!payload) return;
-
-    const { code, title, representative_image_url, representative_images, data } = payload;
-
-    // 공통
-    if (code) setStr('code', code);
-
-    // 제목
-    setStr('creatorTitle', title || data?.title || '');
-
-    // 이미지(대표)
-    setStr('repersentative_image_url', representative_image_url || '');
-
-    // 이미지(대표 묶음)
-    // 요구사항: dilemma_image_1, dilemma_image_3, dilemma_image_4_1, dilemma_image_4_2 로 저장
-    const repImgs = data?.representativeImages || representative_images || {};
-    setStr('dilemma_image_1', repImgs?.dilemma_image_1 || '');
-    setStr('dilemma_image_3', repImgs?.dilemma_image_3 || '');
-    setStr('dilemma_image_4_1', repImgs?.dilemma_image_4_1 || '');
-    setStr('dilemma_image_4_2', repImgs?.dilemma_image_4_2 || '');
-
-    // 데이터 본문
-    // opening: 배열
-    setArr('opening', data?.opening);
-
-    // roles -> char1/2/3, charDes1/2/3
-    const roles = Array.isArray(data?.roles) ? data.roles : [];
-    const r1 = roles[0] || {};
-    const r2 = roles[1] || {};
-    const r3 = roles[2] || {};
-    setStr('char1', r1.name || '');
-    setStr('char2', r2.name || '');
-    setStr('char3', r3.name || '');
-    setStr('charDes1', r1.description || '');
-    setStr('charDes2', r2.description || '');
-    setStr('charDes3', r3.description || '');
-
-    // rolesBackground: 문자열
-    setStr('rolesBackground', data?.rolesBackground || '');
-
-    // roleImages -> role_image_1, role_image_2, role_image_3
-    const roleImages = data?.roleImages || {};
-    setStr('role_image_1', roleImages?.['1'] || '');
-    setStr('role_image_2', roleImages?.['2'] || '');
-    setStr('role_image_3', roleImages?.['3'] || '');
-
-    // dilemma
-    const dilemma = data?.dilemma || {};
-    setArr('dilemma_sitation', dilemma?.situation); // 요구 철자 그대로
-    setStr('question', dilemma?.question || '');
-
-    const opts = dilemma?.options || {};
-    setStr('agree_label', opts?.agree_label || '');
-    setStr('disagree_label', opts?.disagree_label || '');
-
-    // flips: 배열
-    const flips = data?.flips || {};
-    setArr('flips_agree_texts', flips?.agree_texts);
-    setArr('flips_disagree_texts', flips?.disagree_texts);
-
-    // finalMessages
-    const finals = data?.finalMessages || {};
-    setStr('agreeEnding', finals?.agree || '');
-    setStr('disagreeEnding', finals?.disagree || '');
-
-    // 화면 상단 프레임에 즉시 반영
-    setTitle(localStorage.getItem('creatorTitle') || '');
-  };
+  const [loadStatus, setLoadStatus] = useState('loading');
+  const [loadError, setLoadError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const code = new URLSearchParams(location.search).get('code') || customGameStorage.getItem('code');
+  const ready = loadStatus === 'ready' && isCustomGameReady() && customGameStorage.getItem('code') === code;
 
   // 스크롤 숨김
   useEffect(() => {
@@ -110,36 +39,45 @@ export default function SelectRoom() {
     };
   }, []);
 
-  // 쿼리로 code 들어오면: 저장 -> GET -> 로컬 저장 -> /customroom
   useEffect(() => {
-    const code = localStorage.getItem('code');
+    const controller = new AbortController();
+    let active = true;
+    setLoadStatus('loading');
+    setLoadError('');
 
     const run = async () => {
-      if (!code) return;
-
       try {
-      
-        // GET /custom-games/{code}
-        const res = await axiosInstance.get(`/custom-games/${code}`, {
-          headers: { 'Content-Type': 'application/json' },
+        if (!code) throw new Error('게임 코드가 없습니다. 공유 링크로 다시 접속해주세요.');
+        clearCustomGame();
+        setCustomGameCode(code);
+        const res = await axiosInstance.get(`/custom-games/${encodeURIComponent(code)}`, {
+          signal: controller.signal,
+          timeout: 20000,
         });
-
-        // 응답 저장
-        persistCustomGame(res?.data);
-
-        // 쿼리 제거 + 커스텀룸 이동
-        navigate('/customroom', { replace: true });
+        if (!active) return;
+        saveCustomGame(res.data, code);
+        setTitle(customGameStorage.getItem('creatorTitle') || '');
+        setLoadStatus('ready');
       } catch (err) {
+        if (!active) return;
         console.error('Failed to load custom game by code:', err);
-        // 실패해도 기본 동작은 유지 (원하면 에러 팝업 추가)
+        setLoadError(code ? '게임 데이터를 불러오지 못했습니다. 다시 시도하거나 새로고침해주세요.' : '게임 코드가 없습니다. 공유 링크로 다시 접속해주세요.');
+        setLoadStatus('error');
       }
     };
 
     run();
-  }, [location.search, navigate]);
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [code, retry]);
 
   const handleBackClick = () => setIsLogoutPopupOpen(true);
-  const handleLogout = () => navigate('/');
+  const handleLogout = () => {
+    clearCustomGame();
+    navigate('/');
+  };
 
   return (
     <Background bgIndex={2}>
@@ -154,6 +92,22 @@ export default function SelectRoom() {
       >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
           <GameFrame topic={title} hideArrows />
+          {loadStatus === 'loading' && (
+            <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="42 15">
+                  <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" />
+                </circle>
+              </svg>
+              게임 데이터 받아오는 중
+            </div>
+          )}
+          {loadStatus === 'error' && (
+            <div role="alert" style={{ textAlign: 'center' }}>
+              <p>{loadError}</p>
+              <button type="button" onClick={() => setRetry(value => value + 1)}>다시 시도</button>
+            </div>
+          )}
           <div
             style={{
               display: 'flex',
@@ -167,14 +121,16 @@ export default function SelectRoom() {
           >
             <RoomCard
               icon={createIcon}
-              title="방 만들기"
-              description={<>새로운 방을 만들고<br />게임을 시작하세요.</>}
+              disabled={!ready}
+              title={loadStatus === 'ready' ? '방 만들기' : loadStatus === 'loading' ? '게임 데이터 받아오는 중' : '게임 데이터를 불러오지 못했습니다'}
+              description={loadStatus === 'ready' ? <>새로운 방을 만들고<br />게임을 시작하세요.</> : loadStatus === 'loading' ? '잠시 기다려주세요.' : '다시 시도해주세요.'}
               onClick={() => setIsCreateRoomOpen(true)}
             />
             <RoomCard
               icon={joinIcon}
-              title="방 참여하기"
-              description={<>코드를 통해 방에<br />참여할 수 있습니다.</>}
+              disabled={!ready}
+              title={loadStatus === 'ready' ? '방 참여하기' : loadStatus === 'loading' ? '게임 데이터 받아오는 중' : '게임 데이터를 불러오지 못했습니다'}
+              description={loadStatus === 'ready' ? <>코드를 통해 방에<br />참여할 수 있습니다.</> : loadStatus === 'loading' ? '잠시 기다려주세요.' : '다시 시도해주세요.'}
               onClick={() => setIsJoinRoomOpen(true)}
             />
           </div>
@@ -189,7 +145,7 @@ export default function SelectRoom() {
 
       {isJoinRoomOpen && (
         <div style={overlayStyle}>
-          <JoinRoom onClose={() => setIsJoinRoomOpen(false)} />
+          <JoinRoom custom onClose={() => setIsJoinRoomOpen(false)} />
         </div>
       )}
 

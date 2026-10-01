@@ -1,3 +1,4 @@
+import { customGameStorage, isCustomGameReady } from '../utils/customGameStorage';
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -34,8 +35,8 @@ export default function WaitingRoom() {
   const defaultTopics = [tw.topics?.android, tw.topics?.aws];
   const [category, setCategory] = useState();
   // custom 모드 여부 확인
-  const isCustomMode = Boolean(localStorage.getItem('code'));
-  const creatorTitle = localStorage.getItem('creatorTitle') || tw.topics?.custom;
+  const isCustomMode = Boolean(customGameStorage.getItem('code'));
+  const creatorTitle = customGameStorage.getItem('creatorTitle') || tw.topics?.custom;
 
   // UI 출력을 위한 allTopics 구성
   const allTopics = isCustomMode ? [creatorTitle] : defaultTopics;
@@ -159,9 +160,6 @@ export default function WaitingRoom() {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
       if (room?.title) {
         localStorage.setItem('category', room.title);
-        if(isCustomMode){
-          localStorage.setItem('creatorTitle', room.title);
-        }
       }
       setParticipants(room.participants);
       if (room && typeof room.title === 'string' && room.title.length > 0) {
@@ -340,6 +338,11 @@ export default function WaitingRoom() {
   
   // 방 상태 주기적 확인 (폴링)
   const pollRoomStatus = async () => {
+    if (isCustomMode && !isCustomGameReady()) {
+      stopPolling();
+      navigate('/customroom', { replace: true });
+      return;
+    }
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
       setParticipants(room.participants);
@@ -461,6 +464,10 @@ export default function WaitingRoom() {
 
   // 마이크 테스트 확인 후 준비 완료 API 호출
   const handleMicConfirm = async () => {
+    if (isCustomMode && !isCustomGameReady()) {
+      navigate('/customroom', { replace: true });
+      return;
+    }
     try {
       await axiosInstance.post('/rooms/ready', { room_code });
       setMyStatusIndex(1);

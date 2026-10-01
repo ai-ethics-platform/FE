@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 
 // // pages/Game02.jsx
 // import React, { useState, useEffect } from 'react';
@@ -277,9 +278,9 @@ export default function Game02() {
   const myRoleId = localStorage.getItem('myrole_id');
 
   // 커스텀 모드 여부
-  const isCustomMode = !!localStorage.getItem('code');
+  const isCustomMode = !!customGameStorage.getItem('code');
   const rawSubtopic = localStorage.getItem('subtopic');
-  const creatorTitle = localStorage.getItem('creatorTitle') || '';
+  const creatorTitle = customGameStorage.getItem('creatorTitle') || '';
   const subtopic = isCustomMode ? creatorTitle : (rawSubtopic || '');
 
   // ✅ 1. 이미지 로딩: 기존 getDilemmaImages 로직 100% 유지 
@@ -319,7 +320,7 @@ export default function Game02() {
     if (!isCustomMode) return;
     let arr = [];
     try {
-      const raw = localStorage.getItem('dilemma_sitation') || localStorage.getItem('dilemma_situation');
+      const raw = customGameStorage.getItem('dilemma_sitation') || customGameStorage.getItem('dilemma_situation');
       const parsed = raw ? JSON.parse(raw) : [];
       arr = Array.isArray(parsed) ? parsed.filter((x) => x != null) : [];
     } catch (e) {
@@ -327,7 +328,7 @@ export default function Game02() {
       arr = [];
     }
     setParagraphs(arr.map((s) => ({ main: String(s) })));
-    const rawImg = localStorage.getItem('dilemma_image_3') || '';
+    const rawImg = customGameStorage.getItem('dilemma_image_3') || '';
     const resolved = resolveImageUrl(rawImg);
     setCustomImage(resolved || defaultImg); 
   }, [isCustomMode]);

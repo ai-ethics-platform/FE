@@ -1,3 +1,4 @@
+import { isCustomGameReady } from '../utils/customGameStorage';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
@@ -6,7 +7,7 @@ import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance';
 import { translations } from '../utils/language/index'; // 언어 파일 임포트
 
-export default function JoinRoom({ onClose }) {
+export default function JoinRoom({ onClose, custom = false }) {
   // --- 시스템 설정된 언어(app_lang)를 로드하는 로직 ---
   const lang = localStorage.getItem('app_lang') || 'ko';
   const t = translations?.[lang]?.JoinRoom || {};
@@ -92,7 +93,7 @@ useEffect(() => {
   };
 
   const handleJoin = async () => {
-    if (!isValidCode) return;
+    if (!isValidCode || (custom && !isCustomGameReady())) return;
 
     try {
       // 닉네임이 없으면 기본값 "nickname" 사용

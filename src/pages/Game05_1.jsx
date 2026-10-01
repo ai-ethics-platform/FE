@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
@@ -43,10 +44,10 @@ export default function Game05_01() {
   const rawCategory = localStorage.getItem('category') || '안드로이드';
   const rawSubtopic = localStorage.getItem('subtopic') || '';
   const mateName = localStorage.getItem('mateName') || 'HomeMate'; 
-  const savedCode = localStorage.getItem('code');
+  const savedCode = customGameStorage.getItem('code');
   const isCustomMode = !!(savedCode && savedCode !== 'null' && savedCode !== 'undefined');
 
-  const headerSubtopic = isCustomMode ? (localStorage.getItem('creatorTitle') || rawSubtopic) : rawSubtopic;
+  const headerSubtopic = isCustomMode ? (customGameStorage.getItem('creatorTitle') || rawSubtopic) : rawSubtopic;
 
   const currentLangData = translations[lang] || translations['ko'];
   const t = useMemo(() => {
@@ -71,22 +72,22 @@ export default function Game05_01() {
 
   const roleId = Number(localStorage.getItem('myrole_id') || 1);
   const roleName = isCustomMode 
-    ? (localStorage.getItem(`char${roleId}`) || (lang === 'ko' ? '참여자' : 'Participant'))
+    ? (customGameStorage.getItem(`char${roleId}`) || (lang === 'ko' ? '참여자' : 'Participant'))
     : (t?.roles?.[stableKey]?.[roleId - 1] || tKo?.roles?.[stableKey]?.[roleId - 1] || 'Participant');
 
   const questionData = t?.questions?.[stableKey] || tKo?.questions?.[stableKey] || {};
   const rawQuestion = isCustomMode 
-    ? (localStorage.getItem('question') || '') 
+    ? (customGameStorage.getItem('question') || '')
     : (questionData.question || '');
   
   const questionText = rawQuestion.replace(/{{mateName}}|{mateName}/g, mateName);
 
   const agreeLabel = isCustomMode
-    ? (localStorage.getItem('agree_label') || (lang === 'ko' ? '동의' : 'Agree'))
+    ? (customGameStorage.getItem('agree_label') || (lang === 'ko' ? '동의' : 'Agree'))
     : (questionData.labels?.agree || 'Agree');
 
   const disagreeLabel = isCustomMode
-    ? (localStorage.getItem('disagree_label') || (lang === 'ko' ? '비동의' : 'Disagree'))
+    ? (customGameStorage.getItem('disagree_label') || (lang === 'ko' ? '비동의' : 'Disagree'))
     : (questionData.labels?.disagree || 'Disagree');
 
   const [round] = useState(() => JSON.parse(localStorage.getItem('completedTopics') ?? '[]').length + 1);
@@ -114,8 +115,8 @@ export default function Game05_01() {
   const neutralLast = neutralImgs[neutralImgs.length - 1];
   const agreeLast = agreeImgs[agreeImgs.length - 1];
 
-  const localAgreeImg = resolveImageUrl(localStorage.getItem('dilemma_image_4_1'));
-  const localDisagreeImg = resolveImageUrl(localStorage.getItem('dilemma_image_4_2'));
+  const localAgreeImg = resolveImageUrl(customGameStorage.getItem('dilemma_image_4_1'));
+  const localDisagreeImg = resolveImageUrl(customGameStorage.getItem('dilemma_image_4_2'));
   const selectedLocalImg = localStorage.getItem('mode') === 'agree' ? (localAgreeImg || defaultImg) : (localDisagreeImg || defaultImg);
 
   const pollingTimerRef = useRef(null);

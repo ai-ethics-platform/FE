@@ -1,3 +1,4 @@
+import { customGameStorage } from '../utils/customGameStorage';
 import React from 'react';
 import closeIcon from '../assets/close.svg';
 import SecondaryButton from './SecondaryButton';
@@ -69,7 +70,7 @@ export default function OutPopup({ onClose }) {
       localStorage.removeItem('nickname');
 
      //  code 값 확인
-     const code = localStorage.getItem("code");
+     const code = customGameStorage.getItem("code");
 
      //  경로 이동 처리
      if (code) {

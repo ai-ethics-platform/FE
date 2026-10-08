@@ -1,7 +1,7 @@
 # src/api/axiosInstance.js
 
-- isAuthRefreshRequest · function · L26-L34 — isAuthRefreshRequest = (config)
-- parseJwtExpSec · function · L36-L51 — function parseJwtExpSec(token)
-- refreshAccessToken · function · L55-L101 — refreshAccessToken = async ()
-- ensureFreshAccessToken · function · L105-L122 — async function ensureFreshAccessToken({ skewSeconds = 30 } = {})
-- callChatbot · function · L211-L230 — async function callChatbot({ session_id, user_input, step, variable, context })
+- isAuthRefreshRequest · function · L27-L35 — isAuthRefreshRequest = (config)
+- parseJwtExpSec · function · L37-L52 — function parseJwtExpSec(token)
+- refreshAccessToken · function · L56-L103 — refreshAccessToken = async ()
+- ensureFreshAccessToken · function · L107-L124 — async function ensureFreshAccessToken({ skewSeconds = 30 } = {})
+- callChatbot · function · L217-L236 — async function callChatbot({ session_id, user_input, step, variable, context })

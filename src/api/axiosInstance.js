@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { diagnosticRequestStart, diagnosticRequestEnd } from '../utils/creatorDiagnostics';
+import { captureApiError } from '../utils/posthog';
 
 /**
  * 하드코딩된 주소를 환경변수로 분리
@@ -94,6 +95,7 @@ const refreshAccessToken = async () => {
     return data.access_token;
   } catch (error) {
     diagnosticRequestEnd(diagnostic, error.response?.status, error.code || 'refresh_failed');
+    captureApiError(error);
     //clearAllLocalStorageKeys();
     console.error('리프레시 토큰으로 토큰 재발급 실패:', error);
     throw error;
@@ -155,6 +157,7 @@ instance.interceptors.response.use(
 
     // refresh 호출 자체에서 에러난 경우는 그대로 실패 처리 (루프 방지)
     if (isAuthRefreshRequest(originalRequest)) {
+      captureApiError(error);
       console.error('❌ Refresh endpoint error:', status, error.response?.data);
       return Promise.reject(error);
     }
@@ -173,6 +176,7 @@ instance.interceptors.response.use(
         console.log("401,403 에러 - 리프래시 토큰 재발급 완료 ")
         return instance(originalRequest);
       } catch (refreshError) {
+        captureApiError(error);
         return Promise.reject(refreshError);
       }
     }
@@ -195,6 +199,7 @@ instance.interceptors.response.use(
           return instance(originalRequest);
         } catch (refreshError) {
           // refresh마저 실패하면 바로 이탈
+          captureApiError(error);
           return Promise.reject(refreshError);
         }
       }
@@ -202,6 +207,7 @@ instance.interceptors.response.use(
     }
 
     console.error('❌ Response Error:', error.config?.url, status, error.response?.data);
+    captureApiError(error);
     return Promise.reject(error);
   }
 );

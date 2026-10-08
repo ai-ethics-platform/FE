@@ -1,4 +1,5 @@
 import axios from "axios";
+import { captureApiError } from "../utils/posthog";
 
 const API_BASE = (
   import.meta.env.VITE_API_BASE_URL ||
@@ -32,6 +33,14 @@ adminAxiosInstance.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+adminAxiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    captureApiError(error, "admin_api");
+    return Promise.reject(error);
+  }
 );
 
 export function saveAdminSession(data) {

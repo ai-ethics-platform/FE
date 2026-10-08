@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": 1,
-    "nodeCount": 1159,
-    "edgeCount": 3167,
+    "nodeCount": 1162,
+    "edgeCount": 3179,
     "languages": [
       "javascript",
       "jsx"
@@ -38,12 +38,12 @@
       "name": "adminAxiosInstance.js",
       "kind": "file",
       "path": "src/api/adminAxiosInstance.js",
-      "span": "L1-L67",
+      "span": "L1-L76",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "19b25e294276d79f03bee789bbb34039d88dd75968f3fcf628b236afba672373",
-      "chars": 1446,
+      "body_hash": "4fab133ec1369432d13f2709f6154bf407f1eea18f0a17470c157666a61281f0",
+      "chars": 1668,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -53,7 +53,7 @@
       "name": "clearAdminSession",
       "kind": "function",
       "path": "src/api/adminAxiosInstance.js",
-      "span": "L59-L64",
+      "span": "L68-L73",
       "signature": "function clearAdminSession()",
       "exported": true,
       "origin": "ast",
@@ -67,7 +67,7 @@
       "name": "saveAdminSession",
       "kind": "function",
       "path": "src/api/adminAxiosInstance.js",
-      "span": "L37-L57",
+      "span": "L46-L66",
       "signature": "function saveAdminSession(data)",
       "exported": true,
       "origin": "ast",
@@ -138,12 +138,12 @@
       "name": "axiosInstance.js",
       "kind": "file",
       "path": "src/api/axiosInstance.js",
-      "span": "L1-L233",
+      "span": "L1-L239",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "ffb5bfb3c438acb698e4c805372293d57d91d90d245797e63f9605abafa40542",
-      "chars": 7444,
+      "body_hash": "1245d42652f6929451710eee51f0d0d4a12972467a7ed1f3d79d76b3e318b781",
+      "chars": 7648,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -153,7 +153,7 @@
       "name": "callChatbot",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L211-L230",
+      "span": "L217-L236",
       "signature": "async function callChatbot({ session_id, user_input, step, variable, context })",
       "exported": true,
       "origin": "ast",
@@ -167,7 +167,7 @@
       "name": "ensureFreshAccessToken",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L105-L122",
+      "span": "L107-L124",
       "signature": "async function ensureFreshAccessToken({ skewSeconds = 30 } = {})",
       "exported": true,
       "origin": "ast",
@@ -181,7 +181,7 @@
       "name": "isAuthRefreshRequest",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L26-L34",
+      "span": "L27-L35",
       "signature": "isAuthRefreshRequest = (config)",
       "exported": false,
       "origin": "ast",
@@ -195,7 +195,7 @@
       "name": "parseJwtExpSec",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L36-L51",
+      "span": "L37-L52",
       "signature": "function parseJwtExpSec(token)",
       "exported": false,
       "origin": "ast",
@@ -209,11 +209,11 @@
       "name": "refreshAccessToken",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L55-L101",
+      "span": "L56-L103",
       "signature": "refreshAccessToken = async ()",
       "exported": false,
       "origin": "ast",
-      "body_hash": "ddad7b5ce65e54ab071252b3dff980ae066f95294172446acf2df33e19a340bc",
+      "body_hash": "c388ecb83773faa53d9fba8fedb3982b2aee36d495d409513a5531420b95407e",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5045,12 +5045,12 @@
       "name": "main.jsx",
       "kind": "file",
       "path": "src/main.jsx",
-      "span": "L1-L15",
+      "span": "L1-L19",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "61e88a41b3d31bd2bda2fad5a26d2d2cca1793bbfc319d88bd7c9d8f2b011c3f",
-      "chars": 512,
+      "body_hash": "42a91e5219c9eefe6f4d290a3a12365d4fd4c2f77e8eda67bfc75bceb35bc7ce",
+      "chars": 599,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -13865,6 +13865,49 @@
       "crux": null
     },
     {
+      "id": "src/utils/posthog.js",
+      "name": "posthog.js",
+      "kind": "file",
+      "path": "src/utils/posthog.js",
+      "span": "L1-L75",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "f47707769557031ee046217e42c05c2ad4089ee875832d3540e4917248a4c06a",
+      "chars": 2231,
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/posthog.js#captureApiError",
+      "name": "captureApiError",
+      "kind": "function",
+      "path": "src/utils/posthog.js",
+      "span": "L42-L64",
+      "signature": "function captureApiError(error, service = 'api')",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "8230715ece6e4cf6a4c626137f1ff2524c6743347c6529a9411330c52f9a86a1",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/posthog.js#safeEndpoint",
+      "name": "safeEndpoint",
+      "kind": "function",
+      "path": "src/utils/posthog.js",
+      "span": "L30-L40",
+      "signature": "function safeEndpoint(config)",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "29b8cb0b31a15f13dd6fdad742dc1ccdbe38ab10f021f574ae7b123c52e03cef",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
       "id": "src/utils/renewalDraft.js",
       "name": "renewalDraft.js",
       "kind": "file",
@@ -16564,6 +16607,12 @@
     },
     {
       "source": "src/api/adminAxiosInstance.js",
+      "target": "src/utils/posthog.js#captureApiError",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/api/adminAxiosInstance.js",
       "target": "src/api/adminAxiosInstance.js#clearAdminSession",
       "relation": "contains",
       "confidence": "extracted"
@@ -16577,6 +16626,12 @@
     {
       "source": "src/api/adminAxiosInstance.js",
       "target": "axios",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/api/adminAxiosInstance.js",
+      "target": "src/utils/posthog.js",
       "relation": "imports",
       "confidence": "extracted"
     },
@@ -16660,6 +16715,12 @@
     },
     {
       "source": "src/api/axiosInstance.js",
+      "target": "src/utils/posthog.js#captureApiError",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/api/axiosInstance.js",
       "target": "src/api/axiosInstance.js#callChatbot",
       "relation": "contains",
       "confidence": "extracted"
@@ -16701,6 +16762,12 @@
       "confidence": "extracted"
     },
     {
+      "source": "src/api/axiosInstance.js",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
       "source": "src/api/axiosInstance.js#ensureFreshAccessToken",
       "target": "src/api/axiosInstance.js#parseJwtExpSec",
       "relation": "calls",
@@ -16721,6 +16788,12 @@
     {
       "source": "src/api/axiosInstance.js#refreshAccessToken",
       "target": "src/utils/creatorDiagnostics.js#diagnosticRequestStart",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/api/axiosInstance.js#refreshAccessToken",
+      "target": "src/utils/posthog.js#captureApiError",
       "relation": "calls",
       "confidence": "inferred"
     },
@@ -22235,6 +22308,12 @@
     {
       "source": "src/main.jsx",
       "target": "src/utils/creatorDiagnostics.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/main.jsx",
+      "target": "src/utils/posthog.js",
       "relation": "imports",
       "confidence": "extracted"
     },
@@ -33510,6 +33589,42 @@
       "source": "src/utils/language/index.js",
       "target": "src/utils/language/ko/pages/WaitingRoom.js",
       "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/posthog.js",
+      "target": "src/utils/posthog.js#captureApiError",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/posthog.js",
+      "target": "src/utils/posthog.js#captureApiError",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/posthog.js",
+      "target": "src/utils/posthog.js#safeEndpoint",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/posthog.js",
+      "target": "axios",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/posthog.js",
+      "target": "posthog-js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/posthog.js#captureApiError",
+      "target": "src/utils/posthog.js#safeEndpoint",
+      "relation": "calls",
       "confidence": "extracted"
     },
     {

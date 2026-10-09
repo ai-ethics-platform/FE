@@ -6,6 +6,7 @@ const projectToken = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN;
 if (projectToken) {
   posthog.init(projectToken, {
     api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com',
+    tracing_headers: ['dilemmai-idl.com'],
     defaults: '2026-05-30',
     autocapture: false,
     capture_pageview: false,

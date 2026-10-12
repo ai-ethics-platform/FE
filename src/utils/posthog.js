@@ -76,7 +76,7 @@ export async function captureGameContext(event, properties = {}, comparison = {}
     const gameTitle = customGameStorage.getItem('creatorTitle') || '';
     const roleDescriptions = [1, 2, 3].map(role => customGameStorage.getItem(`charDes${role}`) || '');
     const context = {
-      diagnostic_version: 'story-v3',
+      diagnostic_version: 'story-v4',
       custom_mode: Boolean(code),
       custom_game_ready: isCustomGameReady(),
       role_id: Number(localStorage.getItem('myrole_id')) || null,

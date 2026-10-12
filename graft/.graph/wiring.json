@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": 1,
-    "nodeCount": 1165,
-    "edgeCount": 3194,
+    "nodeCount": 1168,
+    "edgeCount": 3205,
     "languages": [
       "javascript",
       "jsx"
@@ -5399,12 +5399,12 @@
       "name": "CD1.jsx",
       "kind": "file",
       "path": "src/pages/CD1.jsx",
-      "span": "L1-L192",
+      "span": "L1-L201",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "99c6f22ca95053656e6eb7dced95fe3aaa9c84c54b042ddf08a1a3c75d7f2446",
-      "chars": 7995,
+      "body_hash": "d7f3875382ea805bfb9595cad493cbb2f0bcf9ae8c9d713228fc9954dcd98fbe",
+      "chars": 8581,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5414,11 +5414,11 @@
       "name": "CD1",
       "kind": "function",
       "path": "src/pages/CD1.jsx",
-      "span": "L35-L192",
+      "span": "L36-L200",
       "signature": "function CD1()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "d560fa504c8ef8904035067161a0ca663d8eb229a0302d02cf88d64fdbd3ce19",
+      "body_hash": "76bd4f594f57821086d70bc549dcdb0cd4f9c932ee0ec10ba0ceeb4e24d603ca",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5442,7 +5442,7 @@
       "name": "handleBackClick",
       "kind": "function",
       "path": "src/pages/CD1.jsx",
-      "span": "L164-L166",
+      "span": "L172-L174",
       "signature": "handleBackClick = ()",
       "exported": true,
       "origin": "ast",
@@ -5456,7 +5456,7 @@
       "name": "handleContinue",
       "kind": "function",
       "path": "src/pages/CD1.jsx",
-      "span": "L160-L162",
+      "span": "L168-L170",
       "signature": "handleContinue = ()",
       "exported": true,
       "origin": "ast",
@@ -5470,7 +5470,7 @@
       "name": "hasBatchim",
       "kind": "function",
       "path": "src/pages/CD1.jsx",
-      "span": "L144-L149",
+      "span": "L146-L151",
       "signature": "hasBatchim = (word)",
       "exported": true,
       "origin": "ast",
@@ -5498,12 +5498,12 @@
       "name": "CD2.jsx",
       "kind": "file",
       "path": "src/pages/CD2.jsx",
-      "span": "L1-L145",
+      "span": "L1-L155",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "fe147ffcc26cd76dd6dd88683db0f429979fbd3ab92f6fc4527b19b3c9760d06",
-      "chars": 7064,
+      "body_hash": "b799cb753efcabe38f03e3b08be581754257e5befeee7c8ae89e5641f8d0f9b9",
+      "chars": 7692,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5513,11 +5513,11 @@
       "name": "CD2",
       "kind": "function",
       "path": "src/pages/CD2.jsx",
-      "span": "L34-L145",
+      "span": "L35-L154",
       "signature": "function CD2()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "bbc606ee2e3e10d4c2cbc09ebfa68b7b916676ea6cef5061860278661c4e4754",
+      "body_hash": "8a38901941393db64469052d98b0dbc421c317ec35cfcee8544bb0c494711935",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5527,7 +5527,7 @@
       "name": "getImg",
       "kind": "function",
       "path": "src/pages/CD2.jsx",
-      "span": "L87-L87",
+      "span": "L88-L88",
       "signature": "getImg = (ko, en)",
       "exported": true,
       "origin": "ast",
@@ -5541,7 +5541,7 @@
       "name": "hasBatchim",
       "kind": "function",
       "path": "src/pages/CD2.jsx",
-      "span": "L121-L125",
+      "span": "L124-L128",
       "signature": "hasBatchim = (word)",
       "exported": true,
       "origin": "ast",
@@ -5555,7 +5555,7 @@
       "name": "resolveImageUrl",
       "kind": "function",
       "path": "src/pages/CD2.jsx",
-      "span": "L54-L60",
+      "span": "L55-L61",
       "signature": "resolveImageUrl = (raw)",
       "exported": true,
       "origin": "ast",
@@ -5569,12 +5569,12 @@
       "name": "CD3.jsx",
       "kind": "file",
       "path": "src/pages/CD3.jsx",
-      "span": "L1-L145",
+      "span": "L1-L155",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "f11ae0e674de7e8d996a8f207e98bdd98cdf79371e3f7b3aa0eb8d91ddb729b1",
-      "chars": 7064,
+      "body_hash": "368cf20bc4d40e70df827092237782430e37195c0d529bec81a91666298f8b97",
+      "chars": 7692,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5584,11 +5584,11 @@
       "name": "CD3",
       "kind": "function",
       "path": "src/pages/CD3.jsx",
-      "span": "L34-L145",
+      "span": "L35-L154",
       "signature": "function CD3()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "f6a0a7a86a09f24fe0729587fbbf5e222d40c3d444395d7cc506fbaa2e84e6ab",
+      "body_hash": "44e7a651da15791f88939382fd59faa83d03fc970188dbccf1cd2624698bc329",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5598,7 +5598,7 @@
       "name": "getImg",
       "kind": "function",
       "path": "src/pages/CD3.jsx",
-      "span": "L87-L87",
+      "span": "L88-L88",
       "signature": "getImg = (ko, en)",
       "exported": true,
       "origin": "ast",
@@ -5612,7 +5612,7 @@
       "name": "hasBatchim",
       "kind": "function",
       "path": "src/pages/CD3.jsx",
-      "span": "L121-L125",
+      "span": "L124-L128",
       "signature": "hasBatchim = (word)",
       "exported": true,
       "origin": "ast",
@@ -5626,7 +5626,7 @@
       "name": "resolveImageUrl",
       "kind": "function",
       "path": "src/pages/CD3.jsx",
-      "span": "L54-L60",
+      "span": "L55-L61",
       "signature": "resolveImageUrl = (raw)",
       "exported": true,
       "origin": "ast",
@@ -12696,12 +12696,12 @@
       "name": "customGameStorage.js",
       "kind": "file",
       "path": "src/utils/customGameStorage.js",
-      "span": "L1-L119",
+      "span": "L1-L127",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "70a895d6e3634ac83e2e9aafc6cfc7c742b28a22bce19151d5ffb05568e18ca5",
-      "chars": 4200,
+      "body_hash": "17ebd24fd3ce448be093669412151e2fd5d1250a0a47f2d0024d28b1d1714a07",
+      "chars": 4519,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12739,25 +12739,25 @@
       "name": "hasStory",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L37-L40",
+      "span": "L42-L44",
       "signature": "function hasStory(opening, background)",
       "exported": false,
       "origin": "ast",
-      "body_hash": "f7f7d3f4e5b8b5c39a7733d99c828790686894081fd98ac9318c09b8683f63db",
+      "body_hash": "32250cc08b5a5c187a3ed5ab879c581cb1729f3670ee5cd3499793e3b2efd001",
       "summary_state": "pending",
       "summary": null,
       "crux": null
     },
     {
-      "id": "src/utils/customGameStorage.js#hasStory.hasText",
+      "id": "src/utils/customGameStorage.js#hasText",
       "name": "hasText",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L38-L38",
-      "signature": "hasText = value",
+      "span": "L38-L40",
+      "signature": "function hasText(value)",
       "exported": false,
       "origin": "ast",
-      "body_hash": "028c398a26b5ff3219445f9fff3047433b905f123c1596504f0552eac8d32267",
+      "body_hash": "d8f0e68edd9f2348f00bf7383d0902a53ba9bf82967e33b28e71c19d78b7af5e",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12767,11 +12767,11 @@
       "name": "isCustomGameReady",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L27-L35",
+      "span": "L27-L36",
       "signature": "function isCustomGameReady()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "96e285c66bec7ecb2f2eef0e61eba85dd2ab90dde233a013dbecda1f68b304d7",
+      "body_hash": "d0483de4380931cc8e45013851358afe0347a6f40bee70adec0327acfcff48f9",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12781,11 +12781,11 @@
       "name": "saveCustomGame",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L42-L118",
+      "span": "L46-L126",
       "signature": "function saveCustomGame(payload, expectedCode)",
       "exported": true,
       "origin": "ast",
-      "body_hash": "115f975e5e5d18f0aa75f7c7f1e79c8914780be2e3c4759069cbe550743ab5a0",
+      "body_hash": "6c1dd4d29477d215a284f6e179c149b27b76185f01dcbff83d9a1f8bbbafa150",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12795,7 +12795,7 @@
       "name": "setArr",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L54-L54",
+      "span": "L62-L62",
       "signature": "setArr = (key, value)",
       "exported": true,
       "origin": "ast",
@@ -12809,7 +12809,7 @@
       "name": "setStr",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L53-L53",
+      "span": "L61-L61",
       "signature": "setStr = (key, value)",
       "exported": true,
       "origin": "ast",
@@ -13897,12 +13897,12 @@
       "name": "posthog.js",
       "kind": "file",
       "path": "src/utils/posthog.js",
-      "span": "L1-L115",
+      "span": "L1-L118",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "25449471d3b8d05f6cf324548e0b04085071ec5f266b26d9a49ac98f2c71a136",
-      "chars": 4378,
+      "body_hash": "d887fba2944e5fd6ae461021c8928d5dca0dad158637b66ca62dd4721c6bdf07",
+      "chars": 4685,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -13926,11 +13926,11 @@
       "name": "captureGameContext",
       "kind": "function",
       "path": "src/utils/posthog.js",
-      "span": "L67-L104",
+      "span": "L67-L107",
       "signature": "async function captureGameContext(event, properties = {}, comparison = {})",
       "exported": true,
       "origin": "ast",
-      "body_hash": "da43605fd01a4bb4ad79982d134e74cb3725be85d1504726047dd52b66c9267c",
+      "body_hash": "5e4be1ce15b87c7d6c4fd66f52c195f5a8cbc826b499ab6281ca3a1f678918d6",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -16071,12 +16071,12 @@
       "name": "custom-game-storage.test.mjs",
       "kind": "file",
       "path": "tests/custom-game-storage.test.mjs",
-      "span": "L1-L102",
+      "span": "L1-L111",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "770def786672d1c2b6584233c081b762aced67c7a27ebe69d3bce72615a1be28",
-      "chars": 4738,
+      "body_hash": "13ddf8c72a289ae5806eead8b648d13b27192ecaedcceab2018b761b4ea05ce6",
+      "chars": 5494,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -16100,7 +16100,7 @@
       "name": "setItem",
       "kind": "method",
       "path": "tests/custom-game-storage.test.mjs",
-      "span": "L89-L89",
+      "span": "L98-L98",
       "signature": "setItem()",
       "exported": false,
       "origin": "ast",
@@ -16114,7 +16114,7 @@
       "name": "setItem",
       "kind": "method",
       "path": "tests/custom-game-storage.test.mjs",
-      "span": "L92-L92",
+      "span": "L101-L101",
       "signature": "setItem()",
       "exported": false,
       "origin": "ast",
@@ -16133,6 +16133,49 @@
       "exported": false,
       "origin": "ast",
       "body_hash": "5592e9744cdcadf824540beca8d8bfa9add2e2079788536ca110168588bec9d7",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/custom-role-render.cjs",
+      "name": "custom-role-render.cjs",
+      "kind": "file",
+      "path": "tests/custom-role-render.cjs",
+      "span": "L1-L82",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "acbbbcfee13e1ea38e922974aa8c2d0335c3445e1f4ef202306c8002309d4162",
+      "chars": 4859,
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/custom-role-render.cjs#setup",
+      "name": "setup",
+      "kind": "method",
+      "path": "tests/custom-role-render.cjs",
+      "span": "L34-L38",
+      "signature": "setup(build)",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "9789adbf3927ef1b3a6c35316d8eea24ff880fae73b5559f166898eddcff62cc",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/custom-role-render.cjs#storage",
+      "name": "storage",
+      "kind": "function",
+      "path": "tests/custom-role-render.cjs",
+      "span": "L13-L16",
+      "signature": "storage = ()",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "7e1991482a52b0e3fa9d0550f231c2b50344b62fe8f58496753d8d63445fa4da",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -23129,6 +23172,12 @@
     },
     {
       "source": "src/pages/CD1.jsx",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD1.jsx",
       "target": "src/utils/voiceManager.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -23162,6 +23211,12 @@
       "target": "src/pages/CD1.jsx#CD1.resolveImageUrl",
       "relation": "calls",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD1.jsx#CD1",
+      "target": "src/utils/posthog.js#captureGameContext",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/pages/CD1.jsx#CD1",
@@ -23357,6 +23412,12 @@
     },
     {
       "source": "src/pages/CD2.jsx",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD2.jsx",
       "target": "src/utils/voiceManager.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -23390,6 +23451,12 @@
       "target": "src/pages/CD2.jsx#CD2.resolveImageUrl",
       "relation": "calls",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD2.jsx#CD2",
+      "target": "src/utils/posthog.js#captureGameContext",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/pages/CD2.jsx#CD2",
@@ -23573,6 +23640,12 @@
     },
     {
       "source": "src/pages/CD3.jsx",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD3.jsx",
       "target": "src/utils/voiceManager.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -23606,6 +23679,12 @@
       "target": "src/pages/CD3.jsx#CD3.resolveImageUrl",
       "relation": "calls",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD3.jsx#CD3",
+      "target": "src/utils/posthog.js#captureGameContext",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/pages/CD3.jsx#CD3",
@@ -33197,6 +33276,12 @@
     },
     {
       "source": "src/utils/customGameStorage.js",
+      "target": "src/utils/customGameStorage.js#hasText",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js",
       "target": "src/utils/customGameStorage.js#isCustomGameReady",
       "relation": "contains",
       "confidence": "extracted"
@@ -33215,14 +33300,8 @@
     },
     {
       "source": "src/utils/customGameStorage.js#hasStory",
-      "target": "src/utils/customGameStorage.js#hasStory.hasText",
+      "target": "src/utils/customGameStorage.js#hasText",
       "relation": "calls",
-      "confidence": "extracted"
-    },
-    {
-      "source": "src/utils/customGameStorage.js#hasStory",
-      "target": "src/utils/customGameStorage.js#hasStory.hasText",
-      "relation": "contains",
       "confidence": "extracted"
     },
     {
@@ -33232,8 +33311,20 @@
       "confidence": "extracted"
     },
     {
+      "source": "src/utils/customGameStorage.js#isCustomGameReady",
+      "target": "src/utils/customGameStorage.js#hasText",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
       "source": "src/utils/customGameStorage.js#saveCustomGame",
       "target": "src/utils/customGameStorage.js#hasStory",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js#saveCustomGame",
+      "target": "src/utils/customGameStorage.js#hasText",
       "relation": "calls",
       "confidence": "extracted"
     },
@@ -35431,6 +35522,24 @@
       "source": "tests/custom-game-storage.test.mjs",
       "target": "src/utils/storage.js",
       "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/custom-role-render.cjs",
+      "target": "tests/custom-role-render.cjs#storage",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/custom-role-render.cjs",
+      "target": "tests/custom-role-render.cjs#setup",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/custom-role-render.cjs",
+      "target": "tests/custom-role-render.cjs#storage",
+      "relation": "contains",
       "confidence": "extracted"
     },
     {

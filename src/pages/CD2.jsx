@@ -1,4 +1,5 @@
 import { customGameStorage } from '../utils/customGameStorage';
+import { captureGameContext } from '../utils/posthog';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -109,10 +110,12 @@ export default function CD2() {
   }
 
   let mainText = t[mainTextKey] || '';
+  const rawDescription = customGameStorage.getItem('charDes2');
+  const customDescription = typeof rawDescription === 'string' ? rawDescription.trim() : '';
+  const missingDescription = isCustomMode && (!customDescription || customDescription === '-');
 
   if (isCustomMode) {
-    const charDes2 = (customGameStorage.getItem('charDes2') || '').trim();
-    if (charDes2) mainText = charDes2;
+    mainText = missingDescription ? '역할 설명을 불러오지 못했습니다. 맞춤 게임 링크로 다시 접속해주세요.' : customDescription;
     const rawRoleImg = customGameStorage.getItem('role_image_2') || '';
     descImg = resolveImageUrl(rawRoleImg) || defaultimg;
   }
@@ -131,13 +134,19 @@ export default function CD2() {
     .replaceAll('{{eunNeun}}', lang === 'ko' ? (hasBatchim(mateName) ? '은' : '는') : '');
 
   const paragraphs = [{ main: finalStr }];
+  useEffect(() => {
+    void captureGameContext('game_role_description_rendered', {
+      description_role_id: 2,
+      story_source: missingDescription ? 'missing_role' : isCustomMode ? 'custom_role' : 'default_role',
+    }, { storyText: finalStr });
+  }, [isCustomMode, missingDescription, finalStr]);
 
   return (
     <Layout round={round} subtopic={subtopic} me="2P" onBackClick={() => navigate('/game01')}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32, marginTop: 22 }}>
         <img src={descImg} alt="Character" style={{ width: 264, height: 336, objectFit: 'contain', marginBottom: -20 }} onError={(e) => { e.currentTarget.src = defaultimg; }} />
         <div style={{ width: '100%', maxWidth: 900 }}>
-          <ContentTextBox paragraphs={paragraphs} onContinue={() => navigate('/character_all')} />
+          <ContentTextBox paragraphs={paragraphs} onContinue={() => navigate('/character_all')} disabled={missingDescription} />
         </div>
       </div>
     </Layout>

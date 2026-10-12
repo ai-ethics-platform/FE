@@ -74,13 +74,15 @@ export async function captureGameContext(event, properties = {}, comparison = {}
     let openingParseFailed = false;
     try { opening = JSON.parse(rawOpening); } catch { openingParseFailed = true; }
     const gameTitle = customGameStorage.getItem('creatorTitle') || '';
+    const roleDescriptions = [1, 2, 3].map(role => customGameStorage.getItem(`charDes${role}`) || '');
     const context = {
-      diagnostic_version: 'story-v2',
+      diagnostic_version: 'story-v3',
       custom_mode: Boolean(code),
       custom_game_ready: isCustomGameReady(),
       role_id: Number(localStorage.getItem('myrole_id')) || null,
       opening_count: Array.isArray(opening) ? opening.length : 0,
       opening_parse_failed: openingParseFailed,
+      role_description_present: roleDescriptions.map(text => typeof text === 'string' && text.trim() !== '' && text.trim() !== '-'),
       build_asset: new URL(document.querySelector('script[type="module"][src]')?.src || location.origin).pathname,
       room_topic_matches_game_title: comparison.roomTopic == null ? null : comparison.roomTopic === gameTitle,
     };
@@ -91,6 +93,7 @@ export async function captureGameContext(event, properties = {}, comparison = {}
       requested_game_fingerprint: comparison.expectedCode || '',
       opening_fingerprint: rawOpening,
       story_fingerprint: comparison.storyText || '',
+      role_descriptions_fingerprint: JSON.stringify(roleDescriptions),
     };
     const fingerprints = {};
     for (const [key, value] of Object.entries(values)) {

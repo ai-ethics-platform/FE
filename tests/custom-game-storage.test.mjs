@@ -17,7 +17,7 @@ const game = {
   title: '교사 게임',
   data: {
     opening: ['배경 설명'],
-    roles: [{ name: '학생', description: '학생 입장' }],
+    roles: [{ name: '학생', description: '학생 입장' }, { name: '교사', description: '교사 입장' }, { name: '보호자', description: '보호자 입장' }],
     roleImages: { 1: '/role.png' },
     representativeImages: { dilemma_image_3: '/question.png' },
     dilemma: { situation: ['상황'], question: '질문', options: { agree_label: '찬성', disagree_label: '반대' } },
@@ -62,7 +62,7 @@ test('커스텀 플레이 데이터는 탭별로 저장하며 수신·형식 검
 
     setTab(tabB);
     setCustomGameCode('CLASS2');
-    saveCustomGame({ code: 'CLASS2', title: '', data: { opening: ['다른 탭의 스토리'] } }, 'CLASS2');
+    saveCustomGame({ code: 'CLASS2', title: '', data: { opening: ['다른 탭의 스토리'], roles: game.data.roles } }, 'CLASS2');
     clearAllLocalStorageKeys();
     clearCustomGame();
     setTab(tabA);
@@ -82,8 +82,17 @@ test('커스텀 플레이 데이터는 탭별로 저장하며 수신·형식 검
     // Old cached payloads can contain a loaded marker without any story.
     tabA.setItem('custom_game_data', JSON.stringify({ loadedCode: 'CLASS3', opening: '[]' }));
     assert.equal(isCustomGameReady(), false);
-    saveCustomGame({ code: 'CLASS3', title: '', data: { rolesBackground: '게임 배경 설명' } }, 'CLASS3');
+    for (const missingRoles of [[3], [2, 3]]) {
+      const roles = game.data.roles.map((role, index) => missingRoles.includes(index + 1) ? { ...role, description: '' } : role);
+      assert.throws(() => saveCustomGame({ code: 'CLASS3', title: '', data: { opening: ['본문'], roles } }, 'CLASS3'), /역할 설명/);
+      assert.equal(isCustomGameReady(), false);
+    }
+    saveCustomGame({ code: 'CLASS3', title: '', data: { rolesBackground: '게임 배경 설명', roles: game.data.roles } }, 'CLASS3');
     assert.equal(isCustomGameReady(), true);
+    const cached = JSON.parse(tabA.getItem('custom_game_data'));
+    delete cached.charDes3;
+    tabA.setItem('custom_game_data', JSON.stringify(cached));
+    assert.equal(isCustomGameReady(), false, 'Cached data with a missing third role must not pass the room guard');
     clearCustomGame();
     setCustomGameCode('CLASS1');
     setTab({ ...tabA, setItem() { throw new Error('QuotaExceededError'); } });

@@ -18,6 +18,7 @@ import infoFrame2 from '../assets/infoframe2.svg';
 import CancelReadyPopup from '../components/CancelReadyPopup';
 // 언어팩 임포트
 import { translations } from '../utils/language/index';
+import posthog from '../utils/posthog';
 
 export default function WaitingRoom() {
   const location = useLocation();
@@ -87,6 +88,7 @@ export default function WaitingRoom() {
 
   // 폴링 타이머 ID 관리
   const pollingIntervalRef = useRef(null);
+  const roomContextLoggedRef = useRef(false);
 
   // UI 및 팝업 상태
   const [showMicPopup, setShowMicPopup] = useState(false);
@@ -346,6 +348,19 @@ export default function WaitingRoom() {
     try {
       const { data: room } = await axiosInstance.get(`/rooms/code/${room_code}`);
       setParticipants(room.participants);
+      const readyCount = room.participants.filter(p => p.is_ready).length;
+      const assignedCount = room.participants.filter(p => p.role_id != null).length;
+      if (!roomContextLoggedRef.current) {
+        roomContextLoggedRef.current = true;
+        posthog.capture('waiting_room_game_context', {
+          participant_count: room.participants.length,
+          ready_count: readyCount,
+          assigned_role_count: assignedCount,
+          custom_mode: isCustomMode,
+          custom_game_ready: isCustomGameReady(),
+          custom_game_code_present: Boolean(customGameStorage.getItem('code')),
+        });
+      }
       
       const readyMap = {};
       room.participants.forEach(p => {
@@ -407,8 +422,15 @@ export default function WaitingRoom() {
         }
       }
       
-      const readyCount = room.participants.filter(p => p.is_ready).length;
       if (readyCount === room.participants.length && room.participants.length === 3) {
+        posthog.capture('game_start_transition', {
+          participant_count: room.participants.length,
+          ready_count: readyCount,
+          assigned_role_count: assignedCount,
+          custom_mode: isCustomMode,
+          custom_game_ready: isCustomGameReady(),
+          custom_game_code_present: Boolean(customGameStorage.getItem('code')),
+        });
         stopPolling();
         navigate('/gameintro');
         return; 

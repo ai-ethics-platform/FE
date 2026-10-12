@@ -14,6 +14,7 @@ import dilemmaIcon from "../assets/dilemmaIcon.svg";
 import { FontStyles, Colors } from '../components/styleConstants';
 import GameFrame from "../components/GameFrame";
 import axiosInstance from '../api/axiosInstance';
+import posthog from '../utils/posthog';
 
 export default function SelectRoom() {
   const navigate = useNavigate();
@@ -46,6 +47,13 @@ export default function SelectRoom() {
     setLoadError('');
 
     const run = async () => {
+      const startedAt = Date.now();
+      const codeSource = new URLSearchParams(location.search).has('code') ? 'url' : code ? 'session_storage' : 'missing';
+      posthog.capture('custom_game_load', {
+        phase: 'started',
+        code_present: Boolean(code),
+        code_source: codeSource,
+      });
       try {
         if (!code) throw new Error('게임 코드가 없습니다. 공유 링크로 다시 접속해주세요.');
         clearCustomGame();
@@ -58,9 +66,29 @@ export default function SelectRoom() {
         saveCustomGame(res.data, code);
         setTitle(customGameStorage.getItem('creatorTitle') || '');
         setLoadStatus('ready');
+        posthog.capture('custom_game_load', {
+          phase: 'succeeded',
+          code_present: true,
+          code_source: codeSource,
+          duration_ms: Date.now() - startedAt,
+          roles_count: Array.isArray(res.data?.data?.roles) ? res.data.data.roles.length : 0,
+          opening_count: Array.isArray(res.data?.data?.opening) ? res.data.data.opening.length : 0,
+          loaded_code_matches: isCustomGameReady(),
+        });
       } catch (err) {
         if (!active) return;
         console.error('Failed to load custom game by code:', err);
+        posthog.capture('custom_game_load', {
+          phase: 'failed',
+          code_present: Boolean(code),
+          code_source: codeSource,
+          duration_ms: Date.now() - startedAt,
+          status_code: err.response?.status || 0,
+          error_code: err.code || err.name || 'unknown',
+        });
+        if (!err.config) {
+          posthog.captureException(err, { service: 'custom_game_load', code_source: codeSource });
+        }
         setLoadError(code ? '게임 데이터를 불러오지 못했습니다. 다시 시도하거나 새로고침해주세요.' : '게임 코드가 없습니다. 공유 링크로 다시 접속해주세요.');
         setLoadStatus('error');
       }

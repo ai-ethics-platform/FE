@@ -1,5 +1,6 @@
 import axios from 'axios';
 import posthog from 'posthog-js';
+import { customGameStorage, isCustomGameReady } from './customGameStorage';
 
 const projectToken = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN;
 
@@ -21,7 +22,7 @@ if (projectToken) {
           url.search = '';
           url.hash = '';
           event.properties[key] = url.toString();
-        } catch {}
+        } catch { /* Ignore malformed URLs during telemetry sanitization. */ }
       }
       return event;
     },
@@ -60,7 +61,46 @@ export function captureApiError(error, service = 'api') {
       error_code: error.code || null,
       request_id: error.response?.headers?.['x-request-id'] || null,
     });
-  } catch {}
+  } catch { /* Telemetry failures must not interrupt API error handling. */ }
+}
+
+export async function captureGameContext(event, properties = {}, comparison = {}) {
+  if (!projectToken) return;
+  try {
+    // Snapshot before hashing so later navigation cannot change the reported game.
+    const code = customGameStorage.getItem('code') || '';
+    const rawOpening = customGameStorage.getItem('opening') || '[]';
+    let opening = [];
+    let openingParseFailed = false;
+    try { opening = JSON.parse(rawOpening); } catch { openingParseFailed = true; }
+    const gameTitle = customGameStorage.getItem('creatorTitle') || '';
+    const context = {
+      diagnostic_version: 'story-v2',
+      custom_mode: Boolean(code),
+      custom_game_ready: isCustomGameReady(),
+      role_id: Number(localStorage.getItem('myrole_id')) || null,
+      opening_count: Array.isArray(opening) ? opening.length : 0,
+      opening_parse_failed: openingParseFailed,
+      build_asset: new URL(document.querySelector('script[type="module"][src]')?.src || location.origin).pathname,
+      room_topic_matches_game_title: comparison.roomTopic == null ? null : comparison.roomTopic === gameTitle,
+    };
+    const values = {
+      room_fingerprint: localStorage.getItem('room_code') || '',
+      game_fingerprint: code,
+      loaded_game_fingerprint: customGameStorage.getItem('loadedCode') || '',
+      requested_game_fingerprint: comparison.expectedCode || '',
+      opening_fingerprint: rawOpening,
+      story_fingerprint: comparison.storyText || '',
+    };
+    const fingerprints = {};
+    for (const [key, value] of Object.entries(values)) {
+      const digest = value ? await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)) : null;
+      fingerprints[key] = digest ? Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('').slice(0, 16) : null;
+    }
+    posthog.capture(event, { ...properties, ...context, ...fingerprints });
+  } catch {
+    // Diagnostics must not affect game loading or navigation.
+  }
 }
 
 axios.interceptors.response.use(

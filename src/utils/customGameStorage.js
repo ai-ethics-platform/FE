@@ -26,7 +26,17 @@ export function clearCustomGame() {
 
 export function isCustomGameReady() {
   const code = customGameStorage.getItem('code');
-  return Boolean(code && customGameStorage.getItem('loadedCode') === code);
+  try {
+    return Boolean(code && customGameStorage.getItem('loadedCode') === code &&
+      hasStory(JSON.parse(customGameStorage.getItem('opening') || '[]'), customGameStorage.getItem('rolesBackground')));
+  } catch {
+    return false;
+  }
+}
+
+function hasStory(opening, background) {
+  const hasText = value => typeof value === 'string' && value.trim() !== '' && value.trim() !== '-';
+  return (Array.isArray(opening) && opening.some(hasText)) || hasText(background);
 }
 
 export function saveCustomGame(payload, expectedCode) {
@@ -34,6 +44,9 @@ export function saveCustomGame(payload, expectedCode) {
       typeof payload.title !== 'string' || !payload.data ||
       typeof payload.data !== 'object' || Array.isArray(payload.data)) {
     throw new Error('게임 데이터 형식이 올바르지 않습니다.');
+  }
+  if (!hasStory(payload.data.opening, payload.data.rolesBackground)) {
+    throw new Error('게임 스토리가 비어 있습니다. 게임 제작 내용을 확인해주세요.');
   }
   const { code, title, representative_image_url, representative_images, data } = payload;
   const values = { loadedCode: code };

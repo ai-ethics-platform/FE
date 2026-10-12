@@ -62,7 +62,7 @@ test('커스텀 플레이 데이터는 탭별로 저장하며 수신·형식 검
 
     setTab(tabB);
     setCustomGameCode('CLASS2');
-    saveCustomGame({ code: 'CLASS2', title: '', data: { arbitraryKey: true } }, 'CLASS2');
+    saveCustomGame({ code: 'CLASS2', title: '', data: { opening: ['다른 탭의 스토리'] } }, 'CLASS2');
     clearAllLocalStorageKeys();
     clearCustomGame();
     setTab(tabA);
@@ -75,8 +75,15 @@ test('커스텀 플레이 데이터는 탭별로 저장하며 수신·형식 검
     setCustomGameCode('CLASS3');
     assert.equal(isCustomGameReady(), false);
     assert.equal(customGameStorage.getItem('opening'), null);
-    saveCustomGame({ code: 'CLASS3', title: '', data: {} }, 'CLASS3');
-    assert.equal(isCustomGameReady(), true); // 선택 항목이나 본문 내용은 검증하지 않는다.
+    for (const data of [{}, { opening: [] }, { opening: [' ', '-', 42], rolesBackground: '-' }, { opening: '본문' }]) {
+      assert.throws(() => saveCustomGame({ code: 'CLASS3', title: '', data }, 'CLASS3'), /스토리가 비어/);
+      assert.equal(isCustomGameReady(), false);
+    }
+    // Old cached payloads can contain a loaded marker without any story.
+    tabA.setItem('custom_game_data', JSON.stringify({ loadedCode: 'CLASS3', opening: '[]' }));
+    assert.equal(isCustomGameReady(), false);
+    saveCustomGame({ code: 'CLASS3', title: '', data: { rolesBackground: '게임 배경 설명' } }, 'CLASS3');
+    assert.equal(isCustomGameReady(), true);
     clearCustomGame();
     setCustomGameCode('CLASS1');
     setTab({ ...tabA, setItem() { throw new Error('QuotaExceededError'); } });

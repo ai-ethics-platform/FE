@@ -2,5 +2,5 @@
 
 - makeStorage · function · L6-L13 — makeStorage = ()
 - setTab · function · L35-L35 — setTab = tab
-- setItem · method · L82-L82 — setItem()
-- setItem · method · L85-L85 — setItem()
+- setItem · method · L89-L89 — setItem()
+- setItem · method · L92-L92 — setItem()

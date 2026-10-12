@@ -18,7 +18,7 @@ import infoFrame2 from '../assets/infoframe2.svg';
 import CancelReadyPopup from '../components/CancelReadyPopup';
 // 언어팩 임포트
 import { translations } from '../utils/language/index';
-import posthog from '../utils/posthog';
+import { captureGameContext } from '../utils/posthog';
 
 export default function WaitingRoom() {
   const location = useLocation();
@@ -352,14 +352,14 @@ export default function WaitingRoom() {
       const assignedCount = room.participants.filter(p => p.role_id != null).length;
       if (!roomContextLoggedRef.current) {
         roomContextLoggedRef.current = true;
-        posthog.capture('waiting_room_game_context', {
+        void captureGameContext('waiting_room_game_context', {
           participant_count: room.participants.length,
           ready_count: readyCount,
           assigned_role_count: assignedCount,
           custom_mode: isCustomMode,
           custom_game_ready: isCustomGameReady(),
           custom_game_code_present: Boolean(customGameStorage.getItem('code')),
-        });
+        }, { roomTopic: room.topic });
       }
       
       const readyMap = {};
@@ -423,14 +423,14 @@ export default function WaitingRoom() {
       }
       
       if (readyCount === room.participants.length && room.participants.length === 3) {
-        posthog.capture('game_start_transition', {
+        void captureGameContext('game_start_transition', {
           participant_count: room.participants.length,
           ready_count: readyCount,
           assigned_role_count: assignedCount,
           custom_mode: isCustomMode,
           custom_game_ready: isCustomGameReady(),
           custom_game_code_present: Boolean(customGameStorage.getItem('code')),
-        });
+        }, { roomTopic: room.topic });
         stopPolling();
         navigate('/gameintro');
         return; 

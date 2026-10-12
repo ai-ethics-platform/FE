@@ -1,7 +1,7 @@
 # src/pages/Game01.jsx
 
-- Game01 · function · L336-L520 — function Game01()
-- getEulReul · function · L380-L387 — getEulReul = (word)
-- getDefaultMain · function · L389-L409 — getDefaultMain = ()
-- resolveImageUrl · function · L412-L419 — resolveImageUrl = (raw)
-- readOpeningParagraphs · function · L426-L439 — readOpeningParagraphs = ()
+- Game01 · function · L337-L529 — function Game01()
+- getEulReul · function · L381-L388 — getEulReul = (word)
+- getDefaultMain · function · L390-L410 — getDefaultMain = ()
+- resolveImageUrl · function · L413-L420 — resolveImageUrl = (raw)
+- readOpeningParagraphs · function · L427-L440 — readOpeningParagraphs = ()

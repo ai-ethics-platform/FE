@@ -1,4 +1,5 @@
 import { customGameStorage } from '../utils/customGameStorage';
+import { captureGameContext } from '../utils/posthog';
 // import React, { useState, useEffect, useRef } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import Layout from '../components/Layout';
@@ -441,10 +442,18 @@ export default function Game01() {
   const defaultMain = getDefaultMain();
   const openingParagraphs = isCustomMode ? readOpeningParagraphs() : [];
   const rolesBg = (customGameStorage.getItem('rolesBackground') || '').trim();
-  const customFallbackMain = rolesBg && rolesBg !== '-' ? rolesBg : defaultMain;
+  const customFallbackMain = rolesBg && rolesBg !== '-' ? rolesBg : '게임 스토리를 불러오지 못했습니다. 맞춤 게임 링크로 다시 접속해주세요.';
   const paragraphs = openingParagraphs.length > 0
     ? openingParagraphs
     : [{ main: isCustomMode ? customFallbackMain : defaultMain }];
+  const storySource = !isCustomMode ? 'default_story' : openingParagraphs.length > 0 ? 'custom_opening' : rolesBg && rolesBg !== '-' ? 'custom_background' : 'missing_story';
+  const visibleStory = paragraphs[currentIndex]?.main || '';
+  useEffect(() => {
+    void captureGameContext('game_story_rendered', {
+      story_source: storySource,
+      paragraph_index: currentIndex,
+    }, { storyText: visibleStory });
+  }, [storySource, currentIndex, visibleStory]);
 
   return (
     <Layout round={round} subtopic={subtopic} nodescription={true} onBackClick={() => navigate('/gamemap')}>

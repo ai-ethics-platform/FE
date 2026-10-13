@@ -1,5 +1,5 @@
 # src/utils/posthog.js
 
-- safeEndpoint · function · L32-L42 — function safeEndpoint(config)
-- captureApiError · function · L44-L65 — function captureApiError(error, service = 'api')
-- captureGameContext · function · L67-L107 — async function captureGameContext(event, properties = {}, comparison = {})
+- safeEndpoint · function · L33-L43 — function safeEndpoint(config)
+- captureApiError · function · L45-L66 — function captureApiError(error, service = 'api')
+- captureGameContext · function · L68-L108 — async function captureGameContext(event, properties = {}, comparison = {})

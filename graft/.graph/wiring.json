@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": 1,
-    "nodeCount": 1180,
-    "edgeCount": 3248,
+    "nodeCount": 1185,
+    "edgeCount": 3257,
     "languages": [
       "javascript",
       "jsx"
@@ -138,12 +138,12 @@
       "name": "axiosInstance.js",
       "kind": "file",
       "path": "src/api/axiosInstance.js",
-      "span": "L1-L239",
+      "span": "L1-L240",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "1245d42652f6929451710eee51f0d0d4a12972467a7ed1f3d79d76b3e318b781",
-      "chars": 7648,
+      "body_hash": "bb5ab7d4aadadbb6f31d31c0ac57a234a4229e604ce74a7f7140531643c95e0e",
+      "chars": 7746,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -153,7 +153,7 @@
       "name": "callChatbot",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L217-L236",
+      "span": "L218-L237",
       "signature": "async function callChatbot({ session_id, user_input, step, variable, context })",
       "exported": true,
       "origin": "ast",
@@ -167,7 +167,7 @@
       "name": "ensureFreshAccessToken",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L107-L124",
+      "span": "L108-L125",
       "signature": "async function ensureFreshAccessToken({ skewSeconds = 30 } = {})",
       "exported": true,
       "origin": "ast",
@@ -181,7 +181,7 @@
       "name": "isAuthRefreshRequest",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L27-L35",
+      "span": "L28-L36",
       "signature": "isAuthRefreshRequest = (config)",
       "exported": false,
       "origin": "ast",
@@ -195,7 +195,7 @@
       "name": "parseJwtExpSec",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L37-L52",
+      "span": "L38-L53",
       "signature": "function parseJwtExpSec(token)",
       "exported": false,
       "origin": "ast",
@@ -209,7 +209,7 @@
       "name": "refreshAccessToken",
       "kind": "function",
       "path": "src/api/axiosInstance.js",
-      "span": "L56-L103",
+      "span": "L57-L104",
       "signature": "refreshAccessToken = async ()",
       "exported": false,
       "origin": "ast",
@@ -12876,6 +12876,49 @@
       "crux": null
     },
     {
+      "id": "src/utils/gameRequestContext.js",
+      "name": "gameRequestContext.js",
+      "kind": "file",
+      "path": "src/utils/gameRequestContext.js",
+      "span": "L1-L33",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "7da32416295925f970004c4bcc99e36a4956484bf2bef3969559ac184ce5ff27",
+      "chars": 1981,
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/gameRequestContext.js#attachGameRequestContext",
+      "name": "attachGameRequestContext",
+      "kind": "function",
+      "path": "src/utils/gameRequestContext.js",
+      "span": "L5-L32",
+      "signature": "function attachGameRequestContext(config)",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "f07cc34bd93e297bbe91501aae72dd75d300ec03da6952de28dbe0a70c56b0ed",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/gameRequestContext.js#code",
+      "name": "code",
+      "kind": "function",
+      "path": "src/utils/gameRequestContext.js",
+      "span": "L2-L2",
+      "signature": "code = value",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "c61f81a6c172ebd4c2480eda06f68761e061f0cb7d038b1eda19399708158d76",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
       "id": "src/utils/imageDebugger.js",
       "name": "imageDebugger.js",
       "kind": "file",
@@ -13940,12 +13983,12 @@
       "name": "posthog.js",
       "kind": "file",
       "path": "src/utils/posthog.js",
-      "span": "L1-L118",
+      "span": "L1-L120",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "d64096b8a57fa7e68babb7776aba6698e48e76e7e0250d460d5186ceeff455c3",
-      "chars": 4685,
+      "body_hash": "6bbadb7385b2f46824bec386e039acdad410e6fd1fc09b1841a3b04258fa00a1",
+      "chars": 4808,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -13955,7 +13998,7 @@
       "name": "captureApiError",
       "kind": "function",
       "path": "src/utils/posthog.js",
-      "span": "L44-L65",
+      "span": "L45-L66",
       "signature": "function captureApiError(error, service = 'api')",
       "exported": true,
       "origin": "ast",
@@ -13969,7 +14012,7 @@
       "name": "captureGameContext",
       "kind": "function",
       "path": "src/utils/posthog.js",
-      "span": "L67-L107",
+      "span": "L68-L108",
       "signature": "async function captureGameContext(event, properties = {}, comparison = {})",
       "exported": true,
       "origin": "ast",
@@ -13983,7 +14026,7 @@
       "name": "safeEndpoint",
       "kind": "function",
       "path": "src/utils/posthog.js",
-      "span": "L32-L42",
+      "span": "L33-L43",
       "signature": "function safeEndpoint(config)",
       "exported": false,
       "origin": "ast",
@@ -16310,6 +16353,35 @@
       "crux": null
     },
     {
+      "id": "tests/game-request-context.cjs",
+      "name": "game-request-context.cjs",
+      "kind": "file",
+      "path": "tests/game-request-context.cjs",
+      "span": "L1-L29",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "1b5353b128e39a7dbbea72773866452efbed7fc60d29f09a8e4e4bc04b844df2",
+      "chars": 1697,
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/game-request-context.cjs#request",
+      "name": "request",
+      "kind": "function",
+      "path": "tests/game-request-context.cjs",
+      "span": "L14-L14",
+      "signature": "request = url",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "57a48d06f12b7d433214e7aaf30c8c80fb566af6567fc718bae83aa18dc3b3fa",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
       "id": "tests/recovery-dom.cjs",
       "name": "recovery-dom.cjs",
       "kind": "file",
@@ -16972,6 +17044,12 @@
     },
     {
       "source": "src/api/axiosInstance.js",
+      "target": "src/utils/gameRequestContext.js#attachGameRequestContext",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/api/axiosInstance.js",
       "target": "src/utils/posthog.js#captureApiError",
       "relation": "calls",
       "confidence": "inferred"
@@ -17015,6 +17093,12 @@
     {
       "source": "src/api/axiosInstance.js",
       "target": "src/utils/creatorDiagnostics.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/api/axiosInstance.js",
+      "target": "src/utils/gameRequestContext.js",
       "relation": "imports",
       "confidence": "extracted"
     },
@@ -33621,6 +33705,24 @@
       "confidence": "extracted"
     },
     {
+      "source": "src/utils/gameRequestContext.js",
+      "target": "src/utils/gameRequestContext.js#attachGameRequestContext",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/gameRequestContext.js",
+      "target": "src/utils/gameRequestContext.js#code",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/gameRequestContext.js#attachGameRequestContext",
+      "target": "src/utils/gameRequestContext.js#code",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
       "source": "src/utils/imageDebugger.js",
       "target": "src/utils/imageDebugger.js#debugAllImages",
       "relation": "contains",
@@ -34104,6 +34206,18 @@
       "source": "src/utils/posthog.js",
       "target": "src/utils/customGameStorage.js",
       "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/posthog.js",
+      "target": "src/utils/gameRequestContext.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/posthog.js",
+      "target": "src/utils/gameRequestContext.js#attachGameRequestContext",
+      "relation": "references",
       "confidence": "extracted"
     },
     {
@@ -35891,6 +36005,18 @@
     {
       "source": "tests/editor-layout.browser.cjs",
       "target": "tests/editor-layout.browser.cjs#visit",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/game-request-context.cjs",
+      "target": "tests/game-request-context.cjs#request",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/game-request-context.cjs",
+      "target": "tests/game-request-context.cjs#request",
       "relation": "contains",
       "confidence": "extracted"
     },

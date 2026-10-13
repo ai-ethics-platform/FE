@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { diagnosticRequestStart, diagnosticRequestEnd } from '../utils/creatorDiagnostics';
 import { captureApiError } from '../utils/posthog';
+import { attachGameRequestContext } from '../utils/gameRequestContext';
 
 /**
  * 하드코딩된 주소를 환경변수로 분리
@@ -138,7 +139,7 @@ instance.interceptors.request.use(
       config.headers.Authorization = `${tokenType} ${accessToken}`;
     }
     config.creatorDiagnostic = diagnosticRequestStart(config.method || 'GET', config.url, config.timeout);
-    return config;
+    return attachGameRequestContext(config);
   },
   (error) => Promise.reject(error)
 );

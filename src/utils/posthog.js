@@ -1,6 +1,7 @@
 import axios from 'axios';
 import posthog from 'posthog-js';
 import { customGameStorage, isCustomGameReady } from './customGameStorage';
+import { attachGameRequestContext } from './gameRequestContext';
 
 const projectToken = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN;
 
@@ -106,6 +107,7 @@ export async function captureGameContext(event, properties = {}, comparison = {}
   }
 }
 
+axios.interceptors.request.use(attachGameRequestContext);
 axios.interceptors.response.use(
   (response) => response,
   (error) => {

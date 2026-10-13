@@ -1,5 +1,4 @@
 import { customGameStorage } from '../utils/customGameStorage';
-import { captureGameContext } from '../utils/posthog';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -48,6 +47,7 @@ export default function CD1() {
   // 2. 카테고리 판별 (한국어/영어 모두 대응 가능하도록 키워드 체크)
   const category = localStorage.getItem('category') || '';
   const isAWS = category === '자율 무기 시스템';
+  const isAndroid = category === '안드로이드';
 
   const isCustomMode = !!customGameStorage.getItem('code');
   const rawSubtopic = localStorage.getItem('subtopic') || '';
@@ -130,13 +130,11 @@ export default function CD1() {
 
   // 4. 언어팩에서 최종 텍스트 추출
   let mainText = t[mainTextKey] || '';
-  const rawDescription = customGameStorage.getItem('charDes1');
-  const customDescription = typeof rawDescription === 'string' ? rawDescription.trim() : '';
-  const missingDescription = isCustomMode && (!customDescription || customDescription === '-');
 
   // 커스텀 모드 시나리오
   if (isCustomMode) {
-    mainText = missingDescription ? '역할 설명을 불러오지 못했습니다. 맞춤 게임 링크로 다시 접속해주세요.' : customDescription;
+    const charDes1 = (customGameStorage.getItem('charDes1') || '').trim();
+    if (charDes1) mainText = charDes1;
     const rawRoleImg = customGameStorage.getItem('role_image_1') || '';
     descImg = resolveImageUrl(rawRoleImg) || defaultimg;
   }
@@ -158,12 +156,6 @@ export default function CD1() {
 
   // 6. 데이터 구성 및 핸들러 (원본 UI 규격 유지)
   const paragraphs = [{ main: finalStr }];
-  useEffect(() => {
-    void captureGameContext('game_role_description_rendered', {
-      description_role_id: 1,
-      story_source: missingDescription ? 'missing_role' : isCustomMode ? 'custom_role' : 'default_role',
-    }, { storyText: finalStr });
-  }, [isCustomMode, missingDescription, finalStr]);
 
   const handleContinue = () => {
     navigate('/character_all');
@@ -192,7 +184,7 @@ export default function CD1() {
         />
         <div style={{ width: '100%', maxWidth: 900 }}>
           {/* ContentTextBox(ContentTextBox2)에 onContinue를 전달하여 내부 화살표 버튼 활성화 */}
-          <ContentTextBox paragraphs={paragraphs} onContinue={handleContinue} disabled={missingDescription} />
+          <ContentTextBox paragraphs={paragraphs} onContinue={handleContinue} />
         </div>
       </div>
     </Layout>

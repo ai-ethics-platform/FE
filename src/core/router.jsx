@@ -1,4 +1,4 @@
-import RoomGameGuard from '../components/RoomGameGuard';
+import { customGameStorage, isCustomGameReady } from '../utils/customGameStorage';
 import { lazy, Suspense, useEffect, useLayoutEffect } from 'react';
 import { flushPendingIngest } from '../api/adminIngest';
 import { diagnosticRoute } from '../utils/creatorDiagnostics';
@@ -83,14 +83,16 @@ function DiagnosticRoute() {
 }
 
 function GameProvidersLayout() {
+  useLocation();
+  if (customGameStorage.getItem('code') && !isCustomGameReady()) {
+    return <Navigate to="/customroom" replace />;
+  }
   return (
-    <RoomGameGuard>
-      <WebSocketProvider>
-        <WebRTCProvider>
-          <Outlet />
-        </WebRTCProvider>
-      </WebSocketProvider>
-    </RoomGameGuard>
+    <WebSocketProvider>
+      <WebRTCProvider>
+        <Outlet />
+      </WebRTCProvider>
+    </WebSocketProvider>
   );
 }
 
@@ -162,7 +164,7 @@ function Router() {
 
           <Route
             path="/waitingroom"
-            element={<RoomGameGuard><WaitingRoom /></RoomGameGuard>}
+            element={<WaitingRoom />}
           />
 
           {/* 커스텀 게임 생성 */}

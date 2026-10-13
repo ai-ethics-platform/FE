@@ -28,18 +28,14 @@ export function isCustomGameReady() {
   const code = customGameStorage.getItem('code');
   try {
     return Boolean(code && customGameStorage.getItem('loadedCode') === code &&
-      hasStory(JSON.parse(customGameStorage.getItem('opening') || '[]'), customGameStorage.getItem('rolesBackground')) &&
-      [1, 2, 3].every(role => hasText(customGameStorage.getItem(`charDes${role}`))));
+      hasStory(JSON.parse(customGameStorage.getItem('opening') || '[]'), customGameStorage.getItem('rolesBackground')));
   } catch {
     return false;
   }
 }
 
-function hasText(value) {
-  return typeof value === 'string' && value.trim() !== '' && value.trim() !== '-';
-}
-
 function hasStory(opening, background) {
+  const hasText = value => typeof value === 'string' && value.trim() !== '' && value.trim() !== '-';
   return (Array.isArray(opening) && opening.some(hasText)) || hasText(background);
 }
 
@@ -51,10 +47,6 @@ export function saveCustomGame(payload, expectedCode) {
   }
   if (!hasStory(payload.data.opening, payload.data.rolesBackground)) {
     throw new Error('게임 스토리가 비어 있습니다. 게임 제작 내용을 확인해주세요.');
-  }
-  if (!Array.isArray(payload.data.roles) || payload.data.roles.length !== 3 ||
-      !payload.data.roles.every(role => hasText(role?.description))) {
-    throw new Error('세 플레이어의 역할 설명이 모두 필요합니다. 게임 제작 내용을 확인해주세요.');
   }
   const { code, title, representative_image_url, representative_images, data } = payload;
   const values = { loadedCode: code };

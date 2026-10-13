@@ -3,7 +3,6 @@ import closeIcon from '../assets/close.svg';
 import SecondaryButton from './SecondaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance';
-import { customGameStorage } from '../utils/customGameStorage';
 import { translations } from '../utils/language/index';
 
 export default function CancelReadyPopup({ onClose, onCancelConfirmed }) {
@@ -19,7 +18,7 @@ export default function CancelReadyPopup({ onClose, onCancelConfirmed }) {
   const handleCancelReady = async () => {
     const room_code = localStorage.getItem('room_code');
     try {
-      await axiosInstance.post('/rooms/ready', { room_code, custom_game_code: customGameStorage.getItem('code') });
+      await axiosInstance.post('/rooms/ready', { room_code }); // ✅ 준비 취소 API 호출
       onCancelConfirmed(); // -> 상태 업데이트
       onClose();           // -> 팝업 닫기
     } catch (err) {

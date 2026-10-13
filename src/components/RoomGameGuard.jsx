@@ -24,6 +24,8 @@ export default function RoomGameGuard({ children }) {
         currentRoom = cachedRoom.current?.room_code === roomCode ? cachedRoom.current :
           (await axiosInstance.get(`/rooms/code/${encodeURIComponent(roomCode)}`, { signal: controller.signal, timeout: 20000 })).data;
         cachedRoom.current = currentRoom;
+        void captureGameContext('room_game_verified', { phase: 'started', room_game_bound: Boolean(currentRoom.custom_game_code) },
+          { roomTopic: currentRoom.topic, expectedCode: currentRoom.custom_game_code });
         await prepareRoomGame(currentRoom, async code =>
           (await axiosInstance.get(`/custom-games/${encodeURIComponent(code)}`, { signal: controller.signal, timeout: 20000 })).data);
         if (!active) return;

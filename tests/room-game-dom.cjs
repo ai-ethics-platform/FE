@@ -20,7 +20,7 @@ const game = { code: 'SAME_GAME', title: '맞춤 수업', data: {
 let pending;
 const roots = new Set();
 global.__roomGame = {
-  room: { room_code: '123456', topic: game.title, custom_game_code: game.code }, paths: [],
+  room: { room_code: '123456', topic: game.title, custom_game_code: game.code }, paths: [], events: [],
   get(url) {
     if (url.startsWith('/rooms/code/')) return Promise.resolve({ data: this.room });
     if (url.startsWith('/custom-games/')) return new Promise((resolve, reject) => { pending = { resolve, reject, url }; });
@@ -30,7 +30,7 @@ global.__roomGame = {
 };
 const mocks = {
   '../api/axiosInstance': 'export default { get: (...args) => global.__roomGame.get(...args) };',
-  '../utils/posthog': 'export async function captureGameContext(){}',
+  '../utils/posthog': 'export async function captureGameContext(...args){global.__roomGame.capture(...args)}',
   '../WebSocketProvider': `const noop=()=>{}; export function useWebSocket(){return {isConnected:false,addMessageHandler:noop,removeMessageHandler:noop,sendMessage:noop,initializeVoiceWebSocket:async()=>{}};}`,
   '../WebRTCProvider': `const initializeWebRTC=async()=>{}; export function useWebRTC(){return {isInitialized:false,initializeWebRTC};}`,
   '../utils/voiceManager': 'export default {};',
@@ -51,6 +51,9 @@ const mocks = {
     } }],
   });
   const { Guard, Intro, setCustomGameCode, saveCustomGame, customGameStorage } = require(path.join(directory, 'pages.cjs'));
+  global.__roomGame.capture = (event, properties, comparison) => {
+    global.__roomGame.events.push({ event, properties, comparison, storedCode: customGameStorage.getItem('code') });
+  };
   localStorage.setItem('category', game.title);
   let oldRoot = createRoot(document.getElementById('root'));
   roots.add(oldRoot);
@@ -66,7 +69,7 @@ const mocks = {
     return root;
   };
   for (const [index, mode] of ['complete', 'missing', 'other'].entries()) {
-    localStorage.clear(); sessionStorage.clear(); pending = null; global.__roomGame.paths = [];
+    localStorage.clear(); sessionStorage.clear(); pending = null; global.__roomGame.paths = []; global.__roomGame.events = [];
     localStorage.setItem('room_code', '123456'); localStorage.setItem('myrole_id', index + 1); localStorage.setItem('host_id', '1');
     if (mode !== 'missing') {
       const code = mode === 'other' ? 'OTHER_GAME' : game.code;
@@ -82,6 +85,13 @@ const mocks = {
     assert.ok(document.body.textContent.includes('AI 윤리 딜레마 게임에 오신 걸 환영합니다'));
     assert.equal(customGameStorage.getItem('code'), game.code);
     assert.equal(global.__roomGame.paths.at(-1), '/game01');
+    const verification = global.__roomGame.events.filter(entry => entry.event === 'room_game_verified');
+    assert.equal(verification[0].properties.phase, 'started');
+    assert.equal(verification[0].storedCode, mode === 'missing' ? null : mode === 'other' ? 'OTHER_GAME' : game.code,
+      'Diagnostics must capture the original game before room preparation changes it');
+    assert.equal(verification[0].comparison.expectedCode, game.code);
+    assert.equal(verification.at(-1).properties.phase, 'succeeded');
+    assert.equal(verification.at(-1).storedCode, game.code);
     await act(async () => root.unmount());
   }
   sessionStorage.clear(); pending = null;

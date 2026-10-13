@@ -45,6 +45,7 @@ export default function CreateDilemmaRoom({ onClose }) {
         title,
         description,
         topic,
+        custom_game_code: customGameStorage.getItem('code'),
         allow_random_matching: !!isPublic,
       });
       

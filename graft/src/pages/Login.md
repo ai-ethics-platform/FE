@@ -1,7 +1,7 @@
 # src/pages/Login.jsx
 
-- Login · function · L33-L332 — function Login()
-- handleLanguageChange · function · L52-L57 — handleLanguageChange = (e)
-- navigateApprovedUser · function · L83-L92 — navigateApprovedUser = ()
-- checkApplicationAndNavigate · function · L94-L120 — checkApplicationAndNavigate = async ()
-- handleLogin · function · L122-L164 — handleLogin = async ()
+- Login · function · L34-L341 — function Login()
+- handleLanguageChange · function · L53-L58 — handleLanguageChange = (e)
+- navigateApprovedUser · function · L88-L101 — navigateApprovedUser = ()
+- checkApplicationAndNavigate · function · L103-L129 — checkApplicationAndNavigate = async ()
+- handleLogin · function · L131-L173 — handleLogin = async ()

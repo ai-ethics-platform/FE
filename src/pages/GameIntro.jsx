@@ -1,4 +1,5 @@
 import { customGameStorage } from '../utils/customGameStorage';
+import { captureGameContext } from '../utils/posthog';
 // 커스텀 모드일 때 opening 부분 수정
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -78,6 +79,12 @@ export default function GameIntro() {
 
   // {{mateName}} 치환 로직
   const fullText = rawFullText.replaceAll('{{mateName}}', mateName);
+  useEffect(() => {
+    void captureGameContext('game_intro_rendered', {
+      story_source: isCustomMode ? 'custom_intro' : isAWS ? 'default_aws_intro' : 'default_android_intro',
+      next_page_path: isCustomMode ? '/game01' : '/selecthomemate',
+    }, { storyText: fullText });
+  }, [isCustomMode, isAWS, fullText]);
 
   const { isHost, sendNextPage } = useHostActions();
   

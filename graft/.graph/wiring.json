@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": 1,
-    "nodeCount": 1165,
-    "edgeCount": 3194,
+    "nodeCount": 1180,
+    "edgeCount": 3248,
     "languages": [
       "javascript",
       "jsx"
@@ -410,12 +410,12 @@
       "name": "CancelReadyPopup.jsx",
       "kind": "file",
       "path": "src/components/CancelReadyPopup.jsx",
-      "span": "L1-L82",
+      "span": "L1-L84",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "172652d2b7fe25144d2b146558654048284ab055bf238a9c88e9c8deb55c7b0e",
-      "chars": 2388,
+      "body_hash": "8b0bdb60a6a78b6c2c97107dedceeb2b316a72f52cf12fd0a35239bc08fbb680",
+      "chars": 2488,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -425,11 +425,11 @@
       "name": "CancelReadyPopup",
       "kind": "function",
       "path": "src/components/CancelReadyPopup.jsx",
-      "span": "L8-L82",
+      "span": "L9-L83",
       "signature": "function CancelReadyPopup({ onClose, onCancelConfirmed })",
       "exported": true,
       "origin": "ast",
-      "body_hash": "ce1523827046901dabc352f13dec0f1ab3aedef7bdd7ca7be5b3a55964046ea0",
+      "body_hash": "7ebc69e8b7dfe87ae267c7ee5d431fb1d6fd80d37f8cc405817010899a88415e",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -439,11 +439,11 @@
       "name": "handleCancelReady",
       "kind": "function",
       "path": "src/components/CancelReadyPopup.jsx",
-      "span": "L18-L28",
+      "span": "L19-L29",
       "signature": "handleCancelReady = async ()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "d40fe0edde270acded559a11ab7b991ef5079a1832ba2ef57c981304323dafdd",
+      "body_hash": "527455752d3da52933cc8a11d53c976b2167e5de0da6720ab5cb78118dcbbb2d",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -1344,12 +1344,12 @@
       "name": "CreateDilemmaRoom.jsx",
       "kind": "file",
       "path": "src/components/Expanded/CreateDilemmaRoom.jsx",
-      "span": "L1-L158",
+      "span": "L1-L159",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "c5ab820d676ed108db0fffb1dce609b6e5b16df05a3714bd340ee78518bf9f3e",
-      "chars": 4465,
+      "body_hash": "127c0fcfafcadf62b4a95bc230b7558c7c301fbf493af0247bbc841c4e9a9150",
+      "chars": 4526,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -1359,11 +1359,11 @@
       "name": "CreateDilemmaRoom",
       "kind": "function",
       "path": "src/components/Expanded/CreateDilemmaRoom.jsx",
-      "span": "L15-L157",
+      "span": "L15-L158",
       "signature": "function CreateDilemmaRoom({ onClose })",
       "exported": true,
       "origin": "ast",
-      "body_hash": "686a0fab8152b98d1c474b4fa5b19be7cf54c7bd31c7a626d12e3cb63c38da54",
+      "body_hash": "393e9a1ef4bfd945fc0c91c863a4454efd47d6dd5788534b105636f58e38dbab",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -1373,7 +1373,7 @@
       "name": "getFrameSrc",
       "kind": "function",
       "path": "src/components/Expanded/CreateDilemmaRoom.jsx",
-      "span": "L69-L73",
+      "span": "L70-L74",
       "signature": "getFrameSrc = (topic)",
       "exported": true,
       "origin": "ast",
@@ -1387,11 +1387,11 @@
       "name": "handleCreateRoom",
       "kind": "function",
       "path": "src/components/Expanded/CreateDilemmaRoom.jsx",
-      "span": "L25-L67",
+      "span": "L25-L68",
       "signature": "handleCreateRoom = async ()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "dcaa450ddcbf9b8ba0e63e8aaa173478ec9c20b2318084a53f79df78f5396b7f",
+      "body_hash": "0627499441a9bd8c01be8af2d61e1dd86a261ebf8e4a608d7c90d8cfbd171f3a",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -4040,6 +4040,49 @@
       "crux": null
     },
     {
+      "id": "src/components/RoomGameGuard.jsx",
+      "name": "RoomGameGuard.jsx",
+      "kind": "file",
+      "path": "src/components/RoomGameGuard.jsx",
+      "span": "L1-L54",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "466992dca8d0e998c485c061a45f306c0827c6a5fcdd684886f675c0a2289728",
+      "chars": 2730,
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/components/RoomGameGuard.jsx#RoomGameGuard",
+      "name": "RoomGameGuard",
+      "kind": "function",
+      "path": "src/components/RoomGameGuard.jsx",
+      "span": "L7-L53",
+      "signature": "function RoomGameGuard({ children })",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "2a5b0d57cae962eebabed4d7b9db4a2890d1791e112900899574a45e535e1e3d",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/components/RoomGameGuard.jsx#RoomGameGuard.run",
+      "name": "run",
+      "kind": "function",
+      "path": "src/components/RoomGameGuard.jsx",
+      "span": "L21-L41",
+      "signature": "run = async ()",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "302b0fe8b79e18b34015feb1e0e30afec3e3a495e60fc4e5f09a267371415fed",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
       "id": "src/components/RoomTypeToggle.jsx",
       "name": "RoomTypeToggle.jsx",
       "kind": "file",
@@ -4632,12 +4675,12 @@
       "name": "router.jsx",
       "kind": "file",
       "path": "src/core/router.jsx",
-      "span": "L1-L426",
+      "span": "L1-L424",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "8b6eab2f02b3479386c8cfbaafb6cd64d94d793325849b9ccf9d50371e996e5c",
-      "chars": 10640,
+      "body_hash": "10cb01e491c59e3f006479cfd8d2a659a3dd3462a7cd14fd15875125ff3e81d0",
+      "chars": 10558,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -4661,11 +4704,11 @@
       "name": "GameProvidersLayout",
       "kind": "function",
       "path": "src/core/router.jsx",
-      "span": "L85-L97",
+      "span": "L85-L95",
       "signature": "function GameProvidersLayout()",
       "exported": false,
       "origin": "ast",
-      "body_hash": "9b5779908093b7e7d435d7a6d70d8f2a3339831d6b3effafb68c9d00018c20ec",
+      "body_hash": "d6cf8d39c36e6b66bad7e296eba694697a87281931de9fa829845a8e37ba79d7",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -4675,11 +4718,11 @@
       "name": "Router",
       "kind": "function",
       "path": "src/core/router.jsx",
-      "span": "L99-L423",
+      "span": "L97-L421",
       "signature": "function Router()",
       "exported": false,
       "origin": "ast",
-      "body_hash": "1d7638582decd4d2e0f160a2fe84f7e9a94dbd4d6aac1d34a20b8f4651692478",
+      "body_hash": "5898d26af9fdac65466a3801a87d4858bc3fd2201fec9c055610651d6c8512ee",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5399,12 +5442,12 @@
       "name": "CD1.jsx",
       "kind": "file",
       "path": "src/pages/CD1.jsx",
-      "span": "L1-L192",
+      "span": "L1-L201",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "99c6f22ca95053656e6eb7dced95fe3aaa9c84c54b042ddf08a1a3c75d7f2446",
-      "chars": 7995,
+      "body_hash": "d7f3875382ea805bfb9595cad493cbb2f0bcf9ae8c9d713228fc9954dcd98fbe",
+      "chars": 8581,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5414,11 +5457,11 @@
       "name": "CD1",
       "kind": "function",
       "path": "src/pages/CD1.jsx",
-      "span": "L35-L192",
+      "span": "L36-L200",
       "signature": "function CD1()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "d560fa504c8ef8904035067161a0ca663d8eb229a0302d02cf88d64fdbd3ce19",
+      "body_hash": "76bd4f594f57821086d70bc549dcdb0cd4f9c932ee0ec10ba0ceeb4e24d603ca",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5442,7 +5485,7 @@
       "name": "handleBackClick",
       "kind": "function",
       "path": "src/pages/CD1.jsx",
-      "span": "L164-L166",
+      "span": "L172-L174",
       "signature": "handleBackClick = ()",
       "exported": true,
       "origin": "ast",
@@ -5456,7 +5499,7 @@
       "name": "handleContinue",
       "kind": "function",
       "path": "src/pages/CD1.jsx",
-      "span": "L160-L162",
+      "span": "L168-L170",
       "signature": "handleContinue = ()",
       "exported": true,
       "origin": "ast",
@@ -5470,7 +5513,7 @@
       "name": "hasBatchim",
       "kind": "function",
       "path": "src/pages/CD1.jsx",
-      "span": "L144-L149",
+      "span": "L146-L151",
       "signature": "hasBatchim = (word)",
       "exported": true,
       "origin": "ast",
@@ -5498,12 +5541,12 @@
       "name": "CD2.jsx",
       "kind": "file",
       "path": "src/pages/CD2.jsx",
-      "span": "L1-L145",
+      "span": "L1-L155",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "fe147ffcc26cd76dd6dd88683db0f429979fbd3ab92f6fc4527b19b3c9760d06",
-      "chars": 7064,
+      "body_hash": "b799cb753efcabe38f03e3b08be581754257e5befeee7c8ae89e5641f8d0f9b9",
+      "chars": 7692,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5513,11 +5556,11 @@
       "name": "CD2",
       "kind": "function",
       "path": "src/pages/CD2.jsx",
-      "span": "L34-L145",
+      "span": "L35-L154",
       "signature": "function CD2()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "bbc606ee2e3e10d4c2cbc09ebfa68b7b916676ea6cef5061860278661c4e4754",
+      "body_hash": "8a38901941393db64469052d98b0dbc421c317ec35cfcee8544bb0c494711935",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5527,7 +5570,7 @@
       "name": "getImg",
       "kind": "function",
       "path": "src/pages/CD2.jsx",
-      "span": "L87-L87",
+      "span": "L88-L88",
       "signature": "getImg = (ko, en)",
       "exported": true,
       "origin": "ast",
@@ -5541,7 +5584,7 @@
       "name": "hasBatchim",
       "kind": "function",
       "path": "src/pages/CD2.jsx",
-      "span": "L121-L125",
+      "span": "L124-L128",
       "signature": "hasBatchim = (word)",
       "exported": true,
       "origin": "ast",
@@ -5555,7 +5598,7 @@
       "name": "resolveImageUrl",
       "kind": "function",
       "path": "src/pages/CD2.jsx",
-      "span": "L54-L60",
+      "span": "L55-L61",
       "signature": "resolveImageUrl = (raw)",
       "exported": true,
       "origin": "ast",
@@ -5569,12 +5612,12 @@
       "name": "CD3.jsx",
       "kind": "file",
       "path": "src/pages/CD3.jsx",
-      "span": "L1-L145",
+      "span": "L1-L155",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "f11ae0e674de7e8d996a8f207e98bdd98cdf79371e3f7b3aa0eb8d91ddb729b1",
-      "chars": 7064,
+      "body_hash": "368cf20bc4d40e70df827092237782430e37195c0d529bec81a91666298f8b97",
+      "chars": 7692,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5584,11 +5627,11 @@
       "name": "CD3",
       "kind": "function",
       "path": "src/pages/CD3.jsx",
-      "span": "L34-L145",
+      "span": "L35-L154",
       "signature": "function CD3()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "f6a0a7a86a09f24fe0729587fbbf5e222d40c3d444395d7cc506fbaa2e84e6ab",
+      "body_hash": "44e7a651da15791f88939382fd59faa83d03fc970188dbccf1cd2624698bc329",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -5598,7 +5641,7 @@
       "name": "getImg",
       "kind": "function",
       "path": "src/pages/CD3.jsx",
-      "span": "L87-L87",
+      "span": "L88-L88",
       "signature": "getImg = (ko, en)",
       "exported": true,
       "origin": "ast",
@@ -5612,7 +5655,7 @@
       "name": "hasBatchim",
       "kind": "function",
       "path": "src/pages/CD3.jsx",
-      "span": "L121-L125",
+      "span": "L124-L128",
       "signature": "hasBatchim = (word)",
       "exported": true,
       "origin": "ast",
@@ -5626,7 +5669,7 @@
       "name": "resolveImageUrl",
       "kind": "function",
       "path": "src/pages/CD3.jsx",
-      "span": "L54-L60",
+      "span": "L55-L61",
       "signature": "resolveImageUrl = (raw)",
       "exported": true,
       "origin": "ast",
@@ -11208,12 +11251,12 @@
       "name": "GameIntro.jsx",
       "kind": "file",
       "path": "src/pages/GameIntro.jsx",
-      "span": "L1-L265",
+      "span": "L1-L273",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "37dc9e288f25ef9c8a8276bac2058a8961725f73a21ef6334426f28ba63173ce",
-      "chars": 9026,
+      "body_hash": "4b7a6d716541f3abefa2513383a7c196817d9ca22b1637a86f539655b89df131",
+      "chars": 9402,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -11223,11 +11266,11 @@
       "name": "GameIntro",
       "kind": "function",
       "path": "src/pages/GameIntro.jsx",
-      "span": "L23-L265",
+      "span": "L24-L272",
       "signature": "function GameIntro()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "b5965ad23315fb0cbcbae8848b22099319f68860679f5c25a78233295de75176",
+      "body_hash": "982cb2977099678834772ca3466b26c3042b0f808eed83a03a7402f847575e80",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -11237,7 +11280,7 @@
       "name": "connectWithRetry",
       "kind": "function",
       "path": "src/pages/GameIntro.jsx",
-      "span": "L169-L178",
+      "span": "L176-L185",
       "signature": "connectWithRetry = async (attempt = 1, maxAttempts = 3)",
       "exported": true,
       "origin": "ast",
@@ -11251,7 +11294,7 @@
       "name": "handleContinue",
       "kind": "function",
       "path": "src/pages/GameIntro.jsx",
-      "span": "L225-L231",
+      "span": "L232-L238",
       "signature": "handleContinue = ()",
       "exported": true,
       "origin": "ast",
@@ -11265,7 +11308,7 @@
       "name": "messageHandler",
       "kind": "function",
       "path": "src/pages/GameIntro.jsx",
-      "span": "L158-L165",
+      "span": "L165-L172",
       "signature": "messageHandler = (message)",
       "exported": true,
       "origin": "ast",
@@ -11463,12 +11506,12 @@
       "name": "Login.jsx",
       "kind": "file",
       "path": "src/pages/Login.jsx",
-      "span": "L1-L339",
+      "span": "L1-L348",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "643ec63a5f179fe68a6db5e8991a653351bc1f49a4798e0eaa689140b8ac43f1",
-      "chars": 10467,
+      "body_hash": "729d27f06a6f773acba9d8721eada72546d4ce2d3b03c573316499daf8d949a2",
+      "chars": 10975,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -11478,11 +11521,11 @@
       "name": "Login",
       "kind": "function",
       "path": "src/pages/Login.jsx",
-      "span": "L33-L332",
+      "span": "L34-L341",
       "signature": "function Login()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "956ad3e501a7e175083f67d79b752095c335deb4667b8ab87dd42c5acabf047f",
+      "body_hash": "d543585639c14ce707375daa551b318d01be2fdb1a3e3d1d859aff41d7b92a2f",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -11492,7 +11535,7 @@
       "name": "checkApplicationAndNavigate",
       "kind": "function",
       "path": "src/pages/Login.jsx",
-      "span": "L94-L120",
+      "span": "L103-L129",
       "signature": "checkApplicationAndNavigate = async ()",
       "exported": true,
       "origin": "ast",
@@ -11506,7 +11549,7 @@
       "name": "handleLanguageChange",
       "kind": "function",
       "path": "src/pages/Login.jsx",
-      "span": "L52-L57",
+      "span": "L53-L58",
       "signature": "handleLanguageChange = (e)",
       "exported": true,
       "origin": "ast",
@@ -11520,7 +11563,7 @@
       "name": "handleLogin",
       "kind": "function",
       "path": "src/pages/Login.jsx",
-      "span": "L122-L164",
+      "span": "L131-L173",
       "signature": "handleLogin = async ()",
       "exported": true,
       "origin": "ast",
@@ -11534,11 +11577,11 @@
       "name": "navigateApprovedUser",
       "kind": "function",
       "path": "src/pages/Login.jsx",
-      "span": "L83-L92",
+      "span": "L88-L101",
       "signature": "navigateApprovedUser = ()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "c55d263f69294fd0ea62dc2be15a811d40734a6a25d444d5d35c1450e6878f14",
+      "body_hash": "f9cdfd7b521b3ad751c56c17751cb0582d0389bcf8ed17afaf57b4cd0b9c8e5a",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12093,8 +12136,8 @@
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "d4b548033b667475d77a45ee0293ef2063592820a48240db3f9660a3bfb03bb1",
-      "chars": 24026,
+      "body_hash": "1ca63335e5d4247f6bff49a8735e2e815c04b7009cf4ff2d14ad390b31c225da",
+      "chars": 24079,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12108,7 +12151,7 @@
       "signature": "function WaitingRoom()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "1096cc4e19150205ce71382fc2cb9f504f895f761eeb8aec5bfc22ecbe4e080c",
+      "body_hash": "b588185a16c4cc400fa0bb549af465745e321333b2921b76d4e798d7f453a3f6",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12220,7 +12263,7 @@
       "signature": "handleMicConfirm = async ()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "32545fa0d4ce80305d13bb89398f7e73ad9da72f92ed6097a137c8d65c58a02d",
+      "body_hash": "4d5fbc6b66a792f1b5e060ab99a076f2b1ac9b524f664596240c20bf72002da1",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12696,12 +12739,12 @@
       "name": "customGameStorage.js",
       "kind": "file",
       "path": "src/utils/customGameStorage.js",
-      "span": "L1-L119",
+      "span": "L1-L127",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "70a895d6e3634ac83e2e9aafc6cfc7c742b28a22bce19151d5ffb05568e18ca5",
-      "chars": 4200,
+      "body_hash": "17ebd24fd3ce448be093669412151e2fd5d1250a0a47f2d0024d28b1d1714a07",
+      "chars": 4519,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12739,25 +12782,25 @@
       "name": "hasStory",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L37-L40",
+      "span": "L42-L44",
       "signature": "function hasStory(opening, background)",
       "exported": false,
       "origin": "ast",
-      "body_hash": "f7f7d3f4e5b8b5c39a7733d99c828790686894081fd98ac9318c09b8683f63db",
+      "body_hash": "32250cc08b5a5c187a3ed5ab879c581cb1729f3670ee5cd3499793e3b2efd001",
       "summary_state": "pending",
       "summary": null,
       "crux": null
     },
     {
-      "id": "src/utils/customGameStorage.js#hasStory.hasText",
+      "id": "src/utils/customGameStorage.js#hasText",
       "name": "hasText",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L38-L38",
-      "signature": "hasText = value",
+      "span": "L38-L40",
+      "signature": "function hasText(value)",
       "exported": false,
       "origin": "ast",
-      "body_hash": "028c398a26b5ff3219445f9fff3047433b905f123c1596504f0552eac8d32267",
+      "body_hash": "d8f0e68edd9f2348f00bf7383d0902a53ba9bf82967e33b28e71c19d78b7af5e",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12767,11 +12810,11 @@
       "name": "isCustomGameReady",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L27-L35",
+      "span": "L27-L36",
       "signature": "function isCustomGameReady()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "96e285c66bec7ecb2f2eef0e61eba85dd2ab90dde233a013dbecda1f68b304d7",
+      "body_hash": "d0483de4380931cc8e45013851358afe0347a6f40bee70adec0327acfcff48f9",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12781,11 +12824,11 @@
       "name": "saveCustomGame",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L42-L118",
+      "span": "L46-L126",
       "signature": "function saveCustomGame(payload, expectedCode)",
       "exported": true,
       "origin": "ast",
-      "body_hash": "115f975e5e5d18f0aa75f7c7f1e79c8914780be2e3c4759069cbe550743ab5a0",
+      "body_hash": "6c1dd4d29477d215a284f6e179c149b27b76185f01dcbff83d9a1f8bbbafa150",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12795,7 +12838,7 @@
       "name": "setArr",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L54-L54",
+      "span": "L62-L62",
       "signature": "setArr = (key, value)",
       "exported": true,
       "origin": "ast",
@@ -12809,7 +12852,7 @@
       "name": "setStr",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L53-L53",
+      "span": "L61-L61",
       "signature": "setStr = (key, value)",
       "exported": true,
       "origin": "ast",
@@ -13897,12 +13940,12 @@
       "name": "posthog.js",
       "kind": "file",
       "path": "src/utils/posthog.js",
-      "span": "L1-L115",
+      "span": "L1-L118",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "25449471d3b8d05f6cf324548e0b04085071ec5f266b26d9a49ac98f2c71a136",
-      "chars": 4378,
+      "body_hash": "d64096b8a57fa7e68babb7776aba6698e48e76e7e0250d460d5186ceeff455c3",
+      "chars": 4685,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -13926,11 +13969,11 @@
       "name": "captureGameContext",
       "kind": "function",
       "path": "src/utils/posthog.js",
-      "span": "L67-L104",
+      "span": "L67-L107",
       "signature": "async function captureGameContext(event, properties = {}, comparison = {})",
       "exported": true,
       "origin": "ast",
-      "body_hash": "da43605fd01a4bb4ad79982d134e74cb3725be85d1504726047dd52b66c9267c",
+      "body_hash": "ba2e9705da52a37c679b6c1be4ee73f5c2bb063e487b2b2b75f84d342abafa2d",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -14284,6 +14327,63 @@
       "exported": true,
       "origin": "ast",
       "body_hash": "1677c78e15b772083d6830c41d1323996fddaa311e7a0afaea0a8dabb6a3b56a",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/roomGame.js",
+      "name": "roomGame.js",
+      "kind": "file",
+      "path": "src/utils/roomGame.js",
+      "span": "L1-L35",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "e9296cec9b2d7a605e5f64fe98c2a21c8fb1a1d0c6017796d6989b4a8496a84a",
+      "chars": 1414,
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/roomGame.js#isRoomGameReady",
+      "name": "isRoomGameReady",
+      "kind": "function",
+      "path": "src/utils/roomGame.js",
+      "span": "L16-L23",
+      "signature": "function isRoomGameReady(room)",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "9a8941214c2fd357a6f7cc95d9a9e5ac5e316a088b616b44c36aa0f7e61cc189",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/roomGame.js#prepareRoomGame",
+      "name": "prepareRoomGame",
+      "kind": "function",
+      "path": "src/utils/roomGame.js",
+      "span": "L25-L34",
+      "signature": "async function prepareRoomGame(room, loadGame)",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "7d71cbb9be2e41cf95a78293919fd76437ffa3f80a489d7494ce1ef756300080",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/roomGame.js#roomGameCode",
+      "name": "roomGameCode",
+      "kind": "function",
+      "path": "src/utils/roomGame.js",
+      "span": "L3-L14",
+      "signature": "function roomGameCode(room)",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "78ef2da116bae3217cb9ab63a8827022f54be585eef5ca87a64042fe20047fe6",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -16071,12 +16171,12 @@
       "name": "custom-game-storage.test.mjs",
       "kind": "file",
       "path": "tests/custom-game-storage.test.mjs",
-      "span": "L1-L102",
+      "span": "L1-L111",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "770def786672d1c2b6584233c081b762aced67c7a27ebe69d3bce72615a1be28",
-      "chars": 4738,
+      "body_hash": "13ddf8c72a289ae5806eead8b648d13b27192ecaedcceab2018b761b4ea05ce6",
+      "chars": 5494,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -16100,7 +16200,7 @@
       "name": "setItem",
       "kind": "method",
       "path": "tests/custom-game-storage.test.mjs",
-      "span": "L89-L89",
+      "span": "L98-L98",
       "signature": "setItem()",
       "exported": false,
       "origin": "ast",
@@ -16114,7 +16214,7 @@
       "name": "setItem",
       "kind": "method",
       "path": "tests/custom-game-storage.test.mjs",
-      "span": "L92-L92",
+      "span": "L101-L101",
       "signature": "setItem()",
       "exported": false,
       "origin": "ast",
@@ -16133,6 +16233,49 @@
       "exported": false,
       "origin": "ast",
       "body_hash": "5592e9744cdcadf824540beca8d8bfa9add2e2079788536ca110168588bec9d7",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/custom-role-render.cjs",
+      "name": "custom-role-render.cjs",
+      "kind": "file",
+      "path": "tests/custom-role-render.cjs",
+      "span": "L1-L82",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "acbbbcfee13e1ea38e922974aa8c2d0335c3445e1f4ef202306c8002309d4162",
+      "chars": 4859,
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/custom-role-render.cjs#setup",
+      "name": "setup",
+      "kind": "method",
+      "path": "tests/custom-role-render.cjs",
+      "span": "L34-L38",
+      "signature": "setup(build)",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "9789adbf3927ef1b3a6c35316d8eea24ff880fae73b5559f166898eddcff62cc",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/custom-role-render.cjs#storage",
+      "name": "storage",
+      "kind": "function",
+      "path": "tests/custom-role-render.cjs",
+      "span": "L13-L16",
+      "signature": "storage = ()",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "7e1991482a52b0e3fa9d0550f231c2b50344b62fe8f58496753d8d63445fa4da",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -16516,6 +16659,78 @@
       "exported": false,
       "origin": "ast",
       "body_hash": "d69296e8e955558ffc9e9564bc817154ba975833f379f71f9abf58de23e5afb7",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/room-game-dom.cjs",
+      "name": "room-game-dom.cjs",
+      "kind": "file",
+      "path": "tests/room-game-dom.cjs",
+      "span": "L1-L119",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "a4c20270f7dd8456891e24834c36028f361e6d43d6c9c691b7b9f0c183e9c69c",
+      "chars": 7809,
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/room-game-dom.cjs#get",
+      "name": "get",
+      "kind": "method",
+      "path": "tests/room-game-dom.cjs",
+      "span": "L24-L29",
+      "signature": "get(url)",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "eec6cae796c906f8fce607523a9d89fc0ceaf7567ca328f4a446c74172803c75",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/room-game-dom.cjs#render",
+      "name": "render",
+      "kind": "function",
+      "path": "tests/room-game-dom.cjs",
+      "span": "L65-L70",
+      "signature": "render = async ()",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "ef43ce3f38fc12a0923cd612f3f1f9419d71d6d36b7b79a302ff900c51426b94",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/room-game-dom.cjs#setup",
+      "name": "setup",
+      "kind": "method",
+      "path": "tests/room-game-dom.cjs",
+      "span": "L47-L51",
+      "signature": "setup(build)",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "9789adbf3927ef1b3a6c35316d8eea24ff880fae73b5559f166898eddcff62cc",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "tests/room-game.test.mjs",
+      "name": "room-game.test.mjs",
+      "kind": "file",
+      "path": "tests/room-game.test.mjs",
+      "span": "L1-L53",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "cf960ed092536a07b2aaed9a3de69d23756fa2501ba53874cb8ae789d9bd2d50",
+      "chars": 3002,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -17046,6 +17261,12 @@
     {
       "source": "src/components/CancelReadyPopup.jsx",
       "target": "src/components/styleConstants.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/components/CancelReadyPopup.jsx",
+      "target": "src/utils/customGameStorage.js",
       "relation": "imports",
       "confidence": "extracted"
     },
@@ -21022,6 +21243,72 @@
       "confidence": "extracted"
     },
     {
+      "source": "src/components/RoomGameGuard.jsx",
+      "target": "src/components/RoomGameGuard.jsx#RoomGameGuard",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx",
+      "target": "react",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx",
+      "target": "react-router-dom",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx",
+      "target": "src/api/axiosInstance.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx",
+      "target": "src/utils/roomGame.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx#RoomGameGuard",
+      "target": "src/components/RoomGameGuard.jsx#RoomGameGuard.run",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx#RoomGameGuard",
+      "target": "src/utils/roomGame.js#isRoomGameReady",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx#RoomGameGuard",
+      "target": "src/components/RoomGameGuard.jsx#RoomGameGuard.run",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx#RoomGameGuard.run",
+      "target": "src/utils/posthog.js#captureGameContext",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/components/RoomGameGuard.jsx#RoomGameGuard.run",
+      "target": "src/utils/roomGame.js#prepareRoomGame",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
       "source": "src/components/RoomTypeToggle.jsx",
       "target": "src/components/RoomTypeToggle.jsx#RoomTypeToggle",
       "relation": "contains",
@@ -21677,6 +21964,12 @@
     },
     {
       "source": "src/core/router.jsx",
+      "target": "src/components/RoomGameGuard.jsx",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/core/router.jsx",
       "target": "src/pages/admin/AdminApplications.jsx",
       "relation": "imports",
       "confidence": "extracted"
@@ -22013,12 +22306,6 @@
     },
     {
       "source": "src/core/router.jsx",
-      "target": "src/utils/customGameStorage.js",
-      "relation": "imports",
-      "confidence": "extracted"
-    },
-    {
-      "source": "src/core/router.jsx",
       "target": "src/WebRTCProvider.jsx",
       "relation": "imports",
       "confidence": "extracted"
@@ -22032,12 +22319,6 @@
     {
       "source": "src/core/router.jsx#DiagnosticRoute",
       "target": "src/utils/creatorDiagnostics.js#diagnosticRoute",
-      "relation": "calls",
-      "confidence": "inferred"
-    },
-    {
-      "source": "src/core/router.jsx#GameProvidersLayout",
-      "target": "src/utils/customGameStorage.js#isCustomGameReady",
       "relation": "calls",
       "confidence": "inferred"
     },
@@ -23129,6 +23410,12 @@
     },
     {
       "source": "src/pages/CD1.jsx",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD1.jsx",
       "target": "src/utils/voiceManager.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -23162,6 +23449,12 @@
       "target": "src/pages/CD1.jsx#CD1.resolveImageUrl",
       "relation": "calls",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD1.jsx#CD1",
+      "target": "src/utils/posthog.js#captureGameContext",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/pages/CD1.jsx#CD1",
@@ -23357,6 +23650,12 @@
     },
     {
       "source": "src/pages/CD2.jsx",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD2.jsx",
       "target": "src/utils/voiceManager.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -23390,6 +23689,12 @@
       "target": "src/pages/CD2.jsx#CD2.resolveImageUrl",
       "relation": "calls",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD2.jsx#CD2",
+      "target": "src/utils/posthog.js#captureGameContext",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/pages/CD2.jsx#CD2",
@@ -23573,6 +23878,12 @@
     },
     {
       "source": "src/pages/CD3.jsx",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD3.jsx",
       "target": "src/utils/voiceManager.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -23606,6 +23917,12 @@
       "target": "src/pages/CD3.jsx#CD3.resolveImageUrl",
       "relation": "calls",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CD3.jsx#CD3",
+      "target": "src/utils/posthog.js#captureGameContext",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/pages/CD3.jsx#CD3",
@@ -30917,6 +31234,12 @@
     },
     {
       "source": "src/pages/GameIntro.jsx",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/GameIntro.jsx",
       "target": "src/utils/storage.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -30956,6 +31279,12 @@
       "target": "src/pages/GameIntro.jsx#GameIntro.connectWithRetry",
       "relation": "calls",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/GameIntro.jsx#GameIntro",
+      "target": "src/utils/posthog.js#captureGameContext",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/pages/GameIntro.jsx#GameIntro",
@@ -31487,6 +31816,12 @@
     },
     {
       "source": "src/pages/Login.jsx",
+      "target": "src/utils/posthog.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/Login.jsx",
       "target": "src/utils/storage.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -31494,6 +31829,12 @@
     {
       "source": "src/pages/Login.jsx#Login",
       "target": "src/utils/customGameStorage.js#setCustomGameCode",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/pages/Login.jsx#Login",
+      "target": "src/utils/posthog.js#captureGameContext",
       "relation": "calls",
       "confidence": "inferred"
     },
@@ -31532,6 +31873,12 @@
       "target": "src/pages/Login.jsx#Login.checkApplicationAndNavigate",
       "relation": "calls",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/Login.jsx#Login.navigateApprovedUser",
+      "target": "src/utils/posthog.js#captureGameContext",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/pages/MateName.jsx",
@@ -33197,6 +33544,12 @@
     },
     {
       "source": "src/utils/customGameStorage.js",
+      "target": "src/utils/customGameStorage.js#hasText",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js",
       "target": "src/utils/customGameStorage.js#isCustomGameReady",
       "relation": "contains",
       "confidence": "extracted"
@@ -33215,14 +33568,8 @@
     },
     {
       "source": "src/utils/customGameStorage.js#hasStory",
-      "target": "src/utils/customGameStorage.js#hasStory.hasText",
+      "target": "src/utils/customGameStorage.js#hasText",
       "relation": "calls",
-      "confidence": "extracted"
-    },
-    {
-      "source": "src/utils/customGameStorage.js#hasStory",
-      "target": "src/utils/customGameStorage.js#hasStory.hasText",
-      "relation": "contains",
       "confidence": "extracted"
     },
     {
@@ -33232,8 +33579,20 @@
       "confidence": "extracted"
     },
     {
+      "source": "src/utils/customGameStorage.js#isCustomGameReady",
+      "target": "src/utils/customGameStorage.js#hasText",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
       "source": "src/utils/customGameStorage.js#saveCustomGame",
       "target": "src/utils/customGameStorage.js#hasStory",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js#saveCustomGame",
+      "target": "src/utils/customGameStorage.js#hasText",
       "relation": "calls",
       "confidence": "extracted"
     },
@@ -34002,6 +34361,78 @@
     {
       "source": "src/utils/resolveParagraphs.js#resolveParagraphs.replaceDynamic",
       "target": "src/utils/resolveParagraphs.js#attachJosa",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/roomGame.js",
+      "target": "src/utils/roomGame.js#isRoomGameReady",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/roomGame.js",
+      "target": "src/utils/roomGame.js#prepareRoomGame",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/roomGame.js",
+      "target": "src/utils/roomGame.js#roomGameCode",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/roomGame.js",
+      "target": "src/utils/customGameStorage.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/roomGame.js#isRoomGameReady",
+      "target": "src/utils/customGameStorage.js#isCustomGameReady",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/roomGame.js#isRoomGameReady",
+      "target": "src/utils/roomGame.js#roomGameCode",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/roomGame.js#prepareRoomGame",
+      "target": "src/utils/customGameStorage.js#clearCustomGame",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/roomGame.js#prepareRoomGame",
+      "target": "src/utils/customGameStorage.js#isCustomGameReady",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/roomGame.js#prepareRoomGame",
+      "target": "src/utils/customGameStorage.js#saveCustomGame",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/roomGame.js#prepareRoomGame",
+      "target": "src/utils/customGameStorage.js#setCustomGameCode",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/roomGame.js#prepareRoomGame",
+      "target": "src/utils/roomGame.js#isRoomGameReady",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/roomGame.js#prepareRoomGame",
+      "target": "src/utils/roomGame.js#roomGameCode",
       "relation": "calls",
       "confidence": "extracted"
     },
@@ -35434,6 +35865,24 @@
       "confidence": "extracted"
     },
     {
+      "source": "tests/custom-role-render.cjs",
+      "target": "tests/custom-role-render.cjs#storage",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/custom-role-render.cjs",
+      "target": "tests/custom-role-render.cjs#setup",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/custom-role-render.cjs",
+      "target": "tests/custom-role-render.cjs#storage",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
       "source": "tests/editor-layout.browser.cjs",
       "target": "tests/editor-layout.browser.cjs#visit",
       "relation": "calls",
@@ -35720,6 +36169,96 @@
       "target": "src/utils/renewalSuggestions.js#getRenewalSuggestions",
       "relation": "calls",
       "confidence": "inferred"
+    },
+    {
+      "source": "tests/room-game-dom.cjs",
+      "target": "src/utils/customGameStorage.js#saveCustomGame",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "tests/room-game-dom.cjs",
+      "target": "src/utils/customGameStorage.js#setCustomGameCode",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "tests/room-game-dom.cjs",
+      "target": "tests/room-game-dom.cjs#render",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/room-game-dom.cjs",
+      "target": "tests/room-game-dom.cjs#get",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/room-game-dom.cjs",
+      "target": "tests/room-game-dom.cjs#render",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/room-game-dom.cjs",
+      "target": "tests/room-game-dom.cjs#setup",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/room-game.test.mjs",
+      "target": "src/utils/customGameStorage.js#clearCustomGame",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "tests/room-game.test.mjs",
+      "target": "src/utils/customGameStorage.js#saveCustomGame",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "tests/room-game.test.mjs",
+      "target": "src/utils/customGameStorage.js#setCustomGameCode",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "tests/room-game.test.mjs",
+      "target": "src/utils/roomGame.js#isRoomGameReady",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "tests/room-game.test.mjs",
+      "target": "src/utils/roomGame.js#prepareRoomGame",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "tests/room-game.test.mjs",
+      "target": "node:assert/strict",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/room-game.test.mjs",
+      "target": "node:test",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/room-game.test.mjs",
+      "target": "src/utils/customGameStorage.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "tests/room-game.test.mjs",
+      "target": "src/utils/roomGame.js",
+      "relation": "imports",
+      "confidence": "extracted"
     },
     {
       "source": "tests/storage.test.mjs",

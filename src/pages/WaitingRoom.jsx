@@ -491,7 +491,7 @@ export default function WaitingRoom() {
       return;
     }
     try {
-      await axiosInstance.post('/rooms/ready', { room_code });
+      await axiosInstance.post('/rooms/ready', { room_code, custom_game_code: customGameStorage.getItem('code') });
       setMyStatusIndex(1);
       setShowMicPopup(false);
       setTimeout(() => pollRoomStatus(), 500);

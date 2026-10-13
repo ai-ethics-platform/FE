@@ -1,4 +1,5 @@
 import { customGameStorage, setCustomGameCode } from '../utils/customGameStorage';
+import { captureGameContext } from '../utils/posthog';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Background from '../components/Background';
@@ -78,11 +79,19 @@ export default function Login() {
         setToast('게임 데이터를 저장할 수 없습니다. 브라우저의 저장소 설정을 확인해주세요.');
       }
     }
+    void captureGameContext('custom_link_opened', {
+      url_code_present: Boolean(codeFromQuery),
+      url_code_persisted: Boolean(codeFromQuery && customGameStorage.getItem('code') === codeFromQuery),
+    }, { expectedCode: codeFromQuery });
   }, [location.search]);
 
   const navigateApprovedUser = () => {
     // 상태값 우선, 없으면 현재 탭의 게임 코드 사용
     const codeToUse = inviteCode || customGameStorage.getItem('code');
+    void captureGameContext('custom_login_redirect', {
+      destination_path: codeToUse ? '/customroom' : '/selectroom',
+      invite_code_present: Boolean(inviteCode),
+    }, { expectedCode: codeToUse });
 
     if (codeToUse) {
       navigate(`/customroom?code=${encodeURIComponent(codeToUse)}`, { replace: true });

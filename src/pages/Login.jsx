@@ -74,7 +74,7 @@ export default function Login() {
     if (codeFromQuery) {
       setInviteCode(codeFromQuery);
       try {
-        setCustomGameCode(codeFromQuery);
+        setCustomGameCode(codeFromQuery, 'login_invite');
       } catch {
         setToast('게임 데이터를 저장할 수 없습니다. 브라우저의 저장소 설정을 확인해주세요.');
       }

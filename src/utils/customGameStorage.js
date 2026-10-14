@@ -1,3 +1,5 @@
+import { recordGameDiagnostic, snapshotGameDiagnostic } from './gameDiagnostics.js';
+
 const CODE_KEY = 'custom_game_code';
 const DATA_KEY = 'custom_game_data';
 
@@ -12,16 +14,26 @@ export const customGameStorage = {
   },
 };
 
-export function setCustomGameCode(code) {
-  if (sessionStorage.getItem(CODE_KEY) !== code) {
-    sessionStorage.removeItem(DATA_KEY);
-  }
-  sessionStorage.setItem(CODE_KEY, code);
+export function setCustomGameCode(code, source = 'setCustomGameCode') {
+  const before = snapshotGameDiagnostic();
+  let completed = false;
+  try {
+    if (sessionStorage.getItem(CODE_KEY) !== code) {
+      sessionStorage.removeItem(DATA_KEY);
+    }
+    sessionStorage.setItem(CODE_KEY, code);
+    completed = true;
+  } finally { recordStorageChange(source, before, code, completed); }
 }
 
-export function clearCustomGame() {
-  sessionStorage.removeItem(DATA_KEY);
-  sessionStorage.removeItem(CODE_KEY);
+export function clearCustomGame(source = 'clearCustomGame') {
+  const before = snapshotGameDiagnostic();
+  let completed = false;
+  try {
+    sessionStorage.removeItem(DATA_KEY);
+    sessionStorage.removeItem(CODE_KEY);
+    completed = true;
+  } finally { recordStorageChange(source, before, null, completed); }
 }
 
 export function isCustomGameReady() {
@@ -43,7 +55,7 @@ function hasStory(opening, background) {
   return (Array.isArray(opening) && opening.some(hasText)) || hasText(background);
 }
 
-export function saveCustomGame(payload, expectedCode) {
+export function saveCustomGame(payload, expectedCode, source = 'saveCustomGame') {
   if (!payload || typeof payload.code !== 'string' || payload.code !== expectedCode ||
       typeof payload.title !== 'string' || !payload.data ||
       typeof payload.data !== 'object' || Array.isArray(payload.data)) {
@@ -118,9 +130,26 @@ export function saveCustomGame(payload, expectedCode) {
   setStr('agreeEnding', finals?.agree || '');
   setStr('disagreeEnding', finals?.disagree || '');
 
-  const serialized = JSON.stringify(values);
-  sessionStorage.setItem(DATA_KEY, serialized);
-  if (sessionStorage.getItem(DATA_KEY) !== serialized) {
-    throw new Error('게임 데이터를 저장하지 못했습니다.');
-  }
+  const before = snapshotGameDiagnostic();
+  let completed = false;
+  try {
+    const serialized = JSON.stringify(values);
+    sessionStorage.setItem(DATA_KEY, serialized);
+    if (sessionStorage.getItem(DATA_KEY) !== serialized) {
+      throw new Error('게임 데이터를 저장하지 못했습니다.');
+    }
+    completed = true;
+  } finally { recordStorageChange(source, before, expectedCode, completed); }
+}
+
+function recordStorageChange(source, before, requestedCode, completed) {
+  try {
+    const after = snapshotGameDiagnostic();
+    recordGameDiagnostic('game_state_changed', {
+      source, phase: completed ? 'succeeded' : 'failed',
+      before_code: before?.context.game_code || '', before_loaded_code: before?.context.loaded_code || '',
+      after_code: after?.context.game_code || '', after_loaded_code: after?.context.loaded_code || '',
+      requested_code: requestedCode || '',
+    }, after);
+  } catch { /* Keep the original storage result, including exceptions. */ }
 }

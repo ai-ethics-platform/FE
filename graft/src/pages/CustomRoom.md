@@ -1,6 +1,6 @@
 # src/pages/CustomRoom.jsx
 
-- SelectRoom · function · L19-L187 — function SelectRoom()
-- run · function · L49-L95 — run = async ()
-- handleBackClick · function · L104-L104 — handleBackClick = ()
-- handleLogout · function · L105-L108 — handleLogout = ()
+- SelectRoom · function · L20-L195 — function SelectRoom()
+- run · function · L50-L103 — run = async ()
+- handleBackClick · function · L112-L112 — handleBackClick = ()
+- handleLogout · function · L113-L116 — handleLogout = ()

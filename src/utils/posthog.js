@@ -2,6 +2,7 @@ import axios from 'axios';
 import posthog from 'posthog-js';
 import { customGameStorage, isCustomGameReady } from './customGameStorage';
 import { attachGameRequestContext } from './gameRequestContext';
+import { recordGameDiagnostic, snapshotGameDiagnostic } from './gameDiagnostics';
 
 const projectToken = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN;
 
@@ -66,7 +67,7 @@ export function captureApiError(error, service = 'api') {
 }
 
 export async function captureGameContext(event, properties = {}, comparison = {}) {
-  if (!projectToken) return;
+  const snapshot = snapshotGameDiagnostic();
   try {
     // Snapshot before hashing so later navigation cannot change the reported game.
     const code = customGameStorage.getItem('code') || '';
@@ -98,10 +99,14 @@ export async function captureGameContext(event, properties = {}, comparison = {}
     };
     const fingerprints = {};
     for (const [key, value] of Object.entries(values)) {
-      const digest = value ? await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)) : null;
+      let digest = null;
+      try {
+        if (value && globalThis.crypto?.subtle) digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+      } catch { /* An unavailable hash must not discard the state observation. */ }
       fingerprints[key] = digest ? Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('').slice(0, 16) : null;
     }
-    posthog.capture(event, { ...properties, ...context, ...fingerprints });
+    recordGameDiagnostic(event, { ...properties, ...context, ...fingerprints, requested_code: comparison.expectedCode || '' }, snapshot);
+    if (projectToken) posthog.capture(event, { ...properties, ...context, ...fingerprints });
   } catch {
     // Diagnostics must not affect game loading or navigation.
   }

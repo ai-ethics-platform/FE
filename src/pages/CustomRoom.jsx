@@ -15,6 +15,7 @@ import { FontStyles, Colors } from '../components/styleConstants';
 import GameFrame from "../components/GameFrame";
 import axiosInstance from '../api/axiosInstance';
 import posthog, { captureGameContext } from '../utils/posthog';
+import { snapshotGameDiagnostic } from '../utils/gameDiagnostics';
 
 export default function SelectRoom() {
   const navigate = useNavigate();
@@ -48,26 +49,30 @@ export default function SelectRoom() {
 
     const run = async () => {
       const startedAt = Date.now();
+      const loadAttemptId = snapshotGameDiagnostic()?.id || '';
       const codeSource = new URLSearchParams(location.search).has('code') ? 'url' : code ? 'session_storage' : 'missing';
       void captureGameContext('custom_game_load', {
-        phase: 'started',
+        phase: 'started', load_attempt_id: loadAttemptId,
         code_present: Boolean(code),
         code_source: codeSource,
       }, { expectedCode: code });
       try {
         if (!code) throw new Error('게임 코드가 없습니다. 공유 링크로 다시 접속해주세요.');
-        clearCustomGame();
-        setCustomGameCode(code);
+        clearCustomGame('custom_room_load');
+        setCustomGameCode(code, 'custom_room_load');
         const res = await axiosInstance.get(`/custom-games/${encodeURIComponent(code)}`, {
           signal: controller.signal,
           timeout: 20000,
         });
-        if (!active) return;
-        saveCustomGame(res.data, code);
+        if (!active) {
+          void captureGameContext('custom_game_load', { phase: 'discarded', load_attempt_id: loadAttemptId, duration_ms: Date.now() - startedAt }, { expectedCode: code });
+          return;
+        }
+        saveCustomGame(res.data, code, 'custom_room_load');
         setTitle(customGameStorage.getItem('creatorTitle') || '');
         setLoadStatus('ready');
         void captureGameContext('custom_game_load', {
-          phase: 'succeeded',
+          phase: 'succeeded', load_attempt_id: loadAttemptId,
           code_present: true,
           code_source: codeSource,
           duration_ms: Date.now() - startedAt,
@@ -76,10 +81,13 @@ export default function SelectRoom() {
           loaded_code_matches: isCustomGameReady(),
         }, { expectedCode: code });
       } catch (err) {
-        if (!active) return;
+        if (!active) {
+          void captureGameContext('custom_game_load', { phase: 'cancelled', load_attempt_id: loadAttemptId, duration_ms: Date.now() - startedAt }, { expectedCode: code });
+          return;
+        }
         console.error('Failed to load custom game by code:', err);
         void captureGameContext('custom_game_load', {
-          phase: 'failed',
+          phase: 'failed', load_attempt_id: loadAttemptId,
           code_present: Boolean(code),
           code_source: codeSource,
           duration_ms: Date.now() - startedAt,
@@ -103,7 +111,7 @@ export default function SelectRoom() {
 
   const handleBackClick = () => setIsLogoutPopupOpen(true);
   const handleLogout = () => {
-    clearCustomGame();
+    clearCustomGame('custom_room_logout');
     navigate('/');
   };
 

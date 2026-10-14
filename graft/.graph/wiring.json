@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": 1,
-    "nodeCount": 1185,
-    "edgeCount": 3257,
+    "nodeCount": 1191,
+    "edgeCount": 3285,
     "languages": [
       "javascript",
       "jsx"
@@ -4932,12 +4932,12 @@
       "name": "useWebSocketMessage.jsx",
       "kind": "file",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L1-L117",
+      "span": "L1-L120",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "909df6d6578a8e49b9c86f9b8ce1e151f4c1e402e4b544d9fa80e1730076b6cd",
-      "chars": 3374,
+      "body_hash": "40fcd1da003494859f6cc25a94d0395d00d1fa47ba2b20002a7df231560390b9",
+      "chars": 3756,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -4947,7 +4947,7 @@
       "name": "useHostActions",
       "kind": "function",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L87-L109",
+      "span": "L90-L112",
       "signature": "useHostActions = ()",
       "exported": true,
       "origin": "ast",
@@ -4961,7 +4961,7 @@
       "name": "sendNextPage",
       "kind": "function",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L100-L106",
+      "span": "L103-L109",
       "signature": "sendNextPage = ()",
       "exported": true,
       "origin": "ast",
@@ -4975,7 +4975,7 @@
       "name": "useVoiceStatusMessages",
       "kind": "function",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L115-L117",
+      "span": "L118-L120",
       "signature": "useVoiceStatusMessages = (handler, dependencies = [])",
       "exported": true,
       "origin": "ast",
@@ -4989,7 +4989,7 @@
       "name": "useWebSocketDebug",
       "kind": "function",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L27-L36",
+      "span": "L28-L37",
       "signature": "useWebSocketDebug = ()",
       "exported": true,
       "origin": "ast",
@@ -5003,7 +5003,7 @@
       "name": "useWebSocketMessage",
       "kind": "function",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L5-L24",
+      "span": "L6-L25",
       "signature": "useWebSocketMessage = (messageType, handler, dependencies = [])",
       "exported": true,
       "origin": "ast",
@@ -5017,7 +5017,7 @@
       "name": "messageHandler",
       "kind": "function",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L16-L20",
+      "span": "L17-L21",
       "signature": "messageHandler = (message)",
       "exported": true,
       "origin": "ast",
@@ -5031,7 +5031,7 @@
       "name": "useWebSocketMessageAll",
       "kind": "function",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L39-L54",
+      "span": "L40-L55",
       "signature": "useWebSocketMessageAll = (handler, dependencies = [])",
       "exported": true,
       "origin": "ast",
@@ -5045,7 +5045,7 @@
       "name": "messageHandler",
       "kind": "function",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L50-L50",
+      "span": "L51-L51",
       "signature": "messageHandler = (message)",
       "exported": true,
       "origin": "ast",
@@ -5059,11 +5059,11 @@
       "name": "useWebSocketNavigation",
       "kind": "function",
       "path": "src/hooks/useWebSocketMessage.jsx",
-      "span": "L63-L84",
+      "span": "L64-L87",
       "signature": "useWebSocketNavigation = ( navigate, { infoPath, nextPagePath } = {} )",
       "exported": true,
       "origin": "ast",
-      "body_hash": "a656422a660d831fff2310ff371277c54f4bc5ac554331863227d6fcb27bc033",
+      "body_hash": "4096b009c13c423fae8651ef12a35be341d3a4135ec4ecf572a570ff1468748e",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -8565,12 +8565,12 @@
       "name": "CustomRoom.jsx",
       "kind": "file",
       "path": "src/pages/CustomRoom.jsx",
-      "span": "L1-L201",
+      "span": "L1-L209",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "9c0cdc4c78111d84589d879c17bdfe61f5aa2c74da351d85836519197568d4ab",
-      "chars": 7633,
+      "body_hash": "d5126ffd53a6154551e26e113da6ac8d9b83b4f3cf515757457434ddb2102c81",
+      "chars": 8326,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -8580,11 +8580,11 @@
       "name": "SelectRoom",
       "kind": "function",
       "path": "src/pages/CustomRoom.jsx",
-      "span": "L19-L187",
+      "span": "L20-L195",
       "signature": "function SelectRoom()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "6f331cc30994aa3fb41f0d8c1fa25d3236b7bdcaed909f284f56b5864b648987",
+      "body_hash": "61a3921a223fcb62de57c6b1f5a46db7a632448a3108efcef5f86ade114f380c",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -8594,7 +8594,7 @@
       "name": "handleBackClick",
       "kind": "function",
       "path": "src/pages/CustomRoom.jsx",
-      "span": "L104-L104",
+      "span": "L112-L112",
       "signature": "handleBackClick = ()",
       "exported": true,
       "origin": "ast",
@@ -8608,11 +8608,11 @@
       "name": "handleLogout",
       "kind": "function",
       "path": "src/pages/CustomRoom.jsx",
-      "span": "L105-L108",
+      "span": "L113-L116",
       "signature": "handleLogout = ()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "0406fd02981a127abdb41ee33596a4b5024168c77347083bd8d7070d94cc3f23",
+      "body_hash": "c73ede13bfd986b85035b4bb4e105598e1ad6184f89adad1efd2bcfdacf11988",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -8622,11 +8622,11 @@
       "name": "run",
       "kind": "function",
       "path": "src/pages/CustomRoom.jsx",
-      "span": "L49-L95",
+      "span": "L50-L103",
       "signature": "run = async ()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "63ac878b0ba7ca3fc341e061285530cc0e21845f0432b69fbb3e839d7f60bed8",
+      "body_hash": "998301ec20dfbddab874dacc18d5020477fe3dd15477029512755675bc64cb73",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -11510,8 +11510,8 @@
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "729d27f06a6f773acba9d8721eada72546d4ce2d3b03c573316499daf8d949a2",
-      "chars": 10975,
+      "body_hash": "1810e28e8b65e6ea2c6faca808a73135a53efa998fe49cec4f75042257dbff3b",
+      "chars": 10991,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -11525,7 +11525,7 @@
       "signature": "function Login()",
       "exported": true,
       "origin": "ast",
-      "body_hash": "d543585639c14ce707375daa551b318d01be2fdb1a3e3d1d859aff41d7b92a2f",
+      "body_hash": "cef4d8289a0920053bbfc11c6135c5498dc64717c246115c3b71d958df623ce1",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12739,12 +12739,12 @@
       "name": "customGameStorage.js",
       "kind": "file",
       "path": "src/utils/customGameStorage.js",
-      "span": "L1-L127",
+      "span": "L1-L156",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "17ebd24fd3ce448be093669412151e2fd5d1250a0a47f2d0024d28b1d1714a07",
-      "chars": 4519,
+      "body_hash": "b42d55bcaa6f04096a2c006197e49cfadbbd37058154312df05d1ab0f644532b",
+      "chars": 5800,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12754,11 +12754,11 @@
       "name": "clearCustomGame",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L22-L25",
-      "signature": "function clearCustomGame()",
+      "span": "L29-L37",
+      "signature": "function clearCustomGame(source = 'clearCustomGame')",
       "exported": true,
       "origin": "ast",
-      "body_hash": "bb8a38e8b7cf5691c9e412b35e21d81b1cd7c71991ac776c415a192d79e2a552",
+      "body_hash": "dcbb7bb3f12b1a21f5107693d80ef98a11fa253e5699da2d2182a32c070d4344",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12768,7 +12768,7 @@
       "name": "getItem",
       "kind": "method",
       "path": "src/utils/customGameStorage.js",
-      "span": "L5-L12",
+      "span": "L7-L14",
       "signature": "getItem(key)",
       "exported": true,
       "origin": "ast",
@@ -12782,7 +12782,7 @@
       "name": "hasStory",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L42-L44",
+      "span": "L54-L56",
       "signature": "function hasStory(opening, background)",
       "exported": false,
       "origin": "ast",
@@ -12796,7 +12796,7 @@
       "name": "hasText",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L38-L40",
+      "span": "L50-L52",
       "signature": "function hasText(value)",
       "exported": false,
       "origin": "ast",
@@ -12810,7 +12810,7 @@
       "name": "isCustomGameReady",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L27-L36",
+      "span": "L39-L48",
       "signature": "function isCustomGameReady()",
       "exported": true,
       "origin": "ast",
@@ -12820,15 +12820,29 @@
       "crux": null
     },
     {
+      "id": "src/utils/customGameStorage.js#recordStorageChange",
+      "name": "recordStorageChange",
+      "kind": "function",
+      "path": "src/utils/customGameStorage.js",
+      "span": "L145-L155",
+      "signature": "function recordStorageChange(source, before, requestedCode, completed)",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "7e2a15f7c1bc155cc67cf8b9bc5d6f49e3df64fcfdcc9471c99f3f7233f5b064",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
       "id": "src/utils/customGameStorage.js#saveCustomGame",
       "name": "saveCustomGame",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L46-L126",
-      "signature": "function saveCustomGame(payload, expectedCode)",
+      "span": "L58-L143",
+      "signature": "function saveCustomGame(payload, expectedCode, source = 'saveCustomGame')",
       "exported": true,
       "origin": "ast",
-      "body_hash": "6c1dd4d29477d215a284f6e179c149b27b76185f01dcbff83d9a1f8bbbafa150",
+      "body_hash": "e5465f9b1e047d45c0d6e345c5c9362163a83a5483a4481181e429c2030072f8",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12838,7 +12852,7 @@
       "name": "setArr",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L62-L62",
+      "span": "L74-L74",
       "signature": "setArr = (key, value)",
       "exported": true,
       "origin": "ast",
@@ -12852,7 +12866,7 @@
       "name": "setStr",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L61-L61",
+      "span": "L73-L73",
       "signature": "setStr = (key, value)",
       "exported": true,
       "origin": "ast",
@@ -12866,11 +12880,68 @@
       "name": "setCustomGameCode",
       "kind": "function",
       "path": "src/utils/customGameStorage.js",
-      "span": "L15-L20",
-      "signature": "function setCustomGameCode(code)",
+      "span": "L17-L27",
+      "signature": "function setCustomGameCode(code, source = 'setCustomGameCode')",
       "exported": true,
       "origin": "ast",
-      "body_hash": "26fe6ac2de39019fb4bae586d8fd9ca9f7107806ba85201e0b518ad1b46f20fd",
+      "body_hash": "6c29ec7b740b73e1d2e793679419d40fae86139fd9a915eaf93b22f94ecf2a74",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/gameDiagnostics.js",
+      "name": "gameDiagnostics.js",
+      "kind": "file",
+      "path": "src/utils/gameDiagnostics.js",
+      "span": "L1-L87",
+      "signature": null,
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "bf0d2bed5d349c94be54e53bb10be095c2ed813cbf0dc7be595aefd9269e6833",
+      "chars": 4491,
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/gameDiagnostics.js#flush",
+      "name": "flush",
+      "kind": "function",
+      "path": "src/utils/gameDiagnostics.js",
+      "span": "L49-L82",
+      "signature": "async function flush()",
+      "exported": false,
+      "origin": "ast",
+      "body_hash": "c264f3616f4c8dd39b59871582fd618b27549f6842a5793ba5add4674189761b",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/gameDiagnostics.js#recordGameDiagnostic",
+      "name": "recordGameDiagnostic",
+      "kind": "function",
+      "path": "src/utils/gameDiagnostics.js",
+      "span": "L28-L47",
+      "signature": "function recordGameDiagnostic(event, properties = {}, snapshot = snapshotGameDiagnostic())",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "e8b4d9afdf2fd4a9878ce34d5f3cbcf5556db2e862357c702e3cc2256e9c3dbe",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
+      "name": "snapshotGameDiagnostic",
+      "kind": "function",
+      "path": "src/utils/gameDiagnostics.js",
+      "span": "L18-L26",
+      "signature": "function snapshotGameDiagnostic()",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "77b2c5949bf23429f20a9283e37b8848384a425150785eb822cee2ee3df8af4e",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12880,12 +12951,12 @@
       "name": "gameRequestContext.js",
       "kind": "file",
       "path": "src/utils/gameRequestContext.js",
-      "span": "L1-L33",
+      "span": "L1-L37",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "7da32416295925f970004c4bcc99e36a4956484bf2bef3969559ac184ce5ff27",
-      "chars": 1981,
+      "body_hash": "27a734079dd47b8336074375cd0bf5712661600c869897b2854f7071612786a5",
+      "chars": 2052,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12895,11 +12966,11 @@
       "name": "attachGameRequestContext",
       "kind": "function",
       "path": "src/utils/gameRequestContext.js",
-      "span": "L5-L32",
+      "span": "L5-L15",
       "signature": "function attachGameRequestContext(config)",
       "exported": true,
       "origin": "ast",
-      "body_hash": "f07cc34bd93e297bbe91501aae72dd75d300ec03da6952de28dbe0a70c56b0ed",
+      "body_hash": "0fdb167777168ad74d5ec7d73892e4558055f726cc5a395e0a11c27fdb769d22",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -12914,6 +12985,20 @@
       "exported": false,
       "origin": "ast",
       "body_hash": "c61f81a6c172ebd4c2480eda06f68761e061f0cb7d038b1eda19399708158d76",
+      "summary_state": "pending",
+      "summary": null,
+      "crux": null
+    },
+    {
+      "id": "src/utils/gameRequestContext.js#readGameRequestContext",
+      "name": "readGameRequestContext",
+      "kind": "function",
+      "path": "src/utils/gameRequestContext.js",
+      "span": "L17-L36",
+      "signature": "function readGameRequestContext(config = {})",
+      "exported": true,
+      "origin": "ast",
+      "body_hash": "6b3dcf2d76c3a819a9b8eaec05b3efec1bc5c04f795d4f3b193289ff3c43e8c1",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -13983,12 +14068,12 @@
       "name": "posthog.js",
       "kind": "file",
       "path": "src/utils/posthog.js",
-      "span": "L1-L120",
+      "span": "L1-L125",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "6bbadb7385b2f46824bec386e039acdad410e6fd1fc09b1841a3b04258fa00a1",
-      "chars": 4808,
+      "body_hash": "d342afcccc6b1ded847ba1e7441e31d44576d8d07bb40649186d5b224c90cb28",
+      "chars": 5204,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -13998,7 +14083,7 @@
       "name": "captureApiError",
       "kind": "function",
       "path": "src/utils/posthog.js",
-      "span": "L45-L66",
+      "span": "L46-L67",
       "signature": "function captureApiError(error, service = 'api')",
       "exported": true,
       "origin": "ast",
@@ -14012,11 +14097,11 @@
       "name": "captureGameContext",
       "kind": "function",
       "path": "src/utils/posthog.js",
-      "span": "L68-L108",
+      "span": "L69-L113",
       "signature": "async function captureGameContext(event, properties = {}, comparison = {})",
       "exported": true,
       "origin": "ast",
-      "body_hash": "ba2e9705da52a37c679b6c1be4ee73f5c2bb063e487b2b2b75f84d342abafa2d",
+      "body_hash": "aa65a44a409e93d34569dc17faec6efe100021042f35edf4053a20f717d10e3d",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -14026,7 +14111,7 @@
       "name": "safeEndpoint",
       "kind": "function",
       "path": "src/utils/posthog.js",
-      "span": "L33-L43",
+      "span": "L34-L44",
       "signature": "function safeEndpoint(config)",
       "exported": false,
       "origin": "ast",
@@ -14383,8 +14468,8 @@
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "e9296cec9b2d7a605e5f64fe98c2a21c8fb1a1d0c6017796d6989b4a8496a84a",
-      "chars": 1414,
+      "body_hash": "1fca7f9545e48fefe4da8b9b6d3b2545d54da8cb242856f49a43bfaf8d9787a3",
+      "chars": 1465,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -14412,7 +14497,7 @@
       "signature": "async function prepareRoomGame(room, loadGame)",
       "exported": true,
       "origin": "ast",
-      "body_hash": "7d71cbb9be2e41cf95a78293919fd76437ffa3f80a489d7494ce1ef756300080",
+      "body_hash": "545c6b191a0ce0372a635a6540a169953291e7698824988f1425ab56c65348d0",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -15636,12 +15721,12 @@
       "name": "WebSocketProvider.jsx",
       "kind": "file",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L1-L921",
+      "span": "L1-L923",
       "signature": null,
       "exported": true,
       "origin": "ast",
-      "body_hash": "fa082707d700f9d479c02b36957b213024af2b90b148bb499af94653d291ea36",
-      "chars": 30053,
+      "body_hash": "0e5a72f94c054cd518007b8b5d8d2d3f2208d555ac2fe97eaf03207e72a628d3",
+      "chars": 30282,
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -15651,7 +15736,7 @@
       "name": "clearAllLocalStorageKeys",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L22-L50",
+      "span": "L23-L51",
       "signature": "clearAllLocalStorageKeys = ()",
       "exported": false,
       "origin": "ast",
@@ -15665,7 +15750,7 @@
       "name": "useWebSocket",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L13-L19",
+      "span": "L14-L20",
       "signature": "useWebSocket = ()",
       "exported": true,
       "origin": "ast",
@@ -15679,11 +15764,11 @@
       "name": "WebSocketProvider",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L52-L915",
+      "span": "L53-L917",
       "signature": "WebSocketProvider = ({ children })",
       "exported": true,
       "origin": "ast",
-      "body_hash": "7c36fc4f55851a523bfc6219c31ba0e4db53658f899205613716edcadfd2ccfc",
+      "body_hash": "f27397cf0a4200a5df52c81a1ad8c2604633c2504e497bd9aa3efc04bf7062ad",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -15693,7 +15778,7 @@
       "name": "addMessageHandler",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L118-L121",
+      "span": "L119-L122",
       "signature": "addMessageHandler = (handlerId, handler)",
       "exported": true,
       "origin": "ast",
@@ -15707,7 +15792,7 @@
       "name": "autoReconnect",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L709-L759",
+      "span": "L711-L761",
       "signature": "autoReconnect = async ()",
       "exported": true,
       "origin": "ast",
@@ -15721,7 +15806,7 @@
       "name": "clearReloadingFlag",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L88-L94",
+      "span": "L89-L95",
       "signature": "clearReloadingFlag = ()",
       "exported": true,
       "origin": "ast",
@@ -15735,11 +15820,11 @@
       "name": "connect",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L416-L598",
+      "span": "L417-L600",
       "signature": "connect = async (currentSessionId, isReconnect = false)",
       "exported": true,
       "origin": "ast",
-      "body_hash": "6332a4d40a2e2ab47c397dd77e7a07ee68be0d9d18067356f3bf02864de3e502",
+      "body_hash": "1120f66b92fabc2174343331fb5eddc0258783d621c4659ecf2667d37aea4623",
       "summary_state": "pending",
       "summary": null,
       "crux": null
@@ -15749,7 +15834,7 @@
       "name": "disconnect",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L600-L620",
+      "span": "L602-L622",
       "signature": "disconnect = ()",
       "exported": true,
       "origin": "ast",
@@ -15763,7 +15848,7 @@
       "name": "handleBeforeUnload",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L682-L684",
+      "span": "L684-L686",
       "signature": "handleBeforeUnload = ()",
       "exported": true,
       "origin": "ast",
@@ -15777,7 +15862,7 @@
       "name": "handleBeforeUnload",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L771-L775",
+      "span": "L773-L777",
       "signature": "handleBeforeUnload = ()",
       "exported": true,
       "origin": "ast",
@@ -15791,7 +15876,7 @@
       "name": "handleLoadCleanup",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L686-L692",
+      "span": "L688-L694",
       "signature": "handleLoadCleanup = ()",
       "exported": true,
       "origin": "ast",
@@ -15805,7 +15890,7 @@
       "name": "handleVisibilityChange",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L777-L783",
+      "span": "L779-L785",
       "signature": "handleVisibilityChange = ()",
       "exported": true,
       "origin": "ast",
@@ -15819,7 +15904,7 @@
       "name": "initializeVoiceSession",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L177-L332",
+      "span": "L178-L333",
       "signature": "initializeVoiceSession = async (isHost = false)",
       "exported": true,
       "origin": "ast",
@@ -15833,7 +15918,7 @@
       "name": "initializeVoiceWebSocket",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L624-L677",
+      "span": "L626-L679",
       "signature": "initializeVoiceWebSocket = async (isHost = false)",
       "exported": true,
       "origin": "ast",
@@ -15847,7 +15932,7 @@
       "name": "isReloadingGrace",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L95-L109",
+      "span": "L96-L110",
       "signature": "isReloadingGrace = ()",
       "exported": true,
       "origin": "ast",
@@ -15861,7 +15946,7 @@
       "name": "joinVoiceSession",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L335-L394",
+      "span": "L336-L395",
       "signature": "joinVoiceSession = async (sessionId)",
       "exported": true,
       "origin": "ast",
@@ -15875,7 +15960,7 @@
       "name": "removeMessageHandler",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L123-L128",
+      "span": "L124-L129",
       "signature": "removeMessageHandler = (handlerId)",
       "exported": true,
       "origin": "ast",
@@ -15889,7 +15974,7 @@
       "name": "scheduleReconnect",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L397-L412",
+      "span": "L398-L413",
       "signature": "scheduleReconnect = (currentSessionId)",
       "exported": true,
       "origin": "ast",
@@ -15903,7 +15988,7 @@
       "name": "sendMessage",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L129-L138",
+      "span": "L130-L139",
       "signature": "sendMessage = (message)",
       "exported": true,
       "origin": "ast",
@@ -15917,7 +16002,7 @@
       "name": "setReloadingFlagForGrace",
       "kind": "function",
       "path": "src/WebSocketProvider.jsx",
-      "span": "L78-L87",
+      "span": "L79-L88",
       "signature": "setReloadingFlagForGrace = ()",
       "exported": true,
       "origin": "ast",
@@ -22588,6 +22673,12 @@
     },
     {
       "source": "src/hooks/useWebSocketMessage.jsx",
+      "target": "src/utils/gameDiagnostics.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/hooks/useWebSocketMessage.jsx",
       "target": "src/WebSocketProvider.jsx",
       "relation": "imports",
       "confidence": "extracted"
@@ -22669,6 +22760,12 @@
       "target": "src/hooks/useWebSocketMessage.jsx#useWebSocketMessage",
       "relation": "calls",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/hooks/useWebSocketMessage.jsx#useWebSocketNavigation",
+      "target": "src/utils/gameDiagnostics.js#recordGameDiagnostic",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/imagenamereplace.js",
@@ -27646,6 +27743,12 @@
     },
     {
       "source": "src/pages/CustomRoom.jsx",
+      "target": "src/utils/gameDiagnostics.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/pages/CustomRoom.jsx",
       "target": "src/utils/posthog.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -27707,6 +27810,12 @@
     {
       "source": "src/pages/CustomRoom.jsx#SelectRoom.run",
       "target": "src/utils/customGameStorage.js#setCustomGameCode",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/pages/CustomRoom.jsx#SelectRoom.run",
+      "target": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
       "relation": "calls",
       "confidence": "inferred"
     },
@@ -33640,6 +33749,12 @@
     },
     {
       "source": "src/utils/customGameStorage.js",
+      "target": "src/utils/customGameStorage.js#recordStorageChange",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js",
       "target": "src/utils/customGameStorage.js#saveCustomGame",
       "relation": "contains",
       "confidence": "extracted"
@@ -33649,6 +33764,24 @@
       "target": "src/utils/customGameStorage.js#setCustomGameCode",
       "relation": "contains",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js",
+      "target": "src/utils/gameDiagnostics.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js#clearCustomGame",
+      "target": "src/utils/customGameStorage.js#recordStorageChange",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js#clearCustomGame",
+      "target": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/utils/customGameStorage.js#hasStory",
@@ -33669,6 +33802,18 @@
       "confidence": "extracted"
     },
     {
+      "source": "src/utils/customGameStorage.js#recordStorageChange",
+      "target": "src/utils/gameDiagnostics.js#recordGameDiagnostic",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/customGameStorage.js#recordStorageChange",
+      "target": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
       "source": "src/utils/customGameStorage.js#saveCustomGame",
       "target": "src/utils/customGameStorage.js#hasStory",
       "relation": "calls",
@@ -33682,6 +33827,12 @@
     },
     {
       "source": "src/utils/customGameStorage.js#saveCustomGame",
+      "target": "src/utils/customGameStorage.js#recordStorageChange",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js#saveCustomGame",
       "target": "src/utils/customGameStorage.js#saveCustomGame.setArr",
       "relation": "calls",
       "confidence": "extracted"
@@ -33694,6 +33845,12 @@
     },
     {
       "source": "src/utils/customGameStorage.js#saveCustomGame",
+      "target": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/customGameStorage.js#saveCustomGame",
       "target": "src/utils/customGameStorage.js#saveCustomGame.setArr",
       "relation": "contains",
       "confidence": "extracted"
@@ -33703,6 +33860,60 @@
       "target": "src/utils/customGameStorage.js#saveCustomGame.setStr",
       "relation": "contains",
       "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js#setCustomGameCode",
+      "target": "src/utils/customGameStorage.js#recordStorageChange",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/customGameStorage.js#setCustomGameCode",
+      "target": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/gameDiagnostics.js",
+      "target": "src/utils/gameDiagnostics.js#flush",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/gameDiagnostics.js",
+      "target": "src/utils/gameDiagnostics.js#flush",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/gameDiagnostics.js",
+      "target": "src/utils/gameDiagnostics.js#recordGameDiagnostic",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/gameDiagnostics.js",
+      "target": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/gameDiagnostics.js",
+      "target": "src/utils/gameRequestContext.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/gameDiagnostics.js#recordGameDiagnostic",
+      "target": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
+      "target": "src/utils/gameRequestContext.js#readGameRequestContext",
+      "relation": "calls",
+      "confidence": "inferred"
     },
     {
       "source": "src/utils/gameRequestContext.js",
@@ -33717,7 +33928,19 @@
       "confidence": "extracted"
     },
     {
+      "source": "src/utils/gameRequestContext.js",
+      "target": "src/utils/gameRequestContext.js#readGameRequestContext",
+      "relation": "contains",
+      "confidence": "extracted"
+    },
+    {
       "source": "src/utils/gameRequestContext.js#attachGameRequestContext",
+      "target": "src/utils/gameRequestContext.js#readGameRequestContext",
+      "relation": "calls",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/gameRequestContext.js#readGameRequestContext",
       "target": "src/utils/gameRequestContext.js#code",
       "relation": "calls",
       "confidence": "extracted"
@@ -34210,6 +34433,12 @@
     },
     {
       "source": "src/utils/posthog.js",
+      "target": "src/utils/gameDiagnostics.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
+      "source": "src/utils/posthog.js",
       "target": "src/utils/gameRequestContext.js",
       "relation": "imports",
       "confidence": "extracted"
@@ -34229,6 +34458,18 @@
     {
       "source": "src/utils/posthog.js#captureGameContext",
       "target": "src/utils/customGameStorage.js#isCustomGameReady",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/posthog.js#captureGameContext",
+      "target": "src/utils/gameDiagnostics.js#recordGameDiagnostic",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/utils/posthog.js#captureGameContext",
+      "target": "src/utils/gameDiagnostics.js#snapshotGameDiagnostic",
       "relation": "calls",
       "confidence": "inferred"
     },
@@ -35511,6 +35752,12 @@
       "confidence": "extracted"
     },
     {
+      "source": "src/WebSocketProvider.jsx",
+      "target": "src/utils/gameDiagnostics.js",
+      "relation": "imports",
+      "confidence": "extracted"
+    },
+    {
       "source": "src/WebSocketProvider.jsx#WebSocketProvider",
       "target": "src/WebSocketProvider.jsx#clearAllLocalStorageKeys",
       "relation": "calls",
@@ -35663,6 +35910,12 @@
     {
       "source": "src/WebSocketProvider.jsx#WebSocketProvider.connect",
       "target": "src/api/axiosInstance.js#ensureFreshAccessToken",
+      "relation": "calls",
+      "confidence": "inferred"
+    },
+    {
+      "source": "src/WebSocketProvider.jsx#WebSocketProvider.connect",
+      "target": "src/utils/gameDiagnostics.js#recordGameDiagnostic",
       "relation": "calls",
       "confidence": "inferred"
     },

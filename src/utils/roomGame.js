@@ -25,10 +25,10 @@ export function isRoomGameReady(room) {
 export async function prepareRoomGame(room, loadGame) {
   const code = roomGameCode(room);
   if (code) {
-    setCustomGameCode(code);
-    if (!isCustomGameReady()) saveCustomGame(await loadGame(code), code);
+    setCustomGameCode(code, 'room_guard');
+    if (!isCustomGameReady()) saveCustomGame(await loadGame(code), code, 'room_guard');
     if (!isRoomGameReady(room)) throw new Error('방의 게임 데이터를 저장하지 못했습니다. 다시 시도해주세요.');
   } else {
-    clearCustomGame();
+    clearCustomGame('room_guard_basic_room');
   }
 }

@@ -1,7 +1,8 @@
 //웹소켓 새로고침 시 연결 다시 하는 것 성공 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import axiosInstance, { ensureFreshAccessToken } from './api/axiosInstance';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
+import { recordGameDiagnostic } from './utils/gameDiagnostics';
 
 const WebSocketContext = createContext();
 
@@ -513,6 +514,7 @@ export const WebSocketProvider = ({ children }) => {
       socket.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
+          if (['next_page', 'info'].includes(msg.type)) recordGameDiagnostic('navigation_received', { message_type: msg.type, message_id: msg.diagnostic_id || '' });
          // console.log(`📨 [${providerId}] WebSocket 메시지 수신:`, msg);
 
                  // ① 서버가 보낸 앱-레벨 ping 에는 즉시 pong으로 응답

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useWebSocket } from '../WebSocketProvider';
+import { recordGameDiagnostic } from '../utils/gameDiagnostics';
 
 // 특정 메시지 타입에 대한 핸들러 등록
 export const useWebSocketMessage = (messageType, handler, dependencies = []) => {
@@ -66,7 +67,8 @@ export const useWebSocketNavigation = (
 ) => {
   useWebSocketMessage(
     "info",
-    () => {
+    (message) => {
+      recordGameDiagnostic('navigation_selected', { message_id: message.diagnostic_id || '', message_type: 'info', destination: infoPath || '' });
       console.log('📨 info 수신 → 페이지 이동');
       if (infoPath) navigate(infoPath);
     },
@@ -75,7 +77,8 @@ export const useWebSocketNavigation = (
 
   useWebSocketMessage(
     "next_page",
-    () => {
+    (message) => {
+      recordGameDiagnostic('navigation_selected', { message_id: message.diagnostic_id || '', message_type: 'next_page', destination: nextPagePath || '' });
       console.log('📨 next_page 수신 → 페이지 이동');
       if (nextPagePath) navigate(nextPagePath);
     },

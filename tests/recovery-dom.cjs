@@ -11,6 +11,7 @@ Object.assign(global, { window: dom.window, document: dom.window.document,
   IS_REACT_ACT_ENVIRONMENT: true });
 Object.defineProperty(global, 'navigator', { configurable: true, value: dom.window.navigator });
 dom.window.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
+dom.window.HTMLElement.prototype.scrollIntoView = function() {};
 const React = require('react');
 const { act } = React;
 const { createRoot } = require('react-dom/client');
@@ -47,7 +48,7 @@ async function mount(Component) {
 }
 async function unmount() { await act(async () => root.unmount()); host.remove(); }
 async function resolve(value) { const request = pending.shift(); assert.ok(request); await act(async () => request.resolve(value)); }
-async function reject() { const request = pending.shift(); assert.ok(request); await act(async () => request.reject(new Error('simulated timeout'))); }
+async function reject(error = new Error('simulated timeout')) { const request = pending.shift(); assert.ok(request); await act(async () => request.reject(error)); }
 async function type(text) {
   await act(async () => {
     const input = host.querySelector('textarea');
@@ -68,11 +69,12 @@ async function send() { await act(async () => host.querySelector('.rn-send').cli
     loader: { '.svg': 'dataurl', '.png': 'dataurl', '.jpg': 'dataurl', '.css': 'empty' }, logLevel: 'silent', define: { 'import.meta.env': '{}' },
     plugins: [{ name: 'controlled-io', setup(build) {
       build.onResolve({ filter: /^(react(\/.*)?|axios)$/ }, args => ({ path: require.resolve(args.path), external: true }));
-      build.onResolve({ filter: /(?:api\/axiosInstance|api\/adminIngest|react-router-dom)$/ }, args => ({ path: args.path, namespace: 'mock' }));
+      build.onResolve({ filter: /(?:api\/axiosInstance|api\/adminIngest|utils\/posthog|react-router-dom)$/ }, args => ({ path: args.path, namespace: 'mock' }));
       build.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path: name }) => ({ contents: name.includes('axiosInstance')
         ? 'export const callChatbot = p => globalThis.__recovery.call(p); export default globalThis.__recovery;'
         : name.includes('adminIngest') ? 'export const sendIngestEvent = (...args) => globalThis.__recovery.ingest(...args);'
-          : 'export const useNavigate = () => globalThis.__recovery.navigate; export const useLocation = () => ({pathname:globalThis.__recovery.pathname || "/chatpage2"}); export const Navigate = ({to}) => "redirect:"+to; export const Outlet = () => globalThis.__recovery.renderOutlet();' }));
+          : name.includes('posthog') ? 'export const captureApiError = () => {};'
+          : 'export const useNavigate = () => globalThis.__recovery.navigate; export const useLocation = () => ({pathname:globalThis.__recovery.pathname || "/chatpage2", search:globalThis.__recovery.search || ""}); export const Navigate = ({to}) => "redirect:"+to; export const Outlet = () => globalThis.__recovery.renderOutlet();' }));
     } }],
   });
   const Chat = require(path.join(directory, 'chat.cjs')).default;
@@ -186,6 +188,36 @@ async function send() { await act(async () => host.querySelector('.rn-send').cli
   assert.deepEqual(errors, []);
   console.log('PASS approval loading, cancellation, retry, translation protection and render-error recovery');
 
+  global.__recovery.failRender = false;
+  global.__recovery.pathname = '/customroom';
+  global.__recovery.search = '?code=u8spl0z7yo';
+  localStorage.removeItem('access_token');
+  const beforeAnonymousGate = requests.length;
+  await mount(Gate);
+  assert.equal(host.textContent, 'redirect:/?code=u8spl0z7yo');
+  assert.equal(requests.length, beforeAnonymousGate, 'Anonymous entry must not call the approval API');
+  await unmount();
+  global.__recovery.search = '';
+  sessionStorage.removeItem('custom_game_code');
+  await mount(Gate);
+  assert.equal(host.textContent, 'redirect:/');
+  await unmount();
+  sessionStorage.setItem('custom_game_code', 'SAVED-GAME');
+  await mount(Gate);
+  assert.equal(host.textContent, 'redirect:/?code=SAVED-GAME');
+  await unmount();
+  localStorage.setItem('access_token', jwt('account-one'));
+  global.__recovery.search = '?code=u8spl0z7yo';
+  for (const status of [401, 403]) {
+    await mount(Gate);
+    await reject({ response: { status } }); // Aborted StrictMode request.
+    await reject({ response: { status } });
+    assert.equal(host.textContent, 'redirect:/?code=u8spl0z7yo');
+    await unmount();
+  }
+  global.__recovery.search = '';
+  console.log('PASS anonymous and expired authentication redirects with URL or saved game code');
+
   global.__recovery.pathname = '/create03';
   localStorage.setItem('dilemma_image_3', 'https://example.invalid/local-image.png');
   localStorage.setItem('dilemma_situation', JSON.stringify(Array.from({ length: 8 }, (_, i) => `상황 ${i + 1}`)));
@@ -193,18 +225,19 @@ async function send() { await act(async () => host.querySelector('.rn-send').cli
   localStorage.setItem('agree_label', sample.agree_label);
   localStorage.setItem('disagree_label', sample.disagree_label);
   await mount(Editor);
+  assert.deepEqual(errors, []);
   assert.equal(pending.length, 0, 'Editor uses the existing local draft');
-  await act(async () => host.querySelector('img[alt="next"]').click());
+  await act(async () => host.querySelector('button[aria-label="다음 화면"]').click());
   assert.equal(pending.length, 1);
   assert.equal(requests.at(-1).data.situation.length, 8);
   assert.ok(host.textContent.includes('저장하고 있어요'));
-  await act(async () => host.querySelector('img[alt="next"]').click());
+  await act(async () => host.querySelector('button[aria-label="다음 화면"]').click());
   assert.equal(pending.length, 1, 'Repeated next clicks must not submit multiple saves');
   const navigatedBeforeFailure = navigations.length;
   await reject();
   assert.equal(navigations.length, navigatedBeforeFailure);
   assert.ok(host.textContent.includes('입력한 내용은 유지됩니다'));
-  await act(async () => host.querySelector('img[alt="next"]').click());
+  await act(async () => host.querySelector('button[aria-label="다음 화면"]').click());
   await resolve({ data: {} });
   assert.equal(navigations.at(-1), '/create04');
   await unmount();
@@ -234,5 +267,50 @@ async function send() { await act(async () => host.querySelector('.rn-send').cli
   await assert.rejects(api.put('/custom-games/LOCAL-TEST', {}), /refresh timeout/);
   assert.equal(refreshed, 1);
   console.log('PASS shared API bounds: editor/preview, chat, explicit uploads and failed authentication refresh');
+
+  localStorage.removeItem('refresh_token');
+  let authError;
+  api.defaults.adapter = async config => {
+    authError = { config, response: { status: 401 } };
+    throw authError;
+  };
+  await assert.rejects(api.get('/play-applications/me'), error => error === authError);
+  assert.equal(refreshed, 1, 'Missing refresh token must preserve 401 without attempting refresh');
+
+  localStorage.setItem('refresh_token', 'local-only');
+  for (const status of [401, 403]) {
+    axios.defaults.adapter = async () => { throw { response: { status } }; };
+    await assert.rejects(api.get('/play-applications/me'), error => error === authError);
+  }
+  for (const failure of [new Error('Network Error'), { code: 'ECONNABORTED' }, { response: { status: 500 } }]) {
+    axios.defaults.adapter = async () => { throw failure; };
+    await assert.rejects(api.get('/play-applications/me'), error => error === failure);
+  }
+
+  let attempts = 0;
+  api.defaults.adapter = async config => {
+    attempts++;
+    if (attempts === 1) throw { config, response: { status: 401 } };
+    assert.equal(config.headers.Authorization, 'Bearer renewed-access');
+    return { data: { status: 'approved' }, status: 200, headers: {}, config };
+  };
+  axios.defaults.adapter = async config => ({
+    data: { access_token: 'renewed-access', refresh_token: 'renewed-refresh', token_type: 'Bearer' },
+    status: 200, headers: {}, config,
+  });
+  assert.equal((await api.get('/play-applications/me')).data.status, 'approved');
+  assert.equal(attempts, 2);
+  assert.equal(localStorage.getItem('refresh_token'), 'renewed-refresh');
+
+  let serverError;
+  api.defaults.adapter = async config => {
+    serverError = { config, response: { status: 500 } };
+    throw serverError;
+  };
+  axios.defaults.adapter = async () => { throw { response: { status: 401 } }; };
+  await assert.rejects(api.get('/play-applications/me'), error => error === serverError);
+  localStorage.removeItem('refresh_token');
+  await assert.rejects(api.get('/play-applications/me'), error => error === serverError);
+  console.log('PASS authentication errors stay 401, valid refresh retries, and connection/server failures stay retryable');
 })().catch(error => { console.error(error); process.exitCode = 1; })
   .finally(() => { fs.rmSync(directory, { recursive: true, force: true }); dom.window.close(); });

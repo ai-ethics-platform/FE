@@ -165,6 +165,11 @@ instance.interceptors.response.use(
 
     // ===== 401/403: 정석적인 만료 케이스 - 단 1회만 시도 =====
     if ((status === 401 || status === 403) && !originalRequest._retry) {
+      // 갱신 수단이 없으면 원래 인증 오류를 유지해 로그인 화면으로 이동한다.
+      if (!localStorage.getItem('refresh_token')) {
+        captureApiError(error);
+        return Promise.reject(error);
+      }
       originalRequest._retry = true;
       try {
         const newAccessToken = await refreshAccessToken(); // 문자열 반환
@@ -178,13 +183,16 @@ instance.interceptors.response.use(
         return instance(originalRequest);
       } catch (refreshError) {
         captureApiError(error);
+        if (refreshError.response?.status === 401 || refreshError.response?.status === 403) {
+          return Promise.reject(error);
+        }
         return Promise.reject(refreshError);
       }
     }
 
     // ===== 500: 서버가 만료를 500으로 돌려주는 비정상 케이스 =====
     // - 특정 횟수까지만 refresh 시도
-    if (status === 500) {
+    if (status === 500 && localStorage.getItem('refresh_token')) {
       originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
 
       if (originalRequest._retryCount <= MAX_500_REFRESH_RETRY) {
@@ -198,10 +206,10 @@ instance.interceptors.response.use(
           };
           console.log("500에러 리프래시 토큰 재발급 완료 ")
           return instance(originalRequest);
-        } catch (refreshError) {
+        } catch {
           // refresh마저 실패하면 바로 이탈
           captureApiError(error);
-          return Promise.reject(refreshError);
+          return Promise.reject(error);
         }
       }
       // 최대 횟수 초과 → 그대로 실패 반환

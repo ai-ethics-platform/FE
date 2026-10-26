@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import React, { useState } from 'react';
 import frame from '../assets/gamemapcard.svg';
 import frameHover from '../assets/gamemapcardactive.svg';
@@ -17,6 +18,9 @@ export default function GameMapFrame({
   option1,
   option2,}) 
   {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
   
@@ -60,8 +64,8 @@ export default function GameMapFrame({
       onClick={!disabled ? onClick : undefined}
       style={{
         position: 'relative',
-        width: CardSizes.width,
-        height: CardSizes.height, 
+        width: tab ? 'min(360px, calc((100vw - 48px) / 3))' : m ? 'min(360px, calc(100vw - 32px))' : CardSizes.width,
+        height: m ? 400 : CardSizes.height, 
         opacity: disabled ? 0.4 : 1,
         pointerEvents: disabled ? 'none' : 'auto',
         cursor: disabled ? 'default' : 'pointer',
@@ -122,8 +126,8 @@ export default function GameMapFrame({
           src={icon}
           alt="카드 아이콘"
           style={{
-            width: CardSizes.icon.width,
-            height: CardSizes.icon.width,
+            width: m ? 120 : CardSizes.icon.width,
+            height: m ? 120 : CardSizes.icon.width,
             marginBottom: 15,
           }}
         />

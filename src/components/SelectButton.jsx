@@ -1,3 +1,4 @@
+import { useIsMobile } from '../core/responsive';
 import React, { useState } from 'react';
 import { Colors, FontStyles } from './styleConstants';
 
@@ -8,6 +9,7 @@ export default function SelectButton({
   width = 360,
   height = 72,
 }) {
+  const m = useIsMobile();
   const [internalSelected, setInternalSelected] = useState(false);
   const isControlled = controlledSelected !== undefined;
   const selected = isControlled ? controlledSelected : internalSelected;
@@ -48,7 +50,7 @@ export default function SelectButton({
     justifyContent: 'center',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    width,
+    width: m ? '100%' : width,
     height,
     userSelect: 'none',
     boxSizing: 'border-box',

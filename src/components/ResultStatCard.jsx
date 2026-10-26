@@ -10,6 +10,7 @@ import lockIcon from "../assets/lock.svg";
 
 // 언어팩 가져오기
 import { translations } from '../utils/language';
+import { useIsMobile } from '../core/responsive';
 
 // 안드로이드 카테고리 질문 (언어팩 연동으로 대체됨)
 // 자율 무기 시스템 카테고리 질문 (언어팩 연동으로 대체됨)
@@ -22,6 +23,7 @@ export default function ResultStatCard({
   leftImageSrc,
   isSelected, // 부모에서 전달된 선택
 }) {
+  const m = useIsMobile();
   const navigate = useNavigate();
   const category = localStorage.getItem('category'); // '안드로이드' 또는 '자율 무기 시스템'
 
@@ -125,9 +127,16 @@ export default function ResultStatCard({
   
   return (
     <div style={{ position: "relative", width: "100%", maxWidth: 936, margin: "0 auto" }}>
-      <img src={frame} alt="" style={{ width: "100%", display: "block" }} />
+      {m ? <div style={{ position: "absolute", inset: 0, background: "#FCFDFA", border: "1px solid #D3D8DF", borderRadius: 8 }} /> : <img src={frame} alt="" style={{ width: "100%", display: "block" }} />}
       <div
-        style={{
+        style={m ? {
+          position: "relative",
+          padding: pad,
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          rowGap: 16,
+          justifyItems: "center",
+        } : {
           position: "absolute",
           inset: pad,
           display: "grid",
@@ -283,27 +292,22 @@ export default function ResultStatCard({
             <>
               {/* 잠금 상태: 회색 단색 바 + 우측 CTA */}
               <div style={{ position: "relative", width: "100%" }}>
-                <div style={{ height: 56, width: "100%", borderRadius: 6, background: GREY02 }} />
+                <div style={{ height: m ? 0 : 56, width: "100%", borderRadius: 6, background: GREY02 }} />
                 <div
                   role="button"
                   onClick={handleGoToSubtopic}
                   style={{
-                    position: "absolute",
-                    right: 0,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    height: 40,
+                    ...(m ? { position: "relative", width: "100%", minHeight: 48, padding: "6px 12px", justifyContent: "center" } : { position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", height: 40, padding: "0 16px" }),
                     display: "flex",
                     alignItems: "center",
                     gap: 10,
-                    padding: "0 16px",
                     borderRadius: 4,
                     background: GREY02,
                     cursor: "pointer",
                     userSelect: "none",
                   }}
                 >
-                  <span style={{ whiteSpace: "nowrap" }}>
+                  <span style={{ whiteSpace: m ? "normal" : "nowrap", textAlign: "center" }}>
                     <span style={{ ...FontStyles.body, color: GREY06 }}>{t.lock?.prefix}</span>
                     <span style={{ ...FontStyles.bodyBold, color: GREY06 }}>
                       {/* 화면 표시용 제목 (영문/한글) */}

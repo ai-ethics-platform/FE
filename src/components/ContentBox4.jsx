@@ -1,9 +1,13 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import React, { useEffect, useState } from 'react';
 import useTypingEffect from '../hooks/useTypingEffect';
 import contentBoxFrame from '../assets/contentBox2.svg';
 import { Colors, FontStyles } from './styleConstants';
 
 export default function ContentBox4({ text, leftText = false, leftTextContent = '', typingSpeed = 45 }) {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
     const typedText = useTypingEffect(text, typingSpeed);
   
     const [startLeftTyping, setStartLeftTyping] = useState(false);
@@ -19,8 +23,8 @@ export default function ContentBox4({ text, leftText = false, leftTextContent = 
     <div
       style={{
         position: 'relative',
-        width: 960,
-        height: 520,
+        width: m ? '100%' : 960,
+        ...(m ? { minHeight: tab ? 440 : 360, maxWidth: 960 } : { height: 520 }),
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -35,6 +39,7 @@ export default function ContentBox4({ text, leftText = false, leftTextContent = 
           left: 0,
           width: '100%',
           height: '100%',
+          objectFit: 'fill',
           pointerEvents: 'none',
         }}
       />
@@ -49,7 +54,7 @@ export default function ContentBox4({ text, leftText = false, leftTextContent = 
           overflowWrap: 'anywhere',
           whiteSpace: 'pre-line',
           maxWidth: 1000,
-          padding: '40px 60px',
+          padding: m ? '40px 28px' : '40px 60px',
           zIndex: 1,
         }}
       >

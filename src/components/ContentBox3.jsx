@@ -1,9 +1,13 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import React from 'react';
 import useTypingEffect from '../hooks/useTypingEffect';
 import contentBoxFrame from '../assets/contentBox2.svg';
 import { Colors, FontStyles } from './styleConstants';
 
 export default function ContentBox2({ text, typingSpeed = 45 }) {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   // 타이핑 중인 텍스트 데이터 로드
   const typedText = useTypingEffect(text, typingSpeed);
   
@@ -16,8 +20,8 @@ export default function ContentBox2({ text, typingSpeed = 45 }) {
   return (
     <div style={{
       position: 'relative',
-      width: 960,
-      height: 520,
+      width: m ? '100%' : 960,
+      ...(m ? { minHeight: tab ? 440 : 360, maxWidth: 960 } : { height: 520 }),
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -31,6 +35,7 @@ export default function ContentBox2({ text, typingSpeed = 45 }) {
           left: 0,
           width: '100%',
           height: '100%',
+          objectFit: 'fill',
           pointerEvents: 'none',
         }}
       />
@@ -47,7 +52,7 @@ export default function ContentBox2({ text, typingSpeed = 45 }) {
         overflowWrap: 'break-word',
         whiteSpace: 'pre-line',
         maxWidth: 820, // 텍스트가 박스 테두리에 닿지 않도록 너비 제한 조절
-        padding: '40px 40px',
+        padding: m ? '40px 28px' : '40px 40px',
         zIndex: 1,
       }}>
         {/* 현재 출력되는 실제 텍스트 */}

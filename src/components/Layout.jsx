@@ -9,6 +9,7 @@ import BackButton from './BackButton';
 import hostInfoSvg from '../assets/host_info.svg'; 
 import hostInfoSvg_en from '../assets/en/host_info_en.svg'; // 영문용 에셋 추가
 import HostInfoBadge from '../components/HostInfoBadge';
+import { IS_RESPONSIVE, useViewportWidth, PHONE_MAX } from '../core/responsive';
 
 // 서버 데이터 동기화를 위한 axios 인스턴스 임포트
 import axiosInstance from '../api/axiosInstance';
@@ -31,6 +32,7 @@ export default function Layout({
   showSidebar = true, // ✅ 사이드바 표시 여부 제어 프롭 추가 (기본값 true)
 }) {
   const [zoom, setZoom] = useState(1);
+  const vwTab = useViewportWidth() > PHONE_MAX;
   const location = useLocation(); // 현재 경로 감지
   
   // [다국어 확장 설계] 현재 언어 로드 및 폴백(Fallback) 처리
@@ -138,7 +140,7 @@ export default function Layout({
       const widthRatio = window.innerWidth / 1480;
       const heightRatio = window.innerHeight / 800;
       const scale = Math.min(widthRatio, heightRatio, 1);
-      setZoom(Math.max(scale, 0.6));
+      setZoom(IS_RESPONSIVE ? 1 : Math.max(scale, 0.6));
     };
     onResize();
     window.addEventListener('resize', onResize);
@@ -198,6 +200,18 @@ export default function Layout({
           .layout-sidebar-extra { margin-top: 10px; margin-left: 14px; align-self: flex-start; }
           .layout-stage { width: 1060px; min-height: 720px; height: auto; position: relative; transform: scale(${zoom}); transform-origin: center center; display: flex; flex-direction: column; align-items: center; padding: 5px 24px 32px; margin: 40px auto; }
           .layout-gameframe { width: auto; max-width: none; margin-bottom: 10px; display: flex; justify-content: center; }
+          ${IS_RESPONSIVE ? `
+          html, body, #root { overflow: auto; height: auto; min-height: 100%; }
+          .layout-viewport { position: static; display: block; overflow: visible; }
+          .layout-sidebar { position: static; transform: none; width: 100%; padding: 76px 0 0; }
+          .layout-sidebar-profiles { flex-direction: row; gap: 4px; justify-content: center; }
+          .layout-sidebar-profiles > div { zoom: ${vwTab ? 0.85 : 0.55}; flex-shrink: 0; }
+          .layout-sidebar-extra { margin: 6px 8px 0; }
+          .layout-stage { width: 100%; max-width: 1060px; min-height: 0; transform: none; padding: ${showSidebar ? 8 : 76}px 12px 24px; margin: 0 auto; box-sizing: border-box; }
+          .layout-stage img, .layout-stage video, .layout-stage svg { max-width: 100%; height: auto; }
+          .layout-gameframe { max-width: 100%; overflow: hidden; zoom: ${vwTab ? 1 : 0.62}; }
+          .layout-stage { overflow-x: clip; }
+          ` : ''}
         `}</style>
         <div className="layout-viewport" style={viewportOverride}>
           {/* ✅ 사이드바 표시 여부 조건 추가 */}

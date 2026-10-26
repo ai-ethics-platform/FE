@@ -4,6 +4,7 @@ import React, { useState, useRef, useLayoutEffect } from 'react';
 import arrowLeft from '../assets/arrowLhover.svg';
 import arrowRight from '../assets/arrowRhover.svg';
 import { FontStyles, Colors } from './styleConstants';
+import { useIsMobile, useViewportWidth } from '../core/responsive';
 
 export default function GameFrame({
   topic = '',
@@ -17,16 +18,22 @@ export default function GameFrame({
 }) {
   const textRef = useRef(null);
   const [dynamicWidth, setDynamicWidth] = useState(width);
+  const [wrapped, setWrapped] = useState(false);
+  const m = useIsMobile();
+  const vw = useViewportWidth();
 
   useLayoutEffect(() => {
     if (textRef.current) {
       const textW = textRef.current.offsetWidth;
       // [조정] 영문 등 긴 텍스트 대응을 위해 패딩 버퍼를 100으로 상향 조정하여 여유 공간 확보
       const paddingBuffer = 100; 
-      const newWidth = Math.max(width, Math.ceil(textW + paddingBuffer));
-      setDynamicWidth(newWidth);
+      const natural = Math.max(width, Math.ceil(textW + paddingBuffer));
+      // /r 모드: 화면보다 넓어지면 줄여서 텍스트를 두 줄로 감싼다
+      const cap = m ? Math.max(200, vw - 24) : Infinity;
+      setDynamicWidth(Math.min(natural, cap));
+      setWrapped(natural > cap);
     }
-  }, [topic, width]);
+  }, [topic, width, m, vw]);
 
   const W = dynamicWidth;
   // W값에 따라 동적으로 계산되는 경로 (중앙 대칭 유지)
@@ -72,17 +79,20 @@ export default function GameFrame({
           zIndex: 2,
           color: Colors.grey01,
           textAlign: 'center',
-          whiteSpace: 'nowrap',
+          whiteSpace: wrapped ? 'normal' : 'nowrap',
           ...FontStyles.headlineSmall,
-          padding: '0 40px', // 텍스트와 상자 끝 사이의 안전 거리
+          ...(wrapped ? { fontSize: 15, lineHeight: 1.25, wordBreak: 'keep-all' } : {}),
+          padding: wrapped ? '0 36px' : '0 40px', // 텍스트와 상자 끝 사이의 안전 거리
         }}
       >
         {topic}
       </div>
 
       {/* 너비 계산용 숨겨진 div */}
-      <div ref={textRef} style={{ position: 'absolute', visibility: 'hidden', whiteSpace: 'nowrap', ...FontStyles.headlineSmall }}>
-        {topic}
+      <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        <div ref={textRef} style={{ display: 'inline-block', visibility: 'hidden', whiteSpace: 'nowrap', ...FontStyles.headlineSmall }}>
+          {topic}
+        </div>
       </div>
     </div>
   );

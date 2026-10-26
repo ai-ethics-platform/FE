@@ -5,10 +5,14 @@ import frameActive from '../assets/cardframeactive.svg';
 import lockIcon from '../assets/lock.svg';
 import { Colors, FontStyles } from './styleConstants';
 import { CardSizes } from './stylecardsize';
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 
 export default function RoomCard({ icon, title, description, disabled = false, onClick }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
 
   const getFrameImage = () => {
     if (isActive) return frameActive;
@@ -21,8 +25,9 @@ export default function RoomCard({ icon, title, description, disabled = false, o
       onClick={!disabled ? onClick : undefined}
       style={{
         position: 'relative',
-        width: CardSizes.width,
-        height: CardSizes.height,
+        width: tab ? 'min(360px, calc((100vw - 80px) / 3))' : m ? 'min(360px, calc(100vw - 32px))' : CardSizes.width,
+        height: tab ? 450 : m ? 400 : CardSizes.height,
+        flexShrink: 0,
         opacity: disabled ? 0.4 : 1,
         pointerEvents: disabled ? 'none' : 'auto',
         cursor: disabled ? 'default' : 'pointer',
@@ -74,7 +79,7 @@ export default function RoomCard({ icon, title, description, disabled = false, o
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          paddingTop: CardSizes.playerTop,
+          paddingTop: m ? 60 : CardSizes.playerTop,
           color: Colors.grey07,
           textAlign: 'center',
         }}
@@ -83,8 +88,8 @@ export default function RoomCard({ icon, title, description, disabled = false, o
           src={icon}
           alt="카드 아이콘"
           style={{
-            width: CardSizes.icon.width,
-            height: CardSizes.icon.width,
+            width: m ? 120 : CardSizes.icon.width,
+            height: m ? 120 : CardSizes.icon.width,
             marginBottom: 10,
           }}
         />

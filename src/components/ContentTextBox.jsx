@@ -1,3 +1,4 @@
+import { useIsMobile } from '../core/responsive';
 import React, { useState, useEffect } from 'react';
 import contentbox from '../assets/contentBox1.svg';
 import paginationBothL from '../assets/paginationBothL.svg';
@@ -16,6 +17,7 @@ export default function ContentTextBox({
   disabled = false,
   continueLabel = '다음',
 }) {
+  const m = useIsMobile();
   const [typingDone, setTypingDone] = useState(false);
   const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };
   const isTextReady = currentParagraph.main && currentParagraph.main.length > 0;
@@ -60,7 +62,7 @@ const handleContinueClick = () => {
 };
 
   return (
-    <div style={{ position: 'relative', width: 960, minHeight: 200 }}>
+    <div style={{ position: 'relative', width: m ? '100%' : 960, maxWidth: m ? 960 : undefined, minHeight: m ? 260 : 200 }}>
       <img
         src={contentbox}
         alt="frame"
@@ -69,7 +71,9 @@ const handleContinueClick = () => {
           inset: 0,
           // width: '100%',
           // height: '100%',
-          objectFit: 'contain',
+          objectFit: m ? 'fill' : 'contain',
+          width: m ? '100%' : undefined,
+          height: m ? '100%' : undefined,
           zIndex: 0,
         }}
       />
@@ -77,14 +81,15 @@ const handleContinueClick = () => {
         style={{
           position: 'absolute',
           top: 30,
-          left: 40,
-          right: 50,
+          left: m ? 20 : 40,
+          right: m ? 24 : 50,
           bottom: 24,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           minHeight: 150,
           zIndex: 1,
+          ...(m ? { position: 'relative', inset: 'auto', padding: '32px 28px 88px' } : {}),
           wordBreak: 'normal',
           overflowWrap: 'anywhere',
           whiteSpace: 'normal',
@@ -139,9 +144,8 @@ const handleContinueClick = () => {
           <div
             style={{
               position: 'absolute',
-              right: -67,
-              top: '50%',
-              transform: 'translateY(-50%)',
+              right: m ? 4 : -67,
+              ...(m ? { bottom: 4 } : { top: '50%', transform: 'translateY(-50%)' }),
               zIndex: 2,
             }}
           >

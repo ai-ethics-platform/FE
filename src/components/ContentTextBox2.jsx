@@ -1,3 +1,4 @@
+import { useIsMobile } from '../core/responsive';
 import React, { useState, useEffect } from 'react';
 import contentbox from '../assets/contentBox1.svg';
 import paginationBothL from '../assets/paginationBothL.svg';
@@ -16,6 +17,7 @@ export default function ContentTextBox2({
   disabled = false,
   continueLabel = '다음',
 }) {
+  const m = useIsMobile();
   const [typingDone, setTypingDone] = useState(false);
   const currentParagraph = paragraphs[currentIndex] || { main: '', sub: '' };
   const isTextReady = currentParagraph.main && currentParagraph.main.length > 0;
@@ -64,7 +66,7 @@ const handleContinueClick = () => {
 };
 
   return (
-    <div style={{ position: 'relative', width: 960, minHeight: 200 }}>
+    <div style={{ position: 'relative', width: m ? '100%' : 960, maxWidth: m ? 960 : undefined, minHeight: m ? 260 : 200 }}>
       <img
         src={contentbox}
         alt="frame"
@@ -73,7 +75,9 @@ const handleContinueClick = () => {
           inset: 0,
           // width: '100%',
           // height: '100%',
-          objectFit: 'contain',
+          objectFit: m ? 'fill' : 'contain',
+          width: m ? '100%' : undefined,
+          height: m ? '100%' : undefined,
           zIndex: 0,
         }}
       />
@@ -90,6 +94,7 @@ const handleContinueClick = () => {
           justifyContent: 'space-between',
           minHeight: 150,
           zIndex: 1,
+          ...(m ? { position: 'relative', inset: 'auto', padding: '32px 28px 88px' } : {}),
           // ✅ 단어(공백) 기준으로 줄바꿈: 글자 중간에서 어색하게 끊기는 현상 방지
           // - keep-all: CJK(한글 포함)에서 가능하면 공백에서만 줄바꿈
           // - break-word: 너무 긴 영문/특수문자 토큰만 예외적으로 줄바꿈 허용(오버플로 방지)
@@ -153,9 +158,8 @@ const handleContinueClick = () => {
           <div
             style={{
               position: 'absolute',
-              right: -67,
-              top: '50%',
-              transform: 'translateY(-50%)',
+              right: m ? 4 : -67,
+              ...(m ? { bottom: 4 } : { top: '50%', transform: 'translateY(-50%)' }),
               zIndex: 2,
             }}
           >

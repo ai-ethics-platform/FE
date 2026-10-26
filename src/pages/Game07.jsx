@@ -1,4 +1,5 @@
 import { customGameStorage } from '../utils/customGameStorage';
+import { HOME } from '../core/responsive';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -112,9 +113,9 @@ export default function Game07() {
       if (disconnect) disconnect();
       setTimeout(() => { 
         ['myrole_id','host_id','user_id','room_code','category','subtopic','mode'].forEach(k => localStorage.removeItem(k));
-        window.location.href = '/'; 
+        window.location.href = HOME; 
       }, 500);
-    } catch (e) { window.location.href = '/'; }
+    } catch (e) { window.location.href = HOME; }
   };
 
   return (

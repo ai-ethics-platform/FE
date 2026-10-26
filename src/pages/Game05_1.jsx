@@ -8,6 +8,7 @@ import SelectCardToggle from '../components/SelectButton';
 import Continue2 from '../components/Continue2';
 import Continue from '../components/Continue';
 import contentBoxFrame from '../assets/contentBox4.svg';
+import contentBoxFrameFit from '../assets/contentBox4.fit.svg';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
 import axiosInstance from '../api/axiosInstance';
@@ -405,7 +406,7 @@ function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H }) {
   if (m) {
     return (
       <div style={{ width: '100%', maxWidth: width, minHeight: height, marginTop: extraTop, position: 'relative' }}>
-        <img src={contentBoxFrame} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />
+        <img src={contentBoxFrameFit} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />
         <div style={{ position: 'relative', zIndex: 1, padding: '28px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
           {textContent}
           {buttonContent}

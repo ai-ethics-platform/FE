@@ -440,6 +440,7 @@ import Layout from '../components/Layout';
 import SelectCardToggle from '../components/SelectButton';
 import Continue from '../components/Continue';
 import contentBoxFrame from '../assets/contentBox4.svg';
+import contentBoxFrameFit from '../assets/contentBox4.fit.svg';
 
 import { getDilemmaImages } from '../components/dilemmaImageLoader';
 import axiosInstance from '../api/axiosInstance';
@@ -715,7 +716,7 @@ function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style =
   const m = useIsMobile();
   return (
     <div style={{ width: m ? '100%' : width, maxWidth: m ? width : undefined, ...(m ? { minHeight: height } : { height }), marginTop: extraTop, position: 'relative', ...style }}>
-      <img src={contentBoxFrame} alt="" style={{ width: '100%', height: '100%', objectFit: 'fill', ...(m ? { position: 'absolute', inset: 0 } : {}) }} />
+      <img src={m ? contentBoxFrameFit : contentBoxFrame} alt="" style={{ width: '100%', height: '100%', objectFit: 'fill', ...(m ? { position: 'absolute', inset: 0 } : {}) }} />
       <div style={m ? { position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 16, padding: '28px 16px' } : { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 24, padding: '0 24px' }}>
         {children}
       </div>

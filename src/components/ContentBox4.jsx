@@ -2,6 +2,7 @@ import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import React, { useEffect, useState } from 'react';
 import useTypingEffect from '../hooks/useTypingEffect';
 import contentBoxFrame from '../assets/contentBox2.svg';
+import contentBoxFrameFit from '../assets/contentBox2.fit.svg';
 import { Colors, FontStyles } from './styleConstants';
 
 export default function ContentBox4({ text, leftText = false, leftTextContent = '', typingSpeed = 45 }) {
@@ -31,7 +32,7 @@ export default function ContentBox4({ text, leftText = false, leftTextContent = 
       }}
     >
       <img
-        src={contentBoxFrame}
+        src={m ? contentBoxFrameFit : contentBoxFrame}
         alt="content frame"
         style={{
           position: 'absolute',

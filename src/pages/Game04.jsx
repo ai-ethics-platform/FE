@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import { customGameStorage } from '../utils/customGameStorage';
 // useEffect(() => {
   //       let cancelled = false;
@@ -68,6 +69,9 @@ const completed = JSON.parse(localStorage.getItem('completedTopics') || '[]');
 const initialRound = completed.length + 1;
 
 export default function Game04() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const { state } = useLocation();
   const navigate   = useNavigate();
 
@@ -294,12 +298,12 @@ export default function Game04() {
         {timeStr}
       </div>
 
-      <div style={{ marginTop: 10, display: 'flex', gap: 48 }}>
+      <div style={{ marginTop: 10, display: 'flex', gap: m ? 12 : 48, flexDirection: m && !tab ? 'column' : 'row', alignItems: 'center', justifyContent: 'center' }}>
         {[
           { list: agreedList, key: 'agree', icon: agreeIcon },
           { list: disagreedList, key: 'disagree', icon: disagreeIcon },
         ].map(({ list, key, icon }) => (
-          <div key={key} style={{ position: 'relative', width: 360, height: 391 }}>
+          <div key={key} style={{ position: 'relative', width: tab ? 'min(360px, calc((100vw - 60px) / 2))' : m ? 'min(360px, calc(100vw - 32px))' : 360, height: tab ? 391 : m ? 300 : 391 }}>
             <img
               src={key === selectedMode ? boxSelected : boxUnselect}
               alt={`${key} 아이콘`}
@@ -324,7 +328,7 @@ export default function Game04() {
                 padding: '0 20px',
               }}
             >
-              <img src={icon} style={{ width: 160, height: 160, marginTop: 40, marginBottom: -10 }} />
+              <img src={icon} style={{ width: m && !tab ? 100 : 160, height: m && !tab ? 100 : 160, marginTop: m && !tab ? 16 : 40, marginBottom: -10 }} />
               <p style={{ ...FontStyles.headlineSmall, color: Colors.brandPrimary }}>
                 {labels[key] ?? (key === 'agree' ? (lang === 'ko' ? '동의' : 'Agree') : (lang === 'ko' ? '비동의' : 'Disagree'))}
               </p>

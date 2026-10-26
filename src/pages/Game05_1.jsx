@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import { customGameStorage } from '../utils/customGameStorage';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
@@ -38,6 +39,9 @@ const resolveImageUrl = (raw) => {
 };
 
 export default function Game05_01() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const nav = useNavigate();
   
   const lang = localStorage.getItem('app_lang') || localStorage.getItem('language') || 'ko';
@@ -298,7 +302,7 @@ export default function Game05_01() {
               <img
                 src={selectedLocalImg}
                 alt="합의 결과 미리보기"
-                style={{ width: 400, height: 200, objectFit: 'cover', borderRadius: 8 }}
+                style={m ? { width: '100%', maxWidth: 400, height: 'auto', aspectRatio: '2 / 1', objectFit: 'cover', borderRadius: 8 } : { width: 400, height: 200, objectFit: 'cover', borderRadius: 8 }}
                 onError={(e) => { e.currentTarget.src = defaultImg; }}
                />
             </div>
@@ -309,7 +313,7 @@ export default function Game05_01() {
                   key={idx}
                   src={img}
                   alt={`설명 이미지 ${idx + 1}`}
-                  style={{ width: 400, height: 200, objectFit: 'fill' }}
+                  style={m ? { width: 'calc(50% - 8px)', maxWidth: 400, height: 'auto', aspectRatio: '2 / 1', objectFit: 'fill' } : { width: 400, height: 200, objectFit: 'fill' }}
                   onError={(e) => { e.currentTarget.src = defaultImg; }}
                 />
               ))}
@@ -324,7 +328,7 @@ export default function Game05_01() {
                 {questionText} <br/> {t?.consensus_msg || tKo?.consensus_msg || "합의를 통해 최종 결정하세요."}
               </p>
             </div>
-            <div style={{ display: 'flex', gap: 24 }}>
+            <div style={{ display: 'flex', gap: m ? 12 : 24, flexDirection: m && !tab ? 'column' : 'row', width: m ? '100%' : undefined }}>
               <SelectCardToggle 
                 label={agreeLabel} 
                 selected={consensusChoice === 'agree'} 
@@ -393,9 +397,22 @@ export default function Game05_01() {
 }
 
 function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H }) {
+  const m = useIsMobile();
   const childrenArray = React.Children.toArray(children);
   const textContent = childrenArray[0];
   const buttonContent = childrenArray[1];
+
+  if (m) {
+    return (
+      <div style={{ width: '100%', maxWidth: width, minHeight: height, marginTop: extraTop, position: 'relative' }}>
+        <img src={contentBoxFrame} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'fill' }} />
+        <div style={{ position: 'relative', zIndex: 1, padding: '28px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          {textContent}
+          {buttonContent}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ width, height, marginTop: extraTop, position: 'relative' }}>

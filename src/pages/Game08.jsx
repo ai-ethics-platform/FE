@@ -1,3 +1,5 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
+import { HOME } from '../core/responsive';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +15,9 @@ import { useWebSocketNavigation, useHostActions } from '../hooks/useWebSocketMes
 import { translations } from '../utils/language';
 
 export default function Game08() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const navigate = useNavigate();
   
   // ✅ 선언부 및 훅 보존
@@ -122,7 +127,7 @@ export default function Game08() {
       await finalizeDisconnection?.('게임을 나갔습니다.');
     } catch (e) {
       console.error('종료 처리 중 오류:', e);
-      window.location.href = '/';
+      window.location.href = HOME;
     }
   };
 
@@ -133,10 +138,10 @@ export default function Game08() {
 
   return (
     <Layout subtopic={subtopic} onProfileClick={setOpenProfile} onBackClick={handleBackClick} showSidebar={false}>
-      <div style={{ position: 'absolute', top: '60%', left: '50%', transform: 'translate(-50%,-50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 16px' }}>
+      <div style={m ? { width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 12px' } : { position: 'absolute', top: '60%', left: '50%', transform: 'translate(-50%,-50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 16px' }}>
         <ContentBox3 text={paragraphs.join('\n\n')} width={936} height={407} />
         
-        <div style={{ marginTop: 20, display: "flex", gap: 30, justifyContent: "center" }}>
+        <div style={{ marginTop: 20, display: "flex", gap: m ? 12 : 30, justifyContent: "center", flexDirection: m && !tab ? "column" : "row", alignItems: "center" }}>
           <Continue 
             label={t.buttons?.future || "다른 미래 보러가기"} 
             width={264} height={72} 

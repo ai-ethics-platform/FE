@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import { customGameStorage } from '../utils/customGameStorage';
 // // pages/Game03.jsx
 // import React, { useState, useEffect, useRef } from 'react';
@@ -305,7 +306,7 @@ import { customGameStorage } from '../utils/customGameStorage';
 //         <>
 //           <div style={{ marginTop: 60, display: 'flex', justifyContent: 'center', gap: 10 }}>
 //             {displayImages.map((img, idx) => (
-//               <img key={idx} src={img} alt={`설명 이미지 ${idx + 1}`} style={{ width: 250, height: 139 }} />
+//               <img key={idx} src={img} alt={`설명 이미지 ${idx + 1}`} style={tab ? { width: 'calc((100% - 30px) / 4)', maxWidth: 250, height: 'auto' } : m ? { width: 'calc(50% - 5px)', height: 'auto' } : { width: 250, height: 139 }} />
 //             ))}
 //           </div>
 
@@ -460,6 +461,9 @@ const BORDER = 2;
 const LINE = 3;
 
 export default function Game03() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const nav = useNavigate();
   const pollingRef = useRef(null);
 
@@ -610,13 +614,13 @@ export default function Game03() {
     <Layout subtopic={subtopic} round={round} onBackClick={handleBackClick}>
       {step === 1 && (
         <>
-          <div style={{ marginTop: 60, display: 'flex', justifyContent: 'center', gap: 10 }}>
+          <div style={{ marginTop: m ? 16 : 60, display: 'flex', justifyContent: 'center', gap: 10, padding: m ? '0 8px' : 0, width: m ? '100%' : undefined, flexWrap: m && vw < 900 ? 'wrap' : 'nowrap' }}>
             {displayImages.map((img, idx) => (
               <img 
                 key={idx} 
                 src={img} 
                 alt={`설명 이미지 ${idx + 1}`} 
-                style={{ width: 250, height: 139 }}
+                style={tab && vw >= 900 ? { width: 'calc((100% - 30px) / 4)', maxWidth: 250, height: 'auto' } : m ? { width: 'calc(50% - 5px)', maxWidth: tab ? 330 : undefined, height: 'auto' } : { width: 250, height: 139 }}
                 onError={(e) => { 
                   const retryCount = parseInt(e.currentTarget.dataset.retryCount || '0');
                   if (retryCount < 3) {
@@ -648,7 +652,7 @@ export default function Game03() {
                 </>
               )}
             </p>
-            <div style={{ display: 'flex', gap: 24 }}>
+            <div style={{ display: 'flex', gap: m ? 12 : 24, flexDirection: m && !tab ? 'column' : 'row', width: m ? '100%' : undefined }}>
               <SelectCardToggle
                 label={questionData.labels.agree}
                 selected={agree === 'agree'}
@@ -708,10 +712,11 @@ export default function Game03() {
 }
 
 function Card({ children, extraTop = 0, width = CARD_W, height = CARD_H, style = {} }) {
+  const m = useIsMobile();
   return (
-    <div style={{ width, height, marginTop: extraTop, position: 'relative', ...style }}>
-      <img src={contentBoxFrame} alt="" style={{ width: '100%', height: '100%', objectFit: 'fill' }} />
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 24, padding: '0 24px' }}>
+    <div style={{ width: m ? '100%' : width, maxWidth: m ? width : undefined, ...(m ? { minHeight: height } : { height }), marginTop: extraTop, position: 'relative', ...style }}>
+      <img src={contentBoxFrame} alt="" style={{ width: '100%', height: '100%', objectFit: 'fill', ...(m ? { position: 'absolute', inset: 0 } : {}) }} />
+      <div style={m ? { position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 16, padding: '28px 16px' } : { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 24, padding: '0 24px' }}>
         {children}
       </div>
     </div>

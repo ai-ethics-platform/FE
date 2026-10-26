@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import { customGameStorage } from '../utils/customGameStorage';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -68,6 +69,9 @@ import { useWebSocket } from '../WebSocketProvider';
 import voiceManager from '../utils/voiceManager';
 
 export default function CD_all() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const navigate = useNavigate();
   const lang = localStorage.getItem('app_lang') || localStorage.getItem('language') || 'ko';
   const currentLangData = translations?.[lang] || translations['ko'] || {};
@@ -177,9 +181,9 @@ export default function CD_all() {
       )}
     >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 8, marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: m && !tab ? 'flex-start' : 'center', gap: 10, marginTop: 8, marginBottom: 16, ...(m && !tab ? { width: '100%', overflowX: 'auto', paddingBottom: 8 } : {}), ...(tab ? { width: '100%' } : {}) }}>
           {images.map((img, idx) => (
-            <div key={idx} style={{ width: 260, height: 330, border: '2px solid #ddd', backgroundColor: '#f8f9fa', borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 16px rgba(0,0,0,0.06)' }}>
+            <div key={idx} style={{ width: tab ? 'calc((100% - 20px) / 3)' : 260, maxWidth: 260, height: tab ? 'auto' : 330, aspectRatio: tab ? '260 / 330' : undefined, flexShrink: 0, border: '2px solid #ddd', backgroundColor: '#f8f9fa', borderRadius: 2, overflow: 'hidden', boxShadow: '0 8px 16px rgba(0,0,0,0.06)' }}>
               <img src={img || create02Image} alt="Role" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.src = create02Image; }} />
             </div>
           ))}

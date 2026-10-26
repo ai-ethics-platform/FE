@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 // src/pages/GameMap.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +18,9 @@ import voiceManager from '../utils/voiceManager';
 import { translations } from '../utils/language/index';
 
 export default function GameMap() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const navigate = useNavigate();
   
   // 프로젝트 표준 키값 app_lang 사용 및 언어팩 로드
@@ -269,13 +273,13 @@ export default function GameMap() {
         alignItems: 'center',
         justifyContent: 'center',
         userSelect: 'none',
-        whiteSpace: 'nowrap', 
+        whiteSpace: m ? 'normal' : 'nowrap', 
         textAlign: 'center'
       }}>
         {tm.guideText || '합의 후 같은 라운드를 선택하세요.'}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginLeft: 60, marginTop: 12, zIndex: 1 }}>
+      <div style={{ display: 'flex', flexDirection: m && !tab ? 'column' : 'row', alignItems: m ? 'center' : undefined, justifyContent: m ? 'center' : undefined, gap: 8, marginLeft: m ? 0 : 60, marginTop: 12, zIndex: 1 }}>
         <GameMapFrame
           icon={homeIcon}
           title={s0.title}

@@ -168,7 +168,7 @@ export default function MicTestPopup({ onConfirm, userImage, onClose }) {
         left: '50%',
         transform: 'translate(-50%, -50%)',
         width: m ? 'calc(100vw - 24px)' : 552,
-        maxWidth: 552,
+        maxWidth: m ? 552 : undefined,
         height: m ? 'min(540px, 92vh)' : 540,
         backgroundColor: Colors.componentBackgroundFloat,
         borderRadius: 8,

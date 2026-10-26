@@ -27,7 +27,7 @@ export default function RoomCard({ icon, title, description, disabled = false, o
         position: 'relative',
         width: tab ? 'min(360px, calc((100vw - 80px) / 3))' : m ? 'min(360px, calc(100vw - 32px))' : CardSizes.width,
         height: tab ? 450 : m ? 400 : CardSizes.height,
-        flexShrink: 0,
+        ...(m ? { flexShrink: 0 } : {}),
         opacity: disabled ? 0.4 : 1,
         pointerEvents: disabled ? 'none' : 'auto',
         cursor: disabled ? 'default' : 'pointer',

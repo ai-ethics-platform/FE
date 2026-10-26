@@ -127,7 +127,7 @@ useEffect(() => {
     <div
       style={{
         width: m ? 'calc(100vw - 32px)' : 552,
-        maxWidth: 552,
+        maxWidth: m ? 552 : undefined,
         height: m && !tab ? 380 : 444,
         backgroundColor: Colors.componentBackgroundFloat,
         borderRadius: 12,

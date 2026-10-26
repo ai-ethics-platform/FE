@@ -12,6 +12,7 @@ export const TABLET_MAX = 1180;
 export function useViewportWidth() {
   const [w, setW] = useState(() => window.innerWidth);
   useEffect(() => {
+    if (!IS_RESPONSIVE) return undefined; // 기존 URL 에서는 resize 구독도 하지 않는다
     const f = () => setW(window.innerWidth);
     window.addEventListener('resize', f);
     return () => window.removeEventListener('resize', f);

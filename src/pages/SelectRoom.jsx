@@ -109,7 +109,7 @@ export default function SelectRoom() {
             // 카드 수에 따른 간격 조정 (영문 언어값은 2개, 한글 언어값은 3개 대응)
             gap: lang === 'ko' ? 20 : 40,
             flexWrap: 'nowrap',
-            alignItems: 'center',
+            alignItems: m ? 'center' : undefined,
           }}
         >
           {/* [방 만들기] 카드 */}

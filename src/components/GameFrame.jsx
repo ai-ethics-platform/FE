@@ -4,7 +4,7 @@ import React, { useState, useRef, useLayoutEffect } from 'react';
 import arrowLeft from '../assets/arrowLhover.svg';
 import arrowRight from '../assets/arrowRhover.svg';
 import { FontStyles, Colors } from './styleConstants';
-import { useIsMobile, useViewportWidth } from '../core/responsive';
+import { IS_RESPONSIVE, useIsMobile, useViewportWidth } from '../core/responsive';
 
 export default function GameFrame({
   topic = '',
@@ -89,11 +89,17 @@ export default function GameFrame({
       </div>
 
       {/* 너비 계산용 숨겨진 div */}
-      <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-        <div ref={textRef} style={{ display: 'inline-block', visibility: 'hidden', whiteSpace: 'nowrap', ...FontStyles.headlineSmall }}>
+      {IS_RESPONSIVE ? (
+        <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          <div ref={textRef} style={{ display: 'inline-block', visibility: 'hidden', whiteSpace: 'nowrap', ...FontStyles.headlineSmall }}>
+            {topic}
+          </div>
+        </div>
+      ) : (
+        <div ref={textRef} style={{ position: 'absolute', visibility: 'hidden', whiteSpace: 'nowrap', ...FontStyles.headlineSmall }}>
           {topic}
         </div>
-      </div>
+      )}
     </div>
   );
 }

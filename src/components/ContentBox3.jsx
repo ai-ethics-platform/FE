@@ -35,7 +35,7 @@ export default function ContentBox2({ text, typingSpeed = 45 }) {
           left: 0,
           width: '100%',
           height: '100%',
-          objectFit: 'fill',
+          objectFit: m ? 'fill' : undefined,
           pointerEvents: 'none',
         }}
       />

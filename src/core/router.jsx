@@ -11,6 +11,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 
+import { BASENAME } from './responsive';
 import Login from '../pages/Login';
 import PlayApplication from '../pages/playApproval/PlayApplication';
 import PlayApprovalStatus from '../pages/playApproval/PlayApprovalStatus';
@@ -102,7 +103,7 @@ function Router() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={BASENAME}>
       <DiagnosticRoute />
       <Routes>
         {/* 로그인 */}

@@ -1,6 +1,7 @@
 // 수정할 것 
 // 챗봇 완성 시 챗봇 api를 연결할 수 있는 페이지로 연결하도록 수정해야함
 import React, { useState } from 'react';
+import { IS_RESPONSIVE } from '../core/responsive';
 import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
@@ -32,8 +33,9 @@ export default function CreateDilemma({ onClose }) {
   return (
     <div
       style={{
-        width: 552,
+        width: IS_RESPONSIVE ? 'min(552px, calc(100vw - 24px))' : 552,
         height: 548,
+        ...(IS_RESPONSIVE ? { maxHeight: 'calc(100vh - 24px)', overflowY: 'auto' } : {}),
         justifyContent: 'center',
         backgroundColor: Colors.componentBackgroundFloat,
         borderRadius: 12,

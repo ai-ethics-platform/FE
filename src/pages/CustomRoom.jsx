@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet } from '../core/responsive';
 import { customGameStorage, clearCustomGame, setCustomGameCode, saveCustomGame, isCustomGameReady } from '../utils/customGameStorage';
 
 import React, { useEffect, useState } from 'react';
@@ -18,6 +19,8 @@ import posthog, { captureGameContext } from '../utils/posthog';
 import { snapshotGameDiagnostic } from '../utils/gameDiagnostics';
 
 export default function SelectRoom() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -147,11 +150,11 @@ export default function SelectRoom() {
           <div
             style={{
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: m && !tab ? 'column' : 'row',
               gap: 20,
               flexWrap: 'nowrap',
               justifyContent: 'center',
-              alignItems: 'stretch',
+              alignItems: m && !tab ? 'center' : 'stretch',
               width: '100%',
             }}
           >

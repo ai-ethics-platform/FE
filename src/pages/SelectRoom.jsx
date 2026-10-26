@@ -14,6 +14,7 @@ import CreateDilemma from '../components/CreateDilemma';
 import DilemmaOutPopup from '../components/DilemmaOutPopup';
 import HeaderBar from '../components/Expanded/HeaderBar';
 import { translations } from '../utils/language/index'; 
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 
 //  신규 팝업 및 아이콘 임포트
 import IntroductionPopup from '../components/IntroductionPopup';
@@ -21,6 +22,9 @@ import questionIcon from '../assets/Questionmark.svg';
 
 export default function SelectRoom() { 
   const navigate = useNavigate();
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   
   // --- 시스템 설정된 언어(app_lang) 연동 로직 ---
   const lang = localStorage.getItem('app_lang') || 'ko';
@@ -36,7 +40,7 @@ export default function SelectRoom() {
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    if (!m) document.body.style.overflow = 'hidden';
 
     //  최초 접속 시 자동 팝업 로직 (세션 스토리지 활용)
     const hasSeenIntro = sessionStorage.getItem('hasSeenIntro');
@@ -92,20 +96,20 @@ export default function SelectRoom() {
 
       <div
         style={{
-          height: '100vh',
+          ...(m ? { minHeight: '100vh', padding: '72px 0 32px', boxSizing: 'border-box' } : { height: '100vh' }),
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          paddingTop: 0,
         }}
       >
         <div
           style={{
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: m && !tab ? 'column' : 'row',
             // 카드 수에 따른 간격 조정 (영문 언어값은 2개, 한글 언어값은 3개 대응)
             gap: lang === 'ko' ? 20 : 40,
             flexWrap: 'nowrap',
+            alignItems: 'center',
           }}
         >
           {/* [방 만들기] 카드 */}

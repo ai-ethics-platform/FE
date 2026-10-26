@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
  // useEffect(() => {
   //   if (!websocketConnected) {
   //     console.warn('🔌 [SelectHomeMate] WebSocket 연결 끊김 → 초기화 후 메인으로 이동');
@@ -86,6 +87,9 @@ import HostInfoBadge from '../components/HostInfoBadge';
 import { translations } from '../utils/language/index';
 
 export default function SelectHomeMate() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const navigate = useNavigate();
   
   // 프로젝트 표준 키값 app_lang 사용 및 언어팩 로드
@@ -273,7 +277,7 @@ export default function SelectHomeMate() {
   return (
     <Background bgIndex={2}>
       {hostId === myRoleId && (
-        <div style={{ position: 'fixed', top: '-115px', right: '0px', zIndex: 10 }}>
+        <div style={m ? { position: 'fixed', top: '-64px', right: 0, zIndex: 10, transform: 'scale(0.55)', transformOrigin: 'top right' } : { position: 'fixed', top: '-115px', right: '0px', zIndex: 10 }}>
           <HostInfoBadge
             src={currentHostInfoSvg}
             alt="Host Info"
@@ -283,15 +287,15 @@ export default function SelectHomeMate() {
           />
         </div>
       )}
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>      
-        <div style={{ position: 'fixed', top: '32.5%', left: 0, transform: 'translateY(-50%)', width: 220, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start' }}>
+      <div style={m ? { position: 'relative', minHeight: '100vh', overflowX: 'hidden', zIndex: 0 } : { position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>      
+        <div style={m ? { zoom: tab ? 0.85 : 0.55, display: 'flex', flexDirection: 'row', gap: 4, justifyContent: 'center', padding: '76px 0 0' } : { position: 'fixed', top: '32.5%', left: 0, transform: 'translateY(-50%)', width: 220, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start' }}>
           <UserProfile player="1P" isLeader={hostId === '1'} isMe={myRoleId === '1'} />
           <UserProfile player="2P" isLeader={hostId === '2'} isMe={myRoleId === '2'} />
           <UserProfile player="3P" isLeader={hostId === '3'} isMe={myRoleId === '3'} />
         </div>
 
-        <div style={{ position: 'absolute', top: '46%', left: '50%', transform: 'translate(-50%, -50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 24 }}>
+        <div style={m ? { width: '100%', padding: '12px 12px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center' } : { position: 'absolute', top: '46%', left: '50%', transform: 'translate(-50%, -50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: m ? 8 : 24 }}>
             {images.map((src, idx) => (
               <img
                 key={idx}
@@ -299,7 +303,7 @@ export default function SelectHomeMate() {
                 alt={`Character ${idx + 1}`}
                 onClick={() => handleCharacterSelect(idx)} 
                 style={{
-                  width: 264, height: 360, objectFit: 'cover', borderRadius: 4,
+                  width: m ? 'min(264px, calc((100vw - 40px) / 3))' : 264, height: m ? 'auto' : 360, aspectRatio: m ? '264 / 360' : undefined, objectFit: 'cover', borderRadius: 4,
                   cursor: canSelectCharacter ? 'pointer' : 'not-allowed', 
                   border: activeIndex === idx ? `2px solid #354750` : 'none',
                   transform: activeIndex === idx ? 'scale(1.01)' : 'scale(1)',

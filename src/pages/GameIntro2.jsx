@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import React, { useState, useEffect } from 'react';
 import Background from '../components/Background';
 import UserProfile from '../components/Userprofile';
@@ -15,6 +16,9 @@ import {
 } from '../hooks/useWebSocketMessage';
 
 export default function GameIntro2() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mateName, setMateName] = useState('');
@@ -202,6 +206,7 @@ export default function GameIntro2() {
       {/* 디버그 패널 */}
       <div style={{
         position: 'fixed',
+        display: m ? 'none' : undefined,
         top: 10,
         right: 10,
         background: 'rgba(0,0,0,0.9)',
@@ -307,8 +312,8 @@ export default function GameIntro2() {
         </div>
       </div>
       
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
-        <div style={{
+      <div style={m ? { position: 'relative', minHeight: '100vh', overflowX: 'hidden', zIndex: 0 } : { position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
+        <div style={m ? { zoom: tab ? 0.85 : 0.55, display: 'flex', flexDirection: 'row', gap: 4, justifyContent: 'center', padding: '76px 0 0' } : {
           position: 'fixed',
           top: '32.5%',
           left: 0,
@@ -346,7 +351,7 @@ export default function GameIntro2() {
           />
         </div>
 
-        <div style={{
+        <div style={m ? { width: '100%', padding: '12px 12px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center' } : {
           position: 'absolute',
           top: '50%',
           left: '50%',

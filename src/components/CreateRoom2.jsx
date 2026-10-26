@@ -1,6 +1,7 @@
 //SelectRoom.jsx에서 방 유형 선택과 주제 선택을 하나의 컴포넌트로 통합한 CreateRoom2.jsx
 
 import React, { useState } from 'react';
+import { IS_RESPONSIVE } from '../core/responsive';
 import { useNavigate } from 'react-router-dom';
 import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
@@ -70,8 +71,9 @@ export default function CreateRoom2({ onClose }) {
   return (
     <div
       style={{
-        width: 552,
+        width: IS_RESPONSIVE ? 'min(552px, calc(100vw - 24px))' : 552,
         height: 548,
+        ...(IS_RESPONSIVE ? { maxHeight: 'calc(100vh - 24px)', overflowY: 'auto' } : {}),
         justifyContent: 'center',
         backgroundColor: Colors.componentBackgroundFloat,
         borderRadius: 12,
@@ -113,7 +115,7 @@ export default function CreateRoom2({ onClose }) {
             onMouseEnter={() => setHoveredTopic(topicObj.value)}
             onMouseLeave={() => setHoveredTopic(null)}
             style={{
-              width: 360,
+              width: IS_RESPONSIVE ? 'min(360px, calc(100vw - 88px))' : 360,
               height: 72,
               position: 'relative',
               cursor: 'pointer',

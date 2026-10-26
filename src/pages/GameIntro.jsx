@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import { customGameStorage } from '../utils/customGameStorage';
 import { captureGameContext } from '../utils/posthog';
 // 커스텀 모드일 때 opening 부분 수정
@@ -22,6 +23,9 @@ import voiceManager from '../utils/voiceManager';
 import { translations } from '../utils/language/index';
 
 export default function GameIntro() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const navigate = useNavigate();
   
   // 프로젝트 표준 키값 app_lang 사용 및 언어팩 로드
@@ -241,15 +245,15 @@ const canProceed = isCustomMode
 
   return (
     <Background bgIndex={2}>
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden', zIndex: 0 }}>
-        <div style={{ position: 'absolute', top: 60, left: 0 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, zIndex: 10, alignItems: 'flex-start', width: 'fit-content', margin: 0, padding: 0 }}>
+      <div style={m ? { position: 'relative', minHeight: '100vh', overflowX: 'hidden', zIndex: 0 } : { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', overflow: 'hidden', zIndex: 0 }}>
+        <div style={m ? { zoom: tab ? 0.85 : 0.55, display: 'flex', justifyContent: 'center', padding: '76px 0 0' } : { position: 'absolute', top: 60, left: 0 }}>
+          <div style={{ display: 'flex', flexDirection: m ? 'row' : 'column', gap: m ? 4 : 24, zIndex: 10, alignItems: 'flex-start', width: 'fit-content', margin: 0, padding: 0 }}>
             <UserProfile player="1P" isLeader={hostId === '1'} isMe={currentMyRoleId === '1'} nodescription={true} />
             <UserProfile player="2P" isLeader={hostId === '2'} isMe={currentMyRoleId === '2'} nodescription={true} />
             <UserProfile player="3P" isLeader={hostId === '3'} isMe={currentMyRoleId === '3'} nodescription={true} />
           </div>
         </div>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 16px' }}>
+        <div style={m ? { width: '100%', padding: '12px 12px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center' } : { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 16px' }}>
           <ContentBox4 
             text={fullText} 
             leftText={isAWS} 

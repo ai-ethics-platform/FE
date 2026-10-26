@@ -1,4 +1,5 @@
 import React from 'react';
+import { IS_RESPONSIVE } from '../core/responsive';
 import closeIcon from '../assets/close.svg';
 import SecondaryButton from './SecondaryButton';
 import { Colors, FontStyles } from './styleConstants';
@@ -31,8 +32,9 @@ export default function CancelReadyPopup({ onClose, onCancelConfirmed }) {
   return (
     <div
       style={{
-        width: 552,
+        width: IS_RESPONSIVE ? 'min(552px, calc(100vw - 24px))' : 552,
         height: 360,
+        ...(IS_RESPONSIVE ? { maxHeight: 'calc(100vh - 24px)', overflowY: 'auto' } : {}),
         backgroundColor: Colors.grey01,
         borderRadius: 12,
         padding: 32,

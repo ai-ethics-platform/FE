@@ -1,3 +1,4 @@
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
@@ -28,6 +29,9 @@ import HostInfoBadge from '../components/HostInfoBadge';
 import { translations } from '../utils/language/index';
 
 export default function MateName() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const navigate = useNavigate();
   
   // 프로젝트 표준 키값 app_lang 사용 및 언어팩 로드
@@ -188,7 +192,7 @@ export default function MateName() {
   return (
     <Background bgIndex={2}>
       {hostId === myRoleId && (
-        <div style={{ position: 'fixed', top: '-115px', right: '0px', zIndex: 10 }}>
+        <div style={m ? { position: 'fixed', top: '-64px', right: 0, zIndex: 10, transform: 'scale(0.55)', transformOrigin: 'top right' } : { position: 'fixed', top: '-115px', right: '0px', zIndex: 10 }}>
           <HostInfoBadge
             src={currentHostInfoSvg}
             alt="Host Info"
@@ -199,21 +203,21 @@ export default function MateName() {
         </div>
       )}
       
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
+      <div style={m ? { position: 'relative', minHeight: '100vh', overflowX: 'hidden', zIndex: 0 } : { position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0 }}>
         {/* 사이드 프로필 영역 */}
-        <div style={{ position: 'fixed', top: '32.5%', left: 0, transform: 'translateY(-50%)', width: 220, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start' }}>
+        <div style={m ? { zoom: tab ? 0.85 : 0.55, display: 'flex', flexDirection: 'row', gap: 4, justifyContent: 'center', padding: '76px 0 0' } : { position: 'fixed', top: '32.5%', left: 0, transform: 'translateY(-50%)', width: 220, padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start' }}>
           {[1, 2, 3].map(role => (
             <UserProfile key={role} player={`${role}P`} isLeader={hostId === String(role)} isMe={myRoleId === String(role)} />
           ))}
         </div>
 
         {/* 메인 컨텐츠 영역 */}
-        <div style={{ position: 'absolute', top: '46%', left: '50%', transform: 'translate(-50%, -50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={m ? { width: '100%', padding: '12px 12px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center' } : { position: 'absolute', top: '46%', left: '50%', transform: 'translate(-50%, -50%)', width: '80vw', maxWidth: 936, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {selectedIndex !== null && images[selectedIndex] && (
             <img 
               src={images[selectedIndex]}     
               alt="Selected Character"
-              style={{ width: 264, height: 350, objectFit: 'cover', borderRadius: 4, marginBottom: -15, opacity: isHost ? 1 : 0.8 }}
+              style={{ width: m ? 'min(264px, 60vw)' : 264, height: m ? 'auto' : 350, aspectRatio: m ? '264 / 350' : undefined, objectFit: 'cover', borderRadius: 4, marginBottom: -15, opacity: isHost ? 1 : 0.8 }}
             />
           )}
 
@@ -223,7 +227,7 @@ export default function MateName() {
             label=""
             labelWidth={0}
             placeholder={uiText.placeholder}
-            width={550}
+            width={m ? Math.min(550, window.innerWidth - 32) : 550}
             height={64}
             value={name}
             onChange={handleNameChange}

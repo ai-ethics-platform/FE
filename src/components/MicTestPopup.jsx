@@ -3,8 +3,10 @@ import closeIcon from '../assets/close.svg';
 import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import { translations } from '../utils/language/index';
+import { useIsMobile } from '../core/responsive';
 
 export default function MicTestPopup({ onConfirm, userImage, onClose }) {
+  const m = useIsMobile();
   // --- 언어 설정 로직 ---
   const lang = localStorage.getItem('app_lang') || 'ko';
   const t = translations?.[lang]?.MicTestPopup || {};
@@ -161,12 +163,13 @@ export default function MicTestPopup({ onConfirm, userImage, onClose }) {
   return (
     <div
       style={{
-        position: 'absolute',
+        position: m ? 'fixed' : 'absolute',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 552,
-        height: 540,
+        width: m ? 'calc(100vw - 24px)' : 552,
+        maxWidth: 552,
+        height: m ? 'min(540px, 92vh)' : 540,
         backgroundColor: Colors.componentBackgroundFloat,
         borderRadius: 8,
         boxShadow: '0 4px 16px rgba(0,0,0,0.25)',

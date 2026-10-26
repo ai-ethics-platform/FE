@@ -1,4 +1,5 @@
 import { customGameStorage, setCustomGameCode } from '../utils/customGameStorage';
+import { IS_RESPONSIVE } from '../core/responsive';
 import { captureGameContext } from '../utils/posthog';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -178,7 +179,7 @@ export default function Login() {
           추후 언어가 추가되면 <option> 태그만 추가.
       */}
       {/* 상단 중앙 배치를 위해 스타일 변경 */}
-      <div style={{ position: 'absolute', top: '20px', left: '93%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+      <div style={IS_RESPONSIVE ? { position: 'absolute', top: '20px', right: '12px', zIndex: 1000 } : { position: 'absolute', top: '20px', left: '93%', transform: 'translateX(-50%)', zIndex: 1000 }}>
         <select
           value={lang}
           onChange={handleLanguageChange}

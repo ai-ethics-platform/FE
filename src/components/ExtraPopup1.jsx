@@ -1,5 +1,6 @@
 // ExtraPopupModal.jsx
 import React, { useMemo } from 'react';
+import { IS_RESPONSIVE } from '../core/responsive';
 import { Colors, FontStyles } from './styleConstants';
 import popup1 from '../assets/popup1.svg';
 import popup2 from '../assets/popup2.svg';
@@ -81,6 +82,7 @@ export default function ExtraPopupModal({ open, onClose, mode = 1, popupStep, ro
           position: 'absolute',
           ...positionStyles,
           width: defaultSize.width,
+          maxWidth: IS_RESPONSIVE ? 'calc(100vw - 24px)' : undefined,
           height: defaultSize.height,
         }}
         onClick={(e) => e.stopPropagation()} // 내부 클릭은 닫히지 않음

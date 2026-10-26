@@ -18,9 +18,13 @@ import infoFrame2 from '../assets/infoframe2.svg';
 import CancelReadyPopup from '../components/CancelReadyPopup';
 // 언어팩 임포트
 import { translations } from '../utils/language/index';
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 import { captureGameContext } from '../utils/posthog';
 
 export default function WaitingRoom() {
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -550,8 +554,8 @@ export default function WaitingRoom() {
         <div
           style={{
             position: 'absolute',
-            top: -10,
-            left: 165, 
+            top: m ? 78 : -10,
+            left: m ? 12 : 165, 
             width: 200,
             height: 80,
             overflow: 'hidden',
@@ -617,9 +621,9 @@ export default function WaitingRoom() {
         <div 
           style={{ 
             position: 'absolute', 
-            top: lang === 'ko' ? 65 : 70,  
-            left: lang === 'ko' ? 150 : 125, 
-            width: lang === 'ko' ? 210 : 255, 
+            top: m ? 150 : (lang === 'ko' ? 65 : 70),  
+            left: m ? 12 : (lang === 'ko' ? 150 : 125), 
+            width: m ? 'calc(100vw - 24px)' : (lang === 'ko' ? 210 : 255), 
             height: 60, 
             display: 'flex',
             alignItems: 'center',
@@ -659,10 +663,11 @@ export default function WaitingRoom() {
       )}
 
       {/* 상단 게임 주제 프레임 */}
-      <div style={{ position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)' }}>
+      <div style={{ position: 'absolute', top: m ? 220 : '6%', left: '50%', transform: 'translateX(-50%)', maxWidth: '100vw' }}>
         <GameFrame
           topic={allTopics[currentIndex]}
           hideArrows={true}
+          width={m && !tab ? 300 : 512}
         />
       </div>
 
@@ -670,10 +675,12 @@ export default function WaitingRoom() {
       <div style={{
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'flex-start',
-        gap: 32,
-        paddingTop: 160,
-        height: '100vh',
+        alignItems: m ? 'center' : 'flex-start',
+        flexDirection: m && !tab ? 'column' : 'row',
+        gap: m ? 8 : 32,
+        paddingTop: m ? 310 : 160,
+        paddingBottom: m ? 32 : 0,
+        ...(m ? { minHeight: '100vh' } : { height: '100vh' }),
         boxSizing: 'border-box'
       }}>
         {getOrderedPlayers().map((id, idx) => {
@@ -682,7 +689,7 @@ export default function WaitingRoom() {
           const isMe = String(id) === String(myPlayerId);
           
           return (
-            <div key={id} style={{ transform: `scale(${idx === 1 ? 1 : 0.9})` }}>
+            <div key={id} style={m ? { zoom: tab ? Math.min(1, (vw - 64) / 3 / 360) : 0.85 } : { transform: `scale(${idx === 1 ? 1 : 0.9})` }}>
               <StatusCard
                 player={`${id}${tw.player}`}
                 isOwner={isOwner}

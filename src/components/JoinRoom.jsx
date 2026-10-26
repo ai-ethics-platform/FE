@@ -6,6 +6,7 @@ import PrimaryButton from './PrimaryButton';
 import { Colors, FontStyles } from './styleConstants';
 import axiosInstance from '../api/axiosInstance';
 import { translations } from '../utils/language/index'; // 언어 파일 임포트
+import { useIsMobile, useIsTablet, useViewportWidth } from '../core/responsive';
 
 export default function JoinRoom({ onClose, custom = false }) {
   // --- 시스템 설정된 언어(app_lang)를 로드하는 로직 ---
@@ -15,6 +16,9 @@ export default function JoinRoom({ onClose, custom = false }) {
   const [roomCode, setRoomCode] = useState('');
   const [nickname, setNickname] = useState('');
   const navigate = useNavigate();
+  const m = useIsMobile();
+  const tab = useIsTablet();
+  const vw = useViewportWidth();
 
   // // 닉네임(username) 조회
   // useEffect(() => {
@@ -122,8 +126,9 @@ useEffect(() => {
   return (
     <div
       style={{
-        width: 552,
-        height: 444,
+        width: m ? 'calc(100vw - 32px)' : 552,
+        maxWidth: 552,
+        height: m && !tab ? 380 : 444,
         backgroundColor: Colors.componentBackgroundFloat,
         borderRadius: 12,
         padding: 32,

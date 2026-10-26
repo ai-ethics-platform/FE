@@ -1266,7 +1266,15 @@ const WebRTCProvider = ({ children }) => {
     if (audioUnlockListenerAddedRef.current) return;
     audioUnlockListenerAddedRef.current = true;
 
-    const tryPlayAll = () => {
+    const cleanup = () => {
+      window.removeEventListener('click', tryPlayAll);
+      window.removeEventListener('touchend', tryPlayAll);
+      audioUnlockListenerAddedRef.current = false;
+    };
+
+    // touchstart 는 iOS Safari·Android Chrome 에서 사용자 활성화로 인정되지 않아 재생이 풀리지 않는다.
+    // 그래서 touchend/click 에서 시도하고, 하나라도 재생이 실패하면 리스너를 남겨 다음 탭에서 다시 시도한다.
+    function tryPlayAll() {
       // ✅ 원칙 (4): AudioContext unlock (모바일 사파리 대응)
       try {
         if (voiceManager?.audioContext?.state === 'suspended') {
@@ -1276,23 +1284,22 @@ const WebRTCProvider = ({ children }) => {
       } catch (e) {
         console.warn('⚠️ AudioContext resume 실패:', e?.message);
       }
-      
-      const audios = document.querySelectorAll('audio[data-user-id]');
-      audios.forEach((a) => {
+
+      const audios = Array.from(document.querySelectorAll('audio[data-user-id]'));
+      Promise.all(audios.map((a) => {
         try {
           const p = a.play?.();
-          if (p && typeof p.catch === 'function') {
-            p.catch(() => {});
-          }
-        } catch {}
+          return p && typeof p.then === 'function' ? p.then(() => true, () => false) : true;
+        } catch {
+          return false;
+        }
+      })).then((results) => {
+        if (results.every(Boolean)) cleanup();
       });
-      window.removeEventListener('click', tryPlayAll);
-      window.removeEventListener('touchstart', tryPlayAll);
-      audioUnlockListenerAddedRef.current = false;
-    };
+    }
 
-    window.addEventListener('click', tryPlayAll, { once: true });
-    window.addEventListener('touchstart', tryPlayAll, { once: true });
+    window.addEventListener('click', tryPlayAll);
+    window.addEventListener('touchend', tryPlayAll);
   }, []);
 
   // ----------------------------

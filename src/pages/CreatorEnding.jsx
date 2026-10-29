@@ -4,6 +4,7 @@ import CreatorContentBox from "../components/Expanded/CreatorContentBox";
 import Continue from '../components/Expanded/CreateContinue';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import { gameCodeFromLink, readPreviewAccess } from '../utils/previewAccess';
 
 export default function Create00() {
   const navigate = useNavigate();
@@ -16,6 +17,8 @@ export default function Create00() {
     navigate('/selectroom');
   };
   const linkUrl = location.state?.url || localStorage.getItem('url') || null;
+  const previewCode = gameCodeFromLink(linkUrl);
+  const editCode = previewCode ? readPreviewAccess(previewCode) : '';
 
   const handleCopy = async () => {
     try {
@@ -40,11 +43,9 @@ export default function Create00() {
         {/* 콘텐츠 박스 */}
         <CreatorContentBox topicText="딜레마 게임 만들기 완료" text={combinedText} />
 
-        {/* URL 박스 (absolute) */}
+        {/* 학생 공유 링크와 제작자 체험은 별도로 표시한다. */}
         <div
           style={{
-            position: 'absolute',
-            top: '55%', // 위치 조정 가능
             display: 'flex',
             alignItems: 'center',
             backgroundColor: '#fff',
@@ -52,16 +53,19 @@ export default function Create00() {
             borderRadius: 4,
             padding: '8px 12px',
             gap: 8,
-            width: 400,
+            width: 'min(400px, 100%)',
+            boxSizing: 'border-box',
             boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
           }}
         >
           <input
             type="text"
-            value={linkUrl}
+            aria-label="학생용 공유 링크"
+            value={linkUrl || ''}
             readOnly
             style={{
               flex: 1,
+              minWidth: 0,
               border: 'none',
               outline: 'none',
               fontSize: 14,
@@ -88,8 +92,6 @@ export default function Create00() {
         {copied && (
           <div
             style={{
-              position: 'absolute',
-              top: 'calc(55% + 50px)',
               fontSize: 16,
               color: 'green',
             }}
@@ -98,10 +100,18 @@ export default function Create00() {
           </div>
         )}
 
+        {previewCode && <div style={{ textAlign: 'center', maxWidth: 480 }}>
+          <button onClick={() => navigate(`/preview/${encodeURIComponent(previewCode)}`)} style={{ padding: '14px 28px', background: '#0d575c', color: '#fff', border: 0, borderRadius: 8, font: 'inherit', cursor: 'pointer' }}>혼자 체험하기</button>
+          {editCode && <details style={{ marginTop: 16, overflowWrap: 'anywhere' }}>
+            <summary>제작자 수정 코드 보관하기</summary>
+            <p>다른 기기에서 미리보기를 열 때 필요합니다. 학생에게 공유하지 마세요.</p>
+            <code>{editCode}</code>
+          </details>}
+        </div>}
         <Continue
           onClick={handleNext}
           label="메인화면으로"
-          style={{ marginTop: 80, width: 264, height: 72 }}
+          style={{ marginTop: previewCode ? 10 : 80, width: 264, height: 72 }}
         />
       </div>
     </CreatorLayout>

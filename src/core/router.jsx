@@ -76,6 +76,7 @@ import PlayApprovalProtectedRoute from '../components/playApproval/PlayApprovalP
 import PlayApprovalAuthRoute from '../components/playApproval/PlayApprovalAuthRoute';
 
 const ChatPage2 = lazy(() => import('../pages/ChatPage2'));
+const GamePreview = lazy(() => import('../pages/preview/GamePreview'));
 
 function DiagnosticRoute() {
   const { pathname } = useLocation();
@@ -154,6 +155,9 @@ function Router() {
             승인된 사용자만 접근 가능한 서비스 영역
         ========================================= */}
         <Route element={<PlayApprovalProtectedRoute />}>
+
+          <Route path="/preview" element={<Suspense fallback={<div role="status">미리보기를 불러오고 있어요…</div>}><GamePreview /></Suspense>} />
+          <Route path="/preview/:code" element={<Suspense fallback={<div role="status">미리보기를 불러오고 있어요…</div>}><GamePreview /></Suspense>} />
 
           {/* 방 선택 / 대기 */}
           <Route

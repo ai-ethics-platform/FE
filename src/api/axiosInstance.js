@@ -2,6 +2,7 @@ import axios from 'axios';
 import { diagnosticRequestStart, diagnosticRequestEnd } from '../utils/creatorDiagnostics';
 import { captureApiError } from '../utils/posthog';
 import { attachGameRequestContext } from '../utils/gameRequestContext';
+import { readPreviewAccess, rememberPreviewAccess } from '../utils/previewAccess';
 
 /**
  * 하드코딩된 주소를 환경변수로 분리
@@ -128,6 +129,11 @@ export async function ensureFreshAccessToken({ skewSeconds = 30 } = {}) {
 // 요청 인터셉터: 액세스 토큰 자동 추가
 instance.interceptors.request.use(
   (config) => {
+    const editorGame = /^\/custom-games\/([^/]+)\//.exec(config.url || '');
+    if (editorGame && ['put', 'patch', 'delete'].includes(config.method)) {
+      const editCode = readPreviewAccess(decodeURIComponent(editorGame[1]));
+      if (editCode) config.headers.set('X-Edit-Code', editCode);
+    }
     // Bound editor/preview loads and saves as well as the approval gate.
     if (!config.timeout && /(?:\/custom-games(?:\/|$)|\/play-applications\/me(?:\?|$))/.test(config.url || '')) {
       config.timeout = 20000;
@@ -148,7 +154,10 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => {
     diagnosticRequestEnd(response.config.creatorDiagnostic, response.status);
-    console.log('⬅️ Response:', response.config.url, response.status, response.data);
+    if (response.config.method === 'post' && /\/custom-games\/?$/.test(response.config.url || '')) {
+      rememberPreviewAccess(response.data?.code, response.data?.edit_code);
+    }
+    console.log('⬅️ Response:', response.config.url, response.status);
     return response;
   },
   async (error) => {

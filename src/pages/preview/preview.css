@@ -1,0 +1,38 @@
+.game-preview { min-height: 100dvh; box-sizing: border-box; background: #f1f6f4; color: #183c3c; padding: 32px max(20px, calc((100vw - 1100px) / 2)); font-family: inherit; }
+.game-preview * { box-sizing: border-box; }
+.game-preview h1 { font-size: 28px; margin: 10px 0; overflow-wrap: anywhere; }
+.game-preview h2 { font-size: 22px; margin: 24px 0; }
+.game-preview button, .game-preview input { font: inherit; }
+.game-preview button { min-height: 44px; border: 1px solid #a7bdbc; border-radius: 8px; padding: 10px 18px; background: #fff; color: #183c3c; cursor: pointer; }
+.game-preview button:disabled { opacity: .45; cursor: default; }
+.game-preview button[aria-pressed=true], .game-preview .preview-primary { background: #0d575c; border-color: #0d575c; color: white; }
+.game-preview :focus-visible { outline: 3px solid #de7524; outline-offset: 4px; }
+.game-preview a { color: #0d575c; text-underline-offset: 4px; }
+.preview-heading, .preview-controls, .preview-pages { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.preview-tag { font-weight: 700; color: #0d575c; font-size: 14px; }
+.preview-notice { background: #e0ece7; padding: 16px; border-radius: 10px; line-height: 1.7; }
+.preview-steps { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; font-size: 14px; color: #526c6a; }
+.preview-steps [aria-current=step] { color: #0d575c; font-weight: 800; text-decoration: underline; text-underline-offset: 6px; }
+.preview-card { background: white; border: 1px solid #d4e0dc; border-radius: 16px; padding: 28px; box-shadow: 0 8px 32px #153c3c08; }
+.preview-roles, .preview-options { display: flex; flex-wrap: wrap; gap: 12px; }
+.preview-roles button, .preview-options button { flex: 1; }
+.preview-scene { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 28px; align-items: center; }
+.preview-scene img { width: 100%; max-height: 360px; object-fit: contain; border-radius: 12px; background: #f5f5f2; }
+.preview-story p, .preview-question { font-size: 19px; line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; }
+.preview-pages { font-size: 14px; }
+.preview-summary { display: flex; flex-wrap: wrap; gap: 12px 28px; padding-left: 20px; line-height: 1.8; }
+.preview-controls { margin-top: 28px; border-top: 1px solid #d4e0dc; padding-top: 20px; }
+.preview-access { max-width: 600px; margin: 8vh auto; line-height: 1.7; }
+.preview-access form { display: flex; flex-direction: column; gap: 12px; margin: 24px 0; }
+.preview-access input { width: 100%; min-height: 48px; border: 1px solid #a7bdbc; border-radius: 8px; padding: 12px; }
+.preview-access a { display: inline-block; margin-right: 20px; }
+.preview-access [role=alert] { color: #a52c29; }
+@media (max-width: 680px) {
+  .game-preview { padding: 20px 12px; }
+  .preview-card { padding: 20px 16px; }
+  .preview-heading { align-items: flex-start; flex-direction: column; }
+  .preview-scene { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .preview-scene img { max-height: 240px; }
+  .preview-story p { font-size: 17px; }
+  .preview-roles button { padding: 10px; }
+}

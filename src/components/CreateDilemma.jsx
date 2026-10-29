@@ -34,7 +34,7 @@ export default function CreateDilemma({ onClose }) {
     <div
       style={{
         width: IS_RESPONSIVE ? 'min(552px, calc(100vw - 24px))' : 552,
-        height: 548,
+        minHeight: 548,
         ...(IS_RESPONSIVE ? { maxHeight: 'calc(100vh - 24px)', overflowY: 'auto' } : {}),
         justifyContent: 'center',
         backgroundColor: Colors.componentBackgroundFloat,
@@ -110,6 +110,7 @@ export default function CreateDilemma({ onClose }) {
       >
         {'시작하기'}
       </PrimaryButton>
+      <button type="button" onClick={() => navigate('/preview')} style={{ marginTop: 16, padding: '10px 16px', minHeight: 44, background: 'none', border: '1px solid #0d575c', borderRadius: 8, color: '#0d575c', font: 'inherit', cursor: 'pointer' }}>기존 게임 혼자 체험하기</button>
     </div>
   );
 }

@@ -84,10 +84,9 @@ function PlayApprovalProtectedRoute() {
 
   // 현재 경로에 대한 승인 확인이 끝나기 전에는
   // 보호된 화면을 렌더링하지 않음
-  if (checkedPath !== location.pathname) {
-    return <div role="status" style={{ padding: 32 }}>화면을 불러오고 있어요…</div>;
-  }
-
+  if (checkedPath !== location.pathname && approvalStatus !== 'approved') {
+      return (<div role="status" style={{ padding: 32 }}>화면을 불러오고 있어요…</div>);
+}
   if (error) return <div role="alert" style={{ padding: 32 }}><p>{error}</p><button onClick={() => setAttempt(value => value + 1)}>다시 시도</button></div>;
 
   if (redirectPath) {
